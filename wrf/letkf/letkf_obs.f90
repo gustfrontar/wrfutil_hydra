@@ -391,7 +391,7 @@ IF( nobs + nobsradar .GT. 0)THEN
 ENDIF
 
 do n=1,nobs+nobsradar
-  CALL com_var(nbv,hdxf(n,:),tmpsprd(n))
+  CALL com_stdev(nbv,tmphdxf(n,:),tmpsprd(n))
 enddo
 
 CALL monit_dep(nobs+nobsradar,tmpelm,tmpdep,tmpsprd)
@@ -739,10 +739,10 @@ SUBROUTINE monit_mean(file,depout)
 
 !Transform reflectivity to dBz scale.
 if( NINT(obselm(n)) == id_reflectivity_obs )then
-   obs(n)=10*log10(obs(n))
+   !obs(n)=10*log10(obs(n))
    hdxf=10*log10(hdxf)
-   if( obs(n) <= minrefdbz )then 
-      obs(n)=minrefdbz 
+   if( obsdat(n) <= minrefdbz )then 
+      obsdat(n)=minrefdbz 
    endif
    if( hdxf <= minrefdbz )then
        hdxf=minrefdbz

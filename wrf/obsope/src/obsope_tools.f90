@@ -95,6 +95,7 @@ SUBROUTINE set_letkf_obs
   REAL(r_size),ALLOCATABLE :: tmpi(:)
   REAL(r_size),ALLOCATABLE :: tmpj(:)
   REAL(r_size),ALLOCATABLE :: tmpk(:)
+  REAL(r_size),ALLOCATABLE :: tmpsprd(:)
   REAL(r_size),ALLOCATABLE :: tmpdep(:)
   REAL(r_size),ALLOCATABLE :: tmpradar(:)
   REAL(r_size),ALLOCATABLE :: tmpaz(:),tmpel(:),tmpra(:)
@@ -190,6 +191,7 @@ SUBROUTINE set_letkf_obs
   ALLOCATE( tmpj(nobs+nobsradar) )
   ALLOCATE( tmpk(nobs+nobsradar) )
   ALLOCATE( tmpdep(nobs+nobsradar) )
+  ALLOCATE( tmpsprd(nobs+nobsradar) )
   ALLOCATE( tmphdxf(nobs+nobsradar,nbv) )
   ALLOCATE( tmpradar(nobs+nobsradar) )
   ALLOCATE( tmpaz(nobs+nobsradar) )
@@ -209,6 +211,7 @@ SUBROUTINE set_letkf_obs
   tmpj=0.0
   tmpk=0.0
   tmpdep=0.0
+  tmpsprd=0.0
   tmphdxf=0.0
   tmpradar=0.0
 
@@ -413,8 +416,11 @@ IF( nobs + nobsradar .GT. 0)THEN
 ENDIF
 
 
+do n=1,nobs+nobsradar
+   CALL com_stdev(nbv,tmphdxf(n,:),tmpsprd(n) )
+enddo
 
-CALL monit_dep(nobs+nobsradar,tmpelm,tmpdep)
+CALL monit_dep(nobs+nobsradar,tmpelm,tmpdep,tmpsprd)
 
   nn = 0
   DO n=1,nobs+nobsradar
@@ -585,6 +591,7 @@ CALL monit_dep(nobs+nobsradar,tmpelm,tmpdep)
   DEALLOCATE( tmpi )
   DEALLOCATE( tmpj )
   DEALLOCATE( tmpk )
+  DEALLOCATE( tmpsprd )
   DEALLOCATE( tmpdep )
   DEALLOCATE( tmphdxf )
   DEALLOCATE( tmpaz , tmpra , tmpel )
