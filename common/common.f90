@@ -53,6 +53,25 @@ SUBROUTINE com_mean(ndim,var,amean)
 
   RETURN
 END SUBROUTINE com_mean
+
+SUBROUTINE com_mean_sngl(ndim,var,amean)
+  IMPLICIT NONE
+
+  INTEGER,INTENT(IN) :: ndim
+  REAL(r_sngl),INTENT(IN) :: var(ndim)
+  REAL(r_sngl),INTENT(OUT) :: amean
+
+  INTEGER :: i
+
+  amean = 0.0d0
+  DO i=1,ndim
+    amean = amean + var(i)
+  END DO
+  amean = amean / REAL(ndim,r_sngl)
+
+  RETURN
+END SUBROUTINE com_mean_sngl
+
 !-----------------------------------------------------------------------
 ! Standard deviation
 !-----------------------------------------------------------------------
@@ -74,6 +93,27 @@ SUBROUTINE com_stdev(ndim,var,aout)
 
   RETURN
 END SUBROUTINE com_stdev
+
+
+SUBROUTINE com_stdev_sngl(ndim,var,aout)
+  IMPLICIT NONE
+
+  INTEGER,INTENT(IN) :: ndim
+  REAL(r_sngl),INTENT(IN) :: var(ndim)
+  REAL(r_sngl),INTENT(OUT) :: aout
+
+  REAL(r_sngl) :: amean
+  REAL(r_sngl) :: dev(ndim)
+
+  CALL com_mean_sngl(ndim,var,amean)
+
+  dev(:) = var(:) - amean
+
+  aout = SQRT( SUM(dev*dev) / REAL(ndim-1,r_size) )
+
+  RETURN
+END SUBROUTINE com_stdev_sngl
+
 !-----------------------------------------------------------------------
 ! Covariance
 !-----------------------------------------------------------------------
@@ -98,6 +138,30 @@ SUBROUTINE com_covar(ndim,var1,var2,cov)
 
   RETURN
 END SUBROUTINE com_covar
+
+SUBROUTINE com_covar_sngl(ndim,var1,var2,cov)
+  IMPLICIT NONE
+
+  INTEGER,INTENT(IN) :: ndim
+  REAL(r_sngl),INTENT(IN) :: var1(ndim)
+  REAL(r_sngl),INTENT(IN) :: var2(ndim)
+  REAL(r_sngl),INTENT(OUT) :: cov
+
+  REAL(r_sngl) :: amean1,amean2
+  REAL(r_sngl) :: dev1(ndim),dev2(ndim)
+
+  CALL com_mean_sngl(ndim,var1,amean1)
+  CALL com_mean_sngl(ndim,var2,amean2)
+
+  dev1(:) = var1(:) - amean1
+  dev2(:) = var2(:) - amean2
+
+  cov = SUM( dev1*dev2 ) / REAL(ndim-1,r_sngl)
+
+  RETURN
+END SUBROUTINE com_covar_sngl
+
+
 !-----------------------------------------------------------------------
 ! Correlation
 !-----------------------------------------------------------------------
@@ -119,6 +183,27 @@ SUBROUTINE com_correl(ndim,var1,var2,cor)
 
   RETURN
 END SUBROUTINE com_correl
+
+SUBROUTINE com_correl_sngl(ndim,var1,var2,cor)
+  IMPLICIT NONE
+
+  INTEGER,INTENT(IN) :: ndim
+  REAL(r_sngl),INTENT(IN) :: var1(ndim)
+  REAL(r_sngl),INTENT(IN) :: var2(ndim)
+  REAL(r_sngl),INTENT(OUT) :: cor
+
+  REAL(r_sngl) :: cov,stdev1,stdev2
+
+  CALL com_stdev_sngl(ndim,var1,stdev1)
+  CALL com_stdev_sngl(ndim,var2,stdev2)
+  CALL com_covar_sngl(ndim,var1,var2,cov)
+
+  cor = cov/stdev1/stdev2
+
+  RETURN
+END SUBROUTINE com_correl_sngl
+
+
 !-----------------------------------------------------------------------
 ! Anomaly Correlation
 !-----------------------------------------------------------------------

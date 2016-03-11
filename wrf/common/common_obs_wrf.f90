@@ -1045,12 +1045,14 @@ END SUBROUTINE itpl_3d
 !-----------------------------------------------------------------------
 ! Monitor departure
 !-----------------------------------------------------------------------
-SUBROUTINE monit_dep(nn,elm,dep)
+SUBROUTINE monit_dep(nn,elm,dep,sprd)
   IMPLICIT NONE
   INTEGER,INTENT(IN) :: nn
   REAL(r_size),INTENT(IN) :: elm(nn)
   REAL(r_size),INTENT(IN) :: dep(nn)
+  REAL(r_size),INTENT(IN) :: sprd(nn)
   REAL(r_size) :: rmse_u,rmse_v,rmse_t,rmse_q,rmse_ps,rmse_rh,rmse_pwv,rmse_ref,rmse_vr
+  REAL(r_size) :: sprd_u,sprd_v,sprd_t,sprd_q,sprd_ps,sprd_rh,sprd_pwv,sprd_ref,sprd_vr
   REAL(r_size) :: bias_u,bias_v,bias_t,bias_q,bias_ps,bias_rh,bias_pwv,bias_ref,bias_vr
   INTEGER :: n,iu,iv,it,iq,ips,irh,ipwv,iref,ivr
 
@@ -1063,6 +1065,17 @@ SUBROUTINE monit_dep(nn,elm,dep)
   rmse_pwv = 0.0d0 
   rmse_ref = 0.0d0
   rmse_vr  = 0.0d0
+
+  sprd_u = 0.0d0
+  sprd_v = 0.0d0
+  sprd_t = 0.0d0
+  sprd_q = 0.0d0
+  sprd_ps = 0.0d0
+  sprd_rh = 0.0d0
+  sprd_pwv = 0.0d0 
+  sprd_ref = 0.0d0
+  sprd_vr  = 0.0d0
+
   bias_u = 0.0d0
   bias_v = 0.0d0
   bias_t = 0.0d0
@@ -1072,6 +1085,7 @@ SUBROUTINE monit_dep(nn,elm,dep)
   bias_pwv = 0.0d0   
   bias_ref = 0.0d0
   bias_vr  = 0.0d0
+
   iu = 0
   iv = 0
   it = 0
@@ -1088,38 +1102,47 @@ SUBROUTINE monit_dep(nn,elm,dep)
     CASE(id_u_obs, id_us_obs)
       rmse_u = rmse_u + dep(n)**2
       bias_u = bias_u + dep(n)
+      sprd_u = sprd_u + sprd(n)**2
       iu = iu + 1
     CASE(id_v_obs, id_vs_obs)
       rmse_v = rmse_v + dep(n)**2
       bias_v = bias_v + dep(n)
+      sprd_v = sprd_v + sprd(n)**2
       iv = iv + 1
     CASE(id_t_obs, id_ts_obs , id_tv_obs )
       rmse_t = rmse_t + dep(n)**2
       bias_t = bias_t + dep(n)
+      sprd_t = sprd_t + sprd(n)**2
       it = it + 1
     CASE(id_q_obs, id_qs_obs)
       rmse_q = rmse_q + dep(n)**2
       bias_q = bias_q + dep(n)
+      sprd_q = sprd_q + sprd(n)**2
       iq = iq + 1
     CASE(id_ps_obs)
       rmse_ps = rmse_ps + dep(n)**2
       bias_ps = bias_ps + dep(n)
+      sprd_ps = sprd_ps + sprd(n)**2
       ips = ips + 1
     CASE(id_rh_obs, id_rhs_obs , id_pseudorh_obs )
       rmse_rh = rmse_rh + dep(n)**2
       bias_rh = bias_rh + dep(n)
+      sprd_rh = sprd_rh + sprd(n)**2
       irh = irh + 1
     CASE(id_pwv_obs)
       rmse_pwv = rmse_pwv + dep(n)**2
       bias_pwv = bias_pwv + dep(n)
+      sprd_pwv = sprd_pwv + sprd(n)**2
       ipwv = ipwv + 1    
      CASE(id_reflectivity_obs )
       rmse_ref = rmse_ref + dep(n)**2 
       bias_ref = bias_ref + dep(n)
+      sprd_ref = sprd_ref + sprd(n)**2
       iref = iref + 1
      CASE(id_radialwind_obs)
       rmse_vr = rmse_vr + dep(n)**2
       bias_vr = bias_vr + dep(n)
+      sprd_vr = sprd_vr + sprd(n)**2
       ivr = ivr + 1
      CASE DEFAULT
       WRITE(6,*) 'Observation type is not in the list'
@@ -1129,65 +1152,83 @@ SUBROUTINE monit_dep(nn,elm,dep)
   IF(iu == 0) THEN
     rmse_u = undef
     bias_u = undef
+    sprd_u = undef
   ELSE
     rmse_u = SQRT(rmse_u / REAL(iu,r_size))
     bias_u = bias_u / REAL(iu,r_size)
+    sprd_u = sqrt(sprd_u / REAL(iu,r_size))
   END IF
   IF(iv == 0) THEN
     rmse_v = undef
     bias_v = undef
+    sprd_v = undef
   ELSE
     rmse_v = SQRT(rmse_v / REAL(iv,r_size))
     bias_v = bias_v / REAL(iv,r_size)
+    sprd_v = sqrt(sprd_v / REAL(iv,r_size))
   END IF
   IF(it == 0) THEN
     rmse_t = undef
     bias_t = undef
+    sprd_v = undef
   ELSE
     rmse_t = SQRT(rmse_t / REAL(it,r_size))
     bias_t = bias_t / REAL(it,r_size)
+    sprd_t = sqrt(sprd_t / REAL(it,r_size))
   END IF
   IF(iq == 0) THEN
     rmse_q = undef
     bias_q = undef
+    sprd_q = undef 
   ELSE
     rmse_q = SQRT(rmse_q / REAL(iq,r_size))
     bias_q = bias_q / REAL(iq,r_size)
+    sprd_q = sqrt(sprd_q / REAL(iq,r_size))
   END IF
   IF(ips == 0) THEN
     rmse_ps = undef
     bias_ps = undef
+    sprd_ps = undef 
   ELSE
     rmse_ps = SQRT(rmse_ps / REAL(ips,r_size))
     bias_ps = bias_ps / REAL(ips,r_size)
+    sprd_ps = sqrt(sprd_ps / REAL(ips,r_size))
   END IF
   IF(irh == 0) THEN
     rmse_rh = undef
     bias_rh = undef
+    sprd_rh = undef 
   ELSE
     rmse_rh = SQRT(rmse_rh / REAL(irh,r_size))
     bias_rh = bias_rh / REAL(irh,r_size)
+    sprd_rh = sqrt(sprd_rh / REAL(irh,r_size))
   END IF
   IF(ipwv == 0) THEN
     rmse_pwv = undef
     bias_pwv = undef
+    sprd_pwv = undef 
   ELSE
     rmse_pwv = SQRT(rmse_pwv / REAL(ipwv,r_size))
     bias_pwv = bias_pwv / REAL(ipwv,r_size)
+    sprd_pwv = sqrt(sprd_pwv / REAL(ipwv,r_size))
   END IF
   IF(iref == 0) THEN
     rmse_ref = undef
     bias_ref = undef
+    sprd_ref = undef 
   ELSE
     rmse_ref = SQRT(rmse_ref / REAL(iref,r_size))
     bias_ref = bias_ref / REAL(iref,r_size)
+    sprd_ref = sqrt(sprd_ref / REAL(iref,r_size))
   END IF
   IF(ivr == 0) THEN
     rmse_vr = undef
     bias_vr = undef
+    sprd_vr = undef 
   ELSE
     rmse_vr = SQRT(rmse_vr / REAL(ivr,r_size))
     bias_vr = bias_vr / REAL(ivr,r_size)
+    sprd_vr = sqrt(sprd_vr / REAL(ivr,r_size))
   END IF
 
 

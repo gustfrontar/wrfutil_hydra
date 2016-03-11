@@ -66,6 +66,7 @@ SUBROUTINE set_letkf_obs
   REAL(r_size),ALLOCATABLE :: tmpj(:)
   REAL(r_size),ALLOCATABLE :: tmpk(:)
   REAL(r_size),ALLOCATABLE :: tmpdep(:)
+  REAL(r_size),ALLOCATABLE :: tmpsprd(:)
   REAL(r_size),ALLOCATABLE :: tmpradar(:)
   REAL(r_size),ALLOCATABLE :: tmpaz(:),tmpel(:),tmpra(:)
   REAL(r_size),ALLOCATABLE :: tmphdxf(:,:)
@@ -164,6 +165,7 @@ SUBROUTINE set_letkf_obs
   ALLOCATE( tmpi(nobs+nobsradar) )
   ALLOCATE( tmpj(nobs+nobsradar) )
   ALLOCATE( tmpk(nobs+nobsradar) )
+  ALLOCATE( tmpsprd(nobs+nobsradar) )
   ALLOCATE( tmpdep(nobs+nobsradar) )
   ALLOCATE( tmphdxf(nobs+nobsradar,nbv) )
   ALLOCATE( tmpradar(nobs+nobsradar) )
@@ -388,9 +390,11 @@ IF( nobs + nobsradar .GT. 0)THEN
 
 ENDIF
 
+do n=1,nobs+nobsradar
+  CALL com_var(nbv,hdxf(n,:),tmpsprd(n))
+enddo
 
-
-CALL monit_dep(nobs+nobsradar,tmpelm,tmpdep)
+CALL monit_dep(nobs+nobsradar,tmpelm,tmpdep,tmpsprd)
 
   nn = 0
   DO n=1,nobs+nobsradar
@@ -560,6 +564,7 @@ CALL monit_dep(nobs+nobsradar,tmpelm,tmpdep)
   DEALLOCATE( tmpi )
   DEALLOCATE( tmpj )
   DEALLOCATE( tmpk )
+  DEALLOCATE( tmpsprd )
   DEALLOCATE( tmpdep )
   DEALLOCATE( tmphdxf )
   DEALLOCATE( tmpaz , tmpra , tmpel )
@@ -731,6 +736,18 @@ SUBROUTINE monit_mean(file,depout)
       rk = obslev(n) - rk
     END IF
     CALL Trans_XtoY(obselm(n),obstyp(n),obsi(n),obsj(n),rk,obsaz(n),obsel(n),v3d,v2d,hdxf)
+
+!Transform reflectivity to dBz scale.
+if( NINT(obselm(n)) == id_reflectivity_obs )then
+   obs(n)=10*log10(obs(n))
+   hdxf=10*log10(hdxf)
+   if( obs(n) <= minrefdbz )then 
+      obs(n)=minrefdbz 
+   endif
+   if( hdxf <= minrefdbz )then
+       hdxf=minrefdbz
+   endif
+endif
 
     dep = obsdat(n) - hdxf
     depout(n) = dep
