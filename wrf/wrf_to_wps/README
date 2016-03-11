@@ -1,0 +1,8 @@
+
+En esta carpeta se encuentran los siguentes codigos fuentes:
+
+-WRF_TO_WPS.f90 
+Este codigo lee un archivo binario generado por el LETKF en niveles sigma. El programa escribe esas mismas salidas en el formato intermedio que genera el ungrib de forma tal que pueda ser utilizado como input por el programa metgrid.
+
+-MERGE_WRFINPUT.f90
+Este programa toma 2 wrfinputs y copia todas las variables de atmosfera de 1 en el otro (pero no copia las variables de suelo ni la SST). Este programa se necesita justamente porque los archivos binarios no contienen esas variables.

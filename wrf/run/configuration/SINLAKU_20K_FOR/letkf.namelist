@@ -1,0 +1,84 @@
+&general
+  nslots=7 
+  nbslot=4 
+/
+&localiztion
+  sigma_obs=4.0d5
+  sigma_obsv=0.2d0
+  sigma_obsz=2000.0d0 
+  sigma_obst=3.0d0
+  var_local_uv=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
+  var_local_t=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
+  var_local_tv=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
+  var_local_moist=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
+  var_local_ps=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
+  var_local_ref=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
+  var_local_dop=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
+  var_localp_uv=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
+  var_localp_t=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
+  var_localp_tv=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
+  var_localp_moist=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
+  var_localp_ps=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
+  var_localp_ref=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
+  var_localp_dop=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
+/
+ 
+&observations
+  threshold_dz=1000.0d0
+  gross_error=15.0d0
+  gross_error_tycll=10.0d0  
+  gross_error_tycmip=60.0d2  
+  undef_obs=9.99d9            
+  rainratio_threshold = 0.3d0 
+  minrefdbz=0.0d0             
+  pseudo_rh_error=0.1         
+  id_u_obs=2819
+  id_v_obs=2820
+  id_t_obs=3073
+  id_q_obs=3330
+  id_rh_obs=3331
+  id_tv_obs=3079
+  id_ps_obs=14593
+  id_us_obs=82819
+  id_vs_obs=82820
+  id_ts_obs=83073
+  id_qs_obs=83330
+  id_rhs_obs=83331
+  id_pwv_obs=83344
+  id_rain_obs=19999
+  id_tclon_obs=99991
+  id_tclat_obs=99992
+  id_tcmip_obs=99993
+  id_tcr15_obs=99994
+  id_tcr25_obs=99995
+  id_reflectivity_obs_c=4001
+  id_reflectivity_obs_x=4010
+  id_radialwind_obs  =4002
+  id_pseudorh_obs    =4003
+/
+
+&parameter_estimation
+  smooth_par_update_flag = .false.
+  update_parameter_2d = 0      
+  update_parameter_0d = 0    
+  parameter_localization_type_0d =0                                                       
+  parameter_localization_type_2d =1  
+  param_sprd_init = 0.05     
+  transpar =.false. 
+  addinfpar=.false. 
+  parameter_inflation_type = 1 
+  parameter_fixinflation = 1.1d0
+  additive_inflation_factor=0.1d0      
+  smooth_par_update_flag = .false.
+/
+&inflation
+  cov_infl_mul = 1.1d0 
+  sp_infl_add = 0.d0  
+  cov_infl_relax=0.0d0 
+/
+&radar_da
+  interpolation_technique=1
+  method_ref_calc=2
+  nradar = 1              
+  use_wt=.true.           
+/

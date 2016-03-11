@@ -1,0 +1,9 @@
+MPICC=mpifccpx
+
+all:
+	${MPICC} -o spawn spawn.c
+
+clean:
+	@if test -e spawn; then\
+	  rm spawn *~;\
+	fi

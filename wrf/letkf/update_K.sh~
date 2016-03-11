@@ -1,0 +1,6 @@
+#!/bin/bash
+scp ./letkf_radar/common/*.f90 a03094@k.aics.riken.jp:LETKF_WRF_K/common/
+scp ./letkf_radar/common_wrf/*.f90 a03094@k.aics.riken.jp:LETKF_WRF_K/wrf/common/
+scp -r ./letkf_radar/letkf/*.f90 ./letkf_radar/letkf/*.sh a03094@k.aics.riken.jp:LETKF_WRF_K/wrf/letkf/
+scp -r ./letkf_radar/letkf/configurations/ a03094@k.aics.riken.jp:LETKF_WRF_K/wrf/letkf/runV4.0/
+

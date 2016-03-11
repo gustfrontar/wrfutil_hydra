@@ -1,0 +1,34 @@
+&general
+ nslots=@NSLOTS@ 
+ nbslot=@NBSLOT@ 
+ nbv=@NBV@
+/
+ 
+&observations
+ threshold_dz=1000.0d0
+ gross_error=@GROSS_ERROR@ 
+ minrefdbz=0.0d0
+ rainratio_threshold=0.0d0       
+/
+
+&radar_da      
+ nradar=1
+ use_wt=.true.
+/
+
+&obsgrid
+ narea=@NAREA@
+ slotstep=@SLOTSTEP@
+ slotoffset=@SLOTOFFSET@
+ do_obsgrid=@DO_OBSGRID@
+ regrid_res=@REGRID_RES@
+ regrid_vert_res=@REGRID_VERT_RES@
+ regrid_vert_zres=@REGRID_VERT_ZRES@
+ vlon1=@VLON1@
+ vlon2=@VLON2@
+ vlat1=@VLAT1@
+ vlat2=@VLAT2@ 
+/
+
+
+

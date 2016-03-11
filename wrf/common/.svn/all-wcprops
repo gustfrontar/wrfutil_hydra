@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 34
+/svn/!svn/ver/120/trunk/wrf/common
+END
+common_wrf.f90
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/99/trunk/wrf/common/common_wrf.f90
+END
+common_obs_wrf.f90
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/120/trunk/wrf/common/common_obs_wrf.f90
+END
+common_mpi_wrf.f90
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/95/trunk/wrf/common/common_mpi_wrf.f90
+END
