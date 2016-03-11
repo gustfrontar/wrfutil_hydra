@@ -602,53 +602,20 @@ if [ $ANALYSIS -eq 1 ] ; then
 
 
   local_file=` wrfout_file_name $CDATEL $DOMAIN`
-  #if [ $it -eq $NBSLOT ] ; then
-  # 
-  #echo "cp $local_file ../LETKF/gues\${MEM}                          " >> $SCRIPT
-  #fi
-
-  echo "mv $local_file ../LETKF/gs${itm}\${MEM}                      " >> $SCRIPT
+  if [ $SYSTEM -eq 0 ] ; then
+    echo "mv $local_file ../LETKF/gs${itm}\${MEM}                      " >> $SCRIPT
+  fi
+  if [ $SYSTEM -eq 1 ] ; then
+    echo "mv $local_file $TMPDIR/LETKF/gs${itm}\${MEM}                 " >> $SCRIPT
+  fi
 
   CDATEL=`date_edit2 $CDATEL $LOCAL_OUTFREC `
   it=`expr ${it} + 1`
   done
 
-  #local MMS=` ens_member $MEANMEMBER `
-
-  #echo "if [  \$MEM -eq $MM ] ; then " >> $SCRIPT
-  #echo "cp ../LETKF/gs${NBSLOT}\${MEM} ../LETKF/gues${MMS}             " >> $SCRIPT
-  #echo "cp ../LETKF/gs${NBSLOT}\${MEM} ../LETKF/gs${NBSLOT}${MMS}      " >> $SCRIPT
-  #echo "fi" >> $SCRIPT
 
 fi
 
-# --- RENAME OUTPUT FOR FORECAST
-#if [ $FORECAST -eq 1 ] ; then
-#
-#  local CDATEL=$CDATE
-#
-#  local LOCAL_OUTFREC=$WINDOW_FREC
-#
-#  local it=1
-#
-#  while [ ${CDATEL} -le ${FDATE} ] ; do
-#
-#  local itm=$it
-#  if [ ${it} -lt 10 ]
-#  then
-#  itm="0${itm}"
-#  fi
-#
-#
-#  local_file=` wrfout_file_name $CDATEL $DOMAIN`
-#
-#  echo "mv $local_file ../LETKF/gs${itm}\${MEM}                      " >> $SCRIPT
-#
-#  CDATEL=`date_edit2 $CDATEL $LOCAL_OUTFREC `
-#  it=`expr ${it} + 1`
-#  done
-#
-#fi
 
 
 chmod 766 $SCRIPT
@@ -873,6 +840,41 @@ fi
 
 }
 
+generate_machinefile () {
+#Generate machiene files (torque).
+
+local TMPDIRL=$1    #Work directory
+local NODEFILE=$2   #Current nodefile for this job
+local max_jobs=$3   #Maximum simultaneous runs in this job
+local ppm=$4        #Procs per member
+
+CONT=1
+JOB=1
+while read a ; do
+   #Compute ensemble member prefix
+  
+   if [ $CONT -gt 1 ] ; then
+     echo $a >> $TMPDIRL/machinefile.$JOB
+   else
+     echo $a > $TMPDIRL/machinefile.$JOB
+   fi
+
+   CONT=`expr $CONT + 1 `
+   if [ $CONT -gt $ppm  ] ; then
+    CONT=1
+    JOB=`expr $JOB + 1 `
+   fi
+
+   if [ $JOB -gt $max_jobs ] ;    then
+       echo "[Warning]: Maximum simultaneous job limit reached, some nodes will be unused"
+      break
+   fi
+
+done  <  $NODEFILE
+
+
+}
+
 copy_data () {
 
 #COPY LETKF
@@ -1028,14 +1030,11 @@ while [ $my_redo -le $max_redo ] ; do
  while [ $IM -le $ENDMEMBER ] ; do #[While over ensemble members]
   submitted_jobs=0
   while [ $submitted_jobs -le $MAX_SUBMITT_JOB -a $IM -le $ENDMEMBER ] ; do
-   local WORKDIR=$TMPDIR/SCRIPTS/${my_job}/
    #Define the ensemble range for this job.
    EM=`expr $IM + $MAX_MEMBER_PER_JOB - 1 `
     if [ $EM -gt $ENDMEMBER ] ; then
       EM=$ENDMEMBER
     fi
-   #INIMEMBER=`ens_member $INIMEMBER `
-   #ENDMEMBER=`ens_member $ENDMEMBER `
     tmp_mem=$IM
     my_test=0
     while [ $tmp_mem -le $EM ] ; do
@@ -1051,12 +1050,18 @@ while [ $my_redo -le $max_redo ] ; do
       #echo "$my_test" 
       #In the first execution of the loop all jobs are run
       #In the following only the jobs that failed are executed.
-      run_forecast_script=run_forecast_script.sh
+      run_forecast_script=rf_scr.sh
 
       echo "Submiting job $my_job that will run ensemble members from $IM to $EM " 
-      generate_run_forecast_script_k $run_forecast_script $WORKDIR $IM $EM
- 
-      sub_and_wait $WORKDIR/run_forecast_script.sh & 
+      if [ $SYSTEM -eq 0 ] ; then
+        local WORKDIR=$TMPDIR/SCRIPTS/${my_job}/
+        generate_run_forecast_script_k $run_forecast_script $WORKDIR $IM $EM
+      fi
+      if [ $SYSTEM -eq 1 ] ; then 
+         local WORKDIR=$TMPDIR/run/${my_job}/
+         generate_run_forecast_script_torque $run_forecast_script $WORKDIR $IM $EM
+      fi
+      sub_and_wait $WORKDIR/$run_forecast_script & 
 
       submitted_jobs=`expr $submitted_jobs + 1 `
    fi
@@ -1115,6 +1120,70 @@ while [ $my_redo -le $max_redo ] ; do
 
 
 done
+
+
+}
+
+
+run_letkf () {
+
+#=====================================================================
+# This function submits and waits the letkf module.
+# If the job fails then the job is redo up to a maximum redo
+# times.
+#=====================================================================
+
+#max_redo=3   #Maximum number of retries.
+my_redo=0    
+
+#while [ $my_redo -le $max_redo ] ; do 
+
+ echo "This is attemp number $my_redo to run the LETKF-DA"
+
+ #Prepare and submit the jobs
+
+ run_letkf_script=$TMPDIR/SCRIPTS/rda_scr.sh
+
+ if [ $SYSTEM -eq 0 ] ; then
+    generate_run_letkf_script_k $run_letkf_script
+ fi
+ if [ $SYSTEM -eq 1 ] ; then
+    generate_run_letkf_script_torque $run_letkf_script
+ fi
+
+ echo "Submiting LETKF-DA job " 
+ 
+ sub_and_wait $run_letkf_script 
+
+ #Check how the jobs finished
+ local error_check=0
+ local MMS=`ens_member $MEANMEMBER`
+ if [ ! -e ${RESULTDIRA}/anal$MMS ] ; then
+   echo "[Error]: Cannot find analysis ensemble mean."
+   error_check=1
+ fi
+ grep  "PARTIAL OBSERVATIONAL DEPARTURE" ${RESULTDIRA}/NOUT-000 > null
+ if [ $? -ne 0  ] ; then
+  echo "[Error]: LETKF do not finish properly."
+  tail ${RESULTDIRA}/NOUT-000
+  error_check=1
+ fi
+
+ if [ $error_check -eq 0 ] ; then
+    my_redo=`expr $max_redo + 1 ` #Break the cycle we are done!
+ else
+   my_redo=`expr $my_redo + 1 `   #The job fails: redo!
+     echo "[Warning] : Letkf-DA attemp $my_redo fails." 
+     exit 1 #Currently redo is not working well (we need to guarantee that the files will stay in the corresponding directory to redo the cycle)
+   if [ $my_redo -gt $max_redo ] ; then
+     #We cannot continue with the cycle
+     echo "[Error] : Letkf-DA job fails more than $max_redo times "
+     echo "CYCLE ABNORMAL END -> ABORT EXECUTION "
+     exit 1
+   fi
+ fi
+
+#done
 
 
 }
@@ -1300,7 +1369,7 @@ generate_run_forecast_script_k () {
       JOB=1
       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
-         echo "mpiexec -np ${NODES_PER_MEMBER} --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_REAL.sh \${BASEDIR}/WRF${MEM}/ &  " >> $local_script
+         echo "$MPIBIN -np ${NODES_PER_MEMBER} --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_REAL.sh \${BASEDIR}/WRF${MEM}/ &  " >> $local_script
          JOB=`expr $JOB + 1 `
          M=`expr $M + 1 `
       done
@@ -1314,7 +1383,7 @@ generate_run_forecast_script_k () {
       JOB=1
       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
-         echo "mpiexec -np ${NODES_PER_MEMBER} --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_INTERPANA.sh \${BASEDIR}/WRF${MEM}/ &  " >> $local_script
+         echo "$MPIBIN -np ${NODES_PER_MEMBER} --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_INTERPANA.sh \${BASEDIR}/WRF${MEM}/ &  " >> $local_script
          JOB=`expr $JOB + 1 `
          M=`expr $M + 1 `
       done
@@ -1328,7 +1397,7 @@ generate_run_forecast_script_k () {
       JOB=1
       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ];do
       MEM=`ens_member $M `
-         echo "mpiexec -np 1 --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_PRE.sh \${BASEDIR}/WRF${MEM} ${MEM} &  " >> $local_script
+         echo "$MPIBIN -np 1 --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_PRE.sh \${BASEDIR}/WRF${MEM} ${MEM} &  " >> $local_script
          JOB=`expr $JOB + 1 `
          M=`expr $M + 1 `
       done
@@ -1348,7 +1417,7 @@ generate_run_forecast_script_k () {
       JOB=1
       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
-         echo "mpiexec -np ${NODES_PER_MEMBER} --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_WRF.sh \${BASEDIR}/WRF${MEM} &  " >> $local_script
+         echo "$MPIBIN -np ${NODES_PER_MEMBER} --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_WRF.sh \${BASEDIR}/WRF${MEM} &  " >> $local_script
          JOB=`expr $JOB + 1 `
          M=`expr $M + 1 `
       done
@@ -1361,12 +1430,245 @@ generate_run_forecast_script_k () {
       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
 
-         echo "mpiexec -np 1 --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_POST.sh \${BASEDIR}/WRF${MEM} $MEM &  " >> $local_script
+         echo "$MPIBIN -np 1 --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_POST.sh \${BASEDIR}/WRF${MEM} $MEM &  " >> $local_script
          JOB=`expr $JOB + 1 `
          M=`expr $M + 1 `
       done
       echo "time wait " >> $local_script
      done 
+
+}
+
+generate_run_forecast_script_torque () {
+
+   local local_script=$1   #Name of local script
+   local WORKDIR=$2        #Work directory where scripts will be generated(optional)
+   local INIMEMBER=$3      #Initialensemble member to be run in this job (optional)
+   local ENDMEMBER=$4      #End ensemble member to be run in this job.    (optional)
+
+   #echo "Scripts for ensemble members $INIMEMBER to $ENDMEMBER "
+   #echo "will be generated in $WORKDIR "
+   
+      #Default ensemble range is the full ensemble
+      if [ ! -n "$INIMEMBER" ] ; then
+       INIMEMBER=1
+      fi
+      if [ ! -n "$ENDMEMBER" ] ; then
+       ENDMEMBER=$MEMBER
+      fi
+      if [ $RUN_ONLY_MEAN -eq 1 ] ; then
+       INIMEMBER=$MEANMEMBER
+       ENDMEMBER=$MEANMEMBER
+      fi
+      #Default workdir is TMPDIR/SCRIPTS
+      if [ ! -n "$WORKDIR"  ] ; then
+       WORKDIR=$TMPDIR/run/
+      fi
+
+      mkdir -p $WORKDIR
+      local_script=$WORKDIR/$local_script 
+
+   #CREATE THE SCRIPT TO BE SUBMITED TO K COMPUTER
+   # CREATE NAMELIST FOR REAL AND WRF
+   cp $TMPDIR/WRF/namelist.input.template $WORKDIR/namelist.input.real
+   cp $TMPDIR/WRF/namelist.input.template $WORKDIR/namelist.input.wrf
+
+   edit_namelist_input $WORKDIR/namelist.input.real $CDATE $BDYDATE $WINDOW_FREC $BOUNDARY_DATA_FREC  #For real
+   edit_namelist_input $WORKDIR/namelist.input.wrf  $CDATE $FDATE   $WINDOW_FREC $BOUNDARY_DATA_FREC  #For wrf
+
+   cp $WORKDIR/namelist.input.real $WORKDIR/namelist.input.wrf $RESULTDIRG
+
+   # CREATE AUXILIARY RUNNING SCRIPTS
+   edit_wrf_post $WORKDIR/WRF_POST.sh
+   edit_wrf_pre  $WORKDIR/WRF_PRE.sh
+   edit_wrf_real $WORKDIR/WRF_REAL.sh
+   edit_wrf_wrf  $WORKDIR/WRF_WRF.sh
+
+      
+      if [ ! -n "$ELAPSE_FORECAST" ] ; then
+       ELAPSE_FORECAST=$ELAPSE
+      fi
+      if [ ! -n "$TOTAL_PROC_FORECAST" ] ; then
+       TOTAL_PROC_FORECAST=$TOTAL_NODES
+      fi
+      if [ ! -n "$TOTAL_NODES_FORECAST" ] ; then
+       TOTAL_NODES_FORECAST=$TOTAL_NODES
+      fi
+      if [ ! -n "$USE_ANALYSIS_IC" ] ; then
+       USE_ANALYSIS_IC=0
+       echo "[Warning]: USE_ANALYSIS_IC is not set will asume 0 and use LETKF analysis as IC data."
+      fi
+
+      local do_wrf_pre=0
+      if [ $USE_ANALYSIS_IC -eq 0 -a $FORECAST -eq 1 ] ; then
+          do_wrf_pre=1
+      fi
+      if [ $USE_ANALYSIS_IC -eq 0 -a $ANALYSIS -eq 1 ] ; then
+        if [ $ITER -gt 1 ] ; then
+          do_wrf_pre=1
+        fi
+      fi
+      TOTAL_PROCS_FORECAST=`expr $TOTAL_NODES_FORECAST \* $PROC_PER_NODE ` 
+      MAX_SIMULTANEOUS_JOBS=`expr $TOTAL_PROCS_FORECAST \/ $PROC_PER_MEMBER `
+
+      if [ $MAX_SIMULTANEOUS_JOBS -gt $MAX_BACKGROUND_JOBS  ] ; then
+         echo "[Error]: The number of requested nodes is too many!"
+         echo "We can't use them all to run the ensemble"
+         echo "Please revise configuration accordingly"
+         echo "MAX_SIMULTANEOUS_JOBS=$MAX_SIMULTANEOUS_JOBS"
+         echo "MAX_BACKGROUND_JOBS=$MAX_BACKGROUND_JOBS"
+         exit 1
+       fi
+
+      #Prepare run directory.
+      if [ $ANALYSIS -eq 1 ] ; then
+         local local_dir="$OUTPUTDIR/anal/${CDATE}/"
+      fi
+      if [ $FORECAST -eq 1 ] ; then 
+         local local_dir="$ANALYSIS_SOURCE/anal/${CDATE}/"
+      fi
+
+      M=$INIMEMBER
+      while [ $M -le $ENDMEMBER ] ; do
+         MEM=`ens_member $M`
+         mkdir -p $WORKDIR/WRF$MEM/
+         ln -sf $TMPDIR/WRF/* $WORKDIR/WRF$MEM/
+         M=`expr $M + 1 `
+      done
+
+      #Link boundary data.
+      M=$INIMEMBER
+      while [ $M -le $ENDMEMBER ] ; do
+       MEM=`ens_member $M`
+       ln -sf $TMPDIR/ENSINPUT/${MEM}/*  $WORKDIR/WRF$MEM/  
+       M=`expr $M + 1 `
+      done
+      #Link initial conditions
+      if [ $ANALYSIS -eq 1 ] ; then
+         local local_dir="$OUTPUTDIR/anal/${CDATE}/"
+      fi
+      if [ $FORECAST -eq 1 ] ; then
+         local local_dir="$ANALYSIS_SOURCE/anal/${CDATE}/"
+      fi
+
+      if [ $ITER -gt 1 -o $FORECAST -eq 1 ] ; then
+        if [ $USE_ANALYSIS_IC -eq 0 ] ; then
+        M=$INIMEMBER
+        while [ $M -le $ENDMEMBER ] ; do
+         MEM=`ens_member $M`
+         ln -sf ${local_dir}/anal$MEM  $WORKDIR/WRF$MEM/anal 
+         M=`expr $M + 1 `
+        done
+       fi
+      fi
+
+
+      #Prepare the script 
+      echo "#!/bin/bash    "                                              >  $local_script
+      echo "#PBS -l nodes=$TOTAL_NODES_FORECAST:ppn=$PROC_PER_NODE   "    >> $local_script
+      echo "#PBS -S /bin/bash                                        "    >> $local_script
+      echo "source $TMPDIR/SCRIPTS/util.sh                           "    >> $local_script
+      echo "generate_machinefile $WORKDIR \$PBS_NODEFILE $MAX_SIMULTANEOUS_JOBS $PROC_PER_MEMBER "    >> $local_script
+      echo "cd $WORKDIR                                              "    >> $local_script  
+      echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH                  "    >> $local_script
+ 
+      M=$INIMEMBER
+      while [  $M -le $ENDMEMBER ] ; do
+       MEM=`ens_member $M `
+       echo "cp ${WORKDIR}/namelist.input.real  ${WORKDIR}/WRF${MEM}/namelist.input " >> $local_script
+       M=`expr $M + 1 `
+      done
+  
+     M=$INIMEMBER
+     while [  $M -le $ENDMEMBER ] ; do
+      JOB=1
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+      MEM=`ens_member $M `
+         echo "$MPIBIN -np ${PROC_PER_MEMBER} -machinefile $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_REAL.sh $WORKDIR/WRF${MEM}/ &  " >> $local_script
+         JOB=`expr $JOB + 1 `
+         M=`expr $M + 1 `
+      done
+      echo "time wait " >> $local_script
+     done
+ 
+     if [ $do_wrf_pre -eq 1 ] ; then #Update lateral and lower boundary conditions.
+      M=$INIMEMBER
+      while [  $M -le $ENDMEMBER ];do
+       JOB=1
+       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ];do
+       MEM=`ens_member $M `
+          echo "$WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM} &  " >> $local_script
+          JOB=`expr $JOB + 1 `
+          M=`expr $M + 1 `
+       done
+       echo "time wait " >> $local_script
+      done      
+     fi
+        
+     M=$INIMEMBER
+     while [  $M -le $ENDMEMBER ];do
+       MEM=`ens_member $M `
+       echo "cp ${WORKDIR}/namelist.input.wrf  ${WORKDIR}/WRF${MEM}/namelist.input " >> $local_script
+       M=`expr $M + 1 `
+     done
+ 
+     M=$INIMEMBER
+     while [  $M -le $ENDMEMBER ] ; do
+      JOB=1
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+      MEM=`ens_member $M `
+         echo "$MPIBIN -np ${PROC_PER_MEMBER} -machinefile ${WORKDIR}/machinefile.${JOB} ${WORKDIR}/WRF_WRF.sh ${WORKDIR}/WRF${MEM} &  " >> $local_script
+         JOB=`expr $JOB + 1 `
+         M=`expr $M + 1 `
+      done
+      echo "time wait " >> $local_script
+     done 
+
+     M=$INIMEMBER
+     while [  $M -le $ENDMEMBER ] ; do
+      JOB=1
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+      MEM=`ens_member $M `
+
+         echo "${WORKDIR}/WRF_POST.sh ${WORKDIR}/WRF${MEM} $MEM &  " >> $local_script
+         JOB=`expr $JOB + 1 `
+         M=`expr $M + 1 `
+      done
+      echo "time wait " >> $local_script
+     done 
+
+
+     if [ $FORECAST -eq 1 ] ; then
+      M=$INIMEMBER
+      while [ $M -le $ENDMEMBER ] ; do
+        MEM=`ens_member $M`
+        echo "mv  ${WORKDIR}/WRF$MEM/wrfout* ${RESULTDIRG}/${MEM}/            " >> $local_script
+        M=`expr $M + 1 `
+      done
+     fi
+
+     M=$INIMEMBER
+     while [ $M -le $ENDMEMBER ] ; do
+       MEM=`ens_member $M`
+       echo "mv ${WORKDIR}/WRF$MEM/*.log      ${RESULTDIRG}/                  " >> $local_script
+       M=`expr $M + 1 `
+     done
+
+     if [ $ANALYSIS -eq 1 ] ; then
+      M=$INIMEMBER
+      while [ $M -le $ENDMEMBER ] ; do
+       MEM=`ens_member $M `
+       echo "cp ${TMPDIR}/LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRG}/gues${MEM}  " >> $local_script
+       M=`expr $M + 1 `
+      done
+
+      MEM=`ens_member $MM `
+      MEMEAN=`ens_member $MEANMEMBER `
+      echo "cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} $TMPDIR/LETKF/gs${NBSLOT}${MEMEAN}  " >> $local_script
+      echo "cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} ${RESULTDIRG}/gues${MEMEAN}         " >> $local_script
+      echo "ln -sf ${RESULTDIRG}/gues${MEMEAN} $TMPDIR/LETKF/gues${MEMEAN}         " >> $local_script
+     fi
+
 
 }
 
@@ -1452,10 +1754,100 @@ generate_run_letkf_script_k () {
       echo "export OMP_NUM_THREADS=1 " >> $local_script
   
       echo "cd ./LETKF/                                               " >> $local_script
-      echo "time mpiexec --of-proc std-file ./letkf.exe               " >> $local_script
+      echo "time $MPIBIN --of-proc std-file ./letkf.exe               " >> $local_script
       echo "echo \"CICLE NORMAL END \"                                " >> $local_script    
 
 }
+
+
+generate_run_letkf_script_torque () {
+#CREATE THE SCRIPT TO BE SUBMITED TO K COMPUTER
+      local_script=$1
+
+      # CREATE NAMELIST FOR LETKF
+      cp $TMPDIR/LETKF/letkf.namelist.template $TMPDIR/LETKF/letkf.namelist
+      edit_namelist_letkf $TMPDIR/LETKF/letkf.namelist
+      cp $TMPDIR/LETKF/letkf.namelist $RESULTDIRA
+
+      if [ ! -n "$ELAPSE_LETKF" ] ; then
+       ELAPSE_LETKF=$ELAPSE
+      fi
+      if [ ! -n "$TOTAL_NODES_LETKF" ] ; then
+       TOTAL_NODES_LETKF=$TOTAL_NODES
+      fi
+      if [ ! -n "$USE_ADAPTIVE_INFLATION" ] ; then
+       USE_ADAPTIVE_INFLATION=0
+      fi
+      if [ $USE_ADAPTIVE_INFLATION -eq 1 ] ; then
+       if [ $ITER -gt 4 ] ; then
+         inflation_date=`date_edit2 $ADATE -86400 `
+         INFLATION_FILE=$OUTPUTDIR/anal/${inflation_date}/infl_mul.grd 
+       else
+         inflation_date=`echo $CDATE | cut -c9-14 `
+         INFLATION_FILE=$INPUTDIR/initial_inf/${inflation_date}/infl_mul.grd
+       fi
+      fi
+
+
+      TOTAL_PROC_LETKF=`expr $TOTAL_NODES_LETKF \* $PROC_PER_NODE `
+      rm -fr $TMPDIR/LETKF/*.dat #Remove observations.
+      mv ${TMPDIR}/OBS/*     $TMPDIR/LETKF/
+      if [ $USE_ADAPTIVE_INFLATION -eq 1 ] ; then
+        cp ${INFLATION_FILE}  $TMPDIR/LETKF/   
+      fi
+
+      echo "#!/bin/bash                                                                   " >  $local_script
+      echo "#PBS -l nodes=${TOTAL_NODES_LETKF}:ppn=$PROC_PER_NODE                         " >> $local_script
+      echo "#PBS -S /bin/bash                                                             " >> $local_script
+      echo "cd $TMPDIR/LETKF                                                              " >> $local_script
+      echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH                                       " >> $local_script
+      echo "$MPIBIN -np ${TOTAL_PROC_LETKF} ./letkf.exe                                   " >> $local_script
+
+      #STAGEOUT ANALYSIS AND AND LOGS
+      M=1
+      while [ $M -le $MEANMEMBER ] ; do
+        MEM=`ens_member $M`
+        echo "mv $TMPDIR/LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRA}/anal${MEM} "  >> $local_script #Analysis ensemble members and mean
+        M=`expr $M + 1 `
+      done
+      echo "mv ${TMPDIR}/LETKF/gues${MEANMEMBER}     ${RESULTDIRG}/         "  >> $local_script
+      echo "mv ${TMPDIR}/LETKF/NOUT*                 ${RESULTDIRA}/         "  >> $local_script     
+
+      if [ $USE_ADAPTIVE_INFLATION -eq 1 ] ; then
+       echo "mv $TMPDIR/LETKF/infl_mul.grd          ${RESULTDIRA}/          "  >> $local_script
+      fi
+
+      #Remove the observations used in this cycle.
+
+      echo "rm -f ${TMPDIR}/LETKF/*.dat   "  >> $local_script
+
+}
+
+get_observations() {
+
+#Go trough all possible observation types (incorporated into this system)
+#and link them to the corresponding folder.
+
+if [ ! -n "$OBS" ] ; then
+  echo "[Warning]: OBS not set we will continue without conventional obs"
+
+else
+ 
+  get_conventional_observations
+
+fi
+
+if [ ! -n "$RADAROBS" ] ; then
+  echo "[Warning]: RADAROBS not set we will continue without radar obs"
+else
+
+  get_radar_observations_oldformat
+
+fi
+
+}
+
+
 
 get_conventional_observations () {
 
@@ -1496,6 +1888,7 @@ local ADATES=`echo $ADATE | cut -c1-10`  #Short version of analysis date (YYYYMM
   else
    touch $TMPDIR/OBS/obs07.dat
   fi
+
 }
 
 get_radar_observations () {
@@ -1510,15 +1903,13 @@ if [ $itradar -lt 10 ] ; then
 fi
 
   local it=1
-  while [ ${CDATEL} -le ${WEDATE}  ] ; do
-   if [ $it -lt 10 ] ; then
-    it=0$it
-   fi
+  while [ ${CDATEL} -le ${WEDATE}  ] ; do    
+   it=`slot_number $it `
 
   OBSFILE=$OBSDIR/RADAR${itrad}_${CDATEL}.dat
   echo $OBSFILE
   if [ -e $OBSFILE ] ; then
-   cp -f $OBSFILE ./rad${CSLOT}01.dat
+   cp -f $OBSFILE $TMPDIR/OBS/rad${it}${itradar}.dat
   fi
 
   it=`expr ${it} + 1 `
@@ -1531,44 +1922,31 @@ done
 
 get_radar_observations_oldformat () {
 
-local CDATEL=$WSDATE
+ local CDATEL=$WSDATE
 
-local itradar=1
-
-if [ -n "$RADAROBSDIR" ] ; then
-  echo "[Warning]: RADAROBSDIR not set we will continue without radar obs"
-
-else
+ local itradar=1
 
  while [ $itradar -le $NRADARS  ] ; do
  if [ $itradar -lt 10 ] ; then
    itradar=0$itradar
  fi
- if [ $itradar -lt 100 ] ; then
-   itradar=0$itradar
- fi
-
 
   local it=1
-  while [ ${CDATEL} -le ${WEDATE}  ] ; do
-   if [ $it -lt 10 ] ; then
-    it=0$it
-   fi
+  while [ ${CDATEL} -le ${WEDATE}  ] ; do 
+   it=`slot_number $it `
    datefile=`echo $CDATEL | cut -c1-12`
 
-  OBSFILE=$RADAROBSDIR/${datefile}/rad.dat
-  echo $OBSFILE
+  OBSFILE=$RADAROBSDIR/${datefile}/rad0${itradar}.dat
   if [ -e $OBSFILE ] ; then
-   cp -f $OBSFILE ./rad${CSLOT}${itradar}.dat
+   cp -f $OBSFILE $TMPDIR/OBS/rad${it}${itradar}.dat
   fi
 
   it=`expr ${it} + 1 `
+  CDATEL=`date_edit2 $CDATEL $WINDOW_FREC `
  done
 
  itradar=`expr ${itradar} + 1`
  done
-
-fi
 
 }
 
@@ -1971,6 +2349,7 @@ local WORKDIR=$TMPDIR/verification
 
 NVERTEXP=$NVERTDB #Set the input number of vertical levels according to db data.
 
+
  local my_date=$CDATEL
 
  while [ $my_date -le $EDATEL  ] ; do
@@ -2297,7 +2676,7 @@ while [ $my_domain -eq $MAX_DOM ] ; do
      echo " ulimit -s unlimited                                                             " >> ${WORKDIR}/tmp.sh
   fi
   echo "cd ${WORKDIR}/                                                                      " >> ${WORKDIR}/tmp.sh
-  echo "mpiexec -np ${MAX_RUNNING} ./obsope.exe   > obsop.log                               " >> ${WORKDIR}/tmp.sh
+  echo "$MPIBIN -np ${MAX_RUNNING} ./obsope.exe   > obsop.log                               " >> ${WORKDIR}/tmp.sh
   echo "mv ${WORKDIR}/*.grd       ${output_dir}                                             " >> ${WORKDIR}/tmp.sh
   echo "mv ${WORKDIR}/*.txt       ${output_dir}                                             " >> ${WORKDIR}/tmp.sh
   echo "mv ${WORKDIR}/obsope????? ${output_dir}                                             " >> ${WORKDIR}/tmp.sh
@@ -2337,7 +2716,7 @@ if [ $ANALYSIS -eq 1  ] ; then
      echo " ulimit -s unlimited                                                             " >> ${WORKDIR}/tmp.sh
   fi
   echo "cd ${WORKDIR}/                                                                      " >> ${WORKDIR}/tmp.sh
-  echo "mpiexec -np ${MAX_RUNNING} ./obsope.exe           > obsop.log                       " >> ${WORKDIR}/tmp.sh
+  echo "$MPIBIN -np ${MAX_RUNNING} ./obsope.exe           > obsop.log                       " >> ${WORKDIR}/tmp.sh
   echo "mv ${WORKDIR}/obsmean*.grd    ${RESULTDIRG}/                                        " >> ${WORKDIR}/tmp.sh
   echo "mv ${WORKDIR}/obsmerr*.grd    ${RESULTDIRG}/                                        " >> ${WORKDIR}/tmp.sh
   echo "mv ${WORKDIR}/obssprd*.grd    ${RESULTDIRG}/                                        " >> ${WORKDIR}/tmp.sh
@@ -2372,7 +2751,7 @@ if [ $ANALYSIS -eq 1  ] ; then
      echo " ulimit -s unlimited                                                             " >> ${WORKDIR}/tmp.sh
   fi
   echo "cd ${WORKDIR}/                                                                      " >> ${WORKDIR}/tmp.sh
-  echo "mpiexec -np ${MAX_RUNNING} ./obsope.exe         > obsop.log                         " >> ${WORKDIR}/tmp.sh
+  echo "$MPIBIN -np ${MAX_RUNNING} ./obsope.exe         > obsop.log                         " >> ${WORKDIR}/tmp.sh
   echo "mv ${WORKDIR}/obsmean*.grd    ${RESULTDIRA}/                                        " >> ${WORKDIR}/tmp.sh
   echo "mv ${WORKDIR}/obsmerr*.grd    ${RESULTDIRA}/                                        " >> ${WORKDIR}/tmp.sh
   echo "mv ${WORKDIR}/obssprd*.grd    ${RESULTDIRA}/                                        " >> ${WORKDIR}/tmp.sh
@@ -2404,7 +2783,6 @@ local shell_name=$(basename "${input_shell}")
 
 cd ${my_dir}
 
-
 if [ $SYSTEM -eq 0 ] ; then  #K-computer
         request_log=$1
         id=`pjsub -z jid ${input_shell}`
@@ -2415,27 +2793,44 @@ if [ $SYSTEM -eq 0 ] ; then  #K-computer
         qsub_end=0
         while [ ${qsub_end} -eq 0 ]
         do
-                pjstat > qstat.log${id}
+                pjstat > ${my_dir}/qstat.log${id}
 
-              #if [ ! -s qstat.log${id} ] ; then
                
-                grep ${id} qstat.log${id} > grep.log${id}
+                grep ${id} ${my_dir}/qstat.log${id} > ${my_dir}/grep.log${id}
 
-                if [ ! -s grep.log${id} ]; then
+                if [ ! -s ${my_dir}/grep.log${id} ]; then
                         qsub_end=1
                         echo "JOB FINISHED"
                         mv ${my_dir}/${shell_name}.* $OUTPUTDIR/joblogs/
                 else
                         sleep 60
                 fi
-              #else
-              # echo "[Warning]: qstat.log${id} is zero size "
-              # sleep 60
-
-              #fi
         done
 fi
 
+if [ $SYSTEM -eq 1 ] ; then  #Torque-cluster
+        request_log=$1
+        id=`qsub  ${input_shell}`
+        echo "${input_shell} SUMBITTED, ID= $id"
+
+
+        echo "WAITING FOR THE JOB..."
+        qsub_end=0
+        while [ ${qsub_end} -eq 0 ]
+        do
+                qstat > ${my_dir}/qstat.log${id}
+
+                grep ${id} ${my_dir}/qstat.log${id} > ${my_dir}/grep.log${id}
+
+                if [ ! -s ${my_dir}/grep.log${id} ]; then
+                        qsub_end=1
+                        echo "JOB FINISHED"
+                        mv ${my_dir}/${shell_name}.* $OUTPUTDIR/joblogs/
+                else
+                        sleep 60
+                fi
+        done
+fi
 
 }
 
