@@ -1250,6 +1250,7 @@ SUBROUTINE monit_dep(nn,elm,dep,sprd)
   WRITE(6,'(9A12)') 'U','V','T','Q','PS','RH','PWV','Ze','Vr'
   WRITE(6,'(9ES12.3)') bias_u,bias_v,bias_t,bias_q,bias_ps,bias_rh,bias_pwv,bias_ref,bias_vr
   WRITE(6,'(9ES12.3)') rmse_u,rmse_v,rmse_t,rmse_q,rmse_ps,rmse_rh,rmse_pwv,rmse_ref,rmse_vr
+  WRITE(6,'(9ES12.3)') sprd_u,sprd_v,sprd_t,sprd_q,sprd_ps,sprd_rh,sprd_pwv,sprd_ref,sprd_vr
   WRITE(6,'(A)') '== NUMBER OF OBSERVATIONS TO BE ASSIMILATED ========================================'
   WRITE(6,'(9A12)') 'U','V','T','Q','PS','RH','PWV','Ze','Vr'
   WRITE(6,'(9I12)') iu,iv,it,iq,ips,irh,ipwv,iref,ivr
