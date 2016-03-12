@@ -328,7 +328,7 @@ timeslots: DO islot=1,nslots
         !
         ! observational operator
         !
-        CALL Trans_XtoY(tmpelm(n),tmptyp(n),tmpi(n),tmpj(n),tmpk(n),&
+        CALL Trans_XtoY(tmpelm(n),tmptyp(n),tmplon(n),tmplat(n),tmpi(n),tmpj(n),tmpk(n),&
          & tmpaz(n),tmpel(n),v3d,v2d,tmphdxf(n,im))
 
       END DO
@@ -735,7 +735,7 @@ SUBROUTINE monit_mean(file,depout)
       CALL itpl_2d(phi0,obsi(n),obsj(n),rk)
       rk = obslev(n) - rk
     END IF
-    CALL Trans_XtoY(obselm(n),obstyp(n),obsi(n),obsj(n),rk,obsaz(n),obsel(n),v3d,v2d,hdxf)
+    CALL Trans_XtoY(obselm(n),obstyp(n),obslon(n),obslat(n),obsi(n),obsj(n),rk,obsaz(n),obsel(n),v3d,v2d,hdxf)
 
 !Transform reflectivity to dBz scale.
 if( NINT(obselm(n)) == id_reflectivity_obs )then

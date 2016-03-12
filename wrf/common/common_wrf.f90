@@ -75,6 +75,7 @@ MODULE common_wrf
   REAL(r_size),ALLOCATABLE,SAVE :: latv(:,:)
 !  REAL(r_size),ALLOCATABLE,SAVE :: fcori(:,:)
   REAL(r_size),ALLOCATABLE,SAVE :: phi0(:,:)
+  REAL(r_size),ALLOCATABLE,SAVE :: sinalpha(:,:),cosalpha(:,:)
   REAL(r_size),ALLOCATABLE,SAVE :: landmask(:,:)
   CHARACTER(20),SAVE :: element(nv3d+nv2d+np2d)
   REAL(r_sngl),ALLOCATABLE,SAVE :: dnw(:)
@@ -179,6 +180,8 @@ SUBROUTINE set_common_wrf(inputfile)
 !  ALLOCATE(fcori(nlon,nlat))
   ALLOCATE(phi0(nlon,nlat))
   ALLOCATE(landmask(nlon,nlat))
+  ALLOCATE(cosalpha(nlon,nlat))
+  ALLOCATE(sinalpha(nlon,nlat))
 
   !!! Time
   CALL check_io(NF_INQ_VARID(ncid,'Times',varid))
@@ -242,9 +245,19 @@ SUBROUTINE set_common_wrf(inputfile)
   CALL check_io(NF_INQ_VARID(ncid,'LANDMASK',varid))
   CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat-1)))
   landmask(1:nlon-1,1:nlat-1)=REAL(buf4(1:nlon-1,1:nlat-1),r_size)
+  count = (/ nlon-1,nlat-1,1 /)
+  !!! COSINE OF WIND ROATATION
+  cosalpha = 0.0d0
+  CALL check_io(NF_INQ_VARID(ncid,'COSALPHA',varid))
+  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat-1)))
+  cosalpha(1:nlon-1,1:nlat-1)=REAL(buf4(1:nlon-1,1:nlat-1),r_size)
+  count = (/ nlon-1,nlat-1,1 /)
+  !!! SINE OF WIND ROTATION
+  sinalpha = 0.0d0
+  CALL check_io(NF_INQ_VARID(ncid,'SINALPHA',varid))
+  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat-1)))
+  sinalpha(1:nlon-1,1:nlat-1)=REAL(buf4(1:nlon-1,1:nlat-1),r_size)
   deallocate(start,count)
-
-
 
   !!! P00
   CALL check_io(NF_INQ_VARID(ncid,'P00',varid))

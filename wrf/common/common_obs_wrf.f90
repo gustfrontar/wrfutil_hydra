@@ -10,6 +10,7 @@ MODULE common_obs_wrf
   USE common
   USE common_wrf
   USE common_namelist
+  USE map_utils
 
   IMPLICIT NONE
   PUBLIC
@@ -134,9 +135,9 @@ END SUBROUTINE get_iobs
 !-----------------------------------------------------------------------
 ! Transformation from model variables to an observation
 !-----------------------------------------------------------------------
-SUBROUTINE Trans_XtoY(elm,typ,ri,rj,rk,raz,rel,v3d,v2d,yobs)
+SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
   IMPLICIT NONE
-  REAL(r_size),INTENT(IN) :: elm
+  REAL(r_size),INTENT(IN) :: elm , olon , olat
   REAL(r_size),INTENT(IN) :: ri,rj,rk
   REAL(r_size),INTENT(IN) :: raz,rel    !For radial velocity computation.
   REAL(r_size),INTENT(IN) :: v3d(nlon,nlat,nlev,nv3d)
@@ -152,7 +153,7 @@ SUBROUTINE Trans_XtoY(elm,typ,ri,rj,rk,raz,rel,v3d,v2d,yobs)
   INTEGER :: is,ie,js,je,ks,ke,ityp
   REAL(r_size) :: qvr,qcr,qrr,qcir,qsr,qgr,ur,vr,wr,tr,pr,rhr
   REAL(r_size) :: dist , dlon , dlat , az , elev , ref , radialv , minref
-  REAL(r_size) :: ti
+  REAL(r_size) :: ti 
   REAL(r_size) :: att_coef !Attenuation factor.
   INTEGER      :: method_ref_calc
 
@@ -165,12 +166,24 @@ SUBROUTINE Trans_XtoY(elm,typ,ri,rj,rk,raz,rel,v3d,v2d,yobs)
   ks = ke-1
 
   SELECT CASE (NINT(elm))
-  CASE(id_u_obs)  ! U
+  CASE(id_u_obs )  ! U
+    !Grid can be rotated
     ti=ri+0.5d0
-    CALL itpl_3d(v3d(:,:,:,iv3d_u),ti,rj,rk,yobs)
-  CASE(id_v_obs)  ! V
+    CALL itpl_3d(v3d(:,:,:,iv3d_u),ti,rj,rk,ur)
     ti=rj+0.5d0
-    CALL itpl_3d(v3d(:,:,:,iv3d_v),ri,ti,rk,yobs)
+    CALL itpl_3d(v3d(:,:,:,iv3d_v),ri,ti,rk,vr)
+    CALL rotwind_letkf(ur,vr,olon,1.0d0,projection)
+    yobs=ur
+
+  CASE(id_v_obs)  ! V
+    !Grid can be rotated
+    ti=ri+0.5d0
+    CALL itpl_3d(v3d(:,:,:,iv3d_u),ti,rj,rk,ur)
+    ti=rj+0.5d0
+    CALL itpl_3d(v3d(:,:,:,iv3d_v),ri,ti,rk,vr)
+    CALL rotwind_letkf(ur,vr,olon,1.0d0,projection) 
+    yobs=vr
+ 
   CASE(id_t_obs)  ! T
     CALL itpl_3d(v3d(:,:,:,iv3d_t),ri,rj,rk,yobs)
   CASE(id_q_obs)  ! Q
@@ -237,6 +250,7 @@ SUBROUTINE Trans_XtoY(elm,typ,ri,rj,rk,raz,rel,v3d,v2d,yobs)
      CALL itpl_3d(v3d(:,:,:,iv3d_u),ti,rj,rk,ur)
      ti=rj+0.5d0
      CALL itpl_3d(v3d(:,:,:,iv3d_v),ri,ti,rk,vr)
+     CALL rotwind_letkf(ur,vr,olon,1.0d0,projection) !Rotate winds
      ti=rk+0.5d0
      CALL itpl_3d(v3d(:,:,:,iv3d_w),ri,rj,ti,wr)
      CALL itpl_3d(v3d(:,:,:,iv3d_t),ri,rj,rk,tr)

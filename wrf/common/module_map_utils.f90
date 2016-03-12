@@ -2266,5 +2266,53 @@ MODULE map_utils
       if ( i >= real(proj%nxmax)+0.5 ) i = i - real(proj%nxmax - proj%nxmin + 1)
 
    END SUBROUTINE llij_gauss 
+
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+   ! Name: metmap_xform                                                           !
+   !                                                                              !
+   ! Purpose: Do the actual work of rotating winds                                !
+   !          If idir= 1, rotate grid-relative winds to Earth-relative winds      !
+   !          If idir=-1, rotate Earth-relative winds to grid-relative winds      !
+   !                                                                              !
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+   !This routine has been extensively modified for letkf-wrf (J. Ruiz 2016)       !
+   subroutine rotwind_letkf(u,v,xlon,idir,projection)
+      implicit none
+      ! Arguments
+      real(r_size) :: u, v, xlon , idir
+      ! Local variables
+      integer :: i, j
+      real(r_size) :: alpha, diff
+      real(r_size) :: u_new, v_new
+      type(proj_info)               :: projection 
+
+         ! Only rotate winds for Lambert conformal or polar stereographic
+         if ((projection%code == PROJ_LC) .or. (projection%code == PROJ_PS)) then
+
+            diff = idir * (xlon - projection%stdlon)
+            if (diff > 180.) then
+              diff = diff - 360.
+            else if (diff < -180.) then
+              diff = diff + 360.
+            end if
+
+            ! Calculate the rotation angle, alpha, in radians
+            if (projection%code == PROJ_LC) then
+              alpha = diff * projection%cone * deg2rad * projection%hemi 
+            else
+              alpha = diff * deg2rad * projection%hemi 
+            end if
+                 
+            u_new =  cos(alpha)*u + sin(alpha)*v
+            v_new = -sin(alpha)*u + cos(alpha)*v
+
+            ! Copy rotated winds back into argument arrays
+            u = u_new 
+            v = v_new 
+
+         endif
+ 
+   end subroutine rotwind_letkf
+
   
 END MODULE map_utils
