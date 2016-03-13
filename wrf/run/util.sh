@@ -2001,6 +2001,8 @@ fi
 
 if [ $PERTURB_ONLY_MOAD -eq 1 ] ; then
    PMAX_DOM=1
+   else
+   PMAX_DOM=$MAX_DOM
 fi
 
 
