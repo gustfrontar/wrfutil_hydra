@@ -72,7 +72,7 @@ exit
 fi
 
 
-GROSSERROR=$OBSERROROBSOP #Override obserror setting for the verification.
+GROSS_ERROR=$OBSERROROBSOP #Override obserror setting for the verification.
 
 echo ">>>> My LETKFNAMELIST is $NAMELISTLETKF       "
 
