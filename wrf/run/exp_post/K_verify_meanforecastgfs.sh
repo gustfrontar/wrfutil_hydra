@@ -73,7 +73,7 @@ exit
 fi
 
 NSLOTS=`expr $GUESFT \/ $WINDOW_FREC + 1 `
-GROSSERROR=$GROSSERROROBSOP #Override obserror setting for the verification.
+GROSS_ERROR=$GROSSERROROBSOP #Override obserror setting for the verification.
 
 echo ">>>> My LETKFNAMELIST is $NAMELISTLETKF       "
 
