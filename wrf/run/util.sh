@@ -1994,6 +1994,7 @@ fi
 local perturb_met_em=0
 if [ $PERTURB_BOUNDARY -eq 1 ] ; then
    perturb_met_em=1
+   echo "[Warning]: Only MOAD will be perturbed"
 fi
 if [ $ANALYSIS -eq 1 -a $ITER -eq 1 ] ; then
    perturb_met_em=1
