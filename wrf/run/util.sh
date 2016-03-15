@@ -2719,14 +2719,14 @@ if [ $ANALYSIS -eq 1  ] ; then
   fi
   echo "cd ${WORKDIR}/                                                                      " >> ${WORKDIR}/tmp.sh
   echo "$MPIBIN -np ${MAX_RUNNING} ./obsope.exe           > obsop.log                       " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obsmean*.grd    ${RESULTDIRG}/                                        " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obsmerr*.grd    ${RESULTDIRG}/                                        " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obssprd*.grd    ${RESULTDIRG}/                                        " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obsonum*.grd    ${RESULTDIRG}/                                        " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/oarea*.txt      ${RESULTDIRG}/                                        " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obsmean00_00.grd    ${RESULTDIRG}/obsmeananal.grd                     " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obsmerr00_00.grd    ${RESULTDIRG}/obsmerranal.grd                     " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obssprd00_00.grd    ${RESULTDIRG}/obssprdanal.grd                     " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obsonum00_00.grd    ${RESULTDIRG}/obsnumanal.grd                      " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/oarea00_00.txt      ${RESULTDIRG}/oareaanal.txt                       " >> ${WORKDIR}/tmp.sh
   
   echo "mv ${WORKDIR}/obsope????? ${RESULTDIRG}                                             " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/OBSO-???    ${RESULTDIRG}                                                " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/OBSO-???    ${RESULTDIRG}                                             " >> ${WORKDIR}/tmp.sh
   chmod 755 ${WORKDIR}/tmp.sh
 
   ssh $PPSSERVER ${WORKDIR}/tmp.sh
@@ -2754,11 +2754,11 @@ if [ $ANALYSIS -eq 1  ] ; then
   fi
   echo "cd ${WORKDIR}/                                                                      " >> ${WORKDIR}/tmp.sh
   echo "$MPIBIN -np ${MAX_RUNNING} ./obsope.exe         > obsop.log                         " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obsmean*.grd    ${RESULTDIRA}/                                        " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obsmerr*.grd    ${RESULTDIRA}/                                        " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obssprd*.grd    ${RESULTDIRA}/                                        " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obsonum*.grd    ${RESULTDIRA}/                                        " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/oarea*.txt    ${RESULTDIRA}/                                          " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obsmean00_00.grd    ${RESULTDIRA}/obsmeangues.grd                     " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obsmerr00_00.grd    ${RESULTDIRA}/obsmerrgues.grd                     " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obssprd00_00.grd    ${RESULTDIRA}/obssprdgues.grd                     " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obsonum00_00.grd    ${RESULTDIRA}/obsnumgues.grd                      " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/oarea00_00.txt    ${RESULTDIRA}/oareaguess.txt                        " >> ${WORKDIR}/tmp.sh
   echo "mv ${WORKDIR}/obsope????? ${RESULTDIRA}                                             " >> ${WORKDIR}/tmp.sh
   echo "mv ${WORKDIR}/OBSO-???    ${RESULTDIRA}                                             " >> ${WORKDIR}/tmp.sh
   chmod 755 ${WORKDIR}/tmp.sh

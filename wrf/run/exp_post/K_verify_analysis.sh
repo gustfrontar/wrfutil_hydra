@@ -71,8 +71,9 @@ echo "CAN'T FIND MACHINE CONFIGURATION FILE $CDIR/../configuration/machine_conf/
 exit
 fi
 
-
-GROSS_ERROR=$OBSERROROBSOP #Override obserror setting for the verification.
+NSLOTS=1 #Override the number of time slots for the observation operatior.
+NBSLOT=1
+GROSS_ERROR=$GROSSERROROBSOP #Override obserror setting for the verification.
 
 echo ">>>> My LETKFNAMELIST is $NAMELISTLETKF       "
 
