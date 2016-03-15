@@ -1992,6 +1992,7 @@ fi
 local perturb_met_em=0
 if [ $PERTURB_BOUNDARY -eq 1 ] ; then
    perturb_met_em=1
+   echo "[Warning]: Only MOAD will be perturbed"
 fi
 if [ $ANALYSIS -eq 1 -a $ITER -eq 1 ] ; then
    perturb_met_em=1
@@ -1999,6 +2000,8 @@ fi
 
 if [ $PERTURB_ONLY_MOAD -eq 1 ] ; then
    PMAX_DOM=1
+   else
+   PMAX_DOM=$MAX_DOM
 fi
 
 
@@ -2531,19 +2534,20 @@ if [ $FORECAST -eq 1  ] ; then
   echo "my_domain=\$4                                                              " >> ${WORKDIR}/tmp.sh
   echo "ln -sf ${namelist}  \${my_dir}                                             " >> ${WORKDIR}/tmp.sh
 
-  if [ $RUN_ONLY_MEAN -eq 1 -a $FORECAST -eq 1 ] ; then
+  if [ $RUN_ONLY_MEAN -eq 1 ] ; then
     local MEM=`ens_member $MEANMEMBER `
     local MEM1=`ens_member 1 `
     echo "ln -sf ${RESULTDIRG}/plevd\${my_domain}_\${my_date}_${MEM}.dat   \${my_dir}/fcst${MEM1}.grd " >> ${WORKDIR}/tmp.sh
+    echo "ln -sf ${RESULTDIRG}/plevd\${my_domain}_\${my_date}_${MEM}.ctl   \${my_dir}/input.ctl       " >> ${WORKDIR}/tmp.sh
   else
    local M=$INIMEMBER
    while [ $M -le $ENDMEMBER ] ; do
     local MEM=`ens_member $M `
     echo "ln -sf ${RESULTDIRG}/plevd\${my_domain}_\${my_date}_${MEM}.dat   \${my_dir}/fcst${MEM}.grd " >> ${WORKDIR}/tmp.sh
+    echo "ln -sf ${RESULTDIRG}/plevd\${my_domain}_\${my_date}_00001.ctl    \${my_dir}/input.ctl      " >> ${WORKDIR}/tmp.sh
     M=`expr $M + 1 `
    done
   fi
-   echo "ln -sf ${RESULTDIRG}/plevd\${my_domain}_\${my_date}_00001.ctl    \${my_dir}/input.ctl   " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${RESULTDIRG}/plevganald\${my_domain}_\${my_date}.dat      \${my_dir}/anal.grd    " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${RESULTDIRG}/plevmean\${my_domain}_\${my_lead}.dat       \${my_dir}/mean.grd    " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${RESULTDIRG}/plevsprd\${my_domain}_\${my_lead}.dat       \${my_dir}/sprd.grd    " >> ${WORKDIR}/tmp.sh
