@@ -852,11 +852,15 @@ CONT=1
 JOB=1
 while read a ; do
    #Compute ensemble member prefix
+   if [ $JOB -gt $max_jobs ] ; then
+      echo "[Warning]: Maximum simultaneous job limit reached, some nodes will be unused"
+      break
+   fi
   
    if [ $CONT -gt 1 ] ; then
-     echo $a >> $TMPDIRL/machinefile.$JOB
+      echo $a >> $TMPDIRL/machinefile.$JOB
    else
-     echo $a > $TMPDIRL/machinefile.$JOB
+      echo $a > $TMPDIRL/machinefile.$JOB
    fi
 
    CONT=`expr $CONT + 1 `
@@ -865,13 +869,7 @@ while read a ; do
     JOB=`expr $JOB + 1 `
    fi
 
-   if [ $JOB -gt $max_jobs ] ;    then
-       echo "[Warning]: Maximum simultaneous job limit reached, some nodes will be unused"
-      break
-   fi
-
 done  <  $NODEFILE
-
 
 }
 
