@@ -38,7 +38,7 @@ MODULE common_namelist
   !IF USE_ATTENUATION == TRUE, then gates with estimated attenuation
   !greather than the threshold will be rejected. (this does not affect
   !the computation of attenuation in the forward operator)
-  REAL(r_size)      :: attenuation_threshold=0.25 !0.1 is 10dbz, 0.5 is aprox 5 dbz.
+  REAL(r_size)      :: attenuation_threshold=0.01 !0.1 is 10dbz, 0.5 is aprox 5 dbz.
 
   !Parameters for osse experiments
   LOGICAL  :: osse_exp = .false.
