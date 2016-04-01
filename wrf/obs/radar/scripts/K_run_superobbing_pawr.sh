@@ -41,7 +41,7 @@ ERROR_REF_SCLZ=5000d0   #VERTICAL SCALE OF ERRORS IN METERS
 ERROR_VR_SCLZ=5000d0    #VERTICLA SCALE OF ERRORS IN METERS
 LATLON_COORD=.true.     #True output in lat lon, false output in azimuth,range,elev
 USE_ATTENUATION=.true.  #True consider attenuation (attenuated pixels are discarded)
-ATTENUATION_TRESHOLD=0.01 
+ATTENUATION_THRESHOLD=0.01 
 USE_QCFLAG=.true.      #True use qc information
 
 #--------------------------------------------------------
@@ -65,6 +65,7 @@ echo "ID_VR_OBS=$ID_VR_OBS                  " >>$NAMELIST
 echo "LATLON_COORD=$LATLON_COORD            " >>$NAMELIST
 echo "USE_ATTENUATION=$USE_ATTENUATION      " >>$NAMELIST
 echo "USE_QCFLAG=$USE_QCFLAG                " >>$NAMELIST
+echo "ATTENUATION_THRESHOLD=$ATTENUATION_THRESHOLD " >>$NAMELIST 
 echo "/                                     " >>$NAMELIST
 echo "&osse                                 " >>$NAMELIST
 echo "OSSE_EXP=$OSSE_EXP                    " >>$NAMELIST
