@@ -16,25 +16,45 @@ MODULE common_wrf_to_radar
   IMPLICIT NONE
   PUBLIC
 
+  TYPE(radar) :: RADAR_1
+
+  INTEGER, PARAMETER :: max_vert_levels=100
+  INTEGER, PARAMETER :: max_radars=100
+
+  INTEGER :: method_ref_calc
+
+  real(r_size),allocatable :: gues3d(:,:,:,:)
+  real(r_size),allocatable :: gues2d(:,:,:)
+  
+  CHARACTER*100  :: model_file_name='input_modelTTTT.nc'  !Model input file. T solts are for different times (or ensemble members)
+  CHARACTER*100  :: inputradar='iradarRRR_TTTT.grd'  !Radar data input.
+  CHARACTER*100  :: outputradar='oradarRRRR_TTTT.grd'!output files in radar format.(R slots are for radar number, T slots are for time number.)
+  CHARACTER*100  :: current_model_file  , current_radar_file                  
+
   !Namelist variables
-  LOGICAL            :: ADD_OBS_ERROR=.TRUE.
-  REAL(r_size)       :: REFLECTIVITY_ERROR=1.0 !Standard deviation of reflectivity error in DBZ
-  REAL(r_size)       :: RADIALWIND_ERROR=0.5   !Standard deviation of radialwind error in m/s
+  LOGICAL            :: ADD_OBS_ERROR=.true.
+  REAL(r_size)       :: REFLECTIVITY_ERROR=1.0d0 !Standard deviation of reflectivity error in DBZ
+  REAL(r_size)       :: RADIALWIND_ERROR=0.5d0   !Standard deviation of radialwind error in m/s
 
   !--------------------------------------------FAKE RADAR PARAMETERS
-  LOGICAL   ::   FAKE_RADAR=.TRUE. !We will create a non existant radar.
-  REAL(r_size), PARAMETER :: radar_lon = -63.4 , radar_lat = -34.37 !Grid point position of radar.
-  REAL(r_size), PARAMETER :: radar_z = 0.0d0
-  REAL(r_size), PARAMETER :: radar_az_res = 1.0d0 , radar_r_res = 500.0d0 , radar_el_res = 1.25d0
-  REAL(r_size), PARAMETER :: radar_min_az = 0.0d0 , radar_max_az = 360.0d0
-  REAL(r_size), PARAMETER :: radar_min_r  = 0.0d0 , radar_max_r  = 240000
-  REAL(r_size), PARAMETER :: radar_min_el = 0.1d0 , radar_max_el = 18.0d0
+  LOGICAL   ::   FAKE_RADAR=.TRUE.           !We will create a non existant radar.
+  LOGICAL   ::   COMPUTE_ATTENUATION=.FALSE. !If attenuation will be simulated or not when converting from model to radar.
+  INTEGER :: n_radar =1 !Number of radars.
+  INTEGER :: n_model =1 !Number of model files that will be interpolated to the radar.
+  REAL(r_size) :: fradar_lon(max_radars)=undef , fradar_lat(max_radars)=undef !Grid point position of radar.
+  REAL(r_size) :: fradar_z(max_radars)=0.0d0
+  REAL(r_size) :: radar_az_res(max_radars) =1.0d0 , radar_r_res(max_radars) =500.0d0 , radar_el_res(max_radars)=1.25d0
+  REAL(r_size) :: radar_min_az(max_radars) =0.0d0 , radar_max_az(max_radars)=360.0d0
+  REAL(r_size) :: radar_min_r(max_radars)  =0.0d0 , radar_max_r(max_radars) =240000
+  REAL(r_size) :: radar_min_el(max_radars) =0.1d0 , radar_max_el(max_radars)=18.0d0
+  LOGICAL   :: use_level_list=.false.  !If true then we can specifiy a list of vertical lelves. (this will be applied to all radars)
+  INTEGER   :: n_vertical_levels=1     !Number of vertical levels (in case use_level_list == true )
+  REAL(r_size) :: level_list(max_vert_levels)=-9.99d0  !List of vertical levels.
 
   !Define the type of forward operator.
-  LOGICAL :: USE_WT=.TRUE.       !Are we going to use the fall speed of hydrometeors in the computation of RADIAL VELOCITY?
-
-  REAL(r_size) :: radar_lambda=3.0d0  !Wave length of the radar (to be used in the computation of reflectivity.
-                                      !3 Xband , 5 Cband , 10 Sband
+  REAL(r_size) :: radar_lambda(max_radars)=3.0d0  !Wave length of the radar (to be used in the computation of reflectivity.
+                                                  !3 Xband , 5 Cband , 10 Sband
+  CHARACTER(100) :: w2rnamelist='w2r.namelist'
 
 CONTAINS
 
@@ -42,23 +62,30 @@ CONTAINS
 ! Read namelist
 !-----------------------------------------------------------------------
 
-SUBROUTINE read_namelist
+SUBROUTINE get_namelist_vars
+IMPLICIT NONE
+LOGICAL :: file_exist
+INTEGER :: ierr
+
 
 NAMELIST / GENERAL / add_obs_error , reflectivity_error , radialwind_error , &
-                     fake_radar , radar_lon , radar_lat , radar_z , &
-                     radar_min_res , radar_r_res , radar_el_res   , &
+                     fake_radar , fradar_lon , fradar_lat , fradar_z , &
+                     radar_az_res  , radar_r_res , radar_el_res      , &
                      radar_min_az  , radar_max_az   , &
-                     radar_min_el  , radar_max_l    , &
+                     radar_min_el  , radar_max_el   , &
                      radar_min_r   , radar_max_r    , &
-                     use_wt , radar_lambda 
+                     use_wt , radar_lambda          , &
+                     use_level_list , n_vertical_levels , level_list  , &
+                     use_wt ,                         &             !This variable is included in common_namelist.f90
+                     n_radar                                        !Number of radars that will be processed.
 
-INQUIRE(FILE=NAMELIST_FILE, EXIST=file_exist)
+INQUIRE(FILE=w2rnamelist,EXIST=file_exist)
 
 IF( .NOT. file_exist )THEN
   WRITE(*,*)"ERROR: Could not find namelist"
 ENDIF
 
-OPEN(54,FILE=NAMELIST_FILE)
+OPEN(54,FILE=w2rnamelist)
 READ(54,NML=GENERAL,IOSTAT=IERR)
 IF(IERR /=0)THEN
 WRITE(*,*)"Warning!! Error during namelist reading at GENERAL section"
@@ -66,7 +93,7 @@ WRITE(*,*)"Using default values"
 ENDIF
 REWIND(54)
 
-END SUBROUTINE read_namelist
+END SUBROUTINE get_namelist_vars
 
 !-----------------------------------------------------------------------
 ! Interpolate model data to a radar (or part of a radar) domain
@@ -106,9 +133,8 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
   !   In this case the attenuation can be considered in a more robust way. And the contribution
   !   of each ray to the total radar reflectivity can be weighted according to the distribution
   !   of the power within the beam.
+  !Compute maximum model height
 
-
-   !Compute maximum model height
    max_model_z=0.0d0
    DO i=1,nlon
      DO j=1,nlat
@@ -141,6 +167,7 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
 
   IF   (INTERPOLATION_TECHNIQUE .EQ. 1)THEN
     !SIMPLE AND FAST INTERPOLATION APPROACH.
+
 
 !$OMP PARALLEL DO DEFAULT(SHARED) FIRSTPRIVATE(ia,ie,ir,pik,tmp_z,ri,rj,rk,qv,qc,qr,qci,qs,qg,t,p,u,v,w,ref,vr,att,cref,prh)
 
@@ -184,7 +211,7 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
           CALL itpl_3d(v3d(:,:,:,iv3d_v),ri,rj+0.5,rk,v)
           CALL itpl_3d(v3d(:,:,:,iv3d_w),ri,rj,rk+0.5,w)
           !Rotate ur and vr
-          CALL rotwind_letkf(ur,vr,input_radar%lon(ia,ir,ie),1.0d0,projection)
+          CALL rotwind_letkf(u,v,input_radar%lon(ia,ir,ie),1.0d0,projection)
 
  
           !Compute reflectivity at the beam center.
@@ -229,7 +256,7 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
 
           !Will generate wind observations only where reflectivity data is good enough (in this case were we have clouds). 
           IF( ref .GT. minz )THEN
-          input_radar%radarv3d_model(ia,ir,ie,input_radar%iv3d_wind)=vr    !Radial wind
+          input_radar%radarv3d_model(ia,ir,ie,input_radar%iv3d_vr)=vr    !Radial wind
           ENDIF
 
         ENDIF  !Endif for domain check
@@ -257,6 +284,180 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
 
   RETURN
 END SUBROUTINE model_to_radar
+
+SUBROUTINE interp_to_fake_radar
+implicit none
+integer       :: im , iradar , i 
+integer       :: iyyyy,imm,idd,ihh,imn
+real(r_size)  :: ss , tmp
+
+ DO im=1,n_model
+  current_model_file=model_file_name
+  WRITE(current_model_file(12:15),'(I4.4)')im
+
+  CALL set_common_wrf(current_model_file)
+  ALLOCATE( gues3d(nlon,nlat,nlev,nv3d),gues2d(nlon,nlat,nv2d) )
+
+  !Read the model data.
+  CALL read_grd(model_file_name,gues3d,gues2d)
+  gues3d(:,:,:,iv3d_ph)=gues3d(:,:,:,iv3d_ph)/gg
+
+  CALL read_date_wrf(model_file_name,iyyyy,imm,idd,ihh,imn,ss)
+  RADAR_1 %year  =REAL(iyyyy,r_size)
+  RADAR_1 %month =REAL(imm,  r_size)
+  RADAR_1 %day   =REAL(idd,  r_size)
+  RADAR_1 %hour  =REAL(ihh,  r_size)
+  RADAR_1 %minute=REAL(imn,  r_size)
+  RADAR_1 %second=ss
+
+
+  DO iradar=1,n_radar
+
+    !Dealing with a fake radar, lets create the radar location and characteristics.
+    RADAR_1 % lon0 = fradar_lon(iradar)
+    RADAR_1 % lat0 = fradar_lat(iradar)
+    RADAR_1 % z0   = fradar_z(iradar)
+    RADAR_1 % nv3d = 2
+    RADAR_1 % radar_type = 1
+
+    tmp= ( radar_max_az(iradar)-radar_min_az(iradar) ) / radar_az_res(iradar)
+    RADAR_1 % na = NINT(tmp)
+    tmp= ( radar_max_r(iradar)-radar_min_r(iradar) ) / radar_r_res(iradar)
+    RADAR_1 % nr = NINT(tmp)
+    tmp= ( radar_max_el(iradar) - radar_min_el(iradar) ) / radar_el_res(iradar)
+    RADAR_1 % ne = NINT(tmp)
+
+    ALLOCATE( RADAR_1 % azimuth( RADAR_1 % na) )
+    ALLOCATE( RADAR_1 % rrange( RADAR_1 % nr) )
+    ALLOCATE( RADAR_1 % elevation( RADAR_1 % ne) )
+
+    DO i=1,RADAR_1 % na
+       RADAR_1 % azimuth (i) = (i-1)*radar_az_res(iradar) + radar_min_az(iradar)
+    ENDDO
+    DO i=1,RADAR_1 % nr
+       RADAR_1 % rrange (i) = (i-1)*radar_r_res(iradar) + radar_min_r(iradar)
+    ENDDO
+    DO i=1,RADAR_1 % ne
+      RADAR_1 % elevation (i) = (i-1)*radar_el_res(iradar) + radar_min_el(iradar)
+    ENDDO
+ 
+    ALLOCATE(RADAR_1 % radarv3d(RADAR_1%na,RADAR_1%nr,RADAR_1%ne,RADAR_1%nv3d))
+    ALLOCATE(RADAR_1 % qcflag(RADAR_1%na,RADAR_1%nr,RADAR_1%ne))
+    ALLOCATE(RADAR_1 % attenuation(RADAR_1%na,RADAR_1%nr,RADAR_1%ne))
+ 
+     RADAR_1 % radarv3d         = 0.0d0
+     RADAR_1 % qcflag           = 0
+     RADAR_1 % attenuation      = 1.0d0
+     RADAR_1 % range_resolution = radar_r_res(iradar)
+
+     ALLOCATE(RADAR_1%beam_wid_h(RADAR_1%na),RADAR_1%beam_wid_v(RADAR_1%ne) )
+
+     RADAR_1%beam_wid_h      = 1.0d0  !Assume this constant.
+     RADAR_1%beam_wid_v      = 1.0d0  !Assume this constant.
+     RADAR_1%lambda          = radar_lambda(iradar)
+     RADAR_1%missing         = undefs
+ 
+     RADAR_1%total_attenuation_factor = 1.0d0
+     RADAR_1%iv3d_ref=1    !Reflectivity
+     RADAR_1%iv3d_vr =2    !Radial velocity
+
+
+     WRITE(6,*)' FINISH SETTING THE RADAR '
+     WRITE(6,*)' FAKE RADAR SUMMARY FOR RADAR=',iradar
+     WRITE(6,*)' NA   ',RADAR_1%na
+     WRITE(6,*)' NR   ',RADAR_1%nr
+     WRITE(6,*)' NE   ',RADAR_1%ne
+     WRITE(6,*)' RADAR LON ',radar_1%lon0
+     WRITE(6,*)' RADAR LAT ',radar_1%lat0
+     WRITE(6,*)' RADAR HEIGHT ',radar_1%z0
+     WRITE(6,*)' INTERPOLATE MODEL OUTPUT TO THE CURRENT RADAR'
+
+     CALL radar_georeference( RADAR_1 )
+
+     CALL model_to_radar( RADAR_1 , gues3d , gues2d )
+
+
+     current_radar_file=outputradar
+     WRITE(current_radar_file(7:10),'(I4.4)')iradar
+     WRITE(current_radar_file(12:15),'(I4.4)')im
+
+     CALL radar_write_file( radar_1 , radar_1%radarv3d_model(:,:,:,radar_1%iv3d_vr), radar_1%radarv3d_model(:,:,:,radar_1%iv3d_vr), &
+                                      radar_1%qcflag , radar_1%attenuation ,  current_radar_file )
+
+  ENDDO ![Endo over radars]
+  
+ ENDDO ![Endo over model files]
+
+END SUBROUTINE interp_to_fake_radar
+
+SUBROUTINE interp_to_real_radar
+implicit none
+integer       :: im , iradar
+integer       :: iyyyy,imm,idd,ihh,imn
+real(r_size)  :: ss
+
+ DO im=1,n_model
+  current_model_file=model_file_name
+  WRITE(current_model_file(12:15),'(I4.4)')im
+
+  CALL read_date_wrf(current_model_file,iyyyy,imm,idd,ihh,imn,ss)
+
+  CALL set_common_wrf(current_model_file)
+  ALLOCATE( gues3d(nlon,nlat,nlev,nv3d),gues2d(nlon,nlat,nv2d) )
+
+  !Read the model data.
+  CALL read_grd(model_file_name,gues3d,gues2d)
+  gues3d(:,:,:,iv3d_ph)=gues3d(:,:,:,iv3d_ph)/gg
+
+
+  DO iradar=1,n_radar
+
+    current_radar_file=inputradar
+    WRITE(current_radar_file(7:10),'(I4.4)')iradar
+    WRITE(current_radar_file(12:15),'(I4.4)')im
+
+    RADAR_1 % radar_type =1
+    CALL radar_read_data( RADAR_1 , current_radar_file )
+    
+    radar_1%qcflag      = 0
+    radar_1%attenuation = 1.0d0
+
+
+     WRITE(6,*)' FINISH READING THE RADAR '
+     WRITE(6,*)' REAL RADAR SUMMARY FOR RADAR=',iradar
+     WRITE(6,*)' NA   ',RADAR_1%na
+     WRITE(6,*)' NR   ',RADAR_1%nr
+     WRITE(6,*)' NE   ',RADAR_1%ne
+     WRITE(6,*)' RADAR LON ',radar_1%lon0
+     WRITE(6,*)' RADAR LAT ',radar_1%lat0
+     WRITE(6,*)' RADAR HEIGHT ',radar_1%z0
+     WRITE(6,*)' INTERPOLATE MODEL OUTPUT TO THE CURRENT RADAR'
+
+     CALL radar_georeference( RADAR_1 )
+
+     CALL model_to_radar( RADAR_1 , gues3d , gues2d )
+
+     RADAR_1 %year  =REAL(iyyyy,r_size)
+     RADAR_1 %month =REAL(imm,  r_size)
+     RADAR_1 %day   =REAL(idd,  r_size)
+     RADAR_1 %hour  =REAL(ihh,  r_size)
+     RADAR_1 %minute=REAL(imn,  r_size)
+     RADAR_1 %second=ss
+   
+     current_radar_file=outputradar
+     WRITE(current_radar_file(7:10),'(I4.4)')iradar
+     WRITE(current_radar_file(12:15),'(I4.4)')im
+
+     CALL radar_write_file( radar_1 , radar_1%radarv3d_model(:,:,:,radar_1%iv3d_vr), radar_1%radarv3d_model(:,:,:,radar_1%iv3d_vr), &
+                                      radar_1%qcflag , radar_1%attenuation ,  current_radar_file )
+
+  ENDDO ![Endo over radars]
+  
+ ENDDO ![Endo over model files]
+
+END SUBROUTINE interp_to_real_radar
+
+
 
 
 END MODULE common_wrf_to_radar

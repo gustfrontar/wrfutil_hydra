@@ -32,7 +32,7 @@ MODULE COMMON_RADAR_TOOLS
   REAL(r_size), ALLOCATABLE :: radarv3d(:,:,:,:)        !Observations
   REAL(r_size), ALLOCATABLE :: radarv3d_model(:,:,:,:)  !Model derived quantities in radar obs space
   REAL(r_size), ALLOCATABLE :: oerror(:,:,:,:)
-  REAL(r_size), ALLOCATABLE :: qcflag(:,:,:)
+  INTEGER     , ALLOCATABLE :: qcflag(:,:,:)
   REAL(r_size), ALLOCATABLE :: attenuation(:,:,:)
   REAL(r_size)              :: year,month,day,hour,minute,second
   REAL(r_size)  :: missing
