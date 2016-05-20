@@ -48,6 +48,8 @@ MODULE common_namelist
   REAL(r_size) :: ERROR_REF_SCLZ=5000d0   !VERTICAL SCALE OF ERRORS IN METERS
   REAL(r_size) :: ERROR_VR_SCLZ=5000d0    !VERTICLA SCALE OF ERRORS IN METERS
 
+  CHARACTER(1)      :: endian='b' ! 'b' -> big_endian , 'l' -> little_endian
+
   CHARACTER(LEN=20) :: NAMELIST_FILE='./radarprep.namelist'
 
 CONTAINS

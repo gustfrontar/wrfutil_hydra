@@ -1,7 +1,7 @@
 #!/bin/sh
 set -ex
 PGM=verify.exe
-F90=$HOME/mpich_intel/bin/mpif90
+F90=mpif90
 OMP=
 
 F90OPT='-convert big_endian -O3' # -g -traceback' # -Hs' -Kfast,parallel

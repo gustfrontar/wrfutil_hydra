@@ -66,7 +66,7 @@ endif
  file_name_radar='radar_input.grd'  
  PAWR % radar_type = 1 
 
-CALL radar_read_data( PAWR , file_name_radar )
+CALL radar_read_data( PAWR , file_name_radar , endian )
 
 !do ii=1,PAWR%na
 !  do jj=1,PAWR%nr

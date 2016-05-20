@@ -48,9 +48,9 @@ MODULE common_obs_wrf
   INTEGER, PARAMETER :: id_totco_obs=5001
   INTEGER, PARAMETER :: id_co_obs = 5002
 
-  INTEGER, PARAMETER :: type_sband_radar = 1 
-  INTEGER, PARAMETER :: type_xband_radar = 2
-  INTEGER, PARAMETER :: type_cband_radar = 3
+  !INTEGER, PARAMETER :: type_sband_radar = 1 
+  !INTEGER, PARAMETER :: type_xband_radar = 2
+  !INTEGER, PARAMETER :: type_cband_radar = 3
 
 CONTAINS
 
@@ -131,6 +131,26 @@ INTEGER, INTENT(OUT) :: iobs_out
       END SELECT
 
 END SUBROUTINE get_iobs
+
+SUBROUTINE get_method_refcalc( lambda , method_ref_calc )
+REAL(r_size),INTENT(IN)  :: lambda 
+INTEGER     ,INTENT(OUT) :: method_ref_calc
+
+
+     !Check radar band (radar band is in cm and is stored in typ.
+     IF( lambda > 3.75 .AND. lambda <= 7.5 )THEN
+       write(6,*)"[Error]: Cband reflectivity calculation is not coded yet"
+       method_ref_calc=-9
+     ELSEIF( lambda > 7.5 .AND. lambda <= 15)THEN
+       method_ref_calc=2
+     ELSEIF( lambda > 2.5 .AND. lambda >= 3.75)THEN
+       method_ref_calc=3
+     ELSE
+       write(6,*)"[Error]: Not recognized radar wave-length"
+       method_ref_calc=-9
+     ENDIF
+
+END SUBROUTINE get_method_refcalc
 
 !-----------------------------------------------------------------------
 ! Transformation from model variables to an observation
@@ -256,17 +276,10 @@ SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
      CALL itpl_3d(v3d(:,:,:,iv3d_t),ri,rj,rk,tr)
      CALL itpl_3d(v3d(:,:,:,iv3d_p),ri,rj,rk,pr)
 
-     !Check radar band
-     SELECT CASE( NINT(typ) )
-       CASE ( type_sband_radar )
-          method_ref_calc=2
-       CASE ( type_xband_radar )
-          method_ref_calc=3
-       CASE ( type_cband_radar )
-          write(6,*)"[Error]: Cband reflectivity calculation is not coded yet"
-       CASE DEFAULT
-          write(6,*)"[Error]: Not recognized radar observtion type"
-     END SELECT
+
+     !Get the right reflectivity computation method based on radar
+     !wavelength.
+     CALL get_method_refcalc(typ , method_ref_calc )
 
      CALL calc_ref_vr(qvr,qcr,qrr,qcir,qsr,qgr,ur,vr,wr,tr,pr,raz,rel,method_ref_calc,ref,radialv,att_coef)
 
@@ -759,24 +772,18 @@ SUBROUTINE calc_ref_vr(qv,qc,qr,qci,qs,qg,u,v,w,t,p,az,elev,method,ref,vr,k)
 
   ENDIF
 
- ELSEIF( method .EQ. 4) THEN
- !TODO Implement this option using the routine in module_mp_wsm6
- !S-Band radars from WRF WSM6 scheme.
- !CALL refl10cm_wsm6 (qv, qr, qs, qg,                 &
- !                      t, p, zr,zs,zg)
 
-
-
-
-  ELSE  !IF OVER DIFFERENT OPTIONS
+ ELSE  !IF OVER DIFFERENT OPTIONS
 
     WRITE(6,*)'ERROR: Not recognized method for radar reflectivity and wind computation'
-    STOP
+    
+    ref=undef
+    vr =undef
 
-  ENDIF !END IF OVER DIFFERENT COMPUTATION OPTIONS.
+ ENDIF !END IF OVER DIFFERENT COMPUTATION OPTIONS.
 
-
-  !Compute radial velocity
+ IF( ref /= undef )THEN
+ !Compute radial velocity
     vr = u * cos(elev*deg2rad) * sin(az*deg2rad)
     vr = vr + v * cos(elev*deg2rad) * cos(az*deg2rad)
     IF( USE_WT )THEN
@@ -784,16 +791,13 @@ SUBROUTINE calc_ref_vr(qv,qc,qr,qci,qs,qg,u,v,w,t,p,az,elev,method,ref,vr,k)
     ELSE
       vr = vr + w*sin(elev*deg2rad)  
     ENDIF
+ ELSE
+    vr = undef 
+ ENDIF
 
-    !WRITE(*,*)wt,p
 
-    !WRITE(6,*) u , v , w
-    !WRITE(6,*) wt , vr
-    !WRITE(6,*) elev , az , deg2rad
-    !STOP
-
-   INITIALIZED=.TRUE.
-  RETURN
+ INITIALIZED=.TRUE.
+RETURN
 END SUBROUTINE calc_ref_vr
 
 

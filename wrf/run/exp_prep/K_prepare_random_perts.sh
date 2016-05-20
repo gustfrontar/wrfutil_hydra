@@ -12,7 +12,7 @@ MAX_TIMES=1440           #Maximum number of different states to generate perturb
 EXP_LENGTH=5             #Number of assimilation cycles in the experiment.
 CONFIGURATION=OSAKA_1KM_DOWNSCALLING #SINLAKU_60K
 ### directory settings
-OUTPUTDIR=${HOME}/share/INPUT/${CONFIGURATION}/    #${HOME}/share/INPUT/$CONFIGURATION/pert_date/       # FINAL DESTINATION OF THE PERTURBATIONS.
+OUTPUTDIR=${HOME}/share/INPUT/$CONFIGURATION/pert_date/       # FINAL DESTINATION OF THE PERTURBATIONS.
 BOUNDARY_DATA_FREQ=6
 CWD=`pwd`
 

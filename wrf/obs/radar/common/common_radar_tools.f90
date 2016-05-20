@@ -59,13 +59,14 @@ CONTAINS
 !-----------------------------------------------------------------------
 ! Set the parameters only reads radar information
 !-----------------------------------------------------------------------
-SUBROUTINE radar_set_common( input_radar , input_file )
+SUBROUTINE radar_set_common( input_radar , input_file , endian )
   IMPLICIT NONE
   TYPE(RADAR), INTENT(INOUT)       :: input_radar
   CHARACTER(LEN=*) , INTENT(IN)    :: input_file
   INTEGER      :: iunit
   INTEGER      :: ia , ir , ie
   REAL(r_sngl) ,ALLOCATABLE :: buf4(:)
+  CHARACTER(*) , INTENT(IN)        :: endian !endian='b' big_endian , endian='l' little_endian
 
   !INITIALIZE VARIABLES ID  (-9 means variable not avaliable in this radar)
   input_radar%iv3d_ref=-9
@@ -86,8 +87,13 @@ SUBROUTINE radar_set_common( input_radar , input_file )
   !Skip data only read array dimensions and grid information.
 
   !Input from PAWR data is in little_endian.
-  OPEN(iunit,FILE=input_file,FORM='unformatted',ACCESS='sequential', &
+  if( endian == 'b' )then
+    OPEN(iunit,FILE=input_file,FORM='unformatted',ACCESS='sequential', &
+       CONVERT='big_endian')
+  elseif( endian == 'l' )then
+    OPEN(iunit,FILE=input_file,FORM='unformatted',ACCESS='sequential', &
        CONVERT='little_endian')
+  endif
   
   !READ TIME HEADER
   ALLOCATE( buf4( 6 ) )
@@ -162,7 +168,11 @@ SUBROUTINE radar_set_common( input_radar , input_file )
 
     !Get radar dimension from the input file.
     !Skip data only read array dimensions and grid information.
-    OPEN(iunit,FILE=input_file,FORM='unformatted',ACCESS='sequential')
+   if( endian == 'b' )then
+    OPEN(iunit,FILE=input_file,FORM='unformatted',ACCESS='sequential',CONVERT='big_endian')
+   elseif( endian == 'l' )then
+    OPEN(iunit,FILE=input_file,FORM='unformatted',ACCESS='sequential',CONVERT='little_endian')
+   endif
   
     !READ TIME HEADER
     ALLOCATE( buf4( 6 ) )
@@ -238,7 +248,7 @@ END SUBROUTINE radar_set_common
 !-----------------------------------------------------------------------
 ! Write a radar file
 !-----------------------------------------------------------------------
-SUBROUTINE radar_write_file( input_radar , reflectivity , wind , qcflag , attenuation ,  output_file )
+SUBROUTINE radar_write_file( input_radar , reflectivity , wind , qcflag , attenuation ,  output_file , endian )
   IMPLICIT NONE
   TYPE(RADAR), INTENT(INOUT) :: input_radar
   INTEGER                    :: nvar
@@ -250,13 +260,20 @@ SUBROUTINE radar_write_file( input_radar , reflectivity , wind , qcflag , attenu
   INTEGER, INTENT(IN)        :: qcflag(input_radar%na,input_radar%nr,input_radar%ne)
   INTEGER      :: iunit , ivar
   INTEGER      :: ia , ir , ie
+  CHARACTER(*), INTENT(IN)   :: endian  !endian='b' big_endian , endian='l' little_endian
 
   nvar=2
   input_radar%total_attenuation_factor=0.0d0
 
     iunit=99
     !Write data in PAWR data format.
-    OPEN(iunit,FILE=output_file,FORM='unformatted',ACCESS='sequential')
+    if( endian == 'b' )then
+        OPEN(iunit,FILE=output_file,FORM='unformatted',ACCESS='sequential' &
+             ,CONVERT='big_endian')
+    elseif( endian == 'l' )then
+        OPEN(iunit,FILE=output_file,FORM='unformatted',ACCESS='sequential' &
+             ,CONVERT='little_endian')
+    endif
 
     !WRITE TIME HEADER
     WRITE(iunit)REAL(input_radar % year   , r_sngl), &
@@ -323,25 +340,31 @@ END SUBROUTINE radar_write_file
 ! Read radar data
 ! This function reads one volume of radar data.
 !-----------------------------------------------------------------------
-SUBROUTINE radar_read_data( input_radar , input_file )
+SUBROUTINE radar_read_data( input_radar , input_file , endian )
 IMPLICIT NONE
 TYPE(RADAR), INTENT(INOUT)       :: input_radar
 CHARACTER(LEN=*) ,INTENT(IN)     :: input_file
-INTEGER                    :: iunit , ivar , inttmp
-INTEGER                    :: ia , ir , ie 
-REAL(r_sngl),ALLOCATABLE   :: buf4(:),buf2d4(:,:)
+INTEGER                          :: iunit , ivar , inttmp
+INTEGER                          :: ia , ir , ie 
+REAL(r_sngl),ALLOCATABLE         :: buf4(:),buf2d4(:,:)
+CHARACTER(*), INTENT(IN)         :: endian !endian='b' big_endian , endian='l' little_endian
 
 !Reads radar information and data at the same time
 
 iunit=98
 !First select procedure according to the radar type.
 
+ WRITE(*,*)"I will read ",input_file," with endian: ",endian
  IF ( input_radar % radar_type .EQ. 1 )THEN
-  OPEN(iunit,FILE=input_file,FORM='unformatted',ACCESS='sequential', &
-       CONVERT='little_endian')
+
+  if( endian == 'b' )then 
+    OPEN(UNIT=iunit,FILE=input_file,FORM='unformatted',ACCESS='sequential',CONVERT='big_endian')
+  elseif( endian == 'l' )then
+    OPEN(UNIT=iunit,FILE=input_file,FORM='unformatted',ACCESS='sequential',CONVERT='little_endian')
+  endif
 
   !Define data order for the PAWR data 
-  input_radar%iv3d_ref=1    !Reflectivity
+  input_radar%iv3d_ref=1  !Reflectivity
   input_radar%iv3d_vr=2   !Radial velocity
 
   !READ TIME HEADER
@@ -439,7 +462,13 @@ iunit=98
 
     !Get radar dimension from the input file.
     !Skip data only read array dimensions and grid information.
-    OPEN(iunit,FILE=input_file,FORM='unformatted',ACCESS='sequential')
+    if( endian == 'b' )then
+      OPEN(iunit,FILE=input_file,FORM='unformatted',ACCESS='sequential', &
+               CONVERT='big_endian')
+    elseif( endian == 'l' )then
+      OPEN(iunit,FILE=input_file,FORM='unformatted',ACCESS='sequential', &
+               CONVERT='little_endian')
+    endif
 
     !READ TIME HEADER
     ALLOCATE( buf4( 6 ) )
@@ -525,7 +554,7 @@ END SUBROUTINE radar_read_data
 ! Read radar data
 ! This function reads one volume of radar data.
 !-----------------------------------------------------------------------
-SUBROUTINE radar_read_data_old( input_radar , input_file )
+SUBROUTINE radar_read_data_old( input_radar , input_file , endian )
 IMPLICIT NONE
 TYPE(RADAR), INTENT(INOUT)       :: input_radar
 CHARACTER(LEN=*) ,INTENT(IN)     :: input_file
@@ -536,6 +565,7 @@ REAL(r_size)               :: mindbz
 INTEGER                    :: record
 REAL(r_size),ALLOCATABLE   :: tmp_data(:,:,:,:) , tmp_elev(:)
 INTEGER                    :: total_lev
+CHARACTER(*) , INTENT(IN)  :: endian ! 'b' - big endian , 'l' little endian
 
 mindbz=10.0d0*log10(minz)
 
@@ -546,8 +576,11 @@ input_radar%iv3d_ref=1
 record=1
 iunit=98
 !First select procedure according to the radar type.
-
-  OPEN(iunit,FILE=input_file,FORM='unformatted',ACCESS='stream')
+ if( endian == 'b' )then
+    OPEN(iunit,FILE=input_file,FORM='unformatted',ACCESS='stream',CONVERT='big_endian')
+ elseif( endian == 'l' )then
+    OPEN(iunit,FILE=input_file,FORM='unformatted',ACCESS='stream',CONVERT='little_endian')
+ endif
 
   IF(ALLOCATED(input_radar%beam_wid_h) )DEALLOCATE( input_radar%beam_wid_h)
   ALLOCATE( input_radar%beam_wid_h( 1 ) )
@@ -713,7 +746,7 @@ ALLOCATE( input_radar%distance_to_radar( input_radar%nr , input_radar%ne  ) )
   !Compute the latitude and longitude corresponding to each radar point.
    DO ir=1,input_radar%nr
     DO ie=1,input_radar%ne
-       input_radar%distance_to_radar(ir,ie)=ke*Re*asin( input_radar%rrange(ir) * cos(input_radar%elevation(ie)*deg2rad) / (ke*Re) )
+       input_radar%distance_to_radar(ir,ie)=ke*Re*asin( input_radar%rrange(ir) * cos(input_radar%elevation(ie)*deg2rad) / ( input_radar%z(1,ir,ie) + ke*Re) )
        
        DO ia=1,input_radar%na
         CALL com_ll_arc_distance(input_radar%lon0,input_radar%lat0,                                  &

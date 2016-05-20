@@ -1,7 +1,7 @@
 #!/bin/sh
 set -ex
 PGM=obsope.exe
-F90=$HOME/mpich_intel/bin/mpif90
+F90=mpif90
 OMP=
 
 F90OPT='-O3 -convert big_endian' #-convert big_endian -O3 ' # -Hs' -Kfast,parallel

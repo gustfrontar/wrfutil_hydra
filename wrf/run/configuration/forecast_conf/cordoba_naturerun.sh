@@ -1,4 +1,4 @@
-#KALMAN FILTER CONFIGURATION
+#NATURE RUN CONFIGURATION
 MEMBER=1
 HOMEDIR=${HOME}/share/
 DATADIR=${HOME}/data/
@@ -26,7 +26,7 @@ MM=$MEMBER                      #Variable for iteration limits.
 MEANMEMBER=`expr $MEMBER + 1 `  #This is the member ID corresponding to the ensemble mean.
 
 ASSIMILATION_FREC=21600 #Forecast initialization frequency (seconds)
-GUESFT=43200            #Forecast length (secons)
+GUESFT=60              #Forecast length (secons)
 
 WINDOW=21600        #Forecast initialization frequency (seconds)
 WINDOW_START=0      #Window start (seconds from forecast initialization)
@@ -50,14 +50,14 @@ BOUNDARY_DATA_FREC=21600              #Boundary data frequency. (seconds)
 BOUNDARY_DATA_PERTURBATION_FREQ=21600 #Frequency of data used to perturb boundary conditions (seconds)
 
 #INITIAL AND BOUNDARY PERTURBATIONS
-SCALE_FACTOR="0.1"         #Perturbation scale factor.(balanced random)
+SCALE_FACTOR="0.0"         #Perturbation scale factor.(balanced random)
 RANDOM_SCALE_FACTOR="0.0"  #Random perturbation scale factor.
-PERTURB_BOUNDARY=1         #If boundary perturbations will be applied. 
+PERTURB_BOUNDARY=0         #If boundary perturbations will be applied. 
 PERTURB_BOUNDARY_TYPE=1    #DUMMY
 
 #POSTPROC CONFIGURATION
-OUTLEVS="1000.,975.,950.,925.,900.,850.,800.,700.,600.,500.,400.,300.,250.,200.,150.,100.,"
-OUTVARS="'umet,vmet,W,QVAPOR,PSFC,RAINC,RAINNC,SST,geopt,tk,QRAIN,QSNOW,QGRAUP,QICE,QCLOUD,u10m,v10m,slp,mcape,max_dbz'"
+OUTLEVS="0,0.1,0.25,0.5,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,20"
+OUTVARS="'umet,vmet,W,QVAPOR,PSFC,RAINNC,pressure,tk,QRAIN,QSNOW,QGRAUP,QICE,QCLOUD,u10m,v10m,mcin,mcape,max_dbz,dbz'"
 ARWPOST_FREC=21600   # Post processing frequency (seconds)
 INPUT_ROOT_NAME='wrfout'
 INTERP_METHOD=1
@@ -73,7 +73,7 @@ fi
 
 
 ### LETKF setting
-EXP=FORECAST_${DOMAINCONF}_${CONFIGURATION}      # name of experiment
+EXP=NATURERUN_${DOMAINCONF}_${CONFIGURATION}_1mtest      # name of experiment
 
 ### initial date setting
 IDATE=20140122120000
@@ -82,7 +82,7 @@ EDATE=20140122120000
 #### DATA
 
 TMPDIR=${DATADIR}/TMP/$EXP/                                                            # work directory
-OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                 # Where results should appear.
+OUTPUTDIR=${HOME}/datos/EXPERIMENTS/$EXP/                                            # Where results should appear.
 INPUTDIR=${HOMEDIR}/INPUT/$DOMAINCONF/
 GEOG=${HOME}/share/GEOG/
 OBS="/ucar_airs_th3x3_corrected/"                # Name of observation folder.
@@ -90,7 +90,7 @@ OBSDIR=${HOMEDIR}/OBS/$OBS/                                                     
 
 ###### EXECUTABLES
 WRF=${HOMEDIR}/LETKF_WRF/wrf/
-LETKF=$WRF/letkf/letkf_noeigenexa.exe                     # LETKF module
+LETKF=$WRF/letkf/letkf.exe                     # LETKF module
 RUNTIMELIBS=
 WRF=${HOMEDIR}/LETKF_WRF/wrf/
 UPDATEBC=$WRF/model/WRFDA/da_update_bc.exe
@@ -100,7 +100,7 @@ WPS=$WRF/model/WPS/
 ARWPOST=$WRF/model/ARWpost/
 WRF_TO_WPS=$WRF/wrf_to_wps/
 SPAWN=$WRF/spawn/
-MPIBIN=$HOME/mpich_intel/bin/mpiexec
+MPIBIN=/usr/local/bin/mpiexec
 
 #### SCRIPTS
 UTIL=$WRF/run/util.sh

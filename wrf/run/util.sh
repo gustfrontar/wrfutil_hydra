@@ -142,8 +142,6 @@ date_diff () {
 
 #Given a date and a time interval get the lower closest date which is a multiple of the interval.
 date_floor () {
-(
-        
         if [ $# -lt 2 ]; then
                 echo "Usage : date_floor"
                 echo "    date_diff [yyyy][mm][dd][hh][mn] [interval(seconds)]"
@@ -166,7 +164,18 @@ date_floor () {
 
         DATEFLOOR=`date_edit2 $DATE -$mod `
         echo $DATEFLOOR
-)
+}
+
+
+add_zeros() {
+
+local number=$1
+local size=$2
+
+local result=`printf "%0${size}d" $number`
+
+echo $result
+
 }
 
 ens_member () {
@@ -647,7 +656,7 @@ if [ ! -d "$DIRNAME" ]; then
   echo "[Error] $FUNCNAME: '$DIRNAME' is not a directory." >&2
   exit 1
 fi
-if [ ! -O "$DIRNAME" ]; then
+if [ ! -O "$DIRNAME" -a $SYSTEM -eq 0 ]; then
   echo "[Error] $FUNCNAME: '$DIRNAME' is not owned by you." >&2
   exit 1
 fi
@@ -684,7 +693,7 @@ if [ ! -d "$DIRNAME" ]; then
   echo "[Error] $FUNCNAME: '$DIRNAME' is not a directory." 
   exit 1
 fi
-if [ ! -O "$DIRNAME" ]; then
+if [ ! -O "$DIRNAME" -a $SYSTEM -eq 0 ]; then
   echo "[Error] $FUNCNAME: '$DIRNAME' is not owned by you." 
   exit 1
 fi
@@ -738,7 +747,7 @@ if [ ! -d "$DIRNAME" ]; then
   echo "[Error] $FUNCNAME: '$DIRNAME' is not a directory." 
   exit 1
 fi
-if [ ! -O "$DIRNAME" ]; then
+if [ ! -O "$DIRNAME" -a $SYSTEM -eq 0 ]; then
   echo "[Error] $FUNCNAME: '$DIRNAME' is not owned by you." 
   exit 1
 fi
@@ -1020,13 +1029,15 @@ while [ $my_redo -le $max_redo ] ; do
   ENDMEMBER=$MEMBER
  fi
 
- echo $INIMEMBER $ENDMEMBER $MEANMEMBER
+ #echo $INIMEMBER $ENDMEMBER $MEANMEMBER
 
 
  IM=$INIMEMBER
  my_job=1
  while [ $IM -le $ENDMEMBER ] ; do #[While over ensemble members]
   submitted_jobs=0
+  local WORKDIR=$TMPDIR/run/${my_job}/
+
   while [ $submitted_jobs -le $MAX_SUBMITT_JOB -a $IM -le $ENDMEMBER ] ; do
    #Define the ensemble range for this job.
    EM=`expr $IM + $MAX_MEMBER_PER_JOB - 1 `
@@ -1037,7 +1048,7 @@ while [ $my_redo -le $max_redo ] ; do
     my_test=0
     while [ $tmp_mem -le $EM ] ; do
       tmp_mem=`ens_member $tmp_mem`
-      grep "SUCCESS COMPLETE WRF" ${RESULTDIRG}/wrf${tmp_mem}.log > /dev/null 2>&1
+      grep "SUCCESS COMPLETE WRF" ${WORKDIR}/wrf${tmp_mem}.log > /dev/null 2>&1
       tmp_test=$?
       if [ $tmp_test -ne 0 ]; then
         my_test=1
@@ -1052,12 +1063,10 @@ while [ $my_redo -le $max_redo ] ; do
 
       echo "Submiting job $my_job that will run ensemble members from $IM to $EM " 
       if [ $SYSTEM -eq 0 ] ; then
-        local WORKDIR=$TMPDIR/SCRIPTS/${my_job}/
-        generate_run_forecast_script_k $run_forecast_script $WORKDIR $IM $EM
+	generate_run_forecast_script_k $run_forecast_script $WORKDIR $IM $EM
       fi
       if [ $SYSTEM -eq 1 ] ; then 
-         local WORKDIR=$TMPDIR/run/${my_job}/
-         generate_run_forecast_script_torque $run_forecast_script $WORKDIR $IM $EM
+        generate_run_forecast_script_torque $run_forecast_script $WORKDIR $IM $EM
       fi
       sub_and_wait $WORKDIR/$run_forecast_script & 
 
@@ -1091,7 +1100,8 @@ while [ $my_redo -le $max_redo ] ; do
     fi
    #INIMEMBER=`ens_member $INIMEMBER `
    #ENDMEMBER=`ens_member $ENDMEMBER `
-   WORKDIR=$TMPDIR/SCRIPTS/${my_job}/
+   WORKDIR=$TMPDIR/run/${my_job}/
+   
    check_forecast $WORKDIR $IM $EM
    if [ -e $WORKDIR/REDO ] ; then
      error_check=1
@@ -1119,9 +1129,73 @@ while [ $my_redo -le $max_redo ] ; do
 
 done
 
+#Move the forecast to its final destination.
+
+move_forecast_data
+
 
 }
 
+move_forecast_data(){
+#Copy data from the temporal directory to the final destination.
+#Take into accoutn job split.
+
+ if [ $RUN_ONLY_MEAN -eq 1 ] ; then
+  INIMEMBER=$MEANMEMBER
+  ENDMEMBER=$MEANMEMBER
+ else
+  INIMEMBER=1
+  ENDMEMBER=$MEMBER
+ fi
+
+
+ IM=$INIMEMBER
+ my_job=1
+ while [ $IM -le $ENDMEMBER ] ; do #[While over ensemble members]
+   EM=`expr $IM + $MAX_MEMBER_PER_JOB - 1 `
+    if [ $EM -gt $ENDMEMBER ] ; then
+      EM=$ENDMEMBER
+    fi
+
+   WORKDIR=$TMPDIR/run/${my_job}/
+
+   if [ $FORECAST -eq 1 ] ; then
+    M=$IM
+      while [ $M -le $EM ] ; do
+        MEM=`ens_member $M`
+        mkdir -p ${RESULTDIRG}/${MEM}/
+        mv  ${WORKDIR}/WRF$MEM/wrfout* ${RESULTDIRG}/${MEM}/   
+        M=`expr $M + 1 `
+      done
+   fi
+
+   mv ${WORKDIR}/*.log      ${RESULTDIRG}/
+
+   if [ $ANALYSIS -eq 1 ] ; then
+    M=$IM
+    while [ $M -le $EM ] ; do
+     MEM=`ens_member $M `
+     mkdir -p ${RESULTDIRG}/gues${MEM}
+     cp ${TMPDIR}/LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRG}/gues${MEM} 
+     M=`expr $M + 1 `
+    done
+   fi
+
+   IM=`expr $EM + 1 `
+   my_job=`expr $my_job + 1 `
+ done #[End while over ensemble members and jobs]
+
+
+ if [ $ANALYSIS -eq 1 ] ; then
+  MEM=`ens_member $MM `
+  MEMEAN=`ens_member $MEANMEMBER `
+  cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} $TMPDIR/LETKF/gs${NBSLOT}${MEMEAN}  
+  cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} ${RESULTDIRG}/gues${MEMEAN}         
+  ln -sf ${RESULTDIRG}/gues${MEMEAN} $TMPDIR/LETKF/gues${MEMEAN}         
+ fi
+
+
+}
 
 run_letkf () {
 
@@ -1208,7 +1282,7 @@ generate_run_forecast_script_k () {
       fi
       #Default workdir is TMPDIR/SCRIPTS
       if [ ! -n "$WORKDIR"  ] ; then
-       WORKDIR=$TMPDIR/SCRIPTS/
+       WORKDIR=$TMPDIR/run/1/
       fi
 
       local_script=$WORKDIR/$local_script 
@@ -1337,6 +1411,7 @@ generate_run_forecast_script_k () {
       while [ $M -le $ENDMEMBER ] ; do
         MEM=`ens_member $M`
         echo "#PJM --stgout   \"./WRF$MEM/*.log      ${RESULTDIRG}/        \" ">> $local_script
+        echo "#PJM --stgout   \"./WRF$MEM/*.log      ${WORKDIR}/        \" ">> $local_script
         M=`expr $M + 1 `
       done
 
@@ -1633,39 +1708,41 @@ generate_run_forecast_script_torque () {
          M=`expr $M + 1 `
       done
       echo "time wait " >> $local_script
+      
+      echo "mv ${WORKDIR}/WRF$MEM/*.log      ${WORKDIR}/                  " >> $local_script
      done 
 
 
-     if [ $FORECAST -eq 1 ] ; then
-      M=$INIMEMBER
-      while [ $M -le $ENDMEMBER ] ; do
-        MEM=`ens_member $M`
-        echo "mv  ${WORKDIR}/WRF$MEM/wrfout* ${RESULTDIRG}/${MEM}/            " >> $local_script
-        M=`expr $M + 1 `
-      done
-     fi
+#     if [ $FORECAST -eq 1 ] ; then
+#      M=$INIMEMBER
+#      while [ $M -le $ENDMEMBER ] ; do
+#        MEM=`ens_member $M`
+#        echo "mv  ${WORKDIR}/WRF$MEM/wrfout* ${RESULTDIRG}/${MEM}/            " >> $local_script
+#        M=`expr $M + 1 `
+#      done
+#     fi
 
-     M=$INIMEMBER
-     while [ $M -le $ENDMEMBER ] ; do
-       MEM=`ens_member $M`
-       echo "mv ${WORKDIR}/WRF$MEM/*.log      ${RESULTDIRG}/                  " >> $local_script
-       M=`expr $M + 1 `
-     done
+#     M=$INIMEMBER
+#     while [ $M -le $ENDMEMBER ] ; do
+#       MEM=`ens_member $M`
+#       echo "mv ${WORKDIR}/WRF$MEM/*.log      ${RESULTDIRG}/                  " >> $local_script
+#       M=`expr $M + 1 `
+#     done
 
-     if [ $ANALYSIS -eq 1 ] ; then
-      M=$INIMEMBER
-      while [ $M -le $ENDMEMBER ] ; do
-       MEM=`ens_member $M `
-       echo "cp ${TMPDIR}/LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRG}/gues${MEM}  " >> $local_script
-       M=`expr $M + 1 `
-      done
+#     if [ $ANALYSIS -eq 1 ] ; then
+#      M=$INIMEMBER
+#      while [ $M -le $ENDMEMBER ] ; do
+#       MEM=`ens_member $M `
+#       echo "cp ${TMPDIR}/LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRG}/gues${MEM}  " >> $local_script
+#       M=`expr $M + 1 `
+#      done
 
-      MEM=`ens_member $MM `
-      MEMEAN=`ens_member $MEANMEMBER `
-      echo "cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} $TMPDIR/LETKF/gs${NBSLOT}${MEMEAN}  " >> $local_script
-      echo "cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} ${RESULTDIRG}/gues${MEMEAN}         " >> $local_script
-      echo "ln -sf ${RESULTDIRG}/gues${MEMEAN} $TMPDIR/LETKF/gues${MEMEAN}         " >> $local_script
-     fi
+#      MEM=`ens_member $MM `
+#      MEMEAN=`ens_member $MEANMEMBER `
+#      echo "cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} $TMPDIR/LETKF/gs${NBSLOT}${MEMEAN}  " >> $local_script
+#      echo "cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} ${RESULTDIRG}/gues${MEMEAN}         " >> $local_script
+#      echo "ln -sf ${RESULTDIRG}/gues${MEMEAN} $TMPDIR/LETKF/gues${MEMEAN}         " >> $local_script
+#     fi
 
 
 }
@@ -2933,22 +3010,22 @@ local M=$INIMEMBER
 local cycle_error=0
 while [ $M -le $ENDMEMBER ] ; do
  local MEM=`ens_member $M `
- grep "SUCCESS COMPLETE WRF" ${RESULTDIRG}/wrf${MEM}.log > /dev/null 2>&1 
+ grep "SUCCESS COMPLETE WRF" ${WORKDIR}/wrf${MEM}.log > /dev/null 2>&1 
  if [ $? -ne 0 ] ; then
    echo "[Error]: WRF for ensemble member $MEM"          
    echo "====================================="
    echo "SHOWING LAST PART OF wrf${MEM}.log     "
-   tail ${RESULTDIRG}/wrf${MEM}.log 
+   tail ${WORKDIR}/wrf${MEM}.log 
    cycle_error=1
  fi
  
  if [ $ITER -ne 1 -a $USE_ANALYSIS_IC -ne 1 ] ; then
-  grep  "Update_bc completed successfully" ${RESULTDIRG}/daupdatebc${MEM}.log > /dev/null  2>&1 
+  grep  "Update_bc completed successfully" ${WORKDIR}/daupdatebc${MEM}.log > /dev/null  2>&1 
   if [ $? -ne 0 ] ; then
    echo "[Error]: WRF da update bc for ensemble member $MEM"
    echo "====================================="
    echo "SHOWING LAST PART OF dapudatebc${MEM}.log     "
-   tail ${RESULTDIRG}/daupdatebc${MEM}.log
+   tail ${WORKDIR}/daupdatebc${MEM}.log
    cycle_error=1
   fi
  fi

@@ -1,1 +1,0 @@
-../../../../common/common_namelist.f90

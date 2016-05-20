@@ -24,7 +24,7 @@ MODULE common
   REAL(r_size),PARAMETER :: pi=3.141592653589793d0
   REAL(r_size),PARAMETER :: gg=9.81d0
   REAL(r_size),PARAMETER :: rd=287.0d0
-  REAL(r_size),PARAMETER :: cp=1005.7d0
+  REAL(r_size),PARAMETER :: cp=7.0d0 / 2.0d0 * rd
   REAL(r_size),PARAMETER :: re=6371.3d3
   REAL(r_size),PARAMETER :: r_omega=7.292d-5
   REAL(r_size),PARAMETER :: t0c=273.15d0

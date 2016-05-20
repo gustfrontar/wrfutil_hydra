@@ -1,4 +1,5 @@
 #!/bin/sh
+ulimit -s unlimited
 
 #Load useful functions
 source ../../../run/util.sh
@@ -7,14 +8,12 @@ source ../../../run/util.sh
 #CONFIGURATION
 ###########################################
 
-INIDATE=20130713050940   #20130712230440  #20130713050940   #20130712230440
-ENDDATE=20130713060940   #20130713110440  #20130713051540   #20130713110440
+INIDATE=20140122120000   #20130712230440  #20130713050940   #20130712230440
+ENDDATE=20140122120100   #20130713110440  #20130713051540   #20130713110440
 DT=30   #Time interval between two obs (seconds)
-#Input time in JST, output time is in UTC
-UTC_TO_JST=32400 #Japanese standard time increment.
 
-OBSNAME=osaka_pawr
-PROCOBSNAME=${OBSNAME}_super1km_latlon
+OBSNAME=OSSE_OBS_WERROR
+PROCOBSNAME=${OBSNAME}_SO2KM
 
 RAWOBSPATH=$HOME/share/OBS/$OBSNAME
 PROCOBSPATH=$HOME/share/OBS/$PROCOBSNAME
@@ -22,27 +21,27 @@ PROCOBSPATH=$HOME/share/OBS/$PROCOBSNAME
 TMPDIR=$HOME/data/TMP/RADAR_PREP_$PROCOBSNAME
 NAMELIST=$TMPDIR/radarprep.namelist
 
-DX=1000.0d0      #Horizontal resolution
-DZ=1000.0d0      #Vertical resolution
-MAXRANGE=60d3    #Maximum horizontal range
+DX=2000.0d0      #Horizontal resolution
+DZ=500.0d0       #Vertical resolution
+MAXRANGE=240d3   #Maximum horizontal range
 MAXZ=20d3        #Maximum vertical range 
-DBZ_TO_POWER=.true.  #Power transformation flag
-DEBUG_OUTPUT=.true.  #Debug ouput flag (binary file to visualize data in grads)
-ERROR_REF=5.0d0      #Reflectivity error
+DBZ_TO_POWER=.TRUE.  #Power transformation flag
+DEBUG_OUTPUT=.TRUE.  #Debug ouput flag (binary file to visualize data in grads)
+ERROR_REF=2.5d0      #Reflectivity error
 ERROR_VR=1.0d0       #Radial velocity error
 ID_REF_OBS=4001      #ID for reflectivity observations
 ID_VR_OBS=4002       #Id for radial velocity in output file.
 #Parameters for osse experiments
-OSSE_EXP=.false.     #Identify it as an osse experiment data
-SIMULATE_ERROR=.false.  #Wheter we are going to add noise
+OSSE_EXP=.TRUE.         #Identify it as an osse experiment data
+SIMULATE_ERROR=.FALSE.  #Wheter we are going to add noise
 ERROR_REF_SCLX=5000d0   #SPATIAL SCALE OF ERROR IN METERS
 ERROR_VR_SCLX=5000d0    #SPATIAL SCALE OF ERRORS IN METERS
 ERROR_REF_SCLZ=5000d0   #VERTICAL SCALE OF ERRORS IN METERS
 ERROR_VR_SCLZ=5000d0    #VERTICLA SCALE OF ERRORS IN METERS
-LATLON_COORD=.true.     #True output in lat lon, false output in azimuth,range,elev
-USE_ATTENUATION=.true.  #True consider attenuation (attenuated pixels are discarded)
+LATLON_COORD=.FALSE.    #True output in lat lon, false output in azimuth,range,elev
+USE_ATTENUATION=.FALSE. #True consider attenuation (attenuated pixels are discarded)
 ATTENUATION_THRESHOLD=0.01 
-USE_QCFLAG=.true.      #True use qc information
+USE_QCFLAG=.FALSE.      #True use qc information
 
 #--------------------------------------------------------
 #Initialize directories
@@ -83,10 +82,6 @@ CDATE=$INIDATE
 while [ $CDATE -le  $ENDDATE ]
 do
 
-JST_DATE=`date_edit2 $CDATE $UTC_TO_JST `
-JST_DATE1=`echo $JST_DATE | cut -c1-8  `
-JST_DATE2=`echo $JST_DATE | cut -c9-14 `
-
 #Radar data is sometimes times that are not multiples of 
 #DT, model simulations usually works at multiples of DT
 #So in this case data is sligthly offset to the nearest multiple
@@ -94,17 +89,18 @@ JST_DATE2=`echo $JST_DATE | cut -c9-14 `
 DATE_FLOOR=`date_floor $CDATE $DT `
 
 
-ln -sf $RAWOBSPATH/PAWR_LETKF_INPUTV4_${JST_DATE1}-${JST_DATE2}.dat ./radar_input.grd
+ln -sf $RAWOBSPATH/RADAR_${CDATE}.grd       ./radar_input.grd
 ln -sf $PROCOBSPATH/radar_${DATE_FLOOR}.dat ./radarobs.dat
 ln -sf $PROCOBSPATH/radar_${DATE_FLOOR}.grd ./super.grd
 
-echo "Input  data: $RAWOBSPATH/PAWR_LETKF_INPUTV4_${JST_DATE1}-${JST_DATE2}.dat "
+echo "Input  data: $RAWOBSPATH/$RAWOBSPATH/RADAR_${CDATE}.grd "
 echo "Output data: $PROCOBSPATH/radar_${DATE_FLOOR}.dat "
 
 ./radar_prep.exe 
 
  
 CDATE=`date_edit2 $CDATE $DT `
+
 done #Done over the dates.
 
 #--------------------------------------------------------

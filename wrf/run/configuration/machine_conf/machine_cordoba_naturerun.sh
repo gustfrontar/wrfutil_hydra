@@ -1,12 +1,12 @@
 #MACHINE CONFIGURATION
 SYSTEM="1"          # 0 - K computer , 1 - qsub cluster
-PROC_PER_NODE=40    #Hakushu has 40, Hydra has 24
-PROC_PER_MEMBER=40  #Number of nodes per ensemble member.
-PPSSERVER=hakushu   #Hostname of pps server (for perturbation generation and post processing)
-MAX_RUNNING=5       #Maximum number of simultaneous processes running in PPS servers.
+PROC_PER_NODE=12    #Hakushu has 40, Hydra has 24
+PROC_PER_MEMBER=12  #Number of nodes per ensemble member.
+PPSSERVER=tormenta  #Hostname of pps server (for perturbation generation and post processing)
+MAX_RUNNING=1       #Maximum number of simultaneous processes running in PPS servers.
 ELAPSE=             #MAXIMUM ELAPSE TIME (MODIFY ACCORDING TO THE SIZE OF THE DOMAIN AND THE RESOLUTION)
 MAX_BACKGROUND_JOBS=10000
-LD_LIBRARY_PATH_ADD="/opt/netcdf-fortran/4.2/lib/"
+LD_LIBRARY_PATH_ADD=""
 PATH_ADD=""
 
 TOTAL_NODES_FORECAST=1

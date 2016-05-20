@@ -17,9 +17,9 @@ MODULE common_superobbing
   IMPLICIT NONE
   PUBLIC
 
-  REAL(r_size), ALLOCATABLE :: grid_ref(:,:,:) , grid_vr(:,:,:)
-  REAL(r_size), ALLOCATABLE :: grid_el_ref(:,:,:) , grid_az_ref(:,:,:) , grid_ra_ref(:,:,:) !Az, range, elev weighted by the observations.
-  REAL(r_size), ALLOCATABLE :: grid_el_vr(:,:,:)  , grid_az_vr(:,:,:)  , grid_ra_vr(:,:,:)  !Az, range, elev weighted by the observations.
+  REAL(r_size), ALLOCATABLE :: grid_ref(:,:,:)     , grid_vr(:,:,:)
+  REAL(r_size), ALLOCATABLE :: grid_el_ref(:,:,:)  , grid_az_ref(:,:,:)  , grid_ra_ref(:,:,:) !Az, range, elev weighted by the observations.
+  REAL(r_size), ALLOCATABLE :: grid_el_vr(:,:,:)   , grid_az_vr(:,:,:)   , grid_ra_vr(:,:,:)  !Az, range, elev weighted by the observations.
   REAL(r_size), ALLOCATABLE :: grid_lon_ref(:,:,:) , grid_lat_ref(:,:,:) , grid_z_ref(:,:,:)!Lat, Lon and Z weighted by the observations.
   REAL(r_size), ALLOCATABLE :: grid_lon_vr(:,:,:)  , grid_lat_vr(:,:,:)  , grid_z_vr(:,:,:) !Lat, Lon and Z weighted by the observations.
   REAL(r_size), ALLOCATABLE :: grid_w_vr(:,:,:)
@@ -113,6 +113,8 @@ REAL(r_size) :: tmpfield(NLON,NLAT,NLEV)
 REAL(r_size) :: stderror , amp_factor , meanerror
 REAL(r_size) :: maxrelativeerror , minrelativeerror
 INTEGER      :: count1
+
+REAL(r_size) :: obs_type_code
 
 CHARACTER(256) :: filter_type
 
@@ -459,7 +461,7 @@ grid_stdvr=0.0d0
            wk(1)=REAL(id_ref_obs,r_sngl)
            wk(6)=REAL(error_ref,r_sngl)
            wk(5)=REAL(grid_ref(ii,jj,kk),r_sngl)
-           wk(7)=REAL(current_radar%radar_type,r_sngl)
+           wk(7)=REAL(current_radar%lambda,r_sngl)
            WRITE(99)wk
            nobs = nobs + 1
            if( grid_ref(ii,jj,kk) > max_obs_ref)max_obs_ref=grid_ref(ii,jj,kk)
@@ -470,7 +472,7 @@ grid_stdvr=0.0d0
            wk(1)=REAL(id_vr_obs,r_sngl)
            wk(6)=REAL(error_vr,r_sngl)
            wk(5)=REAL(grid_vr(ii,jj,kk),r_sngl)
-           wk(7)=REAL(current_radar%radar_type,r_sngl)
+           wk(7)=REAL(current_radar%lambda,r_sngl)
            WRITE(99)wk
            nobs=nobs +1
            if( grid_vr(ii,jj,kk) > max_obs_vr)max_obs_vr=grid_vr(ii,jj,kk)

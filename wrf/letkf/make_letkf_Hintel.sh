@@ -1,7 +1,7 @@
 #!/bin/sh
 set -ex
-PGM=letkf_noeigenexa.exe
-F90=$HOME/mpich_intel/bin/mpif90
+PGM=letkf.exe
+F90=mpif90
 OMP=
 
 F90OPT='-O3 -convert big_endian' #-Kfast,parallel' # -Hs'

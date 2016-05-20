@@ -15,9 +15,9 @@ rm -f *.o
 
 
 ln -sf ../../../../../common/common_smooth2d.f90 .
-ln -sf ../../../../../common/common.f90       .
-ln -sf ../../../../../common/SFMT.f90         .
-ln -sf ../../common/common_radar_tools.f90    .
+ln -sf ../../../../../common/common.f90          .
+ln -sf ../../../../../common/SFMT.f90            .
+ln -sf ../../common/common_radar_tools.f90       .
 
 #COMPILING
 $F90 $OMP $F90OPT -c common.f90

@@ -349,7 +349,7 @@ timeslots: DO islot=1,nslots
         !
         ! observational operator
         !
-        CALL Trans_XtoY(tmpelm(n),tmptyp(n),tmpi(n),tmpj(n),tmpk(n),&
+        CALL Trans_XtoY(tmpelm(n),tmptyp(n),tmplon(n),tmplat(n),tmpi(n),tmpj(n),tmpk(n),&
          & tmpaz(n),tmpel(n),v3d,v2d,tmphdxf(n,im))
 
       END DO
