@@ -7,22 +7,22 @@
 #   This script compute the dates that has to be substracted in order 
 #   to compute the perturbations for the initial and boundary conditions.
 #=======================================================================
-MEMBER=5000              #Number of ensemble members
-MAX_TIMES=1440           #Maximum number of different states to generate perturbations.
-EXP_LENGTH=5             #Number of assimilation cycles in the experiment.
-CONFIGURATION=OSAKA_1KM_DOWNSCALLING #SINLAKU_60K
+MEMBER=100               #Number of ensemble members
+MAX_TIMES=1090           #Maximum number of different states to generate perturbations.
+EXP_LENGTH=260           #Number of assimilation cycles in the experiment.
+CONFIGURATION=SA_60KM    #SINLAKU_60K
 ### directory settings
 OUTPUTDIR=${HOME}/share/INPUT/$CONFIGURATION/pert_date/       # FINAL DESTINATION OF THE PERTURBATIONS.
 BOUNDARY_DATA_FREQ=6
 CWD=`pwd`
 
 #PERTURBATION DATA BASE INFO.
-PINI=20060101000000
-PEND=20091231000000
+PINI=20080101000000
+PEND=20101231000000
 
 #EXPERIMENT DATES
-EINI=20130713000000
-EEND=20130714000000
+EINI=20100801000000
+EEND=20100930180000
 
 source ../util.sh
 ##################################################

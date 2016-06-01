@@ -3,7 +3,7 @@ ulimit -s unlimited
 
 EXPERIMENT_NAME=OSSE_OBS_WERROR
 
-MODELDATAPATH="$HOME/datos/EXPERIMENTS/NATURERUN_CORDOBA_2K_cordoba_naturerun_1mtest/forecast/20140122120000/00001/"
+MODELDATAPATH="$HOME/datos/EXPERIMENTS/NATURERUN_CORDOBA_2K_paula/forecast/20140122120000/00001/"
 RADARDATAPATH="$HOME/share/OBS/$EXPERIMENT_NAME"   
 
 TMPDIR="$HOME/data/TMP/WRF_TO_RADAR/"
@@ -14,18 +14,18 @@ RADARFILE=""
 source ../../../run/util.sh #Date functions.
 
 INIDATE=20140122120000
-ENDDATE=20140122120100
+ENDDATE=20140122220000
 
 NAMELIST_WRF2RADAR="$TMPDIR/w2r.namelist"
 
-frec=30                           #Observation frequency in seconds.
+frec=3600                           #Observation frequency in seconds.
 add_obs_error=".FALSE."        
 reflectivity_error="2.5d0"
 radialwind_error="1.0d0"   
 fake_radar=".TRUE."               #If false provide a radarfile. 
 radarfile=""                
-fradar_lon="-65.0d0"               
-fradar_lat="-35.0d0"  
+fradar_lon="-64.0d0"               
+fradar_lat="-34.5d0"  
 fradar_z="0.0d0"                  
 radar_az_res="1.0d0"            
 radar_r_res="500.0d0"              
@@ -82,7 +82,7 @@ echo "/                                      " >> $NAMELIST_WRF2RADAR
 
 cdate=$INIDATE
 
-itime=1
+#itime=1
 
 while [ $cdate -le  $ENDDATE ]
 do
@@ -91,10 +91,12 @@ cd $TMPDIR
 
 
 MODELFILE=`wrfout_file_name $cdate 01`
-itime=`add_zeros $itime 4 `
+itime=`add_zeros 1 4 `
 
 
 ln -sf $MODELDATAPATH/$MODELFILE $TMPDIR/input_model${itime}.nc
+
+echo "Processing file $MODELDATAPATH/$MODELFILE"
 ln -sf $EXEC ./wrf_to_radar.exe 
 
 ./wrf_to_radar.exe
@@ -110,7 +112,7 @@ ln -sf $EXEC ./wrf_to_radar.exe
 
 
 cdate=`date_edit2 $cdate $frec `
-itime=`expr $itime + 1 `
+#itime=`expr $itime + 1 `
 
 done
 

@@ -139,4 +139,4 @@ RESTART=0    #TURN RESTART FLAG TO 0 IN CASE IT WAS GREATHER THAN 0.
 done	### MAIN LOOP ###
 
 echo "NORMAL END"  
-}  #> $my_log 2>&1
+}  > $my_log 2>&1

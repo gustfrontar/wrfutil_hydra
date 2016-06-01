@@ -1928,6 +1928,9 @@ get_conventional_observations () {
 
 local ADATES=`echo $ADATE | cut -c1-10`  #Short version of analysis date (YYYYMMDDHH)
 
+
+if [ -e $OBSDIR/obs$ADATES/ ] ; then # OLD FORMAT
+
   if [ -e $OBSDIR/obs$ADATES/t-3.dat  ] ; then
    cp $OBSDIR/obs$ADATES/t-3.dat $TMPDIR/OBS/obs01.dat
   else
@@ -1964,7 +1967,25 @@ local ADATES=`echo $ADATE | cut -c1-10`  #Short version of analysis date (YYYYMM
    touch $TMPDIR/OBS/obs07.dat
   fi
 
+else # May be new format 
+
+ local CDATEL=$WSDATE
+
+ local it=1
+ while [ ${CDATEL} -le ${WEDATE}  ] ; do
+   it=`slot_number $it `
+   OBSFILE=$OBSDIR/OBS${CDATEL}.dat
+   echo $OBSFILE
+   if [ -e $OBSFILE ] ; then
+    cp -f $OBSFILE $TMPDIR/OBS/obs${it}.dat
+   fi
+   it=`expr ${it} + 1 `
+ done
+
+fi
+
 }
+
 
 get_radar_observations () {
 
@@ -2363,7 +2384,7 @@ arw_postproc_forecast () {
   echo "INTERP_METHOD=${INTERP_METHOD}                                " >> ${WORKDIR}/tmp.sh
 
 
- local my_domain=2
+ local my_domain=1
  while [ $my_domain -le $MAX_DOM ] ; do
   if [ $my_domain -lt 10 ] ; then 
    my_domain=0$my_domain
@@ -2498,6 +2519,7 @@ NVERTEXP=$NVERTDB #Set the input number of vertical levels according to db data.
    mv $WORKDIR/tmp.log ${output_data}/arwpost_global_d${my_domain}.log
 
    my_domain=`expr $my_domain + 1 `
+
   done
 
  my_date=`date_edit2 $my_date $GLOBALANALYSIS_DATA_VERIFICATION_FREQ `
@@ -3042,6 +3064,54 @@ else
      rm -f $WORKDIR/REDO
    fi
 fi
+
+
+}
+
+
+download_cfsr () {
+local LITIME=$1   #Start Time
+local LETIME=$2   #End Time
+
+local LINT=$3     #Frequency
+local LDESTDIR=$4 #Destination dir
+
+PROXY="proxy.fcen.uba.ar:8080"
+
+local LCTIME=$LITIME
+mkdir -p $LDESTDIR
+
+while [ $LCTIME -le $LETIME ]
+do
+echo "Downloading the following file: $LCTIME"
+local LFECHA=`echo $LCTIME | cut -c1-8`
+local LANIO=`echo $LCTIME | cut -c1-4`
+local LMES=`echo $LCTIME | cut -c5-6`
+local LDIA=`echo $LCTIME | cut -c7-8`
+local LHORA=`echo $LCTIME | cut -c9-10`
+
+curl --proxy ${PROXY}  http://nomads.ncdc.noaa.gov/modeldata/cmd_grblow/$LANIO/${LANIO}${LMES}/${LANIO}${LMES}${LDIA}/pgbl00.gdas.${LANIO}${LMES}${LDIA}${LHORA}.grb2 -o $LDESTDIR/pgbl00.gdas.${LANIO}${LMES}${LDIA}${LHORA}.grb2
+
+LCTIME=`date_edit2  $LCTIME $LINT `
+echo $LCTIME
+
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }

@@ -1,0 +1,48 @@
+#!/bin/sh
+set -ex
+PGM=./wrf_to_bufr.exe
+F90=ifort  
+
+LIB_NETCDF="-L/usr/local/lib/ -lnetcdff"
+INC_NETCDF="-I/usr/local/include/"
+
+
+OMP=
+F90OPT=' -convert big_endian -g -traceback ' #--g -traceback ' #O3 '
+
+cd ./src
+
+#PRE CLEAN
+rm -f *.mod
+rm -f *.o
+
+ln -sf ../../../../common/common_wrf.f90       .
+ln -sf ../../../../common/common_obs_wrf.f90   .
+ln -sf ../../../../common/module_map_utils.f90 .
+ln -sf ../../../../../common/common.f90        .
+ln -sf ../../../../../common/SFMT.f90          .
+
+#COMPILIN
+$F90 $OMP $F90OPT -c SFMT.f90
+$F90 $OMP $F90OPT -c common.f90
+$F90 $OMP $F90OPT -c module_map_utils.f90
+$F90 $OMP $F90OPT $INC_NETCDF -c common_wrf.f90
+$F90 $OMP $F90OPT -c common_namelist_wrf_to_bufr.f90
+$F90 $OMP $F90OPT -c common_obs_wrf.f90
+$F90 $OMP $F90OPT -c common_wrf_to_bufr.f90
+$F90 $OMP $F90OPT -c main_wrf_to_bufr.f90
+$F90 $OMP $F90OPT -o ${PGM} *.o  ${LIB_NETCDF}
+
+mv *.exe ../
+
+#CLEAN UP
+rm -f *.mod
+rm -f *.o
+rm common_wrf.f90
+rm module_map_utils.f90
+rm common_obs_wrf.f90
+rm common.f90
+rm SFMT.f90
+
+
+echo "NORMAL END"

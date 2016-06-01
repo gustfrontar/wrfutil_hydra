@@ -22,7 +22,7 @@ CDIR=`pwd`
 #CONFIGURATION
 #CONFIGURATION
 DOMAINCONF=CORDOBA_2K               #Define a domain
-CONFIGURATION=control60m_radarra09  #Define a experiment configuration
+CONFIGURATION=test  #Define a experiment configuration
 MCONFIGURATION=machine_radar60m_H   #Define a machine configuration (number of nodes, etc)
 LETKFNAMELIST=control               #Define a letkf namelist template
 

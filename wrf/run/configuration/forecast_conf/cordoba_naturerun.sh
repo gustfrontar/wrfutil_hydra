@@ -26,12 +26,12 @@ MM=$MEMBER                      #Variable for iteration limits.
 MEANMEMBER=`expr $MEMBER + 1 `  #This is the member ID corresponding to the ensemble mean.
 
 ASSIMILATION_FREC=21600 #Forecast initialization frequency (seconds)
-GUESFT=60              #Forecast length (secons)
+GUESFT=36000            #Forecast length (secons)
 
 WINDOW=21600        #Forecast initialization frequency (seconds)
 WINDOW_START=0      #Window start (seconds from forecast initialization)
 WINDOW_END=$GUESFT  #Window end   (seconds from forecast initialization)
-WINDOW_FREC=30      #Output frequency for the forecast
+WINDOW_FREC=300     #Output frequency for the forecast
 
 
 #OBSERVATION OPERATOR CONFIGURATION FOR FORECAST VERIFICATION.
