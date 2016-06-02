@@ -1168,6 +1168,7 @@ move_forecast_data(){
         M=`expr $M + 1 `
       done
    fi
+   
 
    mv ${WORKDIR}/*.log      ${RESULTDIRG}/
 
@@ -1186,13 +1187,13 @@ move_forecast_data(){
  done #[End while over ensemble members and jobs]
 
 
- if [ $ANALYSIS -eq 1 ] ; then
-  MEM=`ens_member $MM `
-  MEMEAN=`ens_member $MEANMEMBER `
-  cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} $TMPDIR/LETKF/gs${NBSLOT}${MEMEAN}  
-  cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} ${RESULTDIRG}/gues${MEMEAN}         
-  ln -sf ${RESULTDIRG}/gues${MEMEAN} $TMPDIR/LETKF/gues${MEMEAN}         
- fi
+ #if [ $ANALYSIS -eq 1 ] ; then
+ # MEM=`ens_member $MM `
+ # MEMEAN=`ens_member $MEANMEMBER `
+ # cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} $TMPDIR/LETKF/gs${NBSLOT}${MEMEAN}  
+ # cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} ${RESULTDIRG}/gues${MEMEAN}         
+ # ln -sf ${RESULTDIRG}/gues${MEMEAN} $TMPDIR/LETKF/gues${MEMEAN}         
+ #fi
 
 
 }
@@ -1862,7 +1863,6 @@ generate_run_letkf_script_torque () {
        fi
       fi
 
-
       TOTAL_PROC_LETKF=`expr $TOTAL_NODES_LETKF \* $PROC_PER_NODE `
       rm -fr $TMPDIR/LETKF/*.dat #Remove observations.
       mv ${TMPDIR}/OBS/*     $TMPDIR/LETKF/
@@ -1875,16 +1875,21 @@ generate_run_letkf_script_torque () {
       echo "#PBS -S /bin/bash                                                             " >> $local_script
       echo "cd $TMPDIR/LETKF                                                              " >> $local_script
       echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH                                       " >> $local_script
+
+      #CREATE THE FILES WHERE THE GUES AND ANAL ENSEMBLE MEANS WILL BE STORED.
+      echo "cp gs${NBSLOT}${MEMBER} gues${MEANMEMBER}                                     " >> $local_script
+      echo "cp gs${NBSLOT}${MEMBER} anal${MEANMEMBER}                                     " >> $local_script
       echo "$MPIBIN -np ${TOTAL_PROC_LETKF} ./letkf.exe                                   " >> $local_script
 
-      #STAGEOUT ANALYSIS AND AND LOGS
+      #COPY DATA TO THE FINAL DESTINATION DIR.
       M=1
-      while [ $M -le $MEANMEMBER ] ; do
+      while [ $M -le $MEMBER ] ; do
         MEM=`ens_member $M`
-        echo "mv $TMPDIR/LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRA}/anal${MEM} "  >> $local_script #Analysis ensemble members and mean
+		echo "mv $TMPDIR/LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRA}/anal${MEM} "  >> $local_script #Analysis ensemble members and mean
         M=`expr $M + 1 `
       done
       echo "mv ${TMPDIR}/LETKF/gues${MEANMEMBER}     ${RESULTDIRG}/         "  >> $local_script
+      echo "mv ${TMPDIR}/LETKF/anal${MEANMEMBER}     ${RESULTDIRA}/         "  >> $local_script
       echo "mv ${TMPDIR}/LETKF/NOUT*                 ${RESULTDIRA}/         "  >> $local_script     
 
       if [ $USE_ADAPTIVE_INFLATION -eq 1 ] ; then
@@ -2002,7 +2007,7 @@ fi
 
   OBSFILE=$OBSDIR/RADAR${itrad}_${CDATEL}.dat
   echo $OBSFILE
-	  if [ -e $OBSFILE ] ; then
+  if [ -e $OBSFILE ] ; then
    cp -f $OBSFILE $TMPDIR/OBS/rad${it}${itradar}.dat
   fi
 

@@ -146,7 +146,7 @@ PROGRAM letkf
   ! WRITE ENS MEAN and SPRD
   !
   CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-  CALL write_ensmspr_mpi(guesf,nbv,anal3d,anal2d)
+  CALL write_ensmspr_mpi('anal',nbv,anal3d,anal2d)
 
   IF(ESTPAR)CALL write_enspmspr_mpi(guesf,nbv,analp2d)
   DEALLOCATE(anal3d,anal2d)

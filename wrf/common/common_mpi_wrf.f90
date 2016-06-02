@@ -828,8 +828,8 @@ SUBROUTINE write_ens_mpi(file,member,v3d,v2d)
         WRITE(filename(1:9),'(A4,I5.5)')file,nbv+1
       ENDIF
       !OPEN NC FILE
-      CALL open_wrf_file(filename,'rw',ncid(im))
       WRITE(6,'(A,I3.3,2A)')'MYRANK ',myrank,' is writing a file ',filename
+      CALL open_wrf_file(filename,'rw',ncid(im))
     END IF
   END DO
 
