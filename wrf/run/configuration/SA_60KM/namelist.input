@@ -35,7 +35,7 @@
  e_sn                                = 148,    41,    91,
  e_vert                              = 38,    31,    28,
  p_top_requested                     = 5000,
- num_metgrid_levels                  = 38,
+ num_metgrid_levels                  = NVERTEXP,
  num_metgrid_soil_levels             = 4,
  dx                                  = 60000, 4000,  3333.33,
  dy                                  = 60000, 4000,  3333.33,

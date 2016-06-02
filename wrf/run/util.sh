@@ -1593,6 +1593,7 @@ generate_run_forecast_script_torque () {
          exit 1
        fi
 
+
       #Prepare run directory.
       if [ $ANALYSIS -eq 1 ] ; then
          local local_dir="$OUTPUTDIR/anal/${CDATE}/"
@@ -1702,14 +1703,12 @@ generate_run_forecast_script_torque () {
       JOB=1
       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
-
-         echo "${WORKDIR}/WRF_POST.sh ${WORKDIR}/WRF${MEM} $MEM &  " >> $local_script
+         echo "${WORKDIR}/WRF_POST.sh ${WORKDIR}/WRF${MEM} $MEM && mv ${WORKDIR}/WRF$MEM/*.log ${WORKDIR}/ &  " >> $local_script
          JOB=`expr $JOB + 1 `
          M=`expr $M + 1 `
       done
       echo "time wait " >> $local_script
       
-      echo "mv ${WORKDIR}/WRF$MEM/*.log      ${WORKDIR}/                  " >> $local_script
      done 
 
 

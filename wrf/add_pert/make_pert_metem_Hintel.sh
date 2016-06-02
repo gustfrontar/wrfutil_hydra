@@ -7,8 +7,11 @@ set -ex
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 
-LIB_NETCDF="-L/opt/netcdf-fortran/4.2/lib/ -lnetcdff"
-INC_NETCDF="-I/opt/netcdf-fortran/4.2/include/ "
+LIB_NETCDF="-L/usr/local/lib/ -lnetcdff"
+INC_NETCDF="-I/usr/local/include/ "
+
+#LIB_NETCDF="-L/opt/netcdf-fortran/4.2/lib/ -lnetcdff"
+#INC_NETCDF="-I/opt/netcdf-fortran/4.2/include/ "
 
 
 PGM=./compute_pert_metem.exe

@@ -3,7 +3,7 @@ ulimit -s unlimited
 
 EXPERIMENT_NAME=OSSE_BUFR_SA
 
-MODELDATAPATH="/salidas/felix.carrasco/TRUERUN/Agosto/"
+MODELDATAPATH="/salidas/felix.carrasco/TRUERUN/total/"
 OBSDATAPATH="$HOME/share/OBS/$EXPERIMENT_NAME"   
 OBSSOURCE="$HOME/share/OBS/PREPBUFRSA/"   #If a realistic network is desired then real observation files has to be provided.
 

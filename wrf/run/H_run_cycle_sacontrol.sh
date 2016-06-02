@@ -1,7 +1,6 @@
 #!/bin/bash
 #=======================================================================
-# K_driver.sh
-#   To run the WRF-LETKF in the K computer.
+#   To run the WRF-LETKF 
 #   This scripts prepares all the data needed to run the letkf cycle 
 #   then submmits the job to the K computer.
 #   Based on the script developed by Shigenori Otsuka
@@ -21,9 +20,9 @@ CDIR=`pwd`
 
 #CONFIGURATION
 #CONFIGURATION
-DOMAINCONF=CORDOBA_2K               #Define a domain
-CONFIGURATION=control60m_radarra09  #Define a experiment configuration
-MCONFIGURATION=machine_radar60m_H   #Define a machine configuration (number of nodes, etc)
+DOMAINCONF=SA_60KM                  #Define a domain
+CONFIGURATION=control40msa          #Define a experiment configuration
+MCONFIGURATION=machine_60ksa_H      #Define a machine configuration (number of nodes, etc)
 LETKFNAMELIST=control               #Define a letkf namelist template
 
 RESTART=0
@@ -117,9 +116,6 @@ echo " >>"
 run_script=$TMPDIR/SCRIPTS/perturb_met_em.sh                         
 perturb_met_em $run_script                                           
 
-
-exit
-
 echo " >>"                                                           
 echo " >> ENSEMBLE FORECASTS AND LETKF"
 echo " >>"
@@ -171,4 +167,4 @@ done	### MAIN LOOP ###
 echo "NORMAL END"
 
 
-} > $my_log 2>&1
+} #> $my_log 2>&1
