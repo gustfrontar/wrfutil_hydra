@@ -1921,8 +1921,6 @@ fi
 
 }
 
-
-
 get_conventional_observations () {
 
 local ADATES=`echo $ADATE | cut -c1-10`  #Short version of analysis date (YYYYMMDDHH)
@@ -1979,6 +1977,7 @@ else # May be new format
     cp -f $OBSFILE $TMPDIR/OBS/obs${it}.dat
    fi
    it=`expr ${it} + 1 `
+   CDATEL=`date_edit2 ${CDATEL} ${WINDOW_FREC}`
  done
 
 fi
@@ -2003,11 +2002,12 @@ fi
 
   OBSFILE=$OBSDIR/RADAR${itrad}_${CDATEL}.dat
   echo $OBSFILE
-  if [ -e $OBSFILE ] ; then
+	  if [ -e $OBSFILE ] ; then
    cp -f $OBSFILE $TMPDIR/OBS/rad${it}${itradar}.dat
   fi
 
   it=`expr ${it} + 1 `
+  CDATEL=`date_edit2 ${CDATEL} ${WINDOW_FREC}`
 done
 
 itradar=`expr ${itradar} + 1`
