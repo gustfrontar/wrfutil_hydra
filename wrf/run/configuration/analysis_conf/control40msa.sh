@@ -86,7 +86,7 @@ EDATE=20100801180000
 #### DATA
 OBSDIR=${HOMEDIR}/OBS/$OBS/                                                               # observations
 TMPDIR=${DATADIR}/TMP/$EXP/                                                               # work directory
-OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                    # Where results should appear.
+OUTPUTDIR=$HOME/datos/EXPERIMENTS/$EXP/                                                    # Where results should appear.
 INPUTDIR=${HOMEDIR}/INPUT/$DOMAINCONF/                                                    # This folder contains text files with the dates to compute perturbations.
 
 #### EXECUTABLES

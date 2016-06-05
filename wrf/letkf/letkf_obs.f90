@@ -288,6 +288,15 @@ timeslots: DO islot=1,nslots
 
          tmphdxf(n,im)=undef !Initialize observation array with undefined values.
 
+      !Check if the observation is within the horizontal domain.
+      IF(CEILING(tmpi(n)) < 2 .OR. nlon-1 < CEILING(tmpi(n))) THEN
+        CYCLE
+      END IF
+      IF(CEILING(tmpj(n)) < 2 .OR. nlat-1 < CEILING(tmpj(n))) THEN
+        CYCLE
+      END IF
+
+      !If it is within the horizontal domain compute the observation level.
       IF( tmpradar(n) .GT. 0.0d0 )THEN
         !This is a radar observation. Compute k from z.
         CALL z2k_fast(zmodel,tmpi(n),tmpj(n),tmplev(n),tmpk(n))
@@ -296,16 +305,11 @@ timeslots: DO islot=1,nslots
         CALL p2k(v3d(:,:,:,iv3d_p),tmpelm(n),tmpi(n),tmpj(n),tmplev(n),tmpk(n))
       ENDIF
 
-        IF(CEILING(tmpi(n)) < 2 .OR. nlon-1 < CEILING(tmpi(n))) THEN
-          CYCLE
-        END IF
-        IF(CEILING(tmpj(n)) < 2 .OR. nlat-1 < CEILING(tmpj(n))) THEN
-          CYCLE
-        END IF
-        IF(CEILING(tmpk(n)) > nlev-1) THEN
-          CALL itpl_2d(phi0,tmpi(n),tmpj(n),dz)
-          CYCLE
-        END IF
+      !Check if the observation is within the vertical domain.
+      IF(CEILING(tmpk(n)) > nlev-1) THEN
+        !CALL itpl_2d(phi0,tmpi(n),tmpj(n),dz)
+        CYCLE
+      END IF
         IF(CEILING(tmpk(n)) < 2 .AND. NINT(tmpelm(n)) /= id_ps_obs) THEN
           IF(NINT(tmpelm(n)) == id_u_obs .OR.&
            & NINT(tmpelm(n)) == id_v_obs) THEN
@@ -710,6 +714,7 @@ SUBROUTINE monit_mean(file,depout)
   ivr = 0
 
   WRITE(filename(1:9),'(A4,I5.5)') file,nbv+1
+  WRITE(6,*)"I will read ", filename
   CALL read_grd(filename,v3d,v2d)
   z3d=v3d(:,:,:,iv3d_ph)/gg
 

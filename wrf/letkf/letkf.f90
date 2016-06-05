@@ -148,7 +148,7 @@ PROGRAM letkf
   CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
   CALL write_ensmspr_mpi('anal',nbv,anal3d,anal2d)
 
-  IF(ESTPAR)CALL write_enspmspr_mpi(guesf,nbv,analp2d)
+  IF(ESTPAR)CALL write_enspmspr_mpi('anal',nbv,analp2d)
   DEALLOCATE(anal3d,anal2d)
   IF(ESTPAR)DEALLOCATE(analp2d)
 !
@@ -163,7 +163,7 @@ PROGRAM letkf
 !   Compute RMSE and BIAS for the gues mean.
     CALL monit_mean('gues',omb)
 !   Compute RMSE and BIAS for the analysis mean. 
-    CALL monit_mean(guesf,oma)
+    CALL monit_mean('anal',oma)
 !    CALL monit_obs(monitobs,nobs,obselm,obslon,obslat,obslev,obsdat,&
 !     & obserr,obstyp,omb,oma,obslot)
   END IF

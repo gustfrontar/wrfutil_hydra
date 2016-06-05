@@ -1206,13 +1206,6 @@ run_letkf () {
 # times.
 #=====================================================================
 
-#max_redo=3   #Maximum number of retries.
-my_redo=0    
-
-#while [ $my_redo -le $max_redo ] ; do 
-
- echo "This is attemp number $my_redo to run the LETKF-DA"
-
  #Prepare and submit the jobs
 
  run_letkf_script=$TMPDIR/SCRIPTS/rda_scr.sh
@@ -1228,6 +1221,27 @@ my_redo=0
  
  sub_and_wait $run_letkf_script 
 
+
+ #In torque systems move the data from the temporal directory to the final destinantion.
+ if [ $SYSTEM -eq 1 ] ; then
+ #COPY DATA TO THE FINAL DESTINATION DIR.
+   M=1
+   while [ $M -le $MEMBER ] ; do
+     MEM=`ens_member $M`
+     mv $TMPDIR/LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRA}/anal${MEM}
+     M=`expr $M + 1 `
+   done
+   MEM=`ens_member ${MEANMEMBER}`
+   mv ${TMPDIR}/LETKF/gues${MEM}            ${RESULTDIRG}/
+   mv ${TMPDIR}/LETKF/anal${MEM}            ${RESULTDIRA}/
+   mv ${TMPDIR}/LETKF/NOUT*                 ${RESULTDIRA}/
+
+   if [ $USE_ADAPTIVE_INFLATION -eq 1 ] ; then
+     mv $TMPDIR/LETKF/infl_mul.grd          ${RESULTDIRA}/
+   fi
+
+ fi
+
  #Check how the jobs finished
  local error_check=0
  local MMS=`ens_member $MEANMEMBER`
@@ -1242,21 +1256,11 @@ my_redo=0
   error_check=1
  fi
 
- if [ $error_check -eq 0 ] ; then
-    my_redo=`expr $max_redo + 1 ` #Break the cycle we are done!
- else
-   my_redo=`expr $my_redo + 1 `   #The job fails: redo!
+ if [ $error_check -ne 0 ] ; then
      echo "[Warning] : Letkf-DA attemp $my_redo fails." 
-     exit 1 #Currently redo is not working well (we need to guarantee that the files will stay in the corresponding directory to redo the cycle)
-   if [ $my_redo -gt $max_redo ] ; then
-     #We cannot continue with the cycle
-     echo "[Error] : Letkf-DA job fails more than $max_redo times "
      echo "CYCLE ABNORMAL END -> ABORT EXECUTION "
      exit 1
-   fi
  fi
-
-#done
 
 
 }
@@ -1631,7 +1635,7 @@ generate_run_forecast_script_torque () {
         M=$INIMEMBER
         while [ $M -le $ENDMEMBER ] ; do
          MEM=`ens_member $M`
-         ln -sf ${local_dir}/anal$MEM  $WORKDIR/WRF$MEM/anal 
+         cp ${local_dir}/anal$MEM  $WORKDIR/WRF$MEM/anal 
          M=`expr $M + 1 `
         done
        fi
@@ -1869,34 +1873,26 @@ generate_run_letkf_script_torque () {
       if [ $USE_ADAPTIVE_INFLATION -eq 1 ] ; then
         cp ${INFLATION_FILE}  $TMPDIR/LETKF/   
       fi
+  
+      #In order to set ulimit -s unlimited on each working node we need to wrap the executable into this run script that 
+      #will be called by mpiexec. 
+      echo "#!/bin/bash                                                                   " >  $TMPDIR/LETKF/run_letkf.sh
+      echo "ulimit -s unlimited                                                           " >> $TMPDIR/LETKF/run_letkf.sh
+      echo "./letkf.exe                                                                   " >> $TMPDIR/LETKF/run_letkf.sh
+      chmod 755 $TMPDIR/LETKF/run_letkf.sh
+ 
 
       echo "#!/bin/bash                                                                   " >  $local_script
       echo "#PBS -l nodes=${TOTAL_NODES_LETKF}:ppn=$PROC_PER_NODE                         " >> $local_script
       echo "#PBS -S /bin/bash                                                             " >> $local_script
       echo "cd $TMPDIR/LETKF                                                              " >> $local_script
       echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH                                       " >> $local_script
-
+      local MM=`ens_member ${MEANMEMBER}`
+      local MEM=`ens_member ${MEMBER}`
       #CREATE THE FILES WHERE THE GUES AND ANAL ENSEMBLE MEANS WILL BE STORED.
-      echo "cp gs${NBSLOT}${MEMBER} gues${MEANMEMBER}                                     " >> $local_script
-      echo "cp gs${NBSLOT}${MEMBER} anal${MEANMEMBER}                                     " >> $local_script
-      echo "$MPIBIN -np ${TOTAL_PROC_LETKF} ./letkf.exe                                   " >> $local_script
-
-      #COPY DATA TO THE FINAL DESTINATION DIR.
-      M=1
-      while [ $M -le $MEMBER ] ; do
-        MEM=`ens_member $M`
-		echo "mv $TMPDIR/LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRA}/anal${MEM} "  >> $local_script #Analysis ensemble members and mean
-        M=`expr $M + 1 `
-      done
-      echo "mv ${TMPDIR}/LETKF/gues${MEANMEMBER}     ${RESULTDIRG}/         "  >> $local_script
-      echo "mv ${TMPDIR}/LETKF/anal${MEANMEMBER}     ${RESULTDIRA}/         "  >> $local_script
-      echo "mv ${TMPDIR}/LETKF/NOUT*                 ${RESULTDIRA}/         "  >> $local_script     
-
-      if [ $USE_ADAPTIVE_INFLATION -eq 1 ] ; then
-       echo "mv $TMPDIR/LETKF/infl_mul.grd          ${RESULTDIRA}/          "  >> $local_script
-      fi
-
-      #Remove the observations used in this cycle.
+      echo "cp gs${NBSLOT}${MEM} gues${MM}                                                " >> $local_script
+      echo "cp gs${NBSLOT}${MEM} anal${MM}                                                " >> $local_script
+      echo "$MPIBIN -np ${TOTAL_PROC_LETKF} $TMPDIR/LETKF/run_letkf.sh                    " >> $local_script
 
       echo "rm -f ${TMPDIR}/LETKF/*.dat   "  >> $local_script
 
