@@ -1,19 +1,19 @@
 &share
  wrf_core = 'ARW',
- max_dom = 1,
- start_date = 'SYYYY-SMM-SDD_SHH:SMN:SSS'
- end_date   = 'EYYYY-EMM-EDD_EHH:EMN:ESS'
+ max_dom = MAX_DOM,
+ start_date = 'SYYYY-SMM-SDD_SHH:SMN:SSS','SYYYY-SMM-SDD_SHH:SMN:SSS',
+ end_date   = 'EYYYY-EMM-EDD_EHH:EMN:ESS','EYYYY-EMM-EDD_EHH:EMN:ESS',
  interval_seconds = BDYFREQ
  io_form_geogrid = 2,
 /
 &geogrid
- parent_id         =   1,
- parent_grid_ratio =   1,
- i_parent_start    =   1,
- j_parent_start    =   1,
- e_we              = 137,
- e_sn              = 109,
- geog_data_res     = '10m',
+ parent_id         =   1, 1,
+ parent_grid_ratio =   1, 3,
+ i_parent_start    =   1, 5,
+ j_parent_start    =   1, 5,
+ e_we              = 137, 382,
+ e_sn              = 109, 298,
+ geog_data_res     = '10m','10m',
  dx = 60000,
  dy = 60000,
  map_proj = 'mercator',

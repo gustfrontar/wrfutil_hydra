@@ -1176,7 +1176,7 @@ move_forecast_data(){
     M=$IM
     while [ $M -le $EM ] ; do
      MEM=`ens_member $M `
-     mkdir -p ${RESULTDIRG}/gues${MEM}
+     #mkdir -p ${RESULTDIRG}/gues${MEM}
      cp ${TMPDIR}/LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRG}/gues${MEM} 
      M=`expr $M + 1 `
     done
@@ -2673,7 +2673,7 @@ fi
     forecast_domain=0$forecast_domain
  fi
 
- while [ $forecast_domain -eq $MAX_DOM  ] ; do
+ while [ $forecast_domain -le $MAX_DOM  ] ; do
 
   #RUN THE SCRIPT IN PPS NODE.
   local forecast_lead_time=0
@@ -2732,7 +2732,7 @@ fi
 if [ $FORECAST -eq 1  ] ; then
 
 my_domain=1
-while [ $my_domain -eq $MAX_DOM ] ; do
+while [ $my_domain -le $MAX_DOM ] ; do
 
 
  if [ $my_domain -lt 10 ] ; then
@@ -2943,7 +2943,7 @@ local M=1
 local cycle_error=0
 local my_domain=1
 
-while [ $my_domain -lt $MAX_DOM ] ; do
+while [ $my_domain -le $MAX_DOM ] ; do
  if [ $my_domain -lt 10 ] ; then
   my_domain=0$my_domain
  fi

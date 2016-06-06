@@ -317,7 +317,6 @@ SUBROUTINE model_to_obs()
 IMPLICIT NONE
 INTEGER(4)                  :: nxvar,nyvar,nzvar,k,iv,n,ncid,varid,obsid,ii
 REAL(r_sngl)                :: fieldg(nlon,nlat),auxfieldg(nlon,nlat)
-REAL(r_size),ALLOCATABLE    :: var3d(:,:,:),psfc(:,:),t2(:,:),q2(:,:),rain(:,:)
 REAL(r_size)                :: dz,tg,qg,dummy(3)
 REAL(r_size)                :: randnumber(nobs)
 
@@ -327,12 +326,11 @@ REAL(r_size)                :: randnumber(nobs)
  ENDIF
 
  tmpdat=0.0d0
- ALLOCATE(var3d(nlon,nlat,nlev))
 
-      DO n=1,nobs
+     DO n=1,nobs
  
         IF( CEILING(tmpi(n)) < 2 .OR. nlon-1 < CEILING(tmpi(n)) .OR. CEILING(tmpj(n)) < 2 .OR. nlat-1 < CEILING(tmpj(n)) .OR. CEILING(tmpk(n)) > nlev )THEN
-          tmpdat(k)=UNDEF
+          tmpdat(n)=undef
           CYCLE
         ENDIF
         IF( tmpk(n) < 1.0 )THEN
@@ -348,8 +346,17 @@ REAL(r_size)                :: randnumber(nobs)
         IF( add_obs_error )THEN
          tmpdat(n)=tmpdat(n)+randnumber(n)*tmperr(n)
         ENDIF
+  
+        IF( add_obs_error .AND. tmpelm(n) == id_q_obs )THEN
+          IF(tmpdat(n) < 0.0d0 )tmpdat(n)=0.0d0
+        ENDIF
+
+        !IF( tmpelm(n) == id_q_obs )THEN
+        !  WRITE(*,*)tmpelm(n),tmpdat(n),tmperr(n)
+        !ENDIF
 
       END DO !End over the computation of i,j, and k.
+
 
 END SUBROUTINE model_to_obs
 
