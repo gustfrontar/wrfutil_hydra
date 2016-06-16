@@ -272,7 +272,11 @@ SUBROUTINE write_obs(cfile)
   OPEN(iunit,FILE=cfile,FORM='unformatted',ACCESS='sequential')
 
   DO n=1,nobs
-    IF(tmpdat(n) == UNDEF)CYCLE
+    IF(tmpdat(n) == undef )CYCLE
+
+    !IF( tmpelm(n) == id_q_obs )THEN
+    !  WRITE(*,*)tmpelm(n),tmpdat(n),tmperr(n)
+    !ENDIF
 
     writenobs=writenobs+1
     wk(1)=REAL(tmpelm(n),r_sngl)
@@ -283,7 +287,7 @@ SUBROUTINE write_obs(cfile)
     wk(6)=REAL(tmperr(n),r_sngl)
     wk(7)=REAL(tmptyp(n),r_sngl)
     SELECT CASE(NINT(wk(1)))
-    CASE(id_u_obs,id_v_obs,id_t_obs,id_tv_obs)
+    CASE(id_u_obs,id_v_obs,id_t_obs,id_tv_obs,id_q_obs)
       wk(4) = wk(4) /  100.0 ! hPa <- Pa
     CASE(id_ps_obs)
       wk(5) = wk(5) / 100.0 ! hPa <- Pa
@@ -297,6 +301,11 @@ SUBROUTINE write_obs(cfile)
       wk(6) = wk(6) / 100.0 ! hPa <- Pa
     END SELECT
     WRITE(iunit)wk
+
+    !IF( tmpelm(n) == id_q_obs )THEN
+    !  WRITE(*,*)wk
+    !ENDIF
+
   END DO
   CLOSE(iunit)
 
@@ -319,25 +328,28 @@ INTEGER(4)                  :: nxvar,nyvar,nzvar,k,iv,n,ncid,varid,obsid,ii
 REAL(r_sngl)                :: fieldg(nlon,nlat),auxfieldg(nlon,nlat)
 REAL(r_size)                :: dz,tg,qg,dummy(3)
 REAL(r_size)                :: randnumber(nobs)
+REAL(r_size)                :: tmp_val
 
 
  IF( add_obs_error)THEN
    CALL com_randn(nobs,randnumber)
  ENDIF
 
- tmpdat=0.0d0
+ tmpdat= undef
 
      DO n=1,nobs
  
         IF( CEILING(tmpi(n)) < 2 .OR. nlon-1 < CEILING(tmpi(n)) .OR. CEILING(tmpj(n)) < 2 .OR. nlat-1 < CEILING(tmpj(n)) .OR. CEILING(tmpk(n)) > nlev )THEN
-          tmpdat(n)=undef
           CYCLE
         ENDIF
         IF( tmpk(n) < 1.0 )THEN
           tmpk(n)=1.0
         ENDIF
 
+        tmp_val=tmpdat(n) !Original obs value.
+
         CALL Trans_XtoY(tmpelm(n),tmptyp(n),tmplon(n),tmplat(n),tmpi(n),tmpj(n),tmpk(n),0.0d0,0.0d0,v3d,v2d,tmpdat(n))
+
         
         IF( NINT(tmpelm(n)) == id_ps_obs .AND. tmpdat(n) /= UNDEF )THEN
           CALL itpl_2d(phi0,tmpi(n),tmpj(n),tmplev(n))
@@ -351,9 +363,6 @@ REAL(r_size)                :: randnumber(nobs)
           IF(tmpdat(n) < 0.0d0 )tmpdat(n)=0.0d0
         ENDIF
 
-        !IF( tmpelm(n) == id_q_obs )THEN
-        !  WRITE(*,*)tmpelm(n),tmpdat(n),tmperr(n)
-        !ENDIF
 
       END DO !End over the computation of i,j, and k.
 

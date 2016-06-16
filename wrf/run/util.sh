@@ -1663,7 +1663,8 @@ generate_run_forecast_script_torque () {
       JOB=1
       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
-         echo "$MPIBIN -np ${PROC_PER_MEMBER} -machinefile $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_REAL.sh $WORKDIR/WRF${MEM}/ &  " >> $local_script
+         echo "sleep 0.3"    >> $local_script
+         echo "$MPIBIN -np ${PROC_PER_MEMBER} -f $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_REAL.sh $WORKDIR/WRF${MEM}/ > $WORKDIR/WRF${MEM}/real.log &  " >> $local_script
          JOB=`expr $JOB + 1 `
          M=`expr $M + 1 `
       done
@@ -1696,7 +1697,8 @@ generate_run_forecast_script_torque () {
       JOB=1
       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
-         echo "$MPIBIN -np ${PROC_PER_MEMBER} -machinefile ${WORKDIR}/machinefile.${JOB} ${WORKDIR}/WRF_WRF.sh ${WORKDIR}/WRF${MEM} &  " >> $local_script
+         echo "sleep 0.3 "  >> $local_script
+         echo "$MPIBIN -np ${PROC_PER_MEMBER} -f ${WORKDIR}/machinefile.${JOB} ${WORKDIR}/WRF_WRF.sh ${WORKDIR}/WRF${MEM} > ${WORKDIR}/WRF${MEM}/wrf.log &  " >> $local_script
          JOB=`expr $JOB + 1 `
          M=`expr $M + 1 `
       done
@@ -1726,7 +1728,7 @@ generate_run_forecast_script_torque () {
 #      done
 #     fi
 
-#     M=$INIMEMBER
+#     M=$INIMEMBERe
 #     while [ $M -le $ENDMEMBER ] ; do
 #       MEM=`ens_member $M`
 #       echo "mv ${WORKDIR}/WRF$MEM/*.log      ${RESULTDIRG}/                  " >> $local_script
@@ -1896,6 +1898,7 @@ generate_run_letkf_script_torque () {
 
       echo "rm -f ${TMPDIR}/LETKF/*.dat   "  >> $local_script
 
+      
 }
 
 get_observations() {
@@ -2818,11 +2821,11 @@ if [ $ANALYSIS -eq 1  ] ; then
   fi
   echo "cd ${WORKDIR}/                                                                      " >> ${WORKDIR}/tmp.sh
   echo "$MPIBIN -np ${MAX_RUNNING} ./obsope.exe           > obsop.log                       " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obsmean00_00.grd    ${RESULTDIRG}/obsmeananal.grd                     " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obsmerr00_00.grd    ${RESULTDIRG}/obsmerranal.grd                     " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obssprd00_00.grd    ${RESULTDIRG}/obssprdanal.grd                     " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obsonum00_00.grd    ${RESULTDIRG}/obsnumanal.grd                      " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/oarea00_00.txt      ${RESULTDIRG}/oareaanal.txt                       " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obsmean00_00.grd    ${RESULTDIRG}/obsmeangues.grd                     " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obsmerr00_00.grd    ${RESULTDIRG}/obsmerrgues.grd                     " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obssprd00_00.grd    ${RESULTDIRG}/obssprdgues.grd                     " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obsonum00_00.grd    ${RESULTDIRG}/obsnumgues.grd                      " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/oarea00_00.txt      ${RESULTDIRG}/oareagues.txt                       " >> ${WORKDIR}/tmp.sh
   
   echo "mv ${WORKDIR}/obsope????? ${RESULTDIRG}                                             " >> ${WORKDIR}/tmp.sh
   echo "mv ${WORKDIR}/OBSO-???    ${RESULTDIRG}                                             " >> ${WORKDIR}/tmp.sh
@@ -2853,11 +2856,11 @@ if [ $ANALYSIS -eq 1  ] ; then
   fi
   echo "cd ${WORKDIR}/                                                                      " >> ${WORKDIR}/tmp.sh
   echo "$MPIBIN -np ${MAX_RUNNING} ./obsope.exe         > obsop.log                         " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obsmean00_00.grd    ${RESULTDIRA}/obsmeangues.grd                     " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obsmerr00_00.grd    ${RESULTDIRA}/obsmerrgues.grd                     " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obssprd00_00.grd    ${RESULTDIRA}/obssprdgues.grd                     " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/obsonum00_00.grd    ${RESULTDIRA}/obsnumgues.grd                      " >> ${WORKDIR}/tmp.sh
-  echo "mv ${WORKDIR}/oarea00_00.txt    ${RESULTDIRA}/oareaguess.txt                        " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obsmean00_00.grd    ${RESULTDIRA}/obsmeananal.grd                     " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obsmerr00_00.grd    ${RESULTDIRA}/obsmerranal.grd                     " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obssprd00_00.grd    ${RESULTDIRA}/obssprdanal.grd                     " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/obsonum00_00.grd    ${RESULTDIRA}/obsnumanal.grd                      " >> ${WORKDIR}/tmp.sh
+  echo "mv ${WORKDIR}/oarea00_00.txt    ${RESULTDIRA}/oareaanal.txt                        " >> ${WORKDIR}/tmp.sh
   echo "mv ${WORKDIR}/obsope????? ${RESULTDIRA}                                             " >> ${WORKDIR}/tmp.sh
   echo "mv ${WORKDIR}/OBSO-???    ${RESULTDIRA}                                             " >> ${WORKDIR}/tmp.sh
   chmod 755 ${WORKDIR}/tmp.sh

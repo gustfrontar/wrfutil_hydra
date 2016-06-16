@@ -290,9 +290,13 @@ timeslots: DO islot=1,nslots
 
       !Check if the observation is within the horizontal domain.
       IF(CEILING(tmpi(n)) < 2 .OR. nlon-1 < CEILING(tmpi(n))) THEN
+          WRITE(6,*)'X coordinate out of range'
+          WRITE(6,*)tmpelm(n),tmplon(n),tmplat(n),tmplev(n),tmpi(n),tmpj(n),tmpk(n),tmpdat(n),tmperr(n)
         CYCLE
       END IF
       IF(CEILING(tmpj(n)) < 2 .OR. nlat-1 < CEILING(tmpj(n))) THEN
+        WRITE(6,*)'Y coordinate out of range'
+        WRITE(6,*)tmpelm(n),tmplon(n),tmplat(n),tmplev(n),tmpi(n),tmpj(n),tmpk(n),tmpdat(n),tmperr(n)
         CYCLE
       END IF
 
@@ -307,7 +311,8 @@ timeslots: DO islot=1,nslots
 
       !Check if the observation is within the vertical domain.
       IF(CEILING(tmpk(n)) > nlev-1) THEN
-        !CALL itpl_2d(phi0,tmpi(n),tmpj(n),dz)
+        WRITE(6,*)'Z coordinate out of range'
+        WRITE(6,*)tmpelm(n),tmplon(n),tmplat(n),tmplev(n),tmpi(n),tmpj(n),tmpk(n),tmpdat(n),tmperr(n)
         CYCLE
       END IF
         IF(CEILING(tmpk(n)) < 2 .AND. NINT(tmpelm(n)) /= id_ps_obs) THEN
@@ -317,8 +322,9 @@ timeslots: DO islot=1,nslots
           ELSE IF(NINT(tmpelm(n)) > 9999) THEN
             tmpk(n) = 0.0d0         
 	  ELSE
-            CALL itpl_2d(phi0,tmpi(n),tmpj(n),dz)
-            CYCLE
+           WRITE(6,*)'Z below topography'
+           WRITE(6,*)tmpelm(n),tmplon(n),tmplat(n),tmplev(n),tmpi(n),tmpj(n),tmpk(n),tmpdat(n),tmperr(n)
+           CYCLE
           END IF
         END IF
         IF(NINT(tmpelm(n)) == id_ps_obs .AND. tmpdat(n) < -100.0d0) CYCLE
@@ -326,6 +332,8 @@ timeslots: DO islot=1,nslots
           CALL itpl_2d(phi0,tmpi(n),tmpj(n),dz)
           tmpk(n) = tmplev(n) - dz
           IF(ABS(tmpk(n)) > threshold_dz) THEN ! pressure adjustment threshold
+            WRITE(6,*)'Pressure adjustment fails'
+            WRITE(6,*)tmpelm(n),tmplon(n),tmplat(n),tmpi(n),tmpj(n),tmpk(n),tmpdat(n),tmperr(n)
             CYCLE
           END IF
         END IF
@@ -334,6 +342,7 @@ timeslots: DO islot=1,nslots
         !
         CALL Trans_XtoY(tmpelm(n),tmptyp(n),tmplon(n),tmplat(n),tmpi(n),tmpj(n),tmpk(n),&
          & tmpaz(n),tmpel(n),v3d,v2d,tmphdxf(n,im))
+
 
       END DO
 !$OMP END PARALLEL DO

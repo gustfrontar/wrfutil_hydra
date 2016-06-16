@@ -40,8 +40,8 @@ module verify_tools
 
   REAL(r_size),ALLOCATABLE,SAVE :: lon(:,:)
   REAL(r_size),ALLOCATABLE,SAVE :: lat(:,:)
-  REAL(r_size),ALLOCATABLE,SAVE :: lev(:) , levall(:) 
-  REAL(r_size),ALLOCATABLE,SAVE :: varall(:)
+!  REAL(r_size),ALLOCATABLE,SAVE :: lev(:) , levall(:) 
+!  REAL(r_size),ALLOCATABLE,SAVE :: varall(:)
 
   REAL(r_size),ALLOCATABLE,SAVE :: lonreg(:,:)
   REAL(r_size),ALLOCATABLE,SAVE :: latreg(:,:)
@@ -49,15 +49,15 @@ module verify_tools
   REAL(r_size),ALLOCATABLE,SAVE :: varallreg(:)
  
  
-  REAL(r_size) :: minlon , minlat , maxlon , maxlat
-  REAL(r_size) :: minlev , maxlev
+!  REAL(r_size) :: minlon , minlat , maxlon , maxlat
+!  REAL(r_size) :: minlev , maxlev
   REAL(r_size) :: minlonreg , minlatreg , maxlonreg , maxlatreg
   REAL(r_size) :: minlevreg , maxlevreg
   INTEGER,ALLOCATABLE  :: levregmap(:)  !maps the original levels in the regrid levels.
 
   REAL(r_sngl) :: undefbin
   
-  character(20) , ALLOCATABLE :: var_name(:)
+!  character(20) , ALLOCATABLE :: var_name(:)
   INTEGER , ALLOCATABLE :: var_lev(:)
   INTEGER :: nvar_ctl
 
@@ -70,6 +70,14 @@ module verify_tools
 
   logical :: file_exist
   integer :: ierr
+
+  TYPE ctl_info
+  REAL(r_size),ALLOCATABLE  :: lev(:)
+  REAL(r_size),ALLOCATABLE  :: levall(:)
+  REAL(r_size)              :: minlon,minlat,maxlon,maxlat,minlev,maxlev
+  CHARACTER(20),ALLOCATABLE :: varname(:),varnameall(:)
+  REAL(r_size), ALLOCATABLE :: var(:),varall(:)
+  ENDTYPE
 
 CONTAINS
 

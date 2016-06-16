@@ -4,7 +4,8 @@ PGM=letkf.exe
 F90=mpif90
 OMP=
 
-F90OPT='-g -traceback -convert big_endian' #-O3 -convert big_endian' #-Kfast,parallel' # -Hs'
+F90OPT='-O3 -convert big_endian' #-O3 -convert big_endian' #-Kfast,parallel' # -Hs'
+
 
 BLAS=0 #0: no blas 1: using blas
 BASEDIR=${HOME}/share/Libs/
