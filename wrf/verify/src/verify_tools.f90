@@ -13,9 +13,9 @@ module verify_tools
 ! General parameters
 !-----------------------------------------------------------------------
   INTEGER,SAVE :: dx,dy ! grid spacing [m]
-  INTEGER,SAVE :: nlon
-  INTEGER,SAVE :: nlat
-  INTEGER,SAVE :: nlev
+  !INTEGER,SAVE :: nlon
+  !INTEGER,SAVE :: nlat
+  !INTEGER,SAVE :: nlev
   
   INTEGER,SAVE :: nlonreg,nlatreg,nlevreg !Regrid domain size
 
@@ -38,8 +38,8 @@ module verify_tools
 
   !GRID INFO
 
-  REAL(r_size),ALLOCATABLE,SAVE :: lon(:,:)
-  REAL(r_size),ALLOCATABLE,SAVE :: lat(:,:)
+!  REAL(r_size),ALLOCATABLE,SAVE :: lon(:,:)
+!  REAL(r_size),ALLOCATABLE,SAVE :: lat(:,:)
 !  REAL(r_size),ALLOCATABLE,SAVE :: lev(:) , levall(:) 
 !  REAL(r_size),ALLOCATABLE,SAVE :: varall(:)
 
@@ -58,14 +58,14 @@ module verify_tools
   REAL(r_sngl) :: undefbin
   
 !  character(20) , ALLOCATABLE :: var_name(:)
-  INTEGER , ALLOCATABLE :: var_lev(:)
-  INTEGER :: nvar_ctl
+!  INTEGER , ALLOCATABLE :: varlev(:)
+!  INTEGER :: nvar_ctl
 
   CHARACTER(19) :: hdate !Date in input files.
 
   TYPE(proj_info)  :: projection
 
-  integer :: nv !Total number of variables (vars times levs)
+!  integer :: nv !Total number of variables (vars times levs)
   integer :: nvreg !Total number of variables in regrid output ( vars times levels)
 
   logical :: file_exist
@@ -74,9 +74,25 @@ module verify_tools
   TYPE ctl_info
   REAL(r_size),ALLOCATABLE  :: lev(:)
   REAL(r_size),ALLOCATABLE  :: levall(:)
+  REAL(r_size)              :: undefbin
+  
   REAL(r_size)              :: minlon,minlat,maxlon,maxlat,minlev,maxlev
   CHARACTER(20),ALLOCATABLE :: varname(:),varnameall(:)
-  REAL(r_size), ALLOCATABLE :: var(:),varall(:)
+  CHARACTER(200)            :: datafile
+  REAL(r_size), ALLOCATABLE :: varlev(:)
+
+  LOGICAL     , ALLOCATABLE :: readvar(:)
+  INTEGER     , ALLOCATABLE :: varindex(:)
+  INTEGER                   :: nlon,nlat,nlev,nvar,nfields
+  REAL(r_size), ALLOCATABLE :: lon1d(:),lat1d(:),lev(:)
+  REAL(r_size), ALLOCATABLE :: lon(:,:),lat(:,:)
+  REAL(r_size)              :: minlat,minlon,minlev
+  REAL(r_size)              :: maxlat,maxlon,maxlev
+
+  REAL(r_size), ALLOCATABLE  :: commonlevall(:)
+  CHARACTER(20), ALLOCATABLE :: commonvarnameall(:)
+  INTEGER                    :: commonnvar
+  
   ENDTYPE
 
 CONTAINS
@@ -117,12 +133,12 @@ END SUBROUTINE read_namelist
 ! File I/O
 !-----------------------------------------------------------------------
 !Read dimensions from ctl file
-SUBROUTINE parse_ctl(ctl_file)
+SUBROUTINE parse_ctl(ctl_file,myctl)
 IMPLICIT NONE
 character(*) , INTENT(IN) :: ctl_file
 character(100)            :: buffer , dummyc
 integer                   :: iunit , i , j , counter
-real(r_size),allocatable  :: tmplat(:) , tmplon(:) , tmplev(:)
+TYPE ctl_info  INTENT(OUT) :: myctl
 
 iunit=98
 
@@ -134,15 +150,7 @@ iunit=98
     STOP
   ENDIF
 
-  nlon=0
-  nlat=0
-  nlev=0
-  undefbin=0.0e0
-  nv=0
-  
-
  !This is valid for mercator 
- !TODO: Implementar otras proyecciones como LAMBERT
  DO
    READ(iunit,'(A100)',IOSTAT=IERR)buffer
       IF(IERR /= 0)THEN
@@ -150,122 +158,208 @@ iunit=98
        EXIT
       ENDIF
       IF( INDEX(buffer,'undef') > 0 .or. INDEX(buffer,'UNDEF') > 0 )THEN
-       READ(buffer,*)dummyc , undefbin
-       WRITE(*,*)'Undef value for this file is ',undefbin
+       READ(buffer,*)dummyc , myctl%undefbin
+       WRITE(*,*)'Undef value for this file is ',myctl%undefbin
       ENDIF
       
       IF( INDEX(buffer,'xdef') > 0 .or. INDEX(buffer,'XDEF') > 0 )THEN
-        READ(buffer,*)dummyc ,  nlon
-        allocate(tmplon(nlon))
+        READ(buffer,*)dummyc ,  myctl%nlon
+        allocate(myctl%lon1d(nlon))
         DO i=1,nlon 
-          READ(iunit,*)tmplon(i)
+          READ(iunit,*)myctl%lon1d(i)
         ENDDO
       ENDIF
       IF( INDEX(buffer,'ydef') > 0 .or. INDEX(buffer,'YDEF') > 0 )THEN
-        READ(buffer,*)dummyc ,  nlat
-        allocate(tmplat(nlat))
+        READ(buffer,*)dummyc ,  myctl%nlat
+        allocate(myctl%lat1d(nlat))
         DO i=1,nlat
-          READ(iunit,*)tmplat(i)
+          READ(iunit,*)myctl%lat1d(i)
         ENDDO
       ENDIF
       IF( INDEX(buffer,'zdef') > 0 .or. INDEX(buffer,'ZDEF') > 0 )THEN
-        READ(buffer,*)dummyc ,  nlev
-        allocate(tmplev(nlev))
-        DO i=1,nlev
-          READ(iunit,*)tmplev(i)
+        READ(buffer,*)dummyc ,  myctl%nlev
+        allocate(myctl%lev(nlev))
+        DO i=1,myctl%nlev
+          READ(iunit,*)myctl%lev(i)
         ENDDO
       ENDIF
       IF( INDEX(buffer,'vars') > 0 .or. INDEX(buffer,'VARS') > 0 .AND. .NOT. &
         ( INDEX(buffer,'endvars') > 0 .or. INDEX(buffer,'ENDVARS') > 0 )  )THEN
-        READ(buffer,*)dummyc,nvar_ctl
-        allocate(var_name(nvar_ctl) )
-        allocate(var_lev(nvar_ctl)  )
-        DO i=1,nvar_ctl
-          READ(iunit,*)var_name(i),var_lev(i)
+        READ(buffer,*)dummyc,myctl%nvar
+        allocate(myctl%varname(myctl%nvar) )
+        allocate(myctl%varlev(myctl%nvar)  )
+        DO i=1,myctl%nvarctl
+          READ(iunit,*)myctl%varname(i),myctl%varlev(i)
         ENDDO
         !Get the total number of fields.
-        nv=SUM(var_lev)
+        myctl%nfields=SUM(myctl%varlev)
       ENDIF
  ENDDO
 
- minlat=undef
- maxlat=-undef
- minlon=undef
- maxlon=-undef
+ myctl%minlat=myctl%undef
+ myctl%maxlat=-myctl%undef
+ myctl%minlon=myctl%undef
+ myctl%maxlon=-myctl%undef
  
- allocate( lat(nlon,nlat) , lon(nlon,nlat) , lev(nlev) )
- DO i = 1,nlon
-  DO j = 1,nlat
-     lat(i,j)=tmplat(j)
-     lon(i,j)=tmplon(i)
+ allocate( myctl%lat(nlon,nlat) , myctl%lon(nlon,nlat) , myctl%lev(nlev) )
+ DO i = 1,myctl%nlon
+  DO j = 1,myctl%nlat
+     myctl%lat(i,j)=myctl%lat1d(j)
+     myctl%lon(i,j)=myctl%lon1d(i)
 
-     if ( lat(i,j) < minlat )minlat=lat(i,j)
-     if ( lat(i,j) > maxlat )maxlat=lat(i,j)
-     if ( lon(i,j) < minlon )minlon=lon(i,j)
-     if ( lon(i,j) > maxlon )maxlon=lon(i,j) 
+     if ( myctl%lat(i,j) < myctl%minlat )myctl%minlat=myctl%lat(i,j)
+     if ( myctl%lat(i,j) > myctl%maxlat )myctl%maxlat=myctl%lat(i,j)
+     if ( myctl%lon(i,j) < myctl%minlon )myctl%minlon=myctl%lon(i,j)
+     if ( myctl%lon(i,j) > myctl%maxlon )myctl%maxlon=myctl%lon(i,j) 
   ENDDO
  ENDDO
 
- lev=tmplev
 
- minlev=MINVAL(lev)
- maxlev=MAXVAL(lev)
+ myctl%minlev=MINVAL(myctl%lev)
+ myctl%maxlev=MAXVAL(myctl%lev)
 
  !Set levall (the level corresponding to each variable)
- ALLOCATE( levall(nv) , varall(nv) )
+ ALLOCATE( myctl%levall(myctl%nfields) , myctl%varnameall(myctl%nfields) )
  counter=1
- DO i=1,nvar_ctl
-   DO j=1,var_lev(i)
-     levall(counter)=lev(j)
-     varall(counter)=REAL(i,r_size)
+ DO i=1,myctl%nvar
+   DO j=1,myctl%varlev(i)
+     myctl%levall(counter)=myctl%lev(j)
+     myctl%varnameall(counter)=myctl%varname(j)
      counter=counter+1
    ENDDO
  ENDDO
 
- IF( nlon == 0 )THEN
+ IF( myctl%nlon == 0 )THEN
   WRITE(*,*)'[Error] Failed to get longitudes.'
   STOP
- ELSEIF( nlat == 0 )THEN
+ ELSEIF( myctl%nlat == 0 )THEN
   WRITE(*,*)'[Error] Failed to get latitudes.'
   STOP
- ELSEIF( nlev == 0 )THEN
+ ELSEIF( myctl%nlev == 0 )THEN
   WRITE(*,*)'[Error] Failed to get levels.'
   STOP
- ELSEIF( undefbin == 0.0e0 )THEN
+ ELSEIF( myctl%undefbin == 0.0e0 )THEN
   WRITE(*,*)'[Error] Failed to get undef.'
   STOP
  ENDIF
 
  WRITE(*,*)'===================================================='
- WRITE(*,*)' The total number of individual variables is = ',nvar_ctl
- WRITE(*,*)' Total number of matrices in each file is = ',nv
+ WRITE(*,*)' The total number of individual variables is = ',myctl%nvar
+ WRITE(*,*)' Total number of matrices in each file is = ',myctl%nfields
  WRITE(*,*)'===================================================='
- WRITE(*,*)'MINLON = ',minlon
- WRITE(*,*)'MINLAT = ',minlat
- WRITE(*,*)'MAXLON = ',maxlon
- WRITE(*,*)'MAXLAT = ',maxlat
+ WRITE(*,*)'MINLON = ',myctl%minlon
+ WRITE(*,*)'MINLAT = ',myctl%minlat
+ WRITE(*,*)'MAXLON = ',myctl%maxlon
+ WRITE(*,*)'MAXLAT = ',myctl%maxlat
 
 END SUBROUTINE parse_ctl
+
+!-----------------------------------------------------------------------
+! Match ctl variables
+!-----------------------------------------------------------------------
+! Get the info from two ctls and match variables from ctl1 with those in 
+! ctl2.
+
+SUBROUTINE match_ctl_variables(ctl1,ctl2)
+IMPLICIT NONE
+TYPE ctl_info , INTENT(IN) :: ctl1 , ctl2
+INTEGER :: ii , jj , varindex
+
+ALLOCATE( ctl1%readvar(ctl1%nfields) )
+ALLOCATE( ctl2%readvar(ctl2%nfields) )
+ctl1%readvar=.false.
+ctl2%readvar=.false.
+
+ALLOCATE( ctl1%varindex(ctl1%nfields) )
+ALLOCATE( ctl2%varindex(ctl2%nfields) )
+
+ctl1%varindex=0
+ctl2%varindex=0
+
+ !First identify which variables are common among both ctl data.
+ varindex=0
+ DO ii=1,ctl1%nfields
+    DO jj=1,ctl2%nfields
+
+       IF( ctl1%varnameall(ii) == ctl2%varnameall(jj) .AND. ctl1%levall(ii) == ctl2%levall(jj) )THEN
+         varindex=varindex+1
+         !We have a match between on variable from ctl1 and ctl2.
+ 
+         !We will read this variable from the binary files.
+         ctl1%readvar(ii)=.true.
+         ctl2%readvar(jj)=.true.
+
+         !Varindex defines the place where the variable will be stored in the common array.
+         ctl1%varindex(ii)=varindex
+         ctl2%varindex(jj)=varindex
+        
+       ENDIF
+
+    ENDDO
+ ENDDO 
+
+ !Store the total number of fields in the common grid.
+ ctl1%commonnfields=varindex
+ ctl2%commonnfields=varindex 
+
+ !Get the commonlevall y commonvarall
+ ALLOCATE( ctl1%commonlevall(ctl1%nfields) )
+ ALLOCATE( ctl1%commonvarnameall(ctl1%nfields) )
+ ALLOCATE( ctl2%commonlevall(ctl2%nfields) )
+ ALLOCATE( ctl2%commonvarnameall(ctl2%nfields) )
+ 
+
+ varindex=0
+ DO ii=1,ctl1%nfields
+   IF( ctl1%readvar(ii) )THEN
+     varindex=varindex+1
+     ctl1%commonlevall(varindex)=ctl1%levall(ii)
+     ctl1%commonvarnameall(varindex)=ctl%varnameall(ii) 
+     ctl2%commonlevall(varindex)=ctl1%levall(ii)
+     ctl2%commonvarnameall(varindex)=ctl%varnameall(ii)
+   ENDIF
+ ENDDO
+
+ WRITE(*,*)"----------------------------------------------------"
+ WRITE(*,*)"  MATCH CTL VARIABLES SUMMARY "
+ WRITE(*,*)" ii, levall, varnameall, readvar,varindex for CTL1 "
+ DO ii=1,ctl1%nfields
+   WRITE(*,*)ii,ctl1%levall(ii),ctl1%varnameall(ii),ctl1%readvar(ii),ctl1%varindex(ii)
+ ENDDO
+ WRITE(*,*)" ii, levall, varnameall, readvar,varindex for CTL2 "
+ DO ii=1,ctl2%nfields
+   WRITE(*,*)ii,ctl2%levall(ii),ctl2%varnameall(ii),ctl2%readvar(ii),ctl2%varindex(ii)
+ ENDDO
+ WRITE(*,*)" ii, commonlevall , commonvarnameall "
+ DO ii=1,ctl1%commonnfields
+   WRITE(*,*)ii,ctl1%commonlevall(ii),ctl1%commonvarnameall
+ ENDDO
+
+
+END SUBROUTINE match_ctl_variables 
+
 !-----------------------------------------------------------------------
 ! File I/O
 !-----------------------------------------------------------------------
 
 !-- Read a grid file ---------------------------------------------------
-SUBROUTINE read_grd(filename,nx,ny,nz,var,undefmask)
+!This subroutine reads in only the fields where readvar is true. 
+!The array varindex in myctl indicates where to store the output.
+SUBROUTINE read_grd(filename,myctl,var,undefmask)
   IMPLICIT NONE
-  INTEGER,INTENT(IN)      :: nx,ny,nz
+  TYPE ctl_info , INTENT(IN) :: myctl
+!  INTEGER,INTENT(IN)      :: ,ny,nz
   CHARACTER(*),INTENT(IN) :: filename
-  REAL(r_size),INTENT(OUT) :: var(nx,ny,nz) 
-  LOGICAL     ,INTENT(OUT) :: undefmask(nx,ny,nz)
-  REAL(r_sngl) :: buf4(nx,ny)
+  REAL(r_size),INTENT(OUT) :: var(myctl%nlon,myctl%nlat,myctl%commonnfields) 
+  LOGICAL     ,INTENT(OUT) :: undefmask(myctl%nlon,myctl%nlat,myctl%commonnfields)
+  REAL(r_sngl) :: buf4(myctl%nlon,myctl%nlat)
   INTEGER :: iunit,iolen
   INTEGER :: k,n,reclength,ios
-
+  
   undefmask=.true.
 
   INQUIRE(IOLENGTH=reclength) reclength
-  reclength = reclength * nx * ny
-
+  reclength = reclength * myctl%nlon * myctl%nlat
 
  iunit=33
  INQUIRE(FILE=filename,EXIST=file_exist)
@@ -277,25 +371,26 @@ SUBROUTINE read_grd(filename,nx,ny,nz,var,undefmask)
    RETURN
   ENDIF
 
-  DO n=1,nz
+  DO n=1,myctl%nfields
     READ(iunit,rec=n,IOSTAT=ios)buf4
-     IF( ios == 0 )THEN
-      WHERE( buf4 == undefbin )
-       undefmask(:,:,n)=.false.
+
+    IF( ios /= 0 .AND. n==1 )THEN
+      WRITE(*,*)"[Warning]: Error reading, this might be a new file "
+      WRITE(*,*)filename
+      var=0.0d0
+      undefmask=.false.
+      exit
+    ELSEIF( ios /=0 .AND. n > 1 )THEN
+      WRITE(*,*)"[Error]: Unexpected end of file for file ",filename 
+      STOP
+    ENDIF
+
+    IF( myctl%readvar(n) )THEN
+      WHERE( buf4 == myctl%undefbin )
+       undefmask(:,:,myctl%varindex)=.false.
       ENDWHERE
-       var(:,:,n) = REAL(buf4,r_size)
-     ELSE !We reached the end of the file.
-       IF( n==1)THEN
-         WRITE(*,*)"[Warning]: Error reading, this might be a new file "
-         WRITE(*,*)filename
-         var=0.0d0     
-         undefmask=.false.
-       ELSE
-         WRITE(*,*)"[Error]: Unexpectively reached end of file"
-         WRITE(*,*)filename
-         STOP
-       ENDIF
-     ENDIF
+      var(:,:,myctl%varindex) = REAL(buf4,r_size)
+    ENDIF
   END DO
 
   CLOSE(iunit)
@@ -337,34 +432,35 @@ SUBROUTINE write_grd(filename,nx,ny,nz,var,undefmask)
 END SUBROUTINE write_grd
 
 !Compute regrid grid. ------------------------------------------------------
-SUBROUTINE get_regrid_grid()
+SUBROUTINE get_regrid_grid(myctl)
 IMPLICIT NONE
+TYPE ctl_info, INTENT(IN) :: myctl 
 INTEGER      :: i,j,ivar,ilev,ilevreg,ilevprev,iregprev
 
   regrid_vert_res=regrid_vert_res / 100.0d0 !From Pa to hPa.
 
-  nlonreg=CEILING( (maxlon-minlon)/regrid_res ) + 1
-  nlatreg=CEILING( (maxlat-minlat)/regrid_res ) + 1
+  nlonreg=CEILING( (myctl%maxlon-myctl%minlon)/regrid_res ) + 1
+  nlatreg=CEILING( (myctl%maxlat-myctl%minlat)/regrid_res ) + 1
 
   ALLOCATE( lonreg(nlonreg,nlatreg) , latreg(nlonreg,nlatreg) )
 
   DO i = 1,nlonreg
    DO j = 1,nlatreg
 
-    lonreg(i,j)=minlon + REAL((i-1),r_size)*regrid_res
-    latreg(i,j)=minlat + REAL((j-1),r_size)*regrid_res    
+    lonreg(i,j)=myctl%minlon + REAL((i-1),r_size)*regrid_res
+    latreg(i,j)=myctl%minlat + REAL((j-1),r_size)*regrid_res    
 
    ENDDO
   ENDDO
  
-  minlonreg=minlon
-  minlatreg=minlat
-  maxlonreg=minlon+regrid_res*REAL(nlonreg-1,r_size)
-  maxlatreg=minlat+regrid_res*REAL(nlatreg-1,r_size)
+  minlonreg=myctl%minlon
+  minlatreg=myctl%minlat
+  maxlonreg=myctl%minlon+regrid_res*REAL(nlonreg-1,r_size)
+  maxlatreg=myctl%minlat+regrid_res*REAL(nlatreg-1,r_size)
   
-  maxlevreg=maxlev
+  maxlevreg=myctl%maxlev
 
-  nlevreg= CEILING( (maxlev-minlev)/ regrid_vert_res ) + 1
+  nlevreg= CEILING( (myctl%maxlev-myctl%minlev)/ regrid_vert_res ) + 1
 
   minlevreg= maxlevreg - REAL(nlevreg,r_size)*regrid_vert_res 
 
@@ -389,10 +485,10 @@ INTEGER      :: i,j,ivar,ilev,ilevreg,ilevprev,iregprev
  
   !How many total levels do we have in the regird domain?
   nvreg=1
-  ilevprev=NINT( ( maxlevreg - levall(1) )  / regrid_vert_res ) + 1
-  DO i = 2,nv
-   ilev=NINT( ( maxlevreg - levall(i) )  / regrid_vert_res ) + 1 
-   if ( ilev /= ilevprev .or. varall(i) /= varall(i-1) )then
+  ilevprev=NINT( ( maxlevreg - myctl%commonlevall(1) )  / regrid_vert_res ) + 1
+  DO i = 2,myctl%commonnfields
+   ilev=NINT( ( maxlevreg - myctl%commonlevall(i) )  / regrid_vert_res ) + 1 
+   if ( ilev /= ilevprev .or. myctl%commonvarnameall(i) /= myctl%commonvarname(i-1) )then
       nvreg = nvreg+1
    endif 
    ilevprev=ilev
@@ -402,21 +498,21 @@ INTEGER      :: i,j,ivar,ilev,ilevreg,ilevprev,iregprev
 
   ALLOCATE( levallreg(nvreg) )
   ALLOCATE( varallreg(nvreg) )
-  ALLOCATE( levregmap(nv)    )
-  ilevprev=NINT( ( maxlevreg - levall(1) )  / regrid_vert_res ) + 1
-  levallreg(1)=levall(ilevprev) 
+  ALLOCATE( levregmap(commonnfields)    )
+  ilevprev=NINT( ( maxlevreg - myctl%commonlevall(1) )  / regrid_vert_res ) + 1
+  levallreg(1)=myctl%commonlevall(ilevprev) 
   levregmap(1)=ilevprev
-  varallreg(1)=varall(1)
-  DO i = 2,nv
-   ilev=NINT( ( maxlevreg - levall(i) )  / regrid_vert_res ) + 1
-   if ( ilev /= ilevprev .or. varall(i) /= varall(i-1)  )then
+  varname(1)=myctl%commonvarnameall(1)
+  DO i = 2,commonnfields
+   ilev=NINT( ( maxlevreg - myctl%commonlevall(i) )  / regrid_vert_res ) + 1
+   if ( ilev /= ilevprev .or. myctl%commonvarnameall(i) /= myctl%commonvarnameall(i-1)  )then
      ilevreg=ilevreg+1
      levallreg(ilevreg)=levreg(ilev)
-     varallreg(ilevreg)=varall(i)
+     varnameallreg(ilevreg)=myctl%commonvarnameall(i)
    endif
    levregmap(i)=ilevreg
-   if( varall(i-1) /= varall(i) )then !Variable change
-    WRITE(*,*)"NLEVS for var ",var_name(varall(i-1))," ",ilevprev
+   if( myctl%commonvarnameall(i-1) /= myctl%commonvarnameall(i) )then !Variable change
+    WRITE(*,*)"NLEVS for var ",myctl%commonvarnameall(varall(i-1))," ",ilevprev
    endif
    ilevprev=ilev
   ENDDO

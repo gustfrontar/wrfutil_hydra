@@ -25,8 +25,8 @@ CONFIGURATION=control40msa_test     #Define a experiment configuration
 MCONFIGURATION=machine_60ksa_H_test #Define a machine configuration (number of nodes, etc)
 LETKFNAMELIST=control               #Define a letkf namelist template
 
-RESTART=0
-RESTARTDATE=20080810000000
+RESTART=1
+RESTARTDATE=20100803000000
 RESTARTITER=10
 
 

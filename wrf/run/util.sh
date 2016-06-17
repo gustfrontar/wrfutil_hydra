@@ -578,54 +578,77 @@ edit_wrf_post () {
 local SCRIPT=$1
 local DOMAIN=01 #Currently this function does not support multiple domains.
 
-echo "#!/bin/bash                                                  " > $SCRIPT 
-echo "WORKDIR=\$1                                                  " >> $SCRIPT
-echo "MEM=\$2                                                      " >> $SCRIPT
-echo "cd \$WORKDIR                                                 " >> $SCRIPT
 
 #Insert DUMMY MPI CALL
-if [ $SYSTEM -eq 0 ] ; then
-echo "../WRF/dummy-mpi                                             " >> $SCRIPT
+if [ $SYSTEM -eq 0  ] ; then
+
+ echo "#!/bin/bash                                                  " > $SCRIPT
+ echo "WORKDIR=\$1                                                  " >> $SCRIPT
+ echo "MEM=\$2                                                      " >> $SCRIPT
+ echo "cd \$WORKDIR                                                 " >> $SCRIPT
+ echo "../WRF/dummy-mpi                                             " >> $SCRIPT
+ echo "cat ./rsl.error.* > ./wrf\${MEM}.log                         " >> $SCRIPT
+ # --- RENAME OUTPUT FOR ANALYSIS
+  if [ $ANALYSIS -eq 1 ] ; then
+    local CDATEL=$WSDATE
+    local LOCAL_OUTFREC=$WINDOW_FREC
+    local it=1
+    while [ ${CDATEL} -le ${WEDATE} ] ; do
+     local itm=$it
+
+     if [ ${it} -lt 10 ]
+     then
+      itm="0${itm}"
+     fi
+
+     local_file=` wrfout_file_name $CDATEL $DOMAIN`
+     if [ $SYSTEM -eq 0 ] ; then
+       echo "mv $local_file ../LETKF/gs${itm}\${MEM}                      " >> $SCRIPT
+     fi
+     if [ $SYSTEM -eq 1 ] ; then
+       echo "mv $local_file $TMPDIR/LETKF/gs${itm}\${MEM}                 " >> $SCRIPT
+     fi
+
+     CDATEL=`date_edit2 $CDATEL $LOCAL_OUTFREC `
+     it=`expr ${it} + 1`
+    done
+  fi
 fi
+
 if [ $SYSTEM -eq 1 ]; then
-echo "ulimit -s unlimited                                          " >> $SCRIPT
-fi
 
-echo "cat ./rsl.error.* > ./wrf\${MEM}.log                         " >> $SCRIPT
-# --- RENAME OUTPUT FOR ANALYSIS
-if [ $ANALYSIS -eq 1 ] ; then
+  echo "#!/bin/bash                                                  " > $SCRIPT
+  echo "WORKDIR=\$1                                                  " >> $SCRIPT
+  echo "INIMEMBER=\$2                                                " >> $SCRIPT
+  echo "ENDMEMBER=\$3                                                " >> $SCRIPT
+  echo "cd \$WORKDIR                                                 " >> $SCRIPT
+  echo "ulimit -s unlimited                                          " >> $SCRIPT
+  # --- RENAME OUTPUT FOR ANALYSIS
+  if [ $ANALYSIS -eq 1 ] ; then
 
-  local CDATEL=$WSDATE
+   local CDATEL=$WSDATE
+   local LOCAL_OUTFREC=$WINDOW_FREC
+   local mem=$INIMEMBER
+   while [ $mem -le $ENDMEMBER ] ; do
+    mem=`ens_member $mem`
+    local it=1
+    while [ ${CDATEL} -le ${WEDATE} ] ; do
+     it=`add_zeros $it 2 `
 
-  local LOCAL_OUTFREC=$WINDOW_FREC
+     local_file=` wrfout_file_name $CDATEL $DOMAIN`
+     echo "mv ./WRF${mem}/$local_file $TMPDIR/LETKF/gs${it}${mem}     " >> $SCRIPT
 
-  local it=1
+     CDATEL=`date_edit2 $CDATEL $LOCAL_OUTFREC `
+     it=`expr ${it} + 1`
+  
+    done
+   echo "cat ./WRF${mem}/rsl.error.* > ./wrf${mem}.log                 " >> $SCRIPT
+   echo "rm ./WRF${mem}/wrfout*                                        " >> $SCRIPT 
+   mem=`expr ${mem} + 1`
 
-  while [ ${CDATEL} -le ${WEDATE} ] ; do
-
-  local itm=$it
-  if [ ${it} -lt 10 ]
-  then
-  itm="0${itm}"
-  fi
-
-
-  local_file=` wrfout_file_name $CDATEL $DOMAIN`
-  if [ $SYSTEM -eq 0 ] ; then
-    echo "mv $local_file ../LETKF/gs${itm}\${MEM}                      " >> $SCRIPT
-  fi
-  if [ $SYSTEM -eq 1 ] ; then
-    echo "mv $local_file $TMPDIR/LETKF/gs${itm}\${MEM}                 " >> $SCRIPT
-  fi
-
-  CDATEL=`date_edit2 $CDATEL $LOCAL_OUTFREC `
-  it=`expr ${it} + 1`
   done
-
-
+ fi 
 fi
-
-
 
 chmod 766 $SCRIPT
 
@@ -667,7 +690,7 @@ res=$? && ((res != 0)) && exit $res
 #-------------------------------------------------------------------------------
 }
 
-
+:
 safe_init_tmpdir () {
 #-------------------------------------------------------------------------------
 # Safely initialize a temporary directory
@@ -1705,18 +1728,19 @@ generate_run_forecast_script_torque () {
       echo "time wait " >> $local_script
      done 
 
-     M=$INIMEMBER
-     while [  $M -le $ENDMEMBER ] ; do
-      JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
-      MEM=`ens_member $M `
-         echo "${WORKDIR}/WRF_POST.sh ${WORKDIR}/WRF${MEM} $MEM && mv ${WORKDIR}/WRF$MEM/*.log ${WORKDIR}/ &  " >> $local_script
-         JOB=`expr $JOB + 1 `
-         M=`expr $M + 1 `
-      done
-      echo "time wait " >> $local_script
-      
-     done 
+     #All file tranfers will be processed sequentially to avoid NFS errors. 
+     echo "${WORKDIR}/WRF_POST.sh ${WORKDIR} $INIMEMBER $ENDMEMBER  " >> $local_script
+     #M=$INIMEMBER
+     #while [  $M -le $ENDMEMBER ] ; do
+     # JOB=1
+     # while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+     # MEM=`ens_member $M `
+     #    echo "${WORKDIR}/WRF_POST.sh ${WORKDIR}/WRF${MEM} $MEM && mv ${WORKDIR}/WRF$MEM/*.log ${WORKDIR}/ &  " >> $local_script
+     #    JOB=`expr $JOB + 1 `
+     #    M=`expr $M + 1 `
+     # done
+     # echo "time wait " >> $local_script
+     #done 
 
 
 #     if [ $FORECAST -eq 1 ] ; then

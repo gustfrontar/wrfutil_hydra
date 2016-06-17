@@ -72,21 +72,35 @@ program verify
 
   call read_namelist !ensemble size and general options.
 
-  call parse_ctl(ctl_file) !Get number of variables, X, Y and Z
+  call parse_ctl(ctl_file,ctlanl) !Get ctl dimmensions and variables for the verification dataset.
+  call parse_ctl(ctl_file,ctlfor) !Get ctl dimmensions and variables for the forecast dataset.
 
-  ALLOCATE( num_ana(narea,nv) )
-  ALLOCATE( wei_ana(narea,nv) )
-  ALLOCATE( bias_ana(narea,nv) )
-  ALLOCATE( abse_ana(narea,nv) )
-  ALLOCATE( rmse_ana(narea,nv) )
-  ALLOCATE( sprd_ana(narea,nv) )
-  ALLOCATE( vf(nlon,nlat,nv) , va(nlon,nlat,nv) , vfm(nlon,nlat,nv) , vfs(nlon,nlat,nv) )
-  ALLOCATE( ve(nlon,nlat,nv) )
-  ALLOCATE( undefmask(nlon,nlat,nv) )
-  ALLOCATE( totalundefmask(nlon,nlat,nv) )
+  call match_ctl_variables(ctlanl,ctlfor)  !See which are the common variables and levels in both ctls.
+                                           !verification will be performed only on the common variables and levels.
+
+  !This is the total number of fields that the two datasets has in common.
+  commonnfields=ctlanl%commonnfields
+
+  !These are the horizontal dimmensions that has to be the same between the two datasets.
+  nlon=ctlanl%nlon
+  nlat=ctlanl%nlat
+
+  !Allocate arrays to store the verification for the common fields.
+  ALLOCATE( num_ana(narea,commonnfields) )
+  ALLOCATE( wei_ana(narea,commonnfields) )
+  ALLOCATE( bias_ana(narea,commonnfields) )
+  ALLOCATE( abse_ana(narea,commonnfields) )
+  ALLOCATE( rmse_ana(narea,commonnfields) )
+  ALLOCATE( sprd_ana(narea,commonnfields) )
+  ALLOCATE( vf(nlon,nlat,commonnfields) , va(nlon,nlat,commonnfields) , vfm(nlon,nlat,commonnfields) , vfs(nlon,nlat,commonnfields) )
+  ALLOCATE( ve(nlon,nlat,commonnfields) )
+  ALLOCATE( undefmask(nlon,nlat,commonnfields) )
+  ALLOCATE( totalundefmask(nlon,nlat,commonnfields) )
 
   if( regrid_output )then !We will generate also a regrid output in a regular grid.
-    call get_regrid_grid   !Get the dimensions of the regrid grid.
+    call get_regrid_grid(ctlanl)   !Get the dimensions of the regrid grid.
+
+    !Allocate arrays for the regrided fields.
     ALLOCATE( vfreg(nlonreg,nlatreg,nvreg) )
     ALLOCATE( vareg(nlonreg,nlatreg,nvreg) )
     ALLOCATE( vfmreg(nlonreg,nlatreg,nvreg) )
@@ -118,7 +132,7 @@ DO i=1,nbv
 
   WRITE( fcstfile(5:9), '(I5.5)' )i
 
-  call read_grd(fcstfile,nlon,nlat,nv,vf,undefmask)
+  call read_grd(fcstfile,ctlfor,vf,undefmask)
 
   WHERE( .NOT. undefmask )
     totalundefmask=.false.
@@ -130,7 +144,8 @@ DO i=1,nbv
 
 ENDDO
 
-  call read_grd(analfile,nlon,nlat,nv,va,undefmask)
+  call read_grd(analfile,ctlanl,va,undefmask)
+
   WHERE( .NOT. undefmask )
    totalundefmask=.false.
   END WHERE
