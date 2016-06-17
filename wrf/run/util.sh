@@ -625,12 +625,11 @@ if [ $SYSTEM -eq 1 ]; then
   echo "ulimit -s unlimited                                          " >> $SCRIPT
   # --- RENAME OUTPUT FOR ANALYSIS
   if [ $ANALYSIS -eq 1 ] ; then
-
-   local CDATEL=$WSDATE
    local LOCAL_OUTFREC=$WINDOW_FREC
    local mem=$INIMEMBER
    while [ $mem -le $ENDMEMBER ] ; do
     mem=`ens_member $mem`
+    local CDATEL=$WSDATE
     local it=1
     while [ ${CDATEL} -le ${WEDATE} ] ; do
      it=`add_zeros $it 2 `
@@ -643,6 +642,7 @@ if [ $SYSTEM -eq 1 ]; then
   
     done
    echo "cat ./WRF${mem}/rsl.error.* > ./wrf${mem}.log                 " >> $SCRIPT
+   echo "mv  ./WRF${mem}/daupdatebc${mem}.log   ./                     " >> $SCRIPT
    echo "rm ./WRF${mem}/wrfout*                                        " >> $SCRIPT 
    mem=`expr ${mem} + 1`
 
