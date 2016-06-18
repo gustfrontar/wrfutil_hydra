@@ -48,7 +48,7 @@ program covariance_matrix
 
   call read_namelist !ensemble size and general options.
 
-  call parse_ctl(ctl_file , ctl ) !Get number of variables, X, Y and Z
+  call parse_ctl(ctl_file , ctl ) !Get ctl info (varnames, levs, grid size, etc)
 
   ALLOCATE( ensemble(ctl%nlon,ctl%nlat,ctl%nfields,nbv) )
   ALLOCATE( pensemble(nbv) )  
@@ -59,7 +59,6 @@ program covariance_matrix
 
   if( bootstrap )then
     ALLOCATE( bssprd(ctl%nlon,ctl%nlat,ctl%nfields) , bsmean(ctl%nlon,ctl%nlat,ctl%nfields) )
-    ALLOCATE( tmpsample(nbv,2) , tmp(nbv,2) )
   endif
 
   !First read all the ensemble and store it in memory (if this is not possible
@@ -78,6 +77,7 @@ DO i=1,nbv
 
 ENDDO ![End do over ensemble members]
 
+
    !Loop over points.
 
 DO ip=1,npoints
@@ -88,10 +88,15 @@ DO ip=1,npoints
      CALL com_pos2ij(1,ctl%nlon,ctl%nlat,ctl%lon,ctl%lat,1,plon(ip),plat(ip),ri(1),rj(1))
      gridi=NINT(ri(1))
      gridj=NINT(rj(1))
-     gridk=NINT(plev(ip))
+     !Get the file index corresponding to the selected variable and level.
+     CALL get_var_index(ctl,pvarname(ip),plev(ip),gridk)
 
      if( gridi > ctl%nlon .or. gridi < 1 .or. gridj > ctl%nlat .or. gridj < 1 .or. gridk > ctl%nfields )then
        write(*,*)"[Warning]: Requested coordinates are outside current grid."
+       cycle
+     endif
+     if( gridk == 0 )then
+       write(*,*)"[Warning]: Requested variable ",pvarname(ip)," was not found at level ",plev(ip)
        cycle
      endif
 
@@ -100,7 +105,7 @@ DO ip=1,npoints
  
      !Compute spread at the selected location/variable
      CALL com_stdev_sngl(nbv,pensemble,stdens)  
- 
+
  
      !Compute the covariance between this location/variable and the rest
      !of the state space.
@@ -119,11 +124,11 @@ DO ip=1,npoints
      ENDDO 
 !$OMP END PARALLEL DO
 
-
    if( bootstrap )then
      write(*,*)"Using bootstrap, with ",bootstrap_samples," samples"
 !$OMP PARALLEL DO PRIVATE(ii,jj,kk,is,cov,tmp,tmpsample,covmean,covsprd)
      DO ii = 1,ctl%nlon
+      ALLOCATE( tmpsample(nbv,2) , tmp(nbv,2) )
       tmp(:,1)=pensemble
       DO jj = 1,ctl%nlat
        DO kk = 1,ctl%nfields
@@ -143,6 +148,7 @@ DO ip=1,npoints
         ENDIF
        ENDDO
       ENDDO
+      DEALLOCATE(tmpsample,tmp) 
      ENDDO
 !$OMP END PARALLEL DO
    endif

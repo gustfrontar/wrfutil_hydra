@@ -1,6 +1,5 @@
 module common_verification
 !=======================================================================
-!
 ! [PURPOSE:] Common procedure for verification codes
 ! Juan Ruiz 2016 created.
 !=======================================================================
@@ -9,12 +8,14 @@ module common_verification
   USE map_utils
   IMPLICIT NONE
   PUBLIC
+
+  INTEGER , PARAMETER :: clen=20  !Allocatable character lengths.
   
   !Define ctl_info type
   TYPE ctl_info
   REAL(r_sngl)              :: undefbin
   
-  CHARACTER(20),ALLOCATABLE :: varname(:),varnameall(:)
+  CHARACTER(len=:),ALLOCATABLE :: varname(:),varnameall(:)
   REAL(r_size),ALLOCATABLE  :: lev(:),levall(:)
 
   CHARACTER(200)            :: datafile
@@ -28,11 +29,8 @@ module common_verification
   REAL(r_size)              :: minlat,minlon,minlev
   REAL(r_size)              :: maxlat,maxlon,maxlev
   REAL(r_size)              :: lonres,latres,levres
-
-  REAL(r_size),  ALLOCATABLE :: commonlevall(:)
-  CHARACTER(20), ALLOCATABLE :: commonvarnameall(:)
-  INTEGER                    :: commonnfields
-  INTEGER                    :: projection
+  TYPE(proj_info)           :: proj_data !Projection info (for Lambert only)
+  INTEGER                   :: proj_code !Projection type
   ENDTYPE
 
 
@@ -47,10 +45,9 @@ CONTAINS
 SUBROUTINE parse_ctl(ctl_file,myctl)
 IMPLICIT NONE
 character(*) , INTENT(IN) :: ctl_file
-character(100)            :: buffer , dummyc , proj_name
+character(300)            :: buffer , dummyc , proj_name
 integer                   :: iunit , i , j , counter , ierr
 TYPE (ctl_info) ,  INTENT(OUT) :: myctl
-TYPE (proj_info)               :: projection
 REAL(r_size) :: plat1,plon1,pdx,pdy,pstdlon,ptruelat1,ptruelat2,pknowni,pknownj !Projection parameters.
 
 LOGICAL                    :: ignore_nlon_nlat=.false. , file_exist
@@ -61,7 +58,7 @@ myctl%nlat=0
 myctl%nlev=0
 myctl%undefbin=0
 
-myctl%projection = 3  !We start assuming mercartor.
+myctl%proj_code = PROJ_MERC  !We start assuming mercartor.
 
  INQUIRE(FILE=ctl_file,EXIST=file_exist)
   IF(file_exist) THEN
@@ -78,18 +75,20 @@ myctl%projection = 3  !We start assuming mercartor.
        EXIT
       ENDIF
       IF( INDEX(buffer,'pdef ') > 0 .or. INDEX(buffer,'PDEF ') > 0 )THEN
+     
        ignore_nlon_nlat = .true. !nlon and nlat will be provided by pdef line.
        READ(buffer,*)dummyc,myctl%nlon,myctl%nlat,proj_name
-        IF( INDEX(proj_name,'LC') > 0 .or. INDEX(proj_name,'lc') > 0)THEN
+                
+        IF( INDEX(proj_name,'LCC') > 0 .or. INDEX(proj_name,'lcc') > 0)THEN
           WRITE(*,*)'This is a Lambert conformal grid'
           !Get data for proj info structure.
-          myctl%projection=1
+          myctl%proj_code=PROJ_LC
           READ(buffer,*)dummyc,myctl%nlon,myctl%nlat,proj_name,plat1,plon1,pknowni,pknownj,   &
    &           ptruelat1,ptruelat2,pstdlon,pdx,pdy
           !Populate projection structure with the data provided by the ctl.
-          CALL map_init(projection)
-          CALL map_set(myctl%projection , projection, lat1=plat1, lon1=plon1, knowni=1.0d0,   &
-   &           knownj=1.0d0, dx=pdx, dy=pdy, stdlon=pstdlon, truelat1=ptruelat1,   &
+          CALL map_init(myctl%proj_data)
+          CALL map_set(myctl%proj_code , myctl%proj_data , lat1=plat1, lon1=plon1, knowni=pknowni,   &
+   &           knownj=pknownj, dx=pdx, dy=pdy, stdlon=pstdlon, truelat1=ptruelat1,   &
    &           truelat2=ptruelat2, r_earth=re)  
         ENDIF 
         !Add more projections here.
@@ -111,7 +110,7 @@ myctl%projection = 3  !We start assuming mercartor.
          ENDDO
         ELSEIF( INDEX(buffer,'linear') > 0 .or. INDEX(buffer,'linear') > 0)THEN
          READ(buffer,*)dummyc, myctl%nlon,dummyc,myctl%minlon,myctl%lonres
-         ALLOCATE(myctl%lon1d(myctl%nlon))
+         allocate(myctl%lon1d(myctl%nlon))
          DO i=1,myctl%nlon
            myctl%lon1d(i)=myctl%minlon + (i-1)*myctl%lonres
          ENDDO
@@ -122,14 +121,16 @@ myctl%projection = 3  !We start assuming mercartor.
       IF( INDEX(buffer,'ydef') > 0 .or. INDEX(buffer,'YDEF') > 0 )THEN
        IF( .not. ignore_nlon_nlat )THEN
         IF( INDEX(buffer,'levels') > 0 .or. INDEX(buffer,'LEVELS') > 0 )THEN
+         myctl%proj_code=PROJ_MERC   !Irregular grid in y (assume mercator)
          READ(buffer,*)dummyc ,  myctl%nlat
          allocate(myctl%lat1d(myctl%nlat))
          DO i=1,myctl%nlat
            READ(iunit,*)myctl%lat1d(i)
          ENDDO
         ELSEIF( INDEX(buffer,'linear') > 0 .or. INDEX(buffer,'linear') > 0)THEN
+         myctl%proj_code=PROJ_LATLON  !Regular grid in y.
          READ(buffer,*)dummyc, myctl%nlat,dummyc,myctl%minlat,myctl%latres
-         ALLOCATE(myctl%lat1d(myctl%nlat))
+         allocate(myctl%lat1d(myctl%nlat))
          DO i=1,myctl%nlat
            myctl%lat1d(i)=myctl%minlat + (i-1)*myctl%latres
          ENDDO
@@ -146,7 +147,7 @@ myctl%projection = 3  !We start assuming mercartor.
         ENDDO
        ELSEIF( INDEX(buffer,'linear') > 0 .or. INDEX(buffer,'linear') > 0)THEN
         READ(buffer,*)dummyc, myctl%nlev,dummyc,myctl%minlev,myctl%levres
-        ALLOCATE(myctl%lev(myctl%nlev))
+        allocate(myctl%lev(myctl%nlev))
         DO i=1,myctl%nlev
           myctl%lev(i)=myctl%minlev + (i-1)*myctl%levres
         ENDDO
@@ -156,7 +157,7 @@ myctl%projection = 3  !We start assuming mercartor.
       IF( INDEX(buffer,'vars') > 0 .or. INDEX(buffer,'VARS') > 0 .AND. .NOT. &
         ( INDEX(buffer,'endvars') > 0 .or. INDEX(buffer,'ENDVARS') > 0 )  )THEN
         READ(buffer,*)dummyc,myctl%nvar
-        allocate(myctl%varname(myctl%nvar) )
+        allocate(character(clen)::myctl%varname(myctl%nvar) )
         allocate(myctl%varlev(myctl%nvar)  )
         DO i=1,myctl%nvar
           READ(iunit,*)myctl%varname(i),myctl%varlev(i)
@@ -171,9 +172,9 @@ myctl%projection = 3  !We start assuming mercartor.
  myctl%minlon=undef
  myctl%maxlon=-undef
  
- allocate( myctl%lat(myctl%nlon,myctl%nlat) , myctl%lon(myctl%nlon,myctl%nlat) , myctl%lev(myctl%nlev) )
+ allocate( myctl%lat(myctl%nlon,myctl%nlat) , myctl%lon(myctl%nlon,myctl%nlat) )
 
- IF( myctl%projection == PROJ_MERC .OR. myctl%projection == PROJ_LATLON )THEN
+ IF( myctl%proj_code == PROJ_MERC .OR. myctl%proj_code == PROJ_LATLON )THEN
   DO i = 1,myctl%nlon
    DO j = 1,myctl%nlat
      myctl%lat(i,j)=myctl%lat1d(j)
@@ -186,10 +187,10 @@ myctl%projection = 3  !We start assuming mercartor.
    ENDDO
   ENDDO
  ENDIF
- IF( myctl%projection == PROJ_LC )THEN
+ IF( myctl%proj_code == PROJ_LC )THEN
   DO i = 1,myctl%nlon
    DO j = 1,myctl%nlat
-     CALL ij_to_latlon(projection, REAL(i,r_size), REAL(j,r_size), myctl%lat(i,j), myctl%lon(i,j) )
+     CALL ij_to_latlon(myctl%proj_data, REAL(i,r_size), REAL(j,r_size), myctl%lat(i,j), myctl%lon(i,j) )
 
      if ( myctl%lat(i,j) < myctl%minlat )myctl%minlat=myctl%lat(i,j)
      if ( myctl%lat(i,j) > myctl%maxlat )myctl%maxlat=myctl%lat(i,j)
@@ -201,17 +202,17 @@ myctl%projection = 3  !We start assuming mercartor.
 
  ENDIF
 
-
  myctl%minlev=MINVAL(myctl%lev)
  myctl%maxlev=MAXVAL(myctl%lev)
 
  !Set levall (the level corresponding to each variable)
- ALLOCATE( myctl%levall(myctl%nfields) , myctl%varnameall(myctl%nfields) )
+ allocate(character(clen)::myctl%varnameall(myctl%nfields) )
+ ALLOCATE( myctl%levall(myctl%nfields) )
  counter=1
  DO i=1,myctl%nvar
    DO j=1,myctl%varlev(i)
      myctl%levall(counter)=myctl%lev(j)
-     myctl%varnameall(counter)=myctl%varname(j)
+     myctl%varnameall(counter)=myctl%varname(i)
      counter=counter+1
    ENDDO
  ENDDO
@@ -238,9 +239,26 @@ myctl%projection = 3  !We start assuming mercartor.
  WRITE(*,*)'MINLAT = ',myctl%minlat
  WRITE(*,*)'MAXLON = ',myctl%maxlon
  WRITE(*,*)'MAXLAT = ',myctl%maxlat
+ WRITE(*,*)'NLON =   ',myctl%nlon
+ WRITE(*,*)'NLAT =   ',myctl%nlat
 
 END SUBROUTINE parse_ctl
 
+SUBROUTINE get_var_index(myctl,varname,varlev,varindex)
+IMPLICIT NONE
+TYPE(ctl_info),INTENT(IN) :: myctl
+CHARACTER(*)  ,INTENT(IN) :: varname
+REAL(r_size)  ,INTENT(IN) :: varlev
+INTEGER       ,INTENT(OUT):: varindex
+integer                   :: i
 
+varindex=0 
+DO i=1,myctl%nfields
+   IF( myctl%varnameall(i) == varname .and. myctl%levall(i) == varlev )THEN
+     varindex=i
+   ENDIF
+ENDDO
+
+END SUBROUTINE get_var_index
 
 END MODULE common_verification

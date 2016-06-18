@@ -6,6 +6,8 @@ MEMBER=40
 ANALYSIS_PATH=/home/hp150019/k02016/data/EXPERIMENTS/ANALYSIS_SINLAKU_60K_control40m/
 TMPDIR=$HOME/data/TMP/covariance_matrix/
 
+
+
 source ../../run/util.sh
 
 mkdir -p $TMPDIR

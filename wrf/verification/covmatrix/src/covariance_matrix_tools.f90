@@ -19,6 +19,7 @@ module covariance_matrix_tools
   integer, parameter :: max_npoints = 20
   integer :: npoints
   real(r_size) :: plon(max_npoints)  , plat(max_npoints) , plev(max_npoints) 
+  character(50) :: pvarname(max_npoints)
   real(r_size) :: dep(max_npoints) , error(max_npoints)
   LOGICAL :: bootstrap=.true.
   INTEGER :: bootstrap_samples=20
@@ -51,7 +52,7 @@ error=undef
 !In the current version PLEV represents not only the level but also the
 !variable. 
 
-NAMELIST / GENERAL / nbv , npoints , plon , plat , plev ,  &
+NAMELIST / GENERAL / nbv , npoints , plon , plat , pvarname , plev , &
                      dep , error , bootstrap , bootstrap_samples 
 
 INQUIRE(FILE=NAMELIST_FILE, EXIST=file_exist)
@@ -178,8 +179,6 @@ INTEGER :: intind(n) , ii
  do ii=1,n
    varsampled(ii,:)=var(intind(ii),:)
  enddo
-
-
 
 END SUBROUTINE generate_sample
 

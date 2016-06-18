@@ -1,16 +1,20 @@
 
 
-MAX_RUNNING=10
-CDATE=20080827180000
-MEMBER=40
-ANALYSIS_PATH=/home/hp150019/k02016/data/EXPERIMENTS/ANALYSIS_SINLAKU_60K_control40m/
+MAX_RUNNING=5
+CDATE=20100806060000
+MEMBER=36
+ANALYSIS_PATH=$HOME/datos/EXPERIMENTS/ANALYSIS_SA_60KM_control40msa_test/
 TMPDIR=$HOME/data/TMP/covariance_matrix/
+
+ulimit -s unlimited
+export OMP_STACKSIZE=4G
+export KMP_STACKSIZE=4G
 
 source ../../run/util.sh
 
+#Create temporary folder
 mkdir -p $TMPDIR
-cp ../*.exe $TMPDIR
-
+cp ../covmatrix/*.exe $TMPDIR
 
 #Write namelist
 
@@ -18,17 +22,17 @@ my_namelist=$TMPDIR/covariance_matrix.namelist
 
 echo "&general                                     " >  $my_namelist
 echo "nbv=$MEMBER                                  " >> $my_namelist
-echo "npoints=5                                    " >> $my_namelist
-echo "plon=150,150, 150, 150,150                   " >> $my_namelist                                        
-echo "plat= 40, 30,  20,  10,  5                   " >> $my_namelist
-echo "plev= 90, 90,  90,  90, 90                   " >> $my_namelist
-echo "dep=1,1,1,1                                  " >> $my_namelist 
-echo "error=1,1,1,1                                " >> $my_namelist
+echo "npoints=2                                    " >> $my_namelist
+echo "plon=-58,-58,                                " >> $my_namelist                                        
+echo "plat= -10, -30,                              " >> $my_namelist
+echo "pvarname='umet','tk'                         " >> $my_namelist
+echo "plev=500,1000                                " >> $my_namelist
+echo "dep=1,1,                                     " >> $my_namelist 
+echo "error=1,1,                                   " >> $my_namelist
 echo "/                                            " >> $my_namelist
 
 
 #Link files
-
 cd $TMPDIR
 
 export OMP_NUM_THREADS=$MAX_RUNNING
