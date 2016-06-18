@@ -48,17 +48,17 @@ program covariance_matrix
 
   call read_namelist !ensemble size and general options.
 
-  call parse_ctl(ctl_file) !Get number of variables, X, Y and Z
+  call parse_ctl(ctl_file , ctl ) !Get number of variables, X, Y and Z
 
-  ALLOCATE( ensemble(nlon,nlat,nv,nbv) )
+  ALLOCATE( ensemble(ctl%nlon,ctl%nlat,ctl%nfields,nbv) )
   ALLOCATE( pensemble(nbv) )  
-  ALLOCATE( covar(nlon,nlat,nv) )
-  ALLOCATE( obsimpact(nlon,nlat,nv) )
+  ALLOCATE( covar(ctl%nlon,ctl%nlat,ctl%nfields) )
+  ALLOCATE( obsimpact(ctl%nlon,ctl%nlat,ctl%nfields) )
 
-  ALLOCATE( undefmask(nlon,nlat,nv) , totalundefmask(nlon,nlat,nv) )
+  ALLOCATE( undefmask(ctl%nlon,ctl%nlat,ctl%nfields) , totalundefmask(ctl%nlon,ctl%nlat,ctl%nfields) )
 
   if( bootstrap )then
-    ALLOCATE( bssprd(nlon,nlat,nv) , bsmean(nlon,nlat,nv) )
+    ALLOCATE( bssprd(ctl%nlon,ctl%nlat,ctl%nfields) , bsmean(ctl%nlon,ctl%nlat,ctl%nfields) )
     ALLOCATE( tmpsample(nbv,2) , tmp(nbv,2) )
   endif
 
@@ -70,7 +70,7 @@ program covariance_matrix
 DO i=1,nbv
 
      WRITE( fcstfile(5:9), '(I5.5)' )i
-     call read_grd(fcstfile,nlon,nlat,nv,ensemble(:,:,:,i),undefmask)
+     call read_grd(fcstfile,ctl%nlon,ctl%nlat,ctl%nfields,ensemble(:,:,:,i),undefmask,ctl%undefbin)
 
      WHERE( .NOT. undefmask )
         totalundefmask=.false.
@@ -85,12 +85,12 @@ DO ip=1,npoints
      write(*,*)"Lat ",plat(ip)," Lon ",plon(ip)," Var ",plev(ip)
 
      !Get the closest grid point to the selected location.
-     CALL com_pos2ij(1,nlon,nlat,lon,lat,1,plon(ip),plat(ip),ri(1),rj(1))
+     CALL com_pos2ij(1,ctl%nlon,ctl%nlat,ctl%lon,ctl%lat,1,plon(ip),plat(ip),ri(1),rj(1))
      gridi=NINT(ri(1))
      gridj=NINT(rj(1))
      gridk=NINT(plev(ip))
 
-     if( gridi > nlon .or. gridi < 1 .or. gridj > nlat .or. gridj < 1 .or. gridk > nv )then
+     if( gridi > ctl%nlon .or. gridi < 1 .or. gridj > ctl%nlat .or. gridj < 1 .or. gridk > ctl%nfields )then
        write(*,*)"[Warning]: Requested coordinates are outside current grid."
        cycle
      endif
@@ -106,9 +106,9 @@ DO ip=1,npoints
      !of the state space.
 
 !$OMP PARALLEL DO PRIVATE(ii,jj,kk,cov)
-     DO ii = 1,nlon
-      DO jj = 1,nlat
-       DO kk = 1,nv
+     DO ii = 1,ctl%nlon
+      DO jj = 1,ctl%nlat
+       DO kk = 1,ctl%nfields
         IF( totalundefmask(ii,jj,kk) ) then
         CALL com_covar_sngl(nbv,ensemble(ii,jj,kk,:),pensemble,cov)
         covar(ii,jj,kk)=REAL(cov,r_sngl)
@@ -123,10 +123,10 @@ DO ip=1,npoints
    if( bootstrap )then
      write(*,*)"Using bootstrap, with ",bootstrap_samples," samples"
 !$OMP PARALLEL DO PRIVATE(ii,jj,kk,is,cov,tmp,tmpsample,covmean,covsprd)
-     DO ii = 1,nlon
+     DO ii = 1,ctl%nlon
       tmp(:,1)=pensemble
-      DO jj = 1,nlat
-       DO kk = 1,nv
+      DO jj = 1,ctl%nlat
+       DO kk = 1,ctl%nfields
         IF( totalundefmask(ii,jj,kk) ) then
            covmean=0.0d0
            covsprd=0.0d0
@@ -153,7 +153,7 @@ DO ip=1,npoints
    WRITE(covfile(13:15),'(I3.3)')gridj
    WRITE(covfile(17:19),'(I3.3)')gridk
 
-   CALL write_grd(covfile,nlon,nlat,nv,covar,totalundefmask)
+   CALL write_grd(covfile,ctl%nlon,ctl%nlat,ctl%nfields,covar,totalundefmask,ctl%undefbin)
 
   if( bootstrap ) then
 
@@ -161,13 +161,13 @@ DO ip=1,npoints
    WRITE(bsmfile(13:15),'(I3.3)')gridj
    WRITE(bsmfile(17:19),'(I3.3)')gridk
 
-   CALL write_grd(bsmfile,nlon,nlat,nv,bsmean,totalundefmask)
+   CALL write_grd(bsmfile,ctl%nlon,ctl%nlat,ctl%nfields,bsmean,totalundefmask,ctl%undefbin)
 
    WRITE(bssfile(9 :11),'(I3.3)')gridi
    WRITE(bssfile(13:15),'(I3.3)')gridj
    WRITE(bssfile(17:19),'(I3.3)')gridk
 
-   CALL write_grd(bssfile,nlon,nlat,nv,bssprd,totalundefmask)
+   CALL write_grd(bssfile,ctl%nlon,ctl%nlat,ctl%nfields,bssprd,totalundefmask,ctl%undefbin)
 
   endif
 
@@ -175,7 +175,7 @@ DO ip=1,npoints
    WRITE(oimfile(13:15),'(I3.3)')gridj
    WRITE(oimfile(17:19),'(I3.3)')gridk
  
-   CALL write_grd(oimfile,nlon,nlat,nv,obsimpact,totalundefmask)
+   CALL write_grd(oimfile,ctl%nlon,ctl%nlat,ctl%nfields,obsimpact,totalundefmask,ctl%undefbin)
 
 ENDDO ![End do over points]
 
