@@ -161,6 +161,7 @@ myctl%proj_code = PROJ_MERC  !We start assuming mercartor.
         allocate(myctl%varlev(myctl%nvar)  )
         DO i=1,myctl%nvar
           READ(iunit,*)myctl%varname(i),myctl%varlev(i)
+          IF( myctl%varlev(i) == 0 )myctl%varlev(i)=1
         ENDDO
         !Get the total number of fields.
         myctl%nfields=SUM(myctl%varlev)

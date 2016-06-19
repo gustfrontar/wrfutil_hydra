@@ -59,6 +59,11 @@ program covariance_matrix
 
   ALLOCATE( undefmask(ctl%nlon,ctl%nlat,ctl%nfields) , totalundefmask(ctl%nlon,ctl%nlat,ctl%nfields) )
 
+  covar=0.0e0
+  ensemble=0.0e0
+  penseble=0.0e0
+  obsimpact=0.0e0
+  
 
   !First read all the ensemble and store it in memory (if this is not possible
   !then the code should be modified).

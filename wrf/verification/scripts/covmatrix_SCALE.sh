@@ -3,7 +3,7 @@
 
 MAX_RUNNING=20         #Number of threads
 CDATE=20130713053400   #The date
-MEMBER=10              #Ensemble size
+MEMBER=100             #Ensemble size
 ANALYSIS_PATH=/data1/jruiz/EXPERIMENTS/OsakaPAR_1km_control1000m_smallrandompert/            #Ensemble data path
 TMPDIR=/data1/jruiz/TMP/covariance_matrix/                                                   #Temporary work directory.
 CTL_PATH=/data1/jruiz/EXPERIMENTS/OsakaPAR_1km_control1000m_smallrandompert/ctl/analgz.ctl   #Ensemble data ctl file.
@@ -32,7 +32,7 @@ echo "plev=5000,5000,5000,1957.5,1957.5,1957.5,1957.5,1957.5,             " >> $
 echo "dep=1,1,1,1,1,1,1,1,                                                " >> $my_namelist 
 echo "error=1,1,1,1,1,1,1,1,                                              " >> $my_namelist
 echo "bootstrap=.true.                                                    " >> $my_namelist
-echo "bootstrap_samples=100                                               " >> $my_namelist
+echo "bootstrap_samples=10                                                " >> $my_namelist
 echo "nignore=9                                                           " >> $my_namelist
 echo "ignorevarname='qc','qr','qi','qs','qg','topo','rain','snow','max_dbz' " >> $my_namelist
 echo "skipx=1                                                             " >> $my_namelist
