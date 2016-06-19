@@ -161,6 +161,35 @@ SUBROUTINE com_covar_sngl(ndim,var1,var2,cov)
   RETURN
 END SUBROUTINE com_covar_sngl
 
+SUBROUTINE com_covar_sngl_sample(ndim,var1,var2,sampleindex,cov)
+  IMPLICIT NONE
+  INTEGER,INTENT(IN) :: ndim
+  REAL(r_sngl),INTENT(IN) :: var1(ndim)
+  REAL(r_sngl),INTENT(IN) :: var2(ndim)
+  INTEGER     ,INTENT(IN) :: sampleindex(ndim)
+  REAL(r_sngl),INTENT(OUT) :: cov
+  INTEGER  :: ii
+  REAL(r_sngl) :: amean1,amean2
+  REAL(r_sngl) :: dev1(ndim),dev2(ndim)
+
+  !Reorder the sample
+  DO ii=1,ndim
+    dev1(ii) = var1(sampleindex(ii)) 
+    dev2(ii) = var2(sampleindex(ii))
+  ENDDO
+
+  CALL com_mean_sngl(ndim,dev1,amean1)
+  CALL com_mean_sngl(ndim,dev2,amean2)
+
+  dev1=dev1-amean1
+  dev2=dev2-amean2
+
+  cov = SUM( dev1*dev2 ) / REAL(ndim-1,r_sngl)
+
+  RETURN
+END SUBROUTINE com_covar_sngl_sample
+
+
 
 !-----------------------------------------------------------------------
 ! Correlation

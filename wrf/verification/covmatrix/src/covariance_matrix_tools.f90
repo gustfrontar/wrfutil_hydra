@@ -23,6 +23,12 @@ module covariance_matrix_tools
   real(r_size) :: dep(max_npoints) , error(max_npoints)
   LOGICAL :: bootstrap=.true.
   INTEGER :: bootstrap_samples=20
+
+  INTEGER :: skipx=1,skipy=1,skipz=1
+  INTEGER :: nignore=0
+  INTEGER , PARAMETER :: max_nignore = 20
+  character(50) :: ignorevarname(max_nignore)
+
   CHARACTER(LEN=100) :: NAMELIST_FILE='./covariance_matrix.namelist'
 
   !GRID INFO
@@ -53,7 +59,8 @@ error=undef
 !variable. 
 
 NAMELIST / GENERAL / nbv , npoints , plon , plat , pvarname , plev , &
-                     dep , error , bootstrap , bootstrap_samples 
+                     dep , error , bootstrap , bootstrap_samples   , &
+                     nignore , ignorevarname , skipx , skipy , skipz
 
 INQUIRE(FILE=NAMELIST_FILE, EXIST=file_exist)
 
@@ -100,6 +107,7 @@ SUBROUTINE read_grd(filename,nx,ny,nz,var,undefmask,undefbin)
   IF(file_exist) THEN
    OPEN(iunit,FILE=filename,FORM='unformatted',ACCESS='direct',RECL=reclength)
   ELSE
+   WRITE(*,*)"[Warning]: Could not finde file! ",filename
    undefmask=.false.
    var=0.0d0
    RETURN
@@ -165,20 +173,16 @@ SUBROUTINE write_grd(filename,nx,ny,nz,var,undefmask,undefbin)
   RETURN
 END SUBROUTINE write_grd
 
-SUBROUTINE generate_sample(var,varsampled,n,m)
+SUBROUTINE generate_sample(sampledindex,n)
 !Resample randomly picking with substitution.
 IMPLICIT NONE
-INTEGER, INTENT(IN) :: n,m
-REAL(r_sngl), INTENT(IN)  :: var(n,m) 
-REAL(r_sngl), INTENT(OUT) :: varsampled(n,m)
+INTEGER, INTENT(IN) :: n
+INTEGER, INTENT(OUT) :: sampledindex(n)
 REAL(r_size) :: randomloc(n)
 INTEGER :: intind(n) , ii
 
  CALL com_rand(n,randomloc)
- intind=INT(1+randomloc*(n-1))
- do ii=1,n
-   varsampled(ii,:)=var(intind(ii),:)
- enddo
+ sampledindex=INT(1+randomloc*(n-1))
 
 END SUBROUTINE generate_sample
 

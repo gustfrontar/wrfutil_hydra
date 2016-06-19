@@ -18,16 +18,18 @@ program covariance_matrix
   character(100) :: bsmfile  = 'bsmean_xXXXyXXXzXXX.grd' !Bootstrap mean
   character(100) :: ctl_file = 'input.ctl'
 
-  real(r_sngl) ,ALLOCATABLE :: ensemble(:,:,:,:) !nlon,nlat,nv,nens
-  real(r_sngl) ,ALLOCATABLE :: pensemble(:)        !nens
+  real(r_sngl) ,ALLOCATABLE :: ensemble(:,:,:,:) !nlon,nlat,nfields,nens
+  real(r_sngl) ,ALLOCATABLE :: pensemble(:)      !nens
+  integer      ,ALLOCATABLE :: sampleindex(:)    !bootstrap sample index array
   real(r_sngl) :: stdens
 
   !Covariance between and observation at a certain location and the 
   !state vector. 
-  real(r_sngl) ,ALLOCATABLE :: covar(:,:,:)        !nlon,nlat,nv
+  real(r_sngl) ,ALLOCATABLE :: covar(:,:,:)        !nlon,nlat,nfields
+  real(r_sngl) ,ALLOCATABLE :: localcov(:,:,:)     !nlon,nlat,nfields
   !Obs impact how much impact an observation located at a certain location
   !will have on the state vector.
-  real(r_sngl) ,ALLOCATABLE :: obsimpact(:,:,:)    !nlon,nlat,nv
+  real(r_sngl) ,ALLOCATABLE :: obsimpact(:,:,:)    !nlon,nlat,nfields
   real(r_sngl) ,ALLOCATABLE :: bssprd(:,:,:) !Bootstrap covariance spread
   real(r_sngl) ,ALLOCATABLE :: bsmean(:,:,:) !Bottstrap covariance mean
   real(r_sngl) ,ALLOCATABLE :: tmpsample(:,:),tmp(:,:)  !Temporary buffer for data resampling.
@@ -36,7 +38,7 @@ program covariance_matrix
 
   LOGICAL , ALLOCATABLE :: undefmask(:,:,:) , totalundefmask(:,:,:)
 
-  integer :: i, ii , jj , kk  , is
+  integer :: i, j , ii , jj , kk  , is , ilev
  
   real(r_size) ri(1) , rj(1)
 
@@ -57,9 +59,11 @@ program covariance_matrix
 
   ALLOCATE( undefmask(ctl%nlon,ctl%nlat,ctl%nfields) , totalundefmask(ctl%nlon,ctl%nlat,ctl%nfields) )
 
-  if( bootstrap )then
-    ALLOCATE( bssprd(ctl%nlon,ctl%nlat,ctl%nfields) , bsmean(ctl%nlon,ctl%nlat,ctl%nfields) )
-  endif
+  covar=0.0e0
+  ensemble=0.0e0
+  penseble=0.0e0
+  obsimpact=0.0e0
+  
 
   !First read all the ensemble and store it in memory (if this is not possible
   !then the code should be modified).
@@ -69,6 +73,7 @@ program covariance_matrix
 DO i=1,nbv
 
      WRITE( fcstfile(5:9), '(I5.5)' )i
+     WRITE(*,*)"Reading file ",fcstfile
      call read_grd(fcstfile,ctl%nlon,ctl%nlat,ctl%nfields,ensemble(:,:,:,i),undefmask,ctl%undefbin)
 
      WHERE( .NOT. undefmask )
@@ -77,8 +82,40 @@ DO i=1,nbv
 
 ENDDO ![End do over ensemble members]
 
+!Apply variable and grid filter.
+ilev=1
+DO i=1,ctl%nfields
+ DO j=1,nignore
+    IF( ignorevarname(j) == ctl%varnameall(i) )THEN
+      !This field won't be prcoessed
+      write(*,*)"[Warning]: Field ",TRIM(ctl%varnameall(i))," at lev ",ctl%levall(i)," will be ignored"
+      totalundefmask(:,:,i)=.false. 
+    ENDIF
+ ENDDO
+      
+ IF( i > 1 )THEN
+   IF(  ctl%varnameall(i) /= ctl%varnameall(i-1) )ilev=1
+ ENDIF
+ IF( MOD(ilev-1,skipz) /= 0)THEN
+   totalundefmask(:,:,i)=.false.
+   write(*,*)"[Warning]: Field ",TRIM(ctl%varnameall(i))," at lev ",ctl%levall(i)," will be ignored"
+ ENDIF
+ ilev=ilev+1
+ENDDO
+DO i=1,ctl%nlon
+  IF( MOD(i-1,skipx) /= 0)THEN
+    totalundefmask(i,:,:)=.false.
+    write(*,*)"[Warning]: Longitude ",i," will be ignored"
+  ENDIF
+ENDDO
+DO i=1,ctl%nlat
+  IF( MOD(i-1,skipy) /= 0)THEN
+    totalundefmask(:,i,:)=.false.
+    write(*,*)"[Warning]: Latitude ",i," will be ignored"
+  ENDIF
+ENDDO
 
-   !Loop over points.
+!Loop over points.
 
 DO ip=1,npoints
      write(*,*)"Processing point ",ip," of ",npoints
@@ -125,32 +162,33 @@ DO ip=1,npoints
 !$OMP END PARALLEL DO
 
    if( bootstrap )then
+     ALLOCATE( bssprd(ctl%nlon,ctl%nlat,ctl%nfields) , bsmean(ctl%nlon,ctl%nlat,ctl%nfields) )
      write(*,*)"Using bootstrap, with ",bootstrap_samples," samples"
-!$OMP PARALLEL DO PRIVATE(ii,jj,kk,is,cov,tmp,tmpsample,covmean,covsprd)
+     bsmean=0.0d0
+     bssprd=0.0d0
+!$OMP PARALLEL DO PRIVATE(ii,jj,kk,is,cov,covmean,covsprd,localcov,sampleindex) 
+    DO is = 1,bootstrap_samples 
+     ALLOCATE( localcov(ctl%nlon,ctl%nlat,ctl%nfields) , sampleindex(nbv) )
+     CALL generate_sample(sampleindex,nbv)
+     localcov=0.0d0
      DO ii = 1,ctl%nlon
-      ALLOCATE( tmpsample(nbv,2) , tmp(nbv,2) )
-      tmp(:,1)=pensemble
       DO jj = 1,ctl%nlat
        DO kk = 1,ctl%nfields
         IF( totalundefmask(ii,jj,kk) ) then
-           covmean=0.0d0
-           covsprd=0.0d0
-           DO is = 1,bootstrap_samples
-             tmp(:,2)=ensemble(ii,jj,kk,:)
-             !tmpsample=tmp
-             CALL generate_sample(tmp,tmpsample,nbv,2)
-             CALL com_covar_sngl(nbv,tmpsample(:,1),tmpsample(:,2),cov)
-             covmean=covmean+cov
-             covsprd=covsprd+cov**2
-           ENDDO
-           bsmean(ii,jj,kk)=covmean/REAL(bootstrap_samples,r_sngl)
-           bssprd(ii,jj,kk)=sqrt( covsprd/REAL(bootstrap_samples,r_sngl)-( covmean/REAL(bootstrap_samples,r_sngl) )**2 )
+          CALL com_covar_sngl_sample(nbv,pensemble,ensemble(ii,jj,kk,:),sampleindex,localcov(ii,jj,kk))
         ENDIF
        ENDDO
       ENDDO
-      DEALLOCATE(tmpsample,tmp) 
      ENDDO
+!$OMP CRITICAL     
+      bsmean=bsmean+localcov
+      bssprd=bssprd+localcov**2
+!$OMP END CRITICAL
+     DEALLOCATE(localcov,sampleindex)
+   ENDDO
 !$OMP END PARALLEL DO
+   bsmean=bsmean/REAL(bootstrap_samples,r_sngl)
+   bssprd=sqrt( bssprd/REAL(bootstrap_samples,r_sngl)-( bsmean )**2 )
    endif
 
 
