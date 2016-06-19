@@ -7,8 +7,8 @@ ANALYSIS_PATH=$HOME/datos/EXPERIMENTS/ANALYSIS_SA_60KM_control40msa_test/
 TMPDIR=$HOME/data/TMP/covariance_matrix/
 
 ulimit -s unlimited
-export OMP_STACKSIZE=4G
-export KMP_STACKSIZE=4G
+export OMP_STACKSIZE=200M
+export KMP_STACKSIZE=200M
 
 source ../../run/util.sh
 
@@ -50,7 +50,7 @@ export OMP_NUM_THREADS=$MAX_RUNNING
    done
 
 
-./covariance_matrix.exe
+time ./covariance_matrix.exe
 
 
 for i in `ls covmat*.grd ` ; do
