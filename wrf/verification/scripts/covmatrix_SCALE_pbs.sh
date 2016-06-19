@@ -1,9 +1,11 @@
-#!/bin/bash
+#PBS -l nodes=1:ppn=40
+#PBS -S /bin/bash
+
 #To compute some components of the ensemble covariance matrix.
 
-MAX_RUNNING=20         #Number of threads
+MAX_RUNNING=40         #Number of threads
 CDATE=20130713053400   #The date
-MEMBER=10              #Ensemble size
+MEMBER=1000            #Ensemble size
 ANALYSIS_PATH=/data1/jruiz/EXPERIMENTS/OsakaPAR_1km_control1000m_smallrandompert/            #Ensemble data path
 TMPDIR=/data1/jruiz/TMP/covariance_matrix/                                                   #Temporary work directory.
 CTL_PATH=/data1/jruiz/EXPERIMENTS/OsakaPAR_1km_control1000m_smallrandompert/ctl/analgz.ctl   #Ensemble data ctl file.
@@ -12,11 +14,11 @@ ulimit -s unlimited
 export OMP_STACKSIZE=500M
 export KMP_STACKSIZE=500M
 
-source ../../run/util.sh
+source /data1/jruiz/LETKF_WRF/wrf/run/util.sh
 
 #Create temporary folder
 mkdir -p $TMPDIR
-cp ../covmatrix/*.exe $TMPDIR
+cp /data1/jruiz/LETKF_WRF/wrf/verification/covmatrix/*.exe $TMPDIR
 
 #Write namelist
 
@@ -45,6 +47,7 @@ echo "/                                                                   " >> $
 cd $TMPDIR
 
 export OMP_NUM_THREADS=$MAX_RUNNING
+export KMP_NUM_THREADS=$MAX_RUNNING
 
    cp -sf $CTL_PATH  ./input.ctl
    M=1
@@ -61,7 +64,7 @@ export OMP_NUM_THREADS=$MAX_RUNNING
    done
 
 
-time ./covariance_matrix.exe
+time ./covariance_matrix.exe > cov.log 
 
 
 

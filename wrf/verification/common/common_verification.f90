@@ -154,7 +154,7 @@ myctl%proj_code = PROJ_MERC  !We start assuming mercartor.
        ENDIF
       ENDIF
 
-      IF( INDEX(buffer,'vars') > 0 .or. INDEX(buffer,'VARS') > 0 .AND. .NOT. &
+      IF( ( INDEX(buffer,'vars') > 0 .or. INDEX(buffer,'VARS') > 0 ) .AND. .NOT. &
         ( INDEX(buffer,'endvars') > 0 .or. INDEX(buffer,'ENDVARS') > 0 )  )THEN
         READ(buffer,*)dummyc,myctl%nvar
         allocate(character(clen)::myctl%varname(myctl%nvar) )
@@ -191,7 +191,6 @@ myctl%proj_code = PROJ_MERC  !We start assuming mercartor.
   DO i = 1,myctl%nlon
    DO j = 1,myctl%nlat
      CALL ij_to_latlon(myctl%proj_data, REAL(i,r_size), REAL(j,r_size), myctl%lat(i,j), myctl%lon(i,j) )
-
      if ( myctl%lat(i,j) < myctl%minlat )myctl%minlat=myctl%lat(i,j)
      if ( myctl%lat(i,j) > myctl%maxlat )myctl%maxlat=myctl%lat(i,j)
      if ( myctl%lon(i,j) < myctl%minlon )myctl%minlon=myctl%lon(i,j)
