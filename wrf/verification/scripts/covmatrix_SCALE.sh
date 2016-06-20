@@ -3,7 +3,7 @@
 
 MAX_RUNNING=20         #Number of threads
 CDATE=20130713053400   #The date
-MEMBER=100             #Ensemble size
+MEMBER=10              #Ensemble size
 ANALYSIS_PATH=/data1/jruiz/EXPERIMENTS/OsakaPAR_1km_control1000m_smallrandompert/            #Ensemble data path
 TMPDIR=/data1/jruiz/TMP/covariance_matrix/                                                   #Temporary work directory.
 CTL_PATH=/data1/jruiz/EXPERIMENTS/OsakaPAR_1km_control1000m_smallrandompert/ctl/analgz.ctl   #Ensemble data ctl file.
