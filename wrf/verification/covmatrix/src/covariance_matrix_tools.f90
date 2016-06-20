@@ -8,7 +8,7 @@ module covariance_matrix_tools
   USE common
   USE common_verification
   USE map_utils
-  USE common_smooth2d
+!  USE common_smooth2d
 !  USE ifport
   IMPLICIT NONE
   PUBLIC
@@ -235,7 +235,6 @@ INTEGER                         :: kk
 INTEGER                         :: integermask(nx,ny,nz)
 INTEGER                         :: filter_size_x
 REAL(r_size)                    :: tmpdata(nx,ny,nz)
-CHARACTER(256)                  :: filter_type='L' !So far only Lanczos filter is supported.
 
 integermask=0
 WHERE( undefmask )
@@ -248,7 +247,7 @@ tmpdata=REAL(mydata,r_size)
 
 !$OMP PARALLEL DO PRIVATE(kk)
 DO kk=1,nz  
-    CALL filter_2d(tmpdata(:,:,kk),tmpdata(:,:,kk),integermask(:,:,kk),filter_size_x,filter_type,nx,ny)
+    CALL lanczos_2d(tmpdata(:,:,kk),tmpdata(:,:,kk),integermask(:,:,kk),filter_size_x,nx,ny)
 ENDDO
 !$OMP END PARALLEL DO
 

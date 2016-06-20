@@ -86,6 +86,9 @@ DO i=1,nbv
 
      IF( smoothcov )THEN
          CALL smooth_2d(ensemble(:,:,:,i),ctl%nlon,ctl%nlat,ctl%nfields,smoothdx,smoothcovlength,undefmask)
+         IF( i==1)THEN 
+          CALL write_grd('testsmooth.grd',ctl%nlon,ctl%nlat,ctl%nfields,ensemble(:,:,:,i),totalundefmask,ctl%undefbin)
+         ENDIF
      ENDIF
 
 ENDDO ![End do over ensemble members]
