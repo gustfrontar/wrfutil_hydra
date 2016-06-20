@@ -28,7 +28,7 @@ module covariance_matrix_tools
   LOGICAL  :: computemoments=.true.
   INTEGER  :: max_moments=4
 
-  LOGICAL  :: smoothcov=.false.
+  LOGICAL      :: smoothcov=.false.
   REAL(r_size) :: smoothcovlength=1.0d5  !Lanczos filter length scale in the same unit as dx.
   REAL(r_size) :: smoothdx=1.0d3         !Data resolution 
 
@@ -66,7 +66,8 @@ NAMELIST / GENERAL / nbv , npoints , plon , plat , pvarname , plev,   &
                      dep , error , bootstrap , bootstrap_samples  ,   &
                      nignore , ignorevarname , skipx , skipy , skipz, &
                      inputendian , outputendian , smoothcov ,         &
-                     smoothdx , smoothcovlength 
+                     smoothdx , smoothcovlength , computemoments ,    &
+                     max_moments
 
 plon=undef
 plat=undef
@@ -194,7 +195,6 @@ REAL(r_sngl), INTENT(IN)  :: ensemble(nx,ny,nz,nbv) !Ensemble data.
 INTEGER, INTENT(IN)       :: nmoments     !Number of moments to be computed.
 LOGICAL, INTENT(IN)       :: undefmask(nx,ny,nz) !Valid grids.
 REAL(r_sngl), INTENT(IN)  :: undefbin
-
 REAL(r_sngl)              :: moments(nx,ny,nz,nmoments)
 REAL(r_sngl)              :: tmp(nbv)
 INTEGER                   :: ii , jj , kk , im

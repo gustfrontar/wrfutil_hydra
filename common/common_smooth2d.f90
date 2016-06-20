@@ -89,14 +89,15 @@ CONTAINS
   fn    = 1./ncut
   nband = 2*ncut    ! Bandwidth of filter is twice the filter span
 
-  ALLOCATE ( dec(0:nband) , de(0:nband) )
+  if( .not. allocated(dec) )allocate(dec(0:nband))
+  if( .not. allocated(de)  )allocate(de(0:nband))
 
      SELECT CASE ( ctyp)
      CASE ( 'Lanczos','L','l') 
         nfilter=jp_lanc
      CASE ( 'Hanning','H','h')
         nfilter=jp_hann
-        ALLOCATE ( dec2d(0:2,0:2) )
+        if(.not. allocated(dec2d))allocate( dec2d(0:2,0:2) )
      CASE ( 'Shapiro','S','s')
         nfilter=jp_shap
      CASE ( 'Box','B','b')
@@ -110,8 +111,9 @@ CONTAINS
   npiglo = nx
   npjglo = ny
   
-
-  ALLOCATE ( v2d(npiglo,npjglo),iw(npiglo,npjglo), w2d(npiglo,npjglo) )
+  if( .not. allocated(v2d) )allocate(v2d(npiglo,npjglo))
+  if( .not. allocated(iw)  )allocate(iw (npiglo,npjglo))
+  if( .not. allocated(w2d) )allocate(w2d(npiglo,npjglo))
 
    iw = mask !IF mask == 1 filter will be performed , if mask == 0 point will be skiped.
    v2d=inputvar2d
@@ -306,10 +308,10 @@ CONTAINS
     inymin   =  knj
     inymaxi  =  kpj-knj+1
 
-    PRINT *,' filtering parameters'
-    PRINT *,'    nx    = ', kpi
-    PRINT *,'    nband = ', knj
-    PRINT *,'    fn    = ', pfn
+!    PRINT *,' filtering parameters'
+!    PRINT *,'    nx    = ', kpi
+!    PRINT *,'    nband = ', knj
+!    PRINT *,'    fn    = ', pfn
 
     DO jj=1,kpj
        DO  jmx=1,kpi

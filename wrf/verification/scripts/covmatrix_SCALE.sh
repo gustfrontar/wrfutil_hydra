@@ -3,7 +3,7 @@
 
 MAX_RUNNING=20         #Number of threads
 CDATE=20130713053400   #The date
-MEMBER=10              #Ensemble size
+MEMBER=100             #Ensemble size
 ANALYSIS_PATH=/data1/jruiz/EXPERIMENTS/OsakaPAR_1km_control1000m_smallrandompert/            #Ensemble data path
 TMPDIR=/data1/jruiz/TMP/covariance_matrix/                                                   #Temporary work directory.
 CTL_PATH=/data1/jruiz/EXPERIMENTS/OsakaPAR_1km_control1000m_smallrandompert/ctl/analgz.ctl   #Ensemble data ctl file.
@@ -24,7 +24,7 @@ my_namelist=$TMPDIR/covariance_matrix.namelist
 
 echo "&general                                                              " >  $my_namelist
 echo "nbv=$MEMBER                                                           " >> $my_namelist
-echo "npoints=1                                                             " >> $my_namelist
+echo "npoints=2                                                             " >> $my_namelist
 echo "plon=135.48,135.48,135.48,135.602,135.602,135.602,135.602,135.602,    " >> $my_namelist                                        
 echo "plat=34.7,34.7,34.7,34.71,34.71,34.71,34.71,34.71,                    " >> $my_namelist
 echo "pvarname='tk','p','u','w','tk','p','u','dbz'                          " >> $my_namelist
@@ -35,6 +35,8 @@ echo "bootstrap=.true.                                                      " >>
 echo "bootstrap_samples=10                                                  " >> $my_namelist
 echo "nignore=9                                                             " >> $my_namelist
 echo "ignorevarname='qc','qr','qi','qs','qg','topo','rain','snow','max_dbz' " >> $my_namelist
+echo "computemoments=.true.                                                " >> $my_namelist
+echo "max_moments=4                                                         " >> $my_namelist
 echo "skipx=1                                                               " >> $my_namelist
 echo "skipy=1                                                               " >> $my_namelist
 echo "skipz=1                                                               " >> $my_namelist

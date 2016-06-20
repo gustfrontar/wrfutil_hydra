@@ -76,12 +76,16 @@ DO i=1,nbv
      WRITE(*,*)"Reading file ",fcstfile
      call read_grd(fcstfile,ctl%nlon,ctl%nlat,ctl%nfields,ensemble(:,:,:,i),undefmask,ctl%undefbin)
 
-     WHERE( .NOT. undefmask )
-        totalundefmask=.false.
-     END WHERE
+     DO ii=1,ctl%nlon
+      DO jj=1,ctl%nlat
+       DO kk=1,ctl%nfields
+        IF( .not. undefmask(ii,jj,kk) )totalundefmask(ii,jj,kk)=.false.
+       ENDDO
+      ENDDO
+     ENDDO
 
      IF( smoothcov )THEN
-         smooth_2d(ensemble(:,:,:,i),ctl%nlon,ctl%nlat,ctl%nfields,dx,smoothcovlength,undefmask)
+         CALL smooth_2d(ensemble(:,:,:,i),ctl%nlon,ctl%nlat,ctl%nfields,smoothdx,smoothcovlength,undefmask)
      ENDIF
 
 ENDDO ![End do over ensemble members]
@@ -222,6 +226,7 @@ DO ip=1,npoints
 
    CALL write_grd(bssfile,ctl%nlon,ctl%nlat,ctl%nfields,bssprd,totalundefmask,ctl%undefbin)
 
+   deallocate( bssprd , bsmean )
   endif
 
    WRITE(oimfile(9 :11),'(I3.3)')gridi
