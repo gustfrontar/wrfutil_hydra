@@ -257,7 +257,6 @@ mydata=REAL(tmpdata,r_sngl)
 END SUBROUTINE smooth_2d
 
 
-
 SUBROUTINE generate_sample(sampledindex,n)
 !Resample randomly picking with substitution.
 IMPLICIT NONE
@@ -272,4 +271,153 @@ INTEGER :: intind(n) , ii
 END SUBROUTINE generate_sample
 
 
+
+SUBROUTINE lanczos_2d(inputvar2d,outputvar2d,mask,lambda,nx,ny)
+!This is a single-routine lanczos filter. This routine has been prepared in order to be used
+!with openmp (common_smooth_2d module shares variables among different routines and can not be
+!safely used with openmp)
+  IMPLICIT NONE
+  INTEGER,INTENT(IN)      :: nx,ny 
+  REAL(r_size) , INTENT(IN) :: inputvar2d(nx,ny) 
+  REAL(r_size) , INTENT(OUT):: outputvar2d(nx,ny)
+  INTEGER      , INTENT(IN) :: mask(nx,ny)
+  INTEGER      , INTENT(IN) :: lambda
+  REAL(r_size)                         :: fn, rspval        ! cutoff freq/wavelength, spval
+  REAL(r_size), DIMENSION(0:2*lambda)  :: dec, de           ! weight in r8, starting index 0:nband
+  INTEGER                              :: ji, jj, jmx, jkx, jk, jt, jvar !  dummy loop index
+  INTEGER                              :: ik1x, ik2x, ikkx
+  INTEGER                              :: ifrst=0
+  INTEGER                              :: inxmin, inxmaxi
+  INTEGER                              :: inymin, inymaxi
+  REAL(r_size), DIMENSION(nx,ny)       :: dl_tmpx, dl_tmpy
+  REAL(r_size)                         :: dl_yy, dl_den, dl_pi, dl_ey, dl_coef
+
+  !   PRINT *,'        ncut     : number of grid step to be filtered'
+  !  remark: for a spatial filter, fn=dx/lambda where dx is spatial step, lamda is cutting wavelength
+
+  fn    = 1./lambda
+
+  !Filter init -------------------------------------  
+ 
+    dl_pi   = ACOS(-1.d0)
+    dl_coef = 2.0d0*dl_pi*fn
+
+    de(0) = 2.d0*fn
+    DO  ji=1,2*lambda
+       de(ji) = SIN(dl_coef*ji)/(dl_pi*ji)
+    END DO
+    !
+    dec(0) = 2.d0*fn
+    DO ji=1,2*lambda
+       dl_ey   = dl_pi*ji/(2*lambda)
+       dec(ji) = de(ji)*SIN(dl_ey)/dl_ey
+    END DO
+
+  !End of filter init --------------------------------
+  
+  !FILTER-----------------------------------------------
+
+   IF ( lambda /= 0 )THEN
+
+    inxmin   =  2*lambda
+    inxmaxi  =  nx-2*lambda+1
+    inymin   =  2*lambda
+    inymaxi  =  ny-2*lambda+1
+
+
+    DO jj=1,ny
+       DO  jmx=1,nx
+          ik1x = -2*lambda
+          ik2x =  2*lambda
+          !
+          IF (jmx <= inxmin ) ik1x = 1-jmx
+          IF (jmx >= inxmaxi) ik2x = nx-jmx
+          !
+          dl_yy  = 0.d0
+          dl_den = 0.d0
+          !
+          DO jkx=ik1x,ik2x
+             ikkx=ABS(jkx)
+             IF (mask(jkx+jmx,jj)  ==  1) THEN
+                dl_den = dl_den + dec(ikkx)
+                dl_yy  = dl_yy  + dec(ikkx)*inputvar2d(jkx+jmx,jj)
+             END IF
+          END DO
+          !
+          dl_tmpx(jmx,jj)=dl_yy/dl_den
+       END DO
+    END DO
+
+    DO ji=1,nx
+       DO  jmx=1,ny
+          ik1x = -2*lambda
+          ik2x =  2*lambda
+          !
+          IF (jmx <= inymin ) ik1x = 1-jmx
+          IF (jmx >= inymaxi) ik2x = ny-jmx
+          !
+          dl_yy  = 0.d0
+          dl_den = 0.d0
+          !
+          DO jkx=ik1x,ik2x
+             ikkx=ABS(jkx)
+             IF (mask(ji,jkx+jmx)  ==  1) THEN
+                dl_den = dl_den + dec(ikkx)
+                dl_yy  = dl_yy  + dec(ikkx)*dl_tmpx(ji,jkx+jmx)
+             END IF
+          END DO
+          outputvar2d(ji,jmx)=0.
+          IF (dl_den /=  0.) outputvar2d(ji,jmx) = dl_yy/dl_den
+       END DO
+    END DO
+    !
+
+
+   ENDIF 
+
+  !END OF FILTER-----------------------------------------
+
+
+   IF ( lambda == 0 ) outputvar2d=inputvar2d
+
+   WHERE( mask == 0 )outputvar2d = inputvar2d
+
+
+  END SUBROUTINE lanczos_2d
+
+ 
+
+
+
 END MODULE covariance_matrix_tools
+
+
+
+
+
+ 
+
+  
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

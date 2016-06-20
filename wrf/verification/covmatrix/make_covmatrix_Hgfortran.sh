@@ -15,14 +15,14 @@ COMMONDIR=../../../../common/
 
 ln -fs $COMMONDIR/SFMT.f90 ./
 ln -fs $COMMONDIR/common.f90 ./
-ln -fs $COMMONDIR/common_smooth2d.f90 ./
+#ln -fs $COMMONDIR/common_smooth2d.f90 ./
 ln -fs ../../../common/module_map_utils.f90 ./
 ln -fs ../../common/common_verification.f90 ./
 
 
 $F90 $OMP $F90OPT -c SFMT.f90
 $F90 $OMP $F90OPT -c common.f90
-$F90 $OMP $F90OPT -c common_smooth2d.f90
+#$F90 $OMP $F90OPT -c common_smooth2d.f90
 $F90 $OMP $F90OPT -c module_map_utils.f90
 $F90 $OMP $F90OPT -c common_verification.f90 
 $F90 $OMP $F90OPT -c covariance_matrix_tools.f90
