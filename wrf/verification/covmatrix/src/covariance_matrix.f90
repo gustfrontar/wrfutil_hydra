@@ -80,6 +80,10 @@ DO i=1,nbv
         totalundefmask=.false.
      END WHERE
 
+     IF( smoothcov )THEN
+         smooth_2d(ensemble(:,:,:,i),ctl%nlon,ctl%nlat,ctl%nfields,dx,smoothcovlength,undefmask)
+     ENDIF
+
 ENDDO ![End do over ensemble members]
 
 !Apply variable and grid filter.
@@ -114,6 +118,11 @@ DO i=1,ctl%nlat
     write(*,*)"[Warning]: Latitude ",i," will be ignored"
   ENDIF
 ENDDO
+
+!Compute moments of the PDF at every grid point
+
+CALL compute_moments(ensemble,ctl%nlon,ctl%nlat,ctl%nfields,nbv,max_moments,totalundefmask,ctl%undefbin)
+
 
 !Loop over points.
 

@@ -8,6 +8,7 @@ module covariance_matrix_tools
   USE common
   USE common_verification
   USE map_utils
+  USE common_smooth2d
 !  USE ifport
   IMPLICIT NONE
   PUBLIC
@@ -23,6 +24,13 @@ module covariance_matrix_tools
   real(r_size) :: dep(max_npoints) , error(max_npoints)
   LOGICAL :: bootstrap=.true.
   INTEGER :: bootstrap_samples=20
+
+  LOGICAL  :: computemoments=.true.
+  INTEGER  :: max_moments=4
+
+  LOGICAL  :: smoothcov=.false.
+  REAL(r_size) :: smoothcovlength=1.0d5  !Lanczos filter length scale in the same unit as dx.
+  REAL(r_size) :: smoothdx=1.0d3         !Data resolution 
 
   INTEGER :: skipx=1,skipy=1,skipz=1
   INTEGER :: nignore=0
@@ -54,10 +62,11 @@ INTEGER  :: ierr
 !In the current version PLEV represents not only the level but also the
 !variable. 
 
-NAMELIST / GENERAL / nbv , npoints , plon , plat , pvarname , plev,  &
-                     dep , error , bootstrap , bootstrap_samples   ,  &
+NAMELIST / GENERAL / nbv , npoints , plon , plat , pvarname , plev,   &
+                     dep , error , bootstrap , bootstrap_samples  ,   &
                      nignore , ignorevarname , skipx , skipy , skipz, &
-                     inputendian , outputendian 
+                     inputendian , outputendian , smoothcov ,         &
+                     smoothdx , smoothcovlength 
 
 plon=undef
 plat=undef
@@ -176,6 +185,78 @@ SUBROUTINE write_grd(filename,nx,ny,nz,var,undefmask,undefbin)
 
   RETURN
 END SUBROUTINE write_grd
+
+!Compute the firtst N moments of the PDF centered around the mean.
+SUBROUTINE compute_moments(ensemble,nx,ny,nz,nbv,nmoments,undefmask,undefbin)
+IMPLICIT NONE
+INTEGER, INTENT(IN)       :: nx,ny,nz,nbv !Ensemble dimensions.
+REAL(r_sngl), INTENT(IN)  :: ensemble(nx,ny,nz,nbv) !Ensemble data.
+INTEGER, INTENT(IN)       :: nmoments     !Number of moments to be computed.
+LOGICAL, INTENT(IN)       :: undefmask(nx,ny,nz) !Valid grids.
+REAL(r_sngl), INTENT(IN)  :: undefbin
+
+REAL(r_sngl)              :: moments(nx,ny,nz,nmoments)
+REAL(r_sngl)              :: tmp(nbv)
+INTEGER                   :: ii , jj , kk , im
+CHARACTER(20)             :: moment_out='momentXXX.grd'
+
+moments=0.0e0
+
+!$OMP PARALLEL DO PRIVATE(ii,jj,kk,im,tmp)
+  DO ii=1,nx
+   DO im=1,nmoments
+    DO jj=1,ny
+     DO kk=1,nz
+       tmp=( ( ensemble(ii,jj,kk,:)-moments(ii,jj,kk,1) ) )**im
+       CALL com_mean_sngl(nbv,tmp,moments(ii,jj,kk,im))
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
+!$OMP END PARALLEL DO
+  
+ DO im=1,nmoments
+   WRITE(moment_out(7:9),'(I3.3)')im
+   CALL write_grd(moment_out,nx,ny,nz,moments(:,:,:,im),undefmask,undefbin)
+ ENDDO
+
+END SUBROUTINE compute_moments
+
+
+!Perform a 2D smoothing of the ensemble using a Lanczos filter.
+SUBROUTINE smooth_2d(mydata,nx,ny,nz,dx,xfs,undefmask)
+IMPLICIT NONE
+INTEGER      , INTENT(IN)       :: nx,ny,nz               !Grid dimensions
+REAL(r_sngl) , INTENT(INOUT)    :: mydata(nx,ny,nz)       !Model data
+REAL(r_size) , INTENT(IN)       :: dx      !Grid resolution.
+REAL(r_size) , INTENT(IN)       :: xfs     !Filter scale in x and y.
+LOGICAL      , INTENT(IN)       :: undefmask(nx,ny,nz)
+INTEGER                         :: kk
+INTEGER                         :: integermask(nx,ny,nz)
+INTEGER                         :: filter_size_x
+REAL(r_size)                    :: tmpdata(nx,ny,nz)
+CHARACTER(256)                  :: filter_type='L' !So far only Lanczos filter is supported.
+
+integermask=0
+WHERE( undefmask )
+  integermask=1
+END WHERE
+
+filter_size_x = NINT( xfs / dx )     
+
+tmpdata=REAL(mydata,r_size)
+
+!$OMP PARALLEL DO PRIVATE(kk)
+DO kk=1,nz  
+    CALL filter_2d(tmpdata(:,:,kk),tmpdata(:,:,kk),integermask(:,:,kk),filter_size_x,filter_type,nx,ny)
+ENDDO
+!$OMP END PARALLEL DO
+
+mydata=REAL(tmpdata,r_sngl)
+
+END SUBROUTINE smooth_2d
+
+
 
 SUBROUTINE generate_sample(sampledindex,n)
 !Resample randomly picking with substitution.
