@@ -61,7 +61,7 @@ program covariance_matrix
 
   covar=0.0e0
   ensemble=0.0e0
-  penseble=0.0e0
+  pensemble=0.0e0
   obsimpact=0.0e0
   
 
