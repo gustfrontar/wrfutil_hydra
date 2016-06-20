@@ -15,11 +15,11 @@ module common_verification
   TYPE ctl_info
   REAL(r_sngl)              :: undefbin
   
-  CHARACTER(len=:),ALLOCATABLE :: varname(:),varnameall(:)
+  CHARACTER(len=clen),ALLOCATABLE :: varname(:),varnameall(:)
   REAL(r_size),ALLOCATABLE  :: lev(:),levall(:)
 
   CHARACTER(200)            :: datafile
-  REAL(r_size), ALLOCATABLE :: varlev(:)
+  INTEGER, ALLOCATABLE      :: varlev(:)
 
   LOGICAL     , ALLOCATABLE :: readvar(:)
   INTEGER     , ALLOCATABLE :: varindex(:)
@@ -157,7 +157,7 @@ myctl%proj_code = PROJ_MERC  !We start assuming mercartor.
       IF( ( INDEX(buffer,'vars') > 0 .or. INDEX(buffer,'VARS') > 0 ) .AND. .NOT. &
         ( INDEX(buffer,'endvars') > 0 .or. INDEX(buffer,'ENDVARS') > 0 )  )THEN
         READ(buffer,*)dummyc,myctl%nvar
-        allocate(character(clen)::myctl%varname(myctl%nvar) )
+        allocate(myctl%varname(myctl%nvar) )
         allocate(myctl%varlev(myctl%nvar)  )
         DO i=1,myctl%nvar
           READ(iunit,*)myctl%varname(i),myctl%varlev(i)
@@ -206,7 +206,7 @@ myctl%proj_code = PROJ_MERC  !We start assuming mercartor.
  myctl%maxlev=MAXVAL(myctl%lev)
 
  !Set levall (the level corresponding to each variable)
- allocate(character(clen)::myctl%varnameall(myctl%nfields) )
+ allocate( myctl%varnameall(myctl%nfields) )
  ALLOCATE( myctl%levall(myctl%nfields) )
  counter=1
  DO i=1,myctl%nvar
