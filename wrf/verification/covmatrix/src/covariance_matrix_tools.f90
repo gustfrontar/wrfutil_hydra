@@ -8,7 +8,7 @@ module covariance_matrix_tools
   USE common
   USE common_verification
   USE map_utils
-  USE ifport
+!  USE ifport
   IMPLICIT NONE
   PUBLIC
 !-----------------------------------------------------------------------
@@ -28,6 +28,8 @@ module covariance_matrix_tools
   INTEGER :: nignore=0
   INTEGER , PARAMETER :: max_nignore = 20
   character(50) :: ignorevarname(max_nignore)
+  character(50) :: inputendian='little_endian'
+  character(50) :: outputendian='big_endian'
 
   CHARACTER(LEN=100) :: NAMELIST_FILE='./covariance_matrix.namelist'
 
@@ -49,18 +51,20 @@ IMPLICIT NONE
 LOGICAL  :: file_exist
 INTEGER  :: ierr
 
+!In the current version PLEV represents not only the level but also the
+!variable. 
+
+NAMELIST / GENERAL / nbv , npoints , plon , plat , pvarname , plev,  &
+                     dep , error , bootstrap , bootstrap_samples   ,  &
+                     nignore , ignorevarname , skipx , skipy , skipz, &
+                     inputendian , outputendian 
+
 plon=undef
 plat=undef
 plev=undef
 dep=undef
 error=undef
 
-!In the current version PLEV represents not only the level but also the
-!variable. 
-
-NAMELIST / GENERAL / nbv , npoints , plon , plat , pvarname , plev , &
-                     dep , error , bootstrap , bootstrap_samples   , &
-                     nignore , ignorevarname , skipx , skipy , skipz
 
 INQUIRE(FILE=NAMELIST_FILE, EXIST=file_exist)
 
@@ -105,7 +109,7 @@ SUBROUTINE read_grd(filename,nx,ny,nz,var,undefmask,undefbin)
  iunit=33
  INQUIRE(FILE=filename,EXIST=file_exist)
   IF(file_exist) THEN
-   OPEN(iunit,FILE=filename,FORM='unformatted',ACCESS='direct',RECL=reclength)
+   OPEN(iunit,FILE=filename,FORM='unformatted',ACCESS='direct',RECL=reclength,CONVERT=inputendian)
   ELSE
    WRITE(*,*)"[Warning]: Could not finde file! ",filename
    undefmask=.false.
@@ -157,7 +161,7 @@ SUBROUTINE write_grd(filename,nx,ny,nz,var,undefmask,undefbin)
 
   iunit=55
   INQUIRE(IOLENGTH=iolen) iolen
-  OPEN(iunit,FILE=filename,FORM='unformatted',ACCESS='direct',RECL=reclength)
+  OPEN(iunit,FILE=filename,FORM='unformatted',ACCESS='direct',RECL=reclength,CONVERT=outputendian)
 
   DO n=1,nz
    buf4 = REAL(var(:,:,n),r_sngl)

@@ -1,10 +1,11 @@
 #!/bin/sh
 set -ex
 PGM=covariance_matrix.exe
-F90=ifort
-OMP=" -openmp "
+F90=gfortran
 
-F90OPT='-O3 -convert big_endian' #-convert big_endian -O3' # -g -treceback
+OMP="-fopenmp "
+
+F90OPT='-O3' #-convert big_endian -O3' # -g -treceback
 
 rm -f *.mod
 rm -f *.o
@@ -27,6 +28,7 @@ $F90 $OMP $F90OPT -c common_verification.f90
 $F90 $OMP $F90OPT -c covariance_matrix_tools.f90
 $F90 $OMP $F90OPT -c covariance_matrix.f90
 $F90 $OMP $F90OPT -o ${PGM} *.o  
+
 
 rm -f *.mod
 rm -f *.o
