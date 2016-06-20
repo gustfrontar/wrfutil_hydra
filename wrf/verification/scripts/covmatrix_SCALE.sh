@@ -22,23 +22,27 @@ cp ../covmatrix/*.exe $TMPDIR
 
 my_namelist=$TMPDIR/covariance_matrix.namelist
 
-echo "&general                                                            " >  $my_namelist
-echo "nbv=$MEMBER                                                         " >> $my_namelist
-echo "npoints=1                                                           " >> $my_namelist
-echo "plon=135.48,135.48,135.48,135.602,135.602,135.602,135.602,135.602,  " >> $my_namelist                                        
-echo "plat=34.7,34.7,34.7,34.71,34.71,34.71,34.71,34.71,                  " >> $my_namelist
-echo "pvarname='tk','p','u','w','tk','p','u','dbz'                        " >> $my_namelist
-echo "plev=5000,5000,5000,1957.5,1957.5,1957.5,1957.5,1957.5,             " >> $my_namelist
-echo "dep=1,1,1,1,1,1,1,1,                                                " >> $my_namelist 
-echo "error=1,1,1,1,1,1,1,1,                                              " >> $my_namelist
-echo "bootstrap=.false.                                                    " >> $my_namelist
-echo "bootstrap_samples=10                                                " >> $my_namelist
-echo "nignore=9                                                           " >> $my_namelist
+echo "&general                                                              " >  $my_namelist
+echo "nbv=$MEMBER                                                           " >> $my_namelist
+echo "npoints=1                                                             " >> $my_namelist
+echo "plon=135.48,135.48,135.48,135.602,135.602,135.602,135.602,135.602,    " >> $my_namelist                                        
+echo "plat=34.7,34.7,34.7,34.71,34.71,34.71,34.71,34.71,                    " >> $my_namelist
+echo "pvarname='tk','p','u','w','tk','p','u','dbz'                          " >> $my_namelist
+echo "plev=5000,5000,5000,1957.5,1957.5,1957.5,1957.5,1957.5,               " >> $my_namelist
+echo "dep=1,1,1,1,1,1,1,1,                                                  " >> $my_namelist 
+echo "error=1,1,1,1,1,1,1,1,                                                " >> $my_namelist
+echo "bootstrap=.true.                                                      " >> $my_namelist
+echo "bootstrap_samples=10                                                  " >> $my_namelist
+echo "nignore=9                                                             " >> $my_namelist
 echo "ignorevarname='qc','qr','qi','qs','qg','topo','rain','snow','max_dbz' " >> $my_namelist
-echo "skipx=1                                                             " >> $my_namelist
-echo "skipy=1                                                             " >> $my_namelist
-echo "skipz=1                                                             " >> $my_namelist
-echo "/                                                                   " >> $my_namelist
+echo "skipx=1                                                               " >> $my_namelist
+echo "skipy=1                                                               " >> $my_namelist
+echo "skipz=1                                                               " >> $my_namelist
+echo "smoothcov=.true.                                                      " >> $my_namelist
+echo "smoothcovlength=1.0d5                                                 " >> $my_namelist
+echo "smoothdx=1.0d3                                                        " >> $my_namelist
+echo "/                                                                     " >> $my_namelist
+
 
 
 #Link files
