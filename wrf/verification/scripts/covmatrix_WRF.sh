@@ -29,6 +29,8 @@ echo "pvarname='umet','tk'                         " >> $my_namelist
 echo "plev=500,1000                                " >> $my_namelist
 echo "dep=1,1,                                     " >> $my_namelist 
 echo "error=1,1,                                   " >> $my_namelist
+echo "nignore=1                                    " >> $my_namelist
+echo "ignorevarname='geopt'                        " >> $my_namelist
 echo "/                                            " >> $my_namelist
 
 
