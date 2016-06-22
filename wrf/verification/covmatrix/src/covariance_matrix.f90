@@ -83,6 +83,16 @@ DO i=1,nbv
        ENDDO
       ENDDO
      ENDDO
+<<<<<<< HEAD
+=======
+
+     IF( smoothcov )THEN
+         CALL smooth_2d(ensemble(:,:,:,i),ctl%nlon,ctl%nlat,ctl%nfields,smoothdx,smoothcovlength,undefmask)
+         IF( i==1)THEN 
+          CALL write_grd('testsmooth.grd',ctl%nlon,ctl%nlat,ctl%nfields,ensemble(:,:,:,i),totalundefmask,ctl%undefbin)
+         ENDIF
+     ENDIF
+>>>>>>> f0f61dab801fb13a3d283a4a2eb2cc141e2977c4
 
 ENDDO ![End do over ensemble members]
 
@@ -118,6 +128,11 @@ DO i=1,ctl%nlat
     write(*,*)"[Warning]: Latitude ",i," will be ignored"
   ENDIF
 ENDDO
+
+!Compute moments of the PDF at every grid point
+
+CALL compute_moments(ensemble,ctl%nlon,ctl%nlat,ctl%nfields,nbv,max_moments,totalundefmask,ctl%undefbin)
+
 
 !Loop over points.
 
@@ -218,7 +233,11 @@ DO ip=1,npoints
 
    CALL write_grd(bssfile,ctl%nlon,ctl%nlat,ctl%nfields,bssprd,totalundefmask,ctl%undefbin)
 
+<<<<<<< HEAD
    deallocate( bsmean , bssprd ) 
+=======
+   deallocate( bssprd , bsmean )
+>>>>>>> f0f61dab801fb13a3d283a4a2eb2cc141e2977c4
   endif
 
    WRITE(oimfile(9 :11),'(I3.3)')gridi

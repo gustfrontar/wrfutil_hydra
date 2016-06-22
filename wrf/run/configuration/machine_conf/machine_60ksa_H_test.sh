@@ -10,8 +10,8 @@ MAX_BACKGROUND_JOBS=128
 LD_LIBRARY_PATH_ADD=""
 PATH_ADD=""
 
-TOTAL_NODES_FORECAST=6
-TOTAL_NODES_LETKF=4
+TOTAL_NODES_FORECAST=3
+TOTAL_NODES_LETKF=3
 
 #These options control job split (in case of big jobs)
 #Job split is performed authomaticaly if the number of ensemble members is

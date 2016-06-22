@@ -26,7 +26,7 @@ program verify
   character(20) :: areafile = 'area.txt'
 
   real(r_size) ,ALLOCATABLE :: vf(:,:,:) , vfm(:,:,:) , vfs(:,:,:) , ve(:,:,:)
-  real(r_size) ,ALLOCATABLE :: va(:,:,:) 
+  real(r_size) ,ALLOCATABLE :: va(:,:,:) , tmpgrid(:,:,:)
 
   !Regrid grid files and variables
   character(20) :: meanfilereg = 'meanreg.grd' !Ensemble mean
@@ -55,7 +55,7 @@ program verify
   real(r_size), ALLOCATABLE :: rmse(:,:,:),bias(:,:,:),abse(:,:,:),coun(:,:,:)
   real(r_size), ALLOCATABLE :: rmsereg(:,:,:),biasreg(:,:,:),absereg(:,:,:),counreg(:,:,:)
 
-  LOGICAL , ALLOCATABLE :: undefmask(:,:,:) , totalundefmask(:,:,:)
+  LOGICAL , ALLOCATABLE :: undefmask(:,:,:) , totalundefmask(:,:,:) , tmpmask(:,:,:)
   LOGICAL , ALLOCATABLE :: undefmaskreg(:,:,:) , totalundefmaskreg(:,:,:)
 
   real(r_size) :: dz, hx, dep, wei, latm1, latm2
@@ -75,11 +75,9 @@ program verify
   call parse_ctl(ctl_file,ctlanl) !Get ctl dimmensions and variables for the verification dataset.
   call parse_ctl(ctl_file,ctlfor) !Get ctl dimmensions and variables for the forecast dataset.
 
-  call match_ctl_variables(ctlanl,ctlfor)  !See which are the common variables and levels in both ctls.
+  ALLOCATE(commonmapanl(ctlanl%nfields),commonmapfor(ctlfor%nfields))
+  call match_ctl_variables(ctlanl,ctlfor,commonmapanl,commonmapfor)  !See which are the common variables and levels in both ctls.
                                            !verification will be performed only on the common variables and levels.
-
-  !This is the total number of fields that the two datasets has in common.
-  commonnfields=ctlanl%commonnfields
 
   !These are the horizontal dimmensions that has to be the same between the two datasets.
   nlon=ctlanl%nlon
@@ -93,6 +91,7 @@ program verify
   ALLOCATE( rmse_ana(narea,commonnfields) )
   ALLOCATE( sprd_ana(narea,commonnfields) )
   ALLOCATE( vf(nlon,nlat,commonnfields) , va(nlon,nlat,commonnfields) , vfm(nlon,nlat,commonnfields) , vfs(nlon,nlat,commonnfields) )
+
   ALLOCATE( ve(nlon,nlat,commonnfields) )
   ALLOCATE( undefmask(nlon,nlat,commonnfields) )
   ALLOCATE( totalundefmask(nlon,nlat,commonnfields) )
@@ -116,8 +115,6 @@ program verify
     ALLOCATE( rmse_anareg(narea,nvreg) )
     ALLOCATE( sprd_anareg(narea,nvreg) )
   endif
- 
-
 
 !-------------------------------------------------------------------------------
 
@@ -132,7 +129,17 @@ DO i=1,nbv
 
   WRITE( fcstfile(5:9), '(I5.5)' )i
 
-  call read_grd(fcstfile,ctlfor,vf,undefmask)
+  ALLOCATE(tmpgrid(nlon,nlat,ctlfor%nfields,tmpmask(nlon,nlat,ctlfor%nfields))
+
+  call read_grd(fcstfile,ctlfor,tmpgrid,tmpmask)
+
+    DO ii=1,ctlfor%nfields
+       if( ctlfor%readvar )then
+        vf(:,:,commonmapfor(ii))=tmpgrid(:,:,ii)
+        undefmask(:,:,commonmapfor(ii))=tmpmask(:,:,ii)
+       endif
+    ENDDO
+  DEALLOCATE( tmpgrid , tmpmask )
 
   WHERE( .NOT. undefmask )
     totalundefmask=.false.
@@ -144,7 +151,18 @@ DO i=1,nbv
 
 ENDDO
 
-  call read_grd(analfile,ctlanl,va,undefmask)
+  ALLOCATE(tmpgrid(nlon,nlat,ctlanl%nfields,tmpmask(nlon,nlat,ctlanl%nfields))
+
+  call read_grd(analfile,ctlanl,tmpgrid,tmpmask)
+
+      DO ii=1,ctlanl%nfields
+       if( ctlanl%readvar )then
+        va(:,:,commonmapanl(ii))=tmpgrid(:,:,ii)
+        undefmask(:,:,commonmapanl(ii))=tmpmask(:,:,ii)
+       endif
+      ENDDO
+  DEALLOCATE( tmpgrid , tmpmask )
+  
 
   WHERE( .NOT. undefmask )
    totalundefmask=.false.
@@ -206,7 +224,7 @@ ENDDO
        if( lat(i,j) < vlat1(iarea) )cycle
        if( lat(i,j) > vlat2(iarea) )cycle
 
-        do vid = 1, nv
+        do vid = 1, commonnfields 
          if ( totalundefmask(i,j,vid) ) then
                 dep = vfm(i,j,vid) - va(i,j,vid)
                 num_ana(iarea,vid) = num_ana(iarea,vid) + 1
@@ -220,12 +238,12 @@ ENDDO
      end do
     end do ! [ iarea = 1, narea ]
 
-    do vid = 1, nv
+    do vid = 1, commonnfields
         do iarea = 1, narea
           if (num_ana(iarea,vid) == 0) then
-            bias_ana(iarea,vid)=undefbin
-            rmse_ana(iarea,vid)=undefbin
-            abse_ana(iarea,vid)=undefbin
+            bias_ana(iarea,vid)=ctlfor%undefbin
+            rmse_ana(iarea,vid)=ctlfor%undefbin
+            abse_ana(iarea,vid)=ctlfor%undefbin
           else
             bias_ana(iarea,vid)=bias_ana(iarea,vid)/real(num_ana(iarea,vid),r_size)
             rmse_ana(iarea,vid)=SQRT( rmse_ana(iarea,vid)/real(num_ana(iarea,vid),r_size) )
@@ -238,35 +256,35 @@ ENDDO
     iunit=101
     open(iunit,file=areafile,form='formatted',recl=1000)
       WRITE(iunit,*)'AREAL ERROR STATISTICS COMPUTED FROM THE ORIGINAL GRID'
-      WRITE(iunit,*)'UNDEF ',undefbin,' NVARS ',nv,' NCTL VARS ',nvar_ctl,' NLEVS ',nlev,' NAREA ',narea
+      WRITE(iunit,*)'UNDEF ',ctlfor%undefbin,' NVARS ',commonnfields,' NAREA ',narea
       WRITE(iunit,*)'VLON1',vlon1(1:narea)
       WRITE(iunit,*)'VLON2',vlon2(1:narea)
       WRITE(iunit,*)'VLAT1',vlat1(1:narea)
       WRITE(iunit,*)'VLAT2',vlat2(1:narea)
       WRITE(iunit,*)'RMSE SECTION'
       WRITE(iunit,*)'VAR','  LEV (Pa) ',(' AREA',i,i=1,narea)
-      DO i=1,nv
-        WRITE(iunit,*)var_name(varall(i)),levall(i)*100.0d0,(REAL(rmse_ana(iarea,i),r_sngl),iarea=1,narea)
+      DO i=1,commonnfields
+        WRITE(iunit,*)commonvarnameall(i),commonlevall(i)*100.0d0,(REAL(rmse_ana(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
       WRITE(iunit,*)'SPRD SECTION'
       WRITE(iunit,*)'VAR','  LEV (Pa) ',(' AREA',i,i=1,narea)
-      DO i=1,nv
-        WRITE(iunit,*)var_name(varall(i)),levall(i)*100.0d0,(REAL(sprd_ana(iarea,i),r_sngl),iarea=1,narea)
+      DO i=1,commonnfields
+        WRITE(iunit,*)commonvarnameall(i),commonlevall(i)*100.0d0,(REAL(sprd_ana(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
       WRITE(iunit,*)'BIAS SECTION'
       WRITE(iunit,*)'VAR','  LEV (Pa) ',(' AREA',i,i=1,narea)
-      DO i=1,nv
-        WRITE(iunit,*)var_name(varall(i)),levall(i)*100.0d0,(REAL(bias_ana(iarea,i),r_sngl),iarea=1,narea)
+      DO i=1,commonnfields
+        WRITE(iunit,*)commonvarnameall(i),commonlevall(i)*100.0d0,(REAL(bias_ana(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
       WRITE(iunit,*)'ABSERROR SECTION'
       WRITE(iunit,*)'VAR','  LEV (Pa) ',(' AREA',i,i=1,narea)
-      DO i=1,nv
-        WRITE(iunit,*)var_name(varall(i)),levall(i)*100.0d0,(REAL(abse_ana(iarea,i),r_sngl),iarea=1,narea)
+      DO i=1,commonnfields
+        WRITE(iunit,*)commonvarnameall(i),commonlevall(i)*100.0d0,(REAL(abse_ana(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
       WRITE(iunit,*)'COUNT SECTION'
       WRITE(iunit,*)'VAR','  LEV (Pa) ',(' AREA',i,i=1,narea)
-      DO i=1,nv
-        WRITE(iunit,*)var_name(varall(i)),levall(i)*100.0d0,(REAL(num_ana(iarea,i),r_sngl),iarea=1,narea)
+      DO i=1,commonnfields
+        WRITE(iunit,*)commonvarnameall(i),commonlevall(i)*100.0d0,(REAL(num_ana(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
     close(iunit)
 
@@ -304,10 +322,10 @@ ENDDO
     do vid = 1, nvreg
         do iarea = 1, narea
           if (num_anareg(iarea,vid) == 0) then
-            bias_anareg(iarea,vid)=undefbin
-            rmse_anareg(iarea,vid)=undefbin
-            abse_anareg(iarea,vid)=undefbin
-            sprd_anareg(iarea,vid)=undefbin
+            bias_anareg(iarea,vid)=ctlfor%undefbin
+            rmse_anareg(iarea,vid)=ctlfor%undefbin
+            abse_anareg(iarea,vid)=ctlfor%undefbin
+            sprd_anareg(iarea,vid)=ctlfor%undefbin
           else
             bias_anareg(iarea,vid)=bias_anareg(iarea,vid)/real(num_anareg(iarea,vid),r_size)
             rmse_anareg(iarea,vid)=SQRT( rmse_anareg(iarea,vid)/real(num_anareg(iarea,vid),r_size) )
@@ -320,7 +338,7 @@ ENDDO
     iunit=101
     open(iunit,file=areafilereg,form='formatted',recl=1000)
       WRITE(iunit,*)'AREAL ERROR STATISTICS COMPUTED FROM THE REGRID GRID'
-      WRITE(iunit,*)'UNDEF ',undefbin,' NVARS ',nvreg,' NCTL VARS ',nvar_ctl,' NLEVS',nlevreg,' NAREA ',narea
+      WRITE(iunit,*)'UNDEF ',ctlfor%undefbin,' NVARS ',nvreg,' NAREA ',narea
       WRITE(iunit,*)'VLON1',vlon1(1:narea)
       WRITE(iunit,*)'VLON2',vlon2(1:narea)
       WRITE(iunit,*)'VLAT1',vlat1(1:narea)
@@ -328,27 +346,27 @@ ENDDO
       WRITE(iunit,*)'RMSE SECTION'
       WRITE(iunit,*)'VAR','  LEV (Pa) ',(' AREA',i,i=1,narea)
       DO i=1,nvreg
-        WRITE(iunit,*)var_name(varallreg(i)),levallreg(i)*100.0d0,(REAL(rmse_anareg(iarea,i),r_sngl),iarea=1,narea)
+        WRITE(iunit,*)varnameallreg(i),levallreg(i)*100.0d0,(REAL(rmse_anareg(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
       WRITE(iunit,*)'SPRD SECTION'
       WRITE(iunit,*)'VAR','  LEV (Pa)  ',(' AREA',i,i=1,narea)
       DO i=1,nvreg
-        WRITE(iunit,*)var_name(varallreg(i)),levallreg(i)*100.0d0,(REAL(sprd_anareg(iarea,i),r_sngl),iarea=1,narea)
+        WRITE(iunit,*)varnameallreg(i),levallreg(i)*100.0d0,(REAL(sprd_anareg(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
       WRITE(iunit,*)'BIAS SECTION'
       WRITE(iunit,*)'VAR','  LEV (Pa) ',(' AREA',i,i=1,narea)
       DO i=1,nvreg
-        WRITE(iunit,*)var_name(varallreg(i)),levallreg(i)*100.0d0,(REAL(bias_anareg(iarea,i),r_sngl),iarea=1,narea)
+        WRITE(iunit,*)varnameallreg(i),levallreg(i)*100.0d0,(REAL(bias_anareg(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
       WRITE(iunit,*)'ABSERROR SECTION'
       WRITE(iunit,*)'VAR','  LEV (Pa) ',(' AREA',i,i=1,narea)
       DO i=1,nvreg
-        WRITE(iunit,*)var_name(varallreg(i)),levallreg(i)*100.0d0,(REAL(abse_anareg(iarea,i),r_sngl),iarea=1,narea)
+        WRITE(iunit,*)varnameallreg(i),levallreg(i)*100.0d0,(REAL(abse_anareg(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
       WRITE(iunit,*)'COUNT SECTION'
       WRITE(iunit,*)'VAR','  LEV (Pa) ',(' AREA',i,i=1,narea)
       DO i=1,nvreg
-        WRITE(iunit,*)var_name(varallreg(i)),levallreg(i)*100.0d0,(REAL(num_anareg(iarea,i),r_sngl),iarea=1,narea)
+        WRITE(iunit,*)varnameallreg(i),levallreg(i)*100.0d0,(REAL(num_anareg(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
     close(iunit)
 

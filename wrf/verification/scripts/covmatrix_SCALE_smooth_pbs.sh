@@ -11,13 +11,13 @@ BOOTSTRAP_SAMPLES=100
 SKIPX=1
 SKIPY=1
 SKIPZ=1
-SMOOTHCOV=.false.
+SMOOTHCOV=.true.
 SMOOTHCOVLENGTH=1.0d4
 SMOOTHDX=1.0d3
 COMPUTEMOMENTS=.true.
 MAX_MOMENTS=4
 ANALYSIS_PATH=/data1/jruiz/EXPERIMENTS/OsakaPAR_1km_control1000m_smallrandompert/            #Ensemble data path
-TMPDIR=/data1/jruiz/TMP/covariance_matrix1/                                                  #Temporary work directory.
+TMPDIR=/data1/jruiz/TMP/covariance_matrix1_smoth/                                            #Temporary work directory.
 CTL_PATH=/data1/jruiz/EXPERIMENTS/OsakaPAR_1km_control1000m_smallrandompert/ctl/analgz.ctl   #Ensemble data ctl file.
 
 ulimit -s unlimited
