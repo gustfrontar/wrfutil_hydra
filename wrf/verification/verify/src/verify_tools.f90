@@ -7,23 +7,21 @@ module verify_tools
 !$USE OMP_LIB
   USE common
   USE map_utils
+  USE common_verification
   IMPLICIT NONE
   PUBLIC
 !-----------------------------------------------------------------------
 ! General parameters
 !-----------------------------------------------------------------------
-  INTEGER,SAVE :: dx,dy ! grid spacing [m]
-  !INTEGER,SAVE :: nlon
-  !INTEGER,SAVE :: nlat
-  !INTEGER,SAVE :: nlev
-  
-  INTEGER,SAVE :: nlonreg,nlatreg,nlevreg !Regrid domain size
+ 
+  INTEGER :: nlon   ,nlat   ,nfields
+  INTEGER :: nlonreg,nlatreg,nfieldsreg,nlevreg !Regrid domain size
 
   !NAMELIST INPUT
 
   INTEGER :: nbv=1  !Number of ensemble members.
-  real(r_size) :: regrid_res = 1.0d0       ! Regrid output resolution (degree)
-  real(r_size) :: regrid_vert_res = 10000.0d0! Regrid output vertical resolution (Pa)
+  real(r_size) :: regrid_res = 1.0d0          ! Regrid output resolution (degree)
+  real(r_size) :: regrid_vert_res = 10000.0d0 ! Regrid output vertical resolution (Pa)
   logical      :: regrid_output = .true.
  
   character(50) :: inputendian='big_endian'
@@ -41,11 +39,11 @@ module verify_tools
   CHARACTER(LEN=20) :: NAMELIST_FILE='./verify.namelist'
 
   !GRID INFO
-
-  REAL(r_size),ALLOCATABLE,SAVE :: lonreg(:,:)
-  REAL(r_size),ALLOCATABLE,SAVE :: latreg(:,:)
-  REAL(r_size),ALLOCATABLE,SAVE :: levreg(:) , levallreg(:)
-  REAL(r_size),ALLOCATABLE,SAVE :: varallreg(:)
+  REAL(r_size),ALLOCATABLE      :: lon(:,:),lat(:,:)
+  REAL(r_size),ALLOCATABLE      :: lonreg(:,:)
+  REAL(r_size),ALLOCATABLE      :: latreg(:,:)
+  REAL(r_size),ALLOCATABLE      :: levreg(:) , levallreg(:)
+  CHARACTER(20),ALLOCATABLE     :: varnameallreg(:)
  
   REAL(r_size) :: minlonreg , minlatreg , maxlonreg , maxlatreg
   REAL(r_size) :: minlevreg , maxlevreg
@@ -108,7 +106,7 @@ END SUBROUTINE read_namelist
 
 SUBROUTINE match_ctl_variables(ctl1,ctl2,commonmap1,commonmap2)
 IMPLICIT NONE
-TYPE ctl_info , INTENT(IN) :: ctl1 , ctl2
+TYPE(ctl_info) , INTENT(INOUT) :: ctl1 , ctl2
 INTEGER , INTENT(OUT)  :: commonmap1(ctl1%nfields) , commonmap2(ctl2%nfields) 
 INTEGER :: ii , jj , varindex
 
@@ -137,7 +135,7 @@ ctl2%varindex=0
        ctl2%readvar(ii)=.true.
        ctl1%readvar(varindex)=.true.
        commonmap2(ii)=commonnfields
-       commonmap1(varindex)=commonfields
+       commonmap1(varindex)=commonnfields
      endif
  ENDDO 
 
@@ -177,7 +175,7 @@ SUBROUTINE read_grd(filename,nx,ny,nz,var,undefmask,undefbin)
   IMPLICIT NONE
   INTEGER,INTENT(IN)      :: nx,ny,nz
   CHARACTER(*),INTENT(IN) :: filename
-  REAL(r_sngl),INTENT(OUT) :: var(nx,ny,nz)
+  REAL(r_size),INTENT(OUT) :: var(nx,ny,nz)
   LOGICAL     ,INTENT(OUT) :: undefmask(nx,ny,nz)
   REAL(r_sngl) :: buf4(nx,ny)
   REAL(r_sngl),INTENT(IN) :: undefbin
@@ -234,7 +232,7 @@ SUBROUTINE write_grd(filename,nx,ny,nz,var,undefmask,undefbin)
   IMPLICIT NONE
   INTEGER, INTENT(IN)     :: nx,ny,nz
   CHARACTER(*),INTENT(IN) :: filename
-  REAL(r_sngl),INTENT(IN) :: var(nx,ny,nz)
+  REAL(r_size),INTENT(IN) :: var(nx,ny,nz)
   LOGICAL     ,INTENT(IN) :: undefmask(nx,ny,nz)
   REAL(r_sngl),INTENT(IN) :: undefbin
   REAL(r_sngl) :: buf4(nx,ny)
@@ -321,9 +319,9 @@ INTEGER      :: i,j,ivar,ilev,ilevreg,ilevprev,iregprev
   !How many total levels do we have in the regird domain?
   !Get the number of total fields after regrid in z.
   nvreg=1
-  ilevprev=NINT( ( maxlevreg - levall(1) )  / regrid_vert_res ) + 1
+  ilevprev=NINT( ( maxlevreg - varlevall(1) )  / regrid_vert_res ) + 1
   DO i = 2,nfields
-   ilev=NINT( ( maxlevreg - levall(i) )  / regrid_vert_res ) + 1 
+   ilev=NINT( ( maxlevreg - varlevall(i) )  / regrid_vert_res ) + 1 
    if ( ilev /= ilevprev .or. varnameall(i) /= varnameall(i-1) )then
       nvreg = nvreg+1
    endif 
@@ -337,12 +335,12 @@ INTEGER      :: i,j,ivar,ilev,ilevreg,ilevprev,iregprev
   !Define the map between the original grid and the regrided grid in the variable dimension.
   !Find the name and lev for each field after regrid.
   ilevreg=1
-  ilevprev=NINT( ( maxlevreg - levall(1) )  / regrid_vert_res ) + 1
+  ilevprev=NINT( ( maxlevreg - varlevall(1) )  / regrid_vert_res ) + 1
   levallreg(1)=levreg(ilevprev) 
   levregmap(1)=1
   varnameallreg(1)=varnameall(1)
   DO i = 2,nfields
-   ilev=NINT( ( maxlevreg - levall(i) )  / regrid_vert_res ) + 1
+   ilev=NINT( ( maxlevreg - varlevall(i) )  / regrid_vert_res ) + 1
    if ( ilev /= ilevprev .or. varnameall(i) /= varnameall(i-1)  )then
      ilevreg=ilevreg+1
      levallreg(ilevreg)=levreg(ilev)
@@ -357,30 +355,41 @@ END SUBROUTINE get_regrid_grid
 
 !Regrid var 
 !This subroutine regrids -----------------------------------------------------------
-SUBROUTINE regrid_var(var,undefmask,varreg,undefmaskreg)
+SUBROUTINE regrid_var(nx,ny,nz,nxreg,nyreg,nzreg,zmap,x,y,xreg,yreg,var,undefmask,varreg,undefmaskreg,num)
 IMPLICIT NONE
-REAL(r_size), INTENT(IN) :: var(nlon,nlat,nv) 
-REAL(r_size), INTENT(OUT):: varreg(nlonreg,nlatreg,nvreg)
-INTEGER                  :: num(nlonreg,nlatreg,nvreg)
-LOGICAL                  :: undefmask(nlon,nlev,nv),undefmaskreg(nlonreg,nlatreg,nvreg)
+INTEGER     , INTENT(IN) :: nx,ny,nz,nxreg,nyreg,nzreg
+REAL(r_size), INTENT(IN) :: x(nx,ny),y(nx,ny),xreg(nx,ny),yreg(nx,ny)
+REAL(r_size), INTENT(IN) :: var(nx,ny,nz) 
+LOGICAL     , INTENT(IN) :: undefmask(nx,ny,nz)
+LOGICAL     , INTENT(OUT):: undefmaskreg(nxreg,nyreg,nzreg)
+INTEGER     , INTENT(IN) :: zmap(nz)
+REAL(r_size), INTENT(OUT):: varreg(nxreg,nyreg,nzreg)
+INTEGER     , INTENT(OUT):: num(nxreg,nyreg,nzreg)
 INTEGER                  :: i , j , k , ireg , jreg , kreg
+REAL(r_size)             :: dx , dy , minx , miny 
 
    varreg=0.0d0
-   num=0.0d0
+   num=0
    undefmaskreg=.true.
 
-   DO i = 1,nlon
-    DO j = 1,nlat
-     DO k = 1,nv
-      if( undefmask(i,j,k) )then
-        ireg= NINT( ( lon(i,j)-minlonreg ) / regrid_res  ) + 1
-        jreg= NINT( ( lat(i,j)-minlatreg ) / regrid_res  ) + 1
-        kreg= levregmap(k)  !Since k dimension includes variables an levels we
-                            !have to define a map to know whicho original level
+   dx = xreg(2,1) - xreg(1,1) !Assume regular grid for the regrid data.
+   dy = yreg(1,2) - yreg(1,1) !
+
+   minx=MINVAL(xreg(:,1))
+   miny=MINVAL(yreg(1,:))
+
+   DO i = 1,nx
+    DO j = 1,ny
+     DO k = 1,nz
+      IF( undefmask(i,j,k) )THEN
+        ireg= NINT( ( x(i,j)-minx ) / dx  ) + 1
+        jreg= NINT( ( y(i,j)-miny ) / dy  ) + 1
+        kreg= zmap(k)       !Since k dimension includes variables an levels we
+                            !have to define a map to know which original level
                             !correspond to the regrid levels.
         varreg(ireg,jreg,kreg)=varreg(ireg,jreg,kreg)+var(i,j,k) 
         num(ireg,jreg,kreg)   =num(ireg,jreg,kreg)   +1
-       endif
+       ENDIF
      ENDDO
     ENDDO
    ENDDO
@@ -393,5 +402,13 @@ INTEGER                  :: i , j , k , ireg , jreg , kreg
 
 
 END SUBROUTINE regrid_var
+
+
+
+
+
+
+
+
 
 END MODULE verify_tools

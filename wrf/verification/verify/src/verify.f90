@@ -26,7 +26,8 @@ program verify
   character(20) :: areafile = 'area.txt'
 
   real(r_size) ,ALLOCATABLE :: vf(:,:,:) , vfm(:,:,:) , vfs(:,:,:) , ve(:,:,:)
-  real(r_size) ,ALLOCATABLE :: va(:,:,:) , tmpgrid(:,:,:)
+  real(r_size) ,ALLOCATABLE :: va(:,:,:) 
+  real(r_size) ,ALLOCATABLE :: tmpgrid(:,:,:)
 
   !Regrid grid files and variables
   character(20) :: meanfilereg = 'meanreg.grd' !Ensemble mean
@@ -35,8 +36,8 @@ program verify
 
   character(20) :: areafilereg = 'areareg.txt'
 
-  real(r_size) ,ALLOCATABLE :: vfreg(:,:,:) , vfmreg(:,:,:) , vfsreg(:,:,:) , vereg(:,:,:)
-  real(r_size) ,ALLOCATABLE :: vareg(:,:,:)
+  real(r_size)    ,ALLOCATABLE :: vfreg(:,:,:) , vfmreg(:,:,:) , vfsreg(:,:,:) , vereg(:,:,:) , vareg(:,:,:)
+  integer         ,ALLOCATABLE :: numreg(:,:,:)
 
   integer,ALLOCATABLE  ::     num_ana(:,:)  !narea,nv 
   real(r_size),ALLOCATABLE :: wei_ana(:,:)  !narea,nv
@@ -60,7 +61,10 @@ program verify
 
   real(r_size) :: dz, hx, dep, wei, latm1, latm2
   integer :: n, nobs,  k, vk, vid, iarea
-  integer :: i, i1, i2, j, j1, j2
+  integer :: i, i1, i2, j, j1, j2 , ii , jj , kk 
+
+  type(ctl_info) :: ctlanl , ctlfor
+  integer , allocatable :: mapfor(:) , mapanl(:)
   
 !  integer :: nobsused
 
@@ -75,13 +79,17 @@ program verify
   call parse_ctl(ctl_file,ctlanl) !Get ctl dimmensions and variables for the verification dataset.
   call parse_ctl(ctl_file,ctlfor) !Get ctl dimmensions and variables for the forecast dataset.
 
-  ALLOCATE(commonmapanl(ctlanl%nfields),commonmapfor(ctlfor%nfields))
-  call match_ctl_variables(ctlanl,ctlfor,commonmapanl,commonmapfor)  !See which are the common variables and levels in both ctls.
-                                           !verification will be performed only on the common variables and levels.
-
-  !These are the horizontal dimmensions that has to be the same between the two datasets.
   nlon=ctlanl%nlon
   nlat=ctlanl%nlat
+
+  ALLOCATE( lon(ctlanl%nlon,ctlanl%nlat) , lat(ctlanl%nlon,ctlanl%nlat) )
+ 
+  lon=ctlanl%lon
+  lat=ctlanl%lat
+
+  ALLOCATE(mapanl(ctlanl%nfields),mapfor(ctlfor%nfields))
+  call match_ctl_variables(ctlanl,ctlfor,mapanl,mapfor)  !See which are the common variables and levels in both ctls.
+                                           !verification will be performed only on the common variables and levels.
 
   !Allocate arrays to store the verification for the common fields.
   ALLOCATE( num_ana(narea,commonnfields) )
@@ -90,30 +98,34 @@ program verify
   ALLOCATE( abse_ana(narea,commonnfields) )
   ALLOCATE( rmse_ana(narea,commonnfields) )
   ALLOCATE( sprd_ana(narea,commonnfields) )
-  ALLOCATE( vf(nlon,nlat,commonnfields) , va(nlon,nlat,commonnfields) , vfm(nlon,nlat,commonnfields) , vfs(nlon,nlat,commonnfields) )
+  ALLOCATE( vf(nlon,nlat,commonnfields) , va(nlon,nlat,commonnfields) )
+  ALLOCATE( vfm(nlon,nlat,commonnfields) , vfs(nlon,nlat,commonnfields) )
 
   ALLOCATE( ve(nlon,nlat,commonnfields) )
   ALLOCATE( undefmask(nlon,nlat,commonnfields) )
   ALLOCATE( totalundefmask(nlon,nlat,commonnfields) )
 
   if( regrid_output )then !We will generate also a regrid output in a regular grid.
-    call get_regrid_grid(ctlanl)   !Get the dimensions of the regrid grid.
+    call get_regrid_grid(ctlanl%minlon,ctlanl%maxlon,ctlanl%minlat,ctlanl%maxlat,ctlanl%minlev, &
+                         ctlanl%maxlev,commonvarnameall,commonlevall,commonnfields)
+    !call get_regrid_grid(ctlanl)   !Get the dimensions of the regrid grid.
 
     !Allocate arrays for the regrided fields.
-    ALLOCATE( vfreg(nlonreg,nlatreg,nvreg) )
-    ALLOCATE( vareg(nlonreg,nlatreg,nvreg) )
-    ALLOCATE( vfmreg(nlonreg,nlatreg,nvreg) )
-    ALLOCATE( vfsreg(nlonreg,nlatreg,nvreg) )
-    ALLOCATE( vereg(nlonreg,nlatreg,nvreg) )
-    ALLOCATE( undefmaskreg(nlonreg,nlatreg,nvreg) )
-    ALLOCATE( totalundefmaskreg(nlonreg,nlatreg,nvreg) )
+    ALLOCATE( vfreg(nlonreg,nlatreg,nfieldsreg) )
+    ALLOCATE( vareg(nlonreg,nlatreg,nfieldsreg) )
+    ALLOCATE( vfmreg(nlonreg,nlatreg,nfieldsreg) )
+    ALLOCATE( vfsreg(nlonreg,nlatreg,nfieldsreg) )
+    ALLOCATE( vereg(nlonreg,nlatreg,nfieldsreg) )
+    ALLOCATE( numreg(nlonreg,nlatreg,nfieldsreg) )
+    ALLOCATE( undefmaskreg(nlonreg,nlatreg,nfieldsreg) )
+    ALLOCATE( totalundefmaskreg(nlonreg,nlatreg,nfieldsreg) )
 
-    ALLOCATE( num_anareg(narea,nvreg) )
-    ALLOCATE( wei_anareg(narea,nvreg) )
-    ALLOCATE( bias_anareg(narea,nvreg) )
-    ALLOCATE( abse_anareg(narea,nvreg) )
-    ALLOCATE( rmse_anareg(narea,nvreg) )
-    ALLOCATE( sprd_anareg(narea,nvreg) )
+    ALLOCATE( num_anareg(narea,nfieldsreg) )
+    ALLOCATE( wei_anareg(narea,nfieldsreg) )
+    ALLOCATE( bias_anareg(narea,nfieldsreg) )
+    ALLOCATE( abse_anareg(narea,nfieldsreg) )
+    ALLOCATE( rmse_anareg(narea,nfieldsreg) )
+    ALLOCATE( sprd_anareg(narea,nfieldsreg) )
   endif
 
 !-------------------------------------------------------------------------------
@@ -129,14 +141,14 @@ DO i=1,nbv
 
   WRITE( fcstfile(5:9), '(I5.5)' )i
 
-  ALLOCATE(tmpgrid(nlon,nlat,ctlfor%nfields,tmpmask(nlon,nlat,ctlfor%nfields))
-
-  call read_grd(fcstfile,ctlfor,tmpgrid,tmpmask)
+  ALLOCATE(tmpgrid(nlon,nlat,ctlfor%nfields),tmpmask(nlon,nlat,ctlfor%nfields))
+ 
+  call read_grd(fcstfile,nlon,nlat,ctlfor%nfields,tmpgrid,tmpmask,ctlfor%undefbin)
 
     DO ii=1,ctlfor%nfields
-       if( ctlfor%readvar )then
-        vf(:,:,commonmapfor(ii))=tmpgrid(:,:,ii)
-        undefmask(:,:,commonmapfor(ii))=tmpmask(:,:,ii)
+       if( ctlfor%readvar(ii) )then
+        vf(:,:,mapfor(ii))=tmpgrid(:,:,ii)
+        undefmask(:,:,mapfor(ii))=tmpmask(:,:,ii)
        endif
     ENDDO
   DEALLOCATE( tmpgrid , tmpmask )
@@ -151,14 +163,14 @@ DO i=1,nbv
 
 ENDDO
 
-  ALLOCATE(tmpgrid(nlon,nlat,ctlanl%nfields,tmpmask(nlon,nlat,ctlanl%nfields))
+  ALLOCATE( tmpgrid(nlon,nlat,ctlanl%nfields),tmpmask(nlon,nlat,ctlanl%nfields) )
 
-  call read_grd(analfile,ctlanl,tmpgrid,tmpmask)
+  call read_grd(analfile,nlon,nlat,ctlanl%nfields,tmpgrid,tmpmask,ctlanl%undefbin)
 
       DO ii=1,ctlanl%nfields
-       if( ctlanl%readvar )then
-        va(:,:,commonmapanl(ii))=tmpgrid(:,:,ii)
-        undefmask(:,:,commonmapanl(ii))=tmpmask(:,:,ii)
+       if( ctlanl%readvar(ii) )then
+        va(:,:,mapanl(ii))=tmpgrid(:,:,ii)
+        undefmask(:,:,mapanl(ii))=tmpmask(:,:,ii)
        endif
       ENDDO
   DEALLOCATE( tmpgrid , tmpmask )
@@ -192,19 +204,23 @@ ENDDO
 
   !Writing the ensemble mean and spread in the postproc grid.
 
-  CALL write_grd(meanfile,nlon,nlat,nv,vfm,totalundefmask)
-  CALL write_grd(sprdfile,nlon,nlat,nv,vfs,totalundefmask)
-  CALL write_grd(merrfile,nlon,nlat,nv,ve ,totalundefmask)
+  CALL write_grd(meanfile,nlon,nlat,commonnfields,vfm,totalundefmask,ctlanl%undefbin)
+  CALL write_grd(sprdfile,nlon,nlat,commonnfields,vfs,totalundefmask,ctlanl%undefbin)
+  CALL write_grd(merrfile,nlon,nlat,commonnfields,ve ,totalundefmask,ctlanl%undefbin)
 
   !Computeing and writing the regrid output
  if ( regrid_output ) then
-  CALL regrid_var(vfm,totalundefmask,vfmreg,totalundefmaskreg)
-  CALL regrid_var(vfs,totalundefmask,vfsreg,totalundefmaskreg)
-  CALL regrid_var(ve ,totalundefmask,vereg ,totalundefmaskreg)
 
-  CALL write_grd(meanfilereg,nlonreg,nlatreg,nvreg,vfmreg,totalundefmaskreg)
-  CALL write_grd(sprdfilereg,nlonreg,nlatreg,nvreg,vfsreg,totalundefmaskreg)
-  CALL write_grd(merrfilereg,nlonreg,nlatreg,nvreg,vereg ,totalundefmaskreg)
+  CALL regrid_var(nlon,nlat,commonnfields,nlonreg,nlatreg,nfieldsreg,levregmap,lon,lat, &
+                  lonreg,latreg,vfm,totalundefmask,vfmreg,totalundefmaskreg,numreg)
+  CALL regrid_var(nlon,nlat,commonnfields,nlonreg,nlatreg,nfieldsreg,levregmap,lon,lat, &
+                  lonreg,latreg,vfs,totalundefmask,vfsreg,totalundefmaskreg,numreg)
+  CALL regrid_var(nlon,nlat,commonnfields,nlonreg,nlatreg,nfieldsreg,levregmap,lon,lat, &
+                  lonreg,latreg,ve ,totalundefmask,vereg ,totalundefmaskreg,numreg)
+
+  CALL write_grd(meanfilereg,nlonreg,nlatreg,nfieldsreg,vfmreg,totalundefmaskreg,ctlanl%undefbin)
+  CALL write_grd(sprdfilereg,nlonreg,nlatreg,nfieldsreg,vfsreg,totalundefmaskreg,ctlanl%undefbin)
+  CALL write_grd(merrfilereg,nlonreg,nlatreg,nfieldsreg,vereg ,totalundefmaskreg,ctlanl%undefbin)
  endif
 
   !Compute rmse over selected regions and generate text ouput. 
@@ -305,7 +321,7 @@ ENDDO
        if( latreg(i,j) < vlat1(iarea) )cycle
        if( latreg(i,j) > vlat2(iarea) )cycle
 
-        do vid = 1, nvreg
+        do vid = 1, nfieldsreg
          if ( totalundefmaskreg(i,j,vid) ) then
                 dep = vereg(i,j,vid) 
                 num_anareg(iarea,vid) = num_anareg(iarea,vid) + 1
@@ -319,7 +335,7 @@ ENDDO
      end do
     end do ! [ iarea = 1, narea ]
 
-    do vid = 1, nvreg
+    do vid = 1, nfieldsreg
         do iarea = 1, narea
           if (num_anareg(iarea,vid) == 0) then
             bias_anareg(iarea,vid)=ctlfor%undefbin
@@ -338,34 +354,34 @@ ENDDO
     iunit=101
     open(iunit,file=areafilereg,form='formatted',recl=1000)
       WRITE(iunit,*)'AREAL ERROR STATISTICS COMPUTED FROM THE REGRID GRID'
-      WRITE(iunit,*)'UNDEF ',ctlfor%undefbin,' NVARS ',nvreg,' NAREA ',narea
+      WRITE(iunit,*)'UNDEF ',ctlfor%undefbin,' NVARS ',nfieldsreg,' NAREA ',narea
       WRITE(iunit,*)'VLON1',vlon1(1:narea)
       WRITE(iunit,*)'VLON2',vlon2(1:narea)
       WRITE(iunit,*)'VLAT1',vlat1(1:narea)
       WRITE(iunit,*)'VLAT2',vlat2(1:narea)
       WRITE(iunit,*)'RMSE SECTION'
       WRITE(iunit,*)'VAR','  LEV (Pa) ',(' AREA',i,i=1,narea)
-      DO i=1,nvreg
+      DO i=1,nfieldsreg
         WRITE(iunit,*)varnameallreg(i),levallreg(i)*100.0d0,(REAL(rmse_anareg(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
       WRITE(iunit,*)'SPRD SECTION'
       WRITE(iunit,*)'VAR','  LEV (Pa)  ',(' AREA',i,i=1,narea)
-      DO i=1,nvreg
+      DO i=1,nfieldsreg
         WRITE(iunit,*)varnameallreg(i),levallreg(i)*100.0d0,(REAL(sprd_anareg(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
       WRITE(iunit,*)'BIAS SECTION'
       WRITE(iunit,*)'VAR','  LEV (Pa) ',(' AREA',i,i=1,narea)
-      DO i=1,nvreg
+      DO i=1,nfieldsreg
         WRITE(iunit,*)varnameallreg(i),levallreg(i)*100.0d0,(REAL(bias_anareg(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
       WRITE(iunit,*)'ABSERROR SECTION'
       WRITE(iunit,*)'VAR','  LEV (Pa) ',(' AREA',i,i=1,narea)
-      DO i=1,nvreg
+      DO i=1,nfieldsreg
         WRITE(iunit,*)varnameallreg(i),levallreg(i)*100.0d0,(REAL(abse_anareg(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
       WRITE(iunit,*)'COUNT SECTION'
       WRITE(iunit,*)'VAR','  LEV (Pa) ',(' AREA',i,i=1,narea)
-      DO i=1,nvreg
+      DO i=1,nfieldsreg
         WRITE(iunit,*)varnameallreg(i),levallreg(i)*100.0d0,(REAL(num_anareg(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
     close(iunit)
