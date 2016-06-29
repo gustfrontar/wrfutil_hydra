@@ -893,7 +893,7 @@ LOGICAL                  :: testvar
    grdnum=0
 
    DO i = 1,nobs
-      if ( obslot(i) < inislot .OR. obslot(i) > endslot )cycle
+      if ( obslot(i) <= inislot .OR. obslot(i) > endslot )cycle
       if ( obsvar(i) == undef )cycle
 
        DO iv=1,nvver
@@ -1046,7 +1046,7 @@ inislot=slotoffset
 do
 
   if( inislot > nslots )exit
-  endslot=inislot+slotstep-1
+  endslot=inislot+slotstep
 
   !Generate filenames.
   WRITE(meanfile(8:12),'(I2.2,A1,I2.2)')inislot,'_',endslot
@@ -1076,7 +1076,7 @@ do
   WRITE(6,*)"I will write a file ",areafile
   CALL obsarea(inislot,endslot,areafile)
 
-  inislot=inislot+slotstep
+  inislot=inislot+slotstep+1
 
 
 end do ![Do over time slots]
@@ -1119,7 +1119,7 @@ iunit=101
 Do iarea = 1,narea
 
   DO i = 1,nobs
-      if( obslot(i) < inislot .OR. obslot(i) > endslot )cycle
+      if( obslot(i) <= inislot .OR. obslot(i) > endslot )cycle
       if( obsdep(i) == undef )cycle
       if( obslon(i) < vlon1(iarea) )cycle
       if( obslon(i) > vlon2(iarea) )cycle
