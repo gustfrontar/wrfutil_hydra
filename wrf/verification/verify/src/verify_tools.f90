@@ -22,7 +22,7 @@ module verify_tools
   INTEGER :: nbv=1  !Number of ensemble members.
   real(r_size) :: regrid_res = 1.0d0          ! Regrid output resolution (degree)
   real(r_size) :: regrid_vert_res = 10000.0d0 ! Regrid output vertical resolution (Pa)
-  logical      :: regrid_output = .true.
+  logical      :: regrid_output = .true. , samegrid_output=.true. 
  
   character(50) :: inputendian='big_endian'
   character(50) :: outputendian='big_endian'
@@ -69,7 +69,8 @@ CONTAINS
 
 SUBROUTINE read_namelist
 NAMELIST / GENERAL / nbv , narea , vlon1 , vlon2 , vlat1 , vlat2 , regrid_output &
-                  ,  regrid_res , regrid_vert_res , inputendian , outputendian
+                  ,  regrid_res , regrid_vert_res , inputendian , outputendian   &
+                  ,  samegrid_output
 
 
 
@@ -116,14 +117,14 @@ ALLOCATE( ctl2%readvar(ctl2%nfields) )
 ctl1%readvar=.false.
 ctl2%readvar=.false.
 
-ALLOCATE( ctl1%varindex(ctl1%nfields) )
-ALLOCATE( ctl2%varindex(ctl2%nfields) )
+!ALLOCATE( ctl1%varindex(ctl1%nfields) )
+!ALLOCATE( ctl2%varindex(ctl2%nfields) )
 
 commonmap1=0
 commonmap2=0
 
-ctl1%varindex=0
-ctl2%varindex=0
+!ctl1%varindex=0
+!ctl2%varindex=0
 
  !First identify which variables are common among both ctl data.
  commonnfields=0
@@ -145,11 +146,11 @@ ctl2%varindex=0
  
 
  varindex=0
- DO ii=1,ctl1%nfields
-   IF( ctl1%readvar(ii) )THEN
+ DO ii=1,ctl2%nfields
+   IF( ctl2%readvar(ii) )THEN
      varindex=varindex+1
-     commonlevall(varindex)=ctl1%levall(ii)
-     commonvarnameall(varindex)=ctl1%varnameall(ii) 
+     commonlevall(varindex)=ctl2%levall(ii)
+     commonvarnameall(varindex)=ctl2%varnameall(ii) 
    ENDIF
  ENDDO
 
@@ -157,15 +158,15 @@ ctl2%varindex=0
  WRITE(*,*)"  MATCH CTL VARIABLES SUMMARY "
  WRITE(*,*)" ii, levall, varnameall, readvar,varindex for CTL1 "
  DO ii=1,ctl1%nfields
-   WRITE(*,*)ii,ctl1%levall(ii),ctl1%varnameall(ii),ctl1%readvar(ii),ctl1%varindex(ii)
+   WRITE(*,'(i5,f9.1,a1,a10,i5)')ii,ctl1%levall(ii),' ',ctl1%varnameall(ii),commonmap1(ii)
  ENDDO
  WRITE(*,*)" ii, levall, varnameall, readvar,varindex for CTL2 "
  DO ii=1,ctl2%nfields
-   WRITE(*,*)ii,ctl2%levall(ii),ctl2%varnameall(ii),ctl2%readvar(ii),ctl2%varindex(ii)
+   WRITE(*,'(i5,f9.1,a1,a10,i5)')ii,ctl2%levall(ii),' ',ctl2%varnameall(ii),commonmap2(ii)
  ENDDO
  WRITE(*,*)" ii, commonlevall , commonvarnameall "
  DO ii=1,commonnfields
-   WRITE(*,*)ii,commonlevall(ii),commonvarnameall
+   WRITE(*,'(i5,f9.1,a1,a10)')ii,commonlevall(ii),' ',commonvarnameall(ii)
  ENDDO
 
 
@@ -290,13 +291,14 @@ INTEGER      :: i,j,ivar,ilev,ilevreg,ilevprev,iregprev
   minlonreg=MINVAL(lonreg(:,1))
   minlatreg=MINVAL(latreg(1,:))
   maxlonreg=MAXVAL(lonreg(:,1))
-  maxlatreg=MINVAL(latreg(1,:))
+  maxlatreg=MAXVAL(latreg(1,:))
+
   
   !Set vertical levels
   nlevreg= CEILING( (maxlev-minlev)/ regrid_vert_res ) + 1
   ALLOCATE( levreg(nlevreg) ) 
   DO i = 1,nlevreg
-    levreg(i)=maxlevreg - REAL((i-1),r_size)*regrid_vert_res 
+    levreg(i)=maxlev - REAL((i-1),r_size)*regrid_vert_res 
   ENDDO
 
   minlevreg=MINVAL(levreg)
@@ -310,7 +312,7 @@ INTEGER      :: i,j,ivar,ilev,ilevreg,ilevprev,iregprev
    WRITE(*,*)'INILAT= ',minlatreg
    WRITE(*,*)'NLON  = ',nlonreg
    WRITE(*,*)'NLAT  = ',nlatreg
-   WRITE(*,*)'HRES  = ',regrid_res*100.0d0,' (degree)'
+   WRITE(*,*)'HRES  = ',regrid_res
    WRITE(*,*)'MAXLEV= ',maxlevreg
    WRITE(*,*)'NLEV  = ',nlevreg
    WRITE(*,*)'LEVRES= ',regrid_vert_res, ' (Pa)'
@@ -318,18 +320,18 @@ INTEGER      :: i,j,ivar,ilev,ilevreg,ilevprev,iregprev
  
   !How many total levels do we have in the regird domain?
   !Get the number of total fields after regrid in z.
-  nvreg=1
+  nfieldsreg=1
   ilevprev=NINT( ( maxlevreg - varlevall(1) )  / regrid_vert_res ) + 1
   DO i = 2,nfields
    ilev=NINT( ( maxlevreg - varlevall(i) )  / regrid_vert_res ) + 1 
    if ( ilev /= ilevprev .or. varnameall(i) /= varnameall(i-1) )then
-      nvreg = nvreg+1
+      nfieldsreg = nfieldsreg+1
    endif 
    ilevprev=ilev
   ENDDO
 
-  ALLOCATE( levallreg(nvreg) )
-  ALLOCATE( varnameallreg(nvreg) )
+  ALLOCATE( levallreg(nfieldsreg) )
+  ALLOCATE( varnameallreg(nfieldsreg) )
   ALLOCATE( levregmap(nfields)  )
 
   !Define the map between the original grid and the regrided grid in the variable dimension.
@@ -358,7 +360,7 @@ END SUBROUTINE get_regrid_grid
 SUBROUTINE regrid_var(nx,ny,nz,nxreg,nyreg,nzreg,zmap,x,y,xreg,yreg,var,undefmask,varreg,undefmaskreg,num)
 IMPLICIT NONE
 INTEGER     , INTENT(IN) :: nx,ny,nz,nxreg,nyreg,nzreg
-REAL(r_size), INTENT(IN) :: x(nx,ny),y(nx,ny),xreg(nx,ny),yreg(nx,ny)
+REAL(r_size), INTENT(IN) :: x(nx,ny),y(nx,ny),xreg(nxreg,nyreg),yreg(nxreg,nyreg)
 REAL(r_size), INTENT(IN) :: var(nx,ny,nz) 
 LOGICAL     , INTENT(IN) :: undefmask(nx,ny,nz)
 LOGICAL     , INTENT(OUT):: undefmaskreg(nxreg,nyreg,nzreg)

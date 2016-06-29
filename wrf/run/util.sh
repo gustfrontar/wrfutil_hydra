@@ -938,9 +938,9 @@ fi
 #COPY PERTURBATION COMPUTATION CODE
 cp $WRF/add_pert/*              $TMPDIR/add_pert/
 #COPY OFFLINE OBSERBATION OPERATOR
-cp $WRF/obsope/obsope.exe $TMPDIR/verification/obsope.exe 
+cp $WRF/verification/obsope/obsope.exe $TMPDIR/verification/obsope.exe 
 #COPY GRIDED VERIFICATION CODE
-cp $WRF/verify/verify.exe       $TMPDIR/verification/verify.exe
+cp $WRF/verification/verify/verify.exe       $TMPDIR/verification/verify.exe
 
 #ssh $PPSSERVER " cd $TMPDIR/add_pert && ./make_compute_pert_metem.sh >  $TMPDIR/add_pert/compile.log "
 
@@ -2608,8 +2608,9 @@ if [ $ANALYSIS -eq 1 ] ; then
    echo "ln -sf ${RESULTDIRA}/plev${MEM}.dat         \${my_dir}/fcst${MEM}.grd    " >> ${WORKDIR}/tmp.sh
    M=`expr $M + 1 `
   done
-   echo "ln -sf ${RESULTDIRA}/plev00001.ctl                \${my_dir}/input.ctl   " >> ${WORKDIR}/tmp.sh 
-   echo "ln -sf ${RESULTDIRA}/plevganald\${my_domain}_\${my_date}.dat  \${my_dir}/anal.grd " >> ${WORKDIR}/tmp.sh
+   echo "ln -sf ${RESULTDIRA}/plev00001.ctl                            \${my_dir}/inputfor.ctl " >> ${WORKDIR}/tmp.sh  #Link forecast ctl
+   echo "ln -sf ${RESULTDIRA}/plevganald\${my_domain}_\${my_date}.ctl  \${my_dir}/inputanl.ctl " >> ${WORKDIR}/tmp.sh  #Link analysis ctl
+   echo "ln -sf ${RESULTDIRA}/plevganald\${my_domain}_\${my_date}.dat  \${my_dir}/anal.grd     " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${RESULTDIRA}/plevmean.dat                 \${my_dir}/mean.grd    " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${RESULTDIRA}/plevsprd.dat                 \${my_dir}/sprd.grd    " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${RESULTDIRA}/plevmerr.dat                 \${my_dir}/merr.grd    " >> ${WORKDIR}/tmp.sh
@@ -2664,13 +2665,13 @@ if [ $FORECAST -eq 1  ] ; then
     local MEM=`ens_member $MEANMEMBER `
     local MEM1=`ens_member 1 `
     echo "ln -sf ${RESULTDIRG}/plevd\${my_domain}_\${my_date}_${MEM}.dat   \${my_dir}/fcst${MEM1}.grd " >> ${WORKDIR}/tmp.sh
-    echo "ln -sf ${RESULTDIRG}/plevd\${my_domain}_\${my_date}_${MEM}.ctl   \${my_dir}/input.ctl       " >> ${WORKDIR}/tmp.sh
+    echo "ln -sf ${RESULTDIRG}/plevd\${my_domain}_\${my_date}_${MEM}.ctl   \${my_dir}/inputfor.ctl    " >> ${WORKDIR}/tmp.sh
   else
    local M=$INIMEMBER
    while [ $M -le $ENDMEMBER ] ; do
     local MEM=`ens_member $M `
     echo "ln -sf ${RESULTDIRG}/plevd\${my_domain}_\${my_date}_${MEM}.dat   \${my_dir}/fcst${MEM}.grd " >> ${WORKDIR}/tmp.sh
-    echo "ln -sf ${RESULTDIRG}/plevd\${my_domain}_\${my_date}_00001.ctl    \${my_dir}/input.ctl      " >> ${WORKDIR}/tmp.sh
+    echo "ln -sf ${RESULTDIRG}/plevd\${my_domain}_\${my_date}_00001.ctl    \${my_dir}/inputanl.ctl   " >> ${WORKDIR}/tmp.sh
     M=`expr $M + 1 `
    done
   fi

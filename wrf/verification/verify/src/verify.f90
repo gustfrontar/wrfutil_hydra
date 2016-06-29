@@ -21,7 +21,8 @@ program verify
   character(20) :: meanfile = 'mean.grd' !Ensemble mean
   character(20) :: sprdfile = 'sprd.grd' !Ensemble spread
   character(20) :: merrfile = 'merr.grd' !Ensemble mean error
-  character(20) :: ctl_file= 'input.ctl'
+  character(20) :: ctl_file_for = 'inputfor.ctl'
+  character(20) :: ctl_file_anl = 'inputanl.ctl'
 
   character(20) :: areafile = 'area.txt'
 
@@ -76,11 +77,30 @@ program verify
 
   call read_namelist !ensemble size and general options.
 
-  call parse_ctl(ctl_file,ctlanl) !Get ctl dimmensions and variables for the verification dataset.
-  call parse_ctl(ctl_file,ctlfor) !Get ctl dimmensions and variables for the forecast dataset.
+  call parse_ctl(ctl_file_anl,ctlanl) !Get ctl dimmensions and variables for the verification dataset.
+  call parse_ctl(ctl_file_for,ctlfor) !Get ctl dimmensions and variables for the forecast dataset.
 
   nlon=ctlanl%nlon
   nlat=ctlanl%nlat
+
+  !Check if the grids are equivalent (if they are not we can only compare these
+  !two grids in the common regrid grid)
+  if( ctlanl%nlon /= ctlfor%nlon .or. ctlanl%nlat /= ctlfor%nlat )then
+    samegrid_output=.false. !We cannot compare this two grids directly.
+  else 
+   do ii=1,nlon
+     do jj=1,nlat
+        if( ctlanl%lon(ii,jj) /= ctlfor%lon(ii,jj) )samegrid_output=.false.
+        if( ctlanl%lat(ii,jj) /= ctlfor%lat(ii,jj) )samegrid_output=.false.
+     enddo
+   enddo
+  endif
+
+  if( .not. samegrid_output )then
+    WRITE(*,*)"Grids are not equivalent we can only compare regrided grids"
+  else
+    WRITE(*,*)"Grids are equivalent we will produce errors at the original model grid"
+  endif
 
   ALLOCATE( lon(ctlanl%nlon,ctlanl%nlat) , lat(ctlanl%nlon,ctlanl%nlat) )
  
@@ -101,7 +121,9 @@ program verify
   ALLOCATE( vf(nlon,nlat,commonnfields) , va(nlon,nlat,commonnfields) )
   ALLOCATE( vfm(nlon,nlat,commonnfields) , vfs(nlon,nlat,commonnfields) )
 
-  ALLOCATE( ve(nlon,nlat,commonnfields) )
+  if( samegrid_output )then
+     ALLOCATE( ve(nlon,nlat,commonnfields) )
+  endif
   ALLOCATE( undefmask(nlon,nlat,commonnfields) )
   ALLOCATE( totalundefmask(nlon,nlat,commonnfields) )
 
@@ -163,6 +185,7 @@ DO i=1,nbv
 
 ENDDO
 
+
   ALLOCATE( tmpgrid(nlon,nlat,ctlanl%nfields),tmpmask(nlon,nlat,ctlanl%nfields) )
 
   call read_grd(analfile,nlon,nlat,ctlanl%nfields,tmpgrid,tmpmask,ctlanl%undefbin)
@@ -199,14 +222,17 @@ ENDDO
     vfs=0.0d0
   ENDWHERE
   vfs=SQRT(vfs)
-  ve=vfm-va
-
 
   !Writing the ensemble mean and spread in the postproc grid.
 
   CALL write_grd(meanfile,nlon,nlat,commonnfields,vfm,totalundefmask,ctlanl%undefbin)
   CALL write_grd(sprdfile,nlon,nlat,commonnfields,vfs,totalundefmask,ctlanl%undefbin)
-  CALL write_grd(merrfile,nlon,nlat,commonnfields,ve ,totalundefmask,ctlanl%undefbin)
+
+  if ( samegrid_output )then
+    ve=vfm-va
+    CALL write_grd(merrfile,nlon,nlat,commonnfields,ve ,totalundefmask,ctlanl%undefbin)
+  endif
+
 
   !Computeing and writing the regrid output
  if ( regrid_output ) then
@@ -216,7 +242,9 @@ ENDDO
   CALL regrid_var(nlon,nlat,commonnfields,nlonreg,nlatreg,nfieldsreg,levregmap,lon,lat, &
                   lonreg,latreg,vfs,totalundefmask,vfsreg,totalundefmaskreg,numreg)
   CALL regrid_var(nlon,nlat,commonnfields,nlonreg,nlatreg,nfieldsreg,levregmap,lon,lat, &
-                  lonreg,latreg,ve ,totalundefmask,vereg ,totalundefmaskreg,numreg)
+                  lonreg,latreg,va ,totalundefmask,vareg ,totalundefmaskreg,numreg)
+  !Compute error in the regrid grid
+  vereg=vfmreg-vareg  
 
   CALL write_grd(meanfilereg,nlonreg,nlatreg,nfieldsreg,vfmreg,totalundefmaskreg,ctlanl%undefbin)
   CALL write_grd(sprdfilereg,nlonreg,nlatreg,nfieldsreg,vfsreg,totalundefmaskreg,ctlanl%undefbin)
@@ -225,6 +253,7 @@ ENDDO
 
   !Compute rmse over selected regions and generate text ouput. 
 
+ if( samegrid_output )then
     num_ana = 0
     wei_ana = 0.0d0
     bias_ana = 0.0d0
@@ -303,6 +332,8 @@ ENDDO
         WRITE(iunit,*)commonvarnameall(i),commonlevall(i)*100.0d0,(REAL(num_ana(iarea,i),r_sngl),iarea=1,narea)
       ENDDO
     close(iunit)
+
+  endif
 
   if( regrid_output )then
 
@@ -387,6 +418,8 @@ ENDDO
     close(iunit)
 
   endif
+
+STOP
 
 !-------------------------------------------------------------------------------
 end program

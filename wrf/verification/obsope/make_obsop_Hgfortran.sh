@@ -1,10 +1,10 @@
 #!/bin/sh
 set -ex
 PGM=obsope.exe
-F90=mpif90
+F90=/home/jruiz/mpich.gfortran/bin/mpif90
 OMP=
 
-F90OPT='-O3 -convert big_endian' #-convert big_endian -O3 ' # -Hs' -Kfast,parallel
+F90OPT='-O3 -fconvert=big-endian' #-convert big_endian -O3 ' # -Hs' -Kfast,parallel
 
 BLAS=1 #0: no blas 1: using blas
 BASEDIR=${HOME}/libintel/netcdf-3.6.3/
@@ -16,8 +16,8 @@ cd ./src/
 
 COMMONDIR=../../../../common/
 COMMONDIRWRF=../../../common/
-LIB_NETCDF="-L/opt/netcdf-fortran/4.2/lib -lnetcdff"
-INC_NETCDF="-I/opt/netcdf-fortran/4.2/include/"
+LIB_NETCDF="-L/home/jruiz/netcdf.gfortran/lib -lnetcdff"
+INC_NETCDF="-I/home/jruiz/netcdf.gfortran/include/"
 
 
 ln -fs $COMMONDIR/SFMT.f90            ./

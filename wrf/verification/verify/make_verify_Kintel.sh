@@ -1,6 +1,6 @@
 #!/bin/sh
 set -ex
-PGM=verify.exe
+PGM=../verify.exe
 F90=mpif90
 OMP=
 
