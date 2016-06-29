@@ -14,7 +14,7 @@ module verify_tools
 ! General parameters
 !-----------------------------------------------------------------------
  
-  INTEGER :: nlon   ,nlat   ,nfields
+!  INTEGER :: nlon   ,nlat   ,nfields
   INTEGER :: nlonreg,nlatreg,nfieldsreg,nlevreg !Regrid domain size
 
   !NAMELIST INPUT
@@ -363,7 +363,7 @@ INTEGER     , INTENT(IN) :: nx,ny,nz,nxreg,nyreg,nzreg
 REAL(r_size), INTENT(IN) :: x(nx,ny),y(nx,ny),xreg(nxreg,nyreg),yreg(nxreg,nyreg)
 REAL(r_size), INTENT(IN) :: var(nx,ny,nz) 
 LOGICAL     , INTENT(IN) :: undefmask(nx,ny,nz)
-LOGICAL     , INTENT(OUT):: undefmaskreg(nxreg,nyreg,nzreg)
+LOGICAL     , INTENT(INOUT):: undefmaskreg(nxreg,nyreg,nzreg)
 INTEGER     , INTENT(IN) :: zmap(nz)
 REAL(r_size), INTENT(OUT):: varreg(nxreg,nyreg,nzreg)
 INTEGER     , INTENT(OUT):: num(nxreg,nyreg,nzreg)
@@ -372,7 +372,7 @@ REAL(r_size)             :: dx , dy , minx , miny
 
    varreg=0.0d0
    num=0
-   undefmaskreg=.true.
+   !undefmaskreg=.true.
 
    dx = xreg(2,1) - xreg(1,1) !Assume regular grid for the regrid data.
    dy = yreg(1,2) - yreg(1,1) !

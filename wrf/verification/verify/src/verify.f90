@@ -57,7 +57,8 @@ program verify
   real(r_size), ALLOCATABLE :: rmse(:,:,:),bias(:,:,:),abse(:,:,:),coun(:,:,:)
   real(r_size), ALLOCATABLE :: rmsereg(:,:,:),biasreg(:,:,:),absereg(:,:,:),counreg(:,:,:)
 
-  LOGICAL , ALLOCATABLE :: undefmask(:,:,:) , totalundefmask(:,:,:) , tmpmask(:,:,:)
+  LOGICAL , ALLOCATABLE :: undefmaskf(:,:,:) , totalundefmaskf(:,:,:) , tmpmask(:,:,:)
+  LOGICAL , ALLOCATABLE :: undefmaska(:,:,:) , totalundefmaska(:,:,:) 
   LOGICAL , ALLOCATABLE :: undefmaskreg(:,:,:) , totalundefmaskreg(:,:,:)
 
   real(r_size) :: dz, hx, dep, wei, latm1, latm2
@@ -80,16 +81,16 @@ program verify
   call parse_ctl(ctl_file_anl,ctlanl) !Get ctl dimmensions and variables for the verification dataset.
   call parse_ctl(ctl_file_for,ctlfor) !Get ctl dimmensions and variables for the forecast dataset.
 
-  nlon=ctlanl%nlon
-  nlat=ctlanl%nlat
+  !nlon=ctlanl%nlon
+  !nlat=ctlanl%nlat
 
   !Check if the grids are equivalent (if they are not we can only compare these
   !two grids in the common regrid grid)
   if( ctlanl%nlon /= ctlfor%nlon .or. ctlanl%nlat /= ctlfor%nlat )then
     samegrid_output=.false. !We cannot compare this two grids directly.
   else 
-   do ii=1,nlon
-     do jj=1,nlat
+   do ii=1,ctlanl%nlon
+     do jj=1,ctlanl%nlat
         if( ctlanl%lon(ii,jj) /= ctlfor%lon(ii,jj) )samegrid_output=.false.
         if( ctlanl%lat(ii,jj) /= ctlfor%lat(ii,jj) )samegrid_output=.false.
      enddo
@@ -118,14 +119,17 @@ program verify
   ALLOCATE( abse_ana(narea,commonnfields) )
   ALLOCATE( rmse_ana(narea,commonnfields) )
   ALLOCATE( sprd_ana(narea,commonnfields) )
-  ALLOCATE( vf(nlon,nlat,commonnfields) , va(nlon,nlat,commonnfields) )
-  ALLOCATE( vfm(nlon,nlat,commonnfields) , vfs(nlon,nlat,commonnfields) )
+  ALLOCATE( vf(ctlfor%nlon,ctlfor%nlat,commonnfields) , va(ctlanl%nlon,ctlanl%nlat,commonnfields) )
+  ALLOCATE( vfm(ctlfor%nlon,ctlfor%nlat,commonnfields) , vfs(ctlfor%nlon,ctlfor%nlat,commonnfields) )
 
   if( samegrid_output )then
-     ALLOCATE( ve(nlon,nlat,commonnfields) )
+     ALLOCATE( ve(ctlfor%nlon,ctlfor%nlat,commonnfields) )
   endif
-  ALLOCATE( undefmask(nlon,nlat,commonnfields) )
-  ALLOCATE( totalundefmask(nlon,nlat,commonnfields) )
+  ALLOCATE( undefmaskf(ctlfor%nlon,ctlfor%nlat,commonnfields) )
+  ALLOCATE( totalundefmaskf(ctlfor%nlon,ctlfor%nlat,commonnfields) )
+  ALLOCATE( undefmaska(ctlanl%nlon,ctlanl%nlat,commonnfields) )
+  ALLOCATE( totalundefmaska(ctlanl%nlon,ctlanl%nlat,commonnfields) )
+
 
   if( regrid_output )then !We will generate also a regrid output in a regular grid.
     call get_regrid_grid(ctlanl%minlon,ctlanl%maxlon,ctlanl%minlat,ctlanl%maxlat,ctlanl%minlev, &
@@ -154,7 +158,8 @@ program verify
 
 ! Comput the ensemble mean 
 
-totalundefmask=.true.
+totalundefmaskf=.true.
+totalundefmaska=.true.
 
 vfm=0.0d0
 vfs=0.0d0
@@ -163,20 +168,20 @@ DO i=1,nbv
 
   WRITE( fcstfile(5:9), '(I5.5)' )i
 
-  ALLOCATE(tmpgrid(nlon,nlat,ctlfor%nfields),tmpmask(nlon,nlat,ctlfor%nfields))
+  ALLOCATE(tmpgrid(ctlfor%nlon,ctlfor%nlat,ctlfor%nfields),tmpmask(ctlfor%nlon,ctlfor%nlat,ctlfor%nfields))
  
-  call read_grd(fcstfile,nlon,nlat,ctlfor%nfields,tmpgrid,tmpmask,ctlfor%undefbin)
+  call read_grd(fcstfile,ctlfor%nlon,ctlfor%nlat,ctlfor%nfields,tmpgrid,tmpmask,ctlfor%undefbin)
 
     DO ii=1,ctlfor%nfields
        if( ctlfor%readvar(ii) )then
         vf(:,:,mapfor(ii))=tmpgrid(:,:,ii)
-        undefmask(:,:,mapfor(ii))=tmpmask(:,:,ii)
+        undefmaskf(:,:,mapfor(ii))=tmpmask(:,:,ii)
        endif
     ENDDO
   DEALLOCATE( tmpgrid , tmpmask )
 
-  WHERE( .NOT. undefmask )
-    totalundefmask=.false.
+  WHERE( .NOT. undefmaskf )
+    totalundefmaskf=.false.
   END WHERE
     
 
@@ -186,32 +191,26 @@ DO i=1,nbv
 ENDDO
 
 
-  ALLOCATE( tmpgrid(nlon,nlat,ctlanl%nfields),tmpmask(nlon,nlat,ctlanl%nfields) )
+  ALLOCATE( tmpgrid(ctlanl%nlon,ctlanl%nlat,ctlanl%nfields),tmpmask(ctlanl%nlon,ctlanl%nlat,ctlanl%nfields) )
 
-  call read_grd(analfile,nlon,nlat,ctlanl%nfields,tmpgrid,tmpmask,ctlanl%undefbin)
+  call read_grd(analfile,ctlanl%nlon,ctlanl%nlat,ctlanl%nfields,tmpgrid,tmpmask,ctlanl%undefbin)
 
       DO ii=1,ctlanl%nfields
        if( ctlanl%readvar(ii) )then
         va(:,:,mapanl(ii))=tmpgrid(:,:,ii)
-        undefmask(:,:,mapanl(ii))=tmpmask(:,:,ii)
+        undefmaska(:,:,mapanl(ii))=tmpmask(:,:,ii)
        endif
       ENDDO
   DEALLOCATE( tmpgrid , tmpmask )
   
 
-  WHERE( .NOT. undefmask )
-   totalundefmask=.false.
+  WHERE( .NOT. undefmaska )
+   totalundefmaska=.false.
   END WHERE
 
   !At this point total undef mask is false
   !if any of the ensemble members is undef 
   !or if the analysis is undef.
-
-  WHERE(.NOT. totalundefmask )
-    vfm=0.0d0
-    vfs=0.0d0
-    va=0.0d0
-  ENDWHERE
 
   !Finish computing the analysis ensemble mean and spread.
 
@@ -225,30 +224,42 @@ ENDDO
 
   !Writing the ensemble mean and spread in the postproc grid.
 
-  CALL write_grd(meanfile,nlon,nlat,commonnfields,vfm,totalundefmask,ctlanl%undefbin)
-  CALL write_grd(sprdfile,nlon,nlat,commonnfields,vfs,totalundefmask,ctlanl%undefbin)
+  CALL write_grd(meanfile,ctlfor%nlon,ctlfor%nlat,commonnfields,vfm,totalundefmaskf,ctlanl%undefbin)
+  CALL write_grd(sprdfile,ctlfor%nlon,ctlfor%nlat,commonnfields,vfs,totalundefmaskf,ctlanl%undefbin)
 
   if ( samegrid_output )then
+  !If analysis and forecast share the same original grid, then coordinate the
+  !masks so the error is computed where both analysis and forecast are
+  !available.
+    WHERE( .NOT. totalundefmaskf )
+     totalundefmaska=.false.
+    ENDWHERE
+    WHERE( .NOT. totalundefmaska )
+     totalundefmaskf=.false.
+    ENDWHERE
+  !Compute the error
     ve=vfm-va
-    CALL write_grd(merrfile,nlon,nlat,commonnfields,ve ,totalundefmask,ctlanl%undefbin)
+  !Write it out
+    CALL write_grd(merrfile,ctlfor%nlon,ctlfor%nlat,commonnfields,ve ,totalundefmaskf,ctlanl%undefbin)
   endif
 
 
   !Computeing and writing the regrid output
  if ( regrid_output ) then
-
-  CALL regrid_var(nlon,nlat,commonnfields,nlonreg,nlatreg,nfieldsreg,levregmap,lon,lat, &
-                  lonreg,latreg,vfm,totalundefmask,vfmreg,totalundefmaskreg,numreg)
-  CALL regrid_var(nlon,nlat,commonnfields,nlonreg,nlatreg,nfieldsreg,levregmap,lon,lat, &
-                  lonreg,latreg,vfs,totalundefmask,vfsreg,totalundefmaskreg,numreg)
-  CALL regrid_var(nlon,nlat,commonnfields,nlonreg,nlatreg,nfieldsreg,levregmap,lon,lat, &
-                  lonreg,latreg,va ,totalundefmask,vareg ,totalundefmaskreg,numreg)
+  undefmaskreg=.true.
+  CALL regrid_var(ctlfor%nlon,ctlfor%nlat,commonnfields,nlonreg,nlatreg,nfieldsreg,levregmap,ctlfor%lon,ctlfor%lat, &
+                  lonreg,latreg,vfm,totalundefmaskf,vfmreg,totalundefmaskreg,numreg)
+  CALL regrid_var(ctlfor%nlon,ctlfor%nlat,commonnfields,nlonreg,nlatreg,nfieldsreg,levregmap,ctlfor%lon,ctlfor%lat, &
+                  lonreg,latreg,vfs,totalundefmaskf,vfsreg,totalundefmaskreg,numreg)
+  CALL regrid_var(ctlanl%nlon,ctlanl%nlat,commonnfields,nlonreg,nlatreg,nfieldsreg,levregmap,ctlanl%lon,ctlanl%lat, &
+                  lonreg,latreg,va ,totalundefmaska,vareg ,totalundefmaskreg,numreg)
   !Compute error in the regrid grid
   vereg=vfmreg-vareg  
 
   CALL write_grd(meanfilereg,nlonreg,nlatreg,nfieldsreg,vfmreg,totalundefmaskreg,ctlanl%undefbin)
   CALL write_grd(sprdfilereg,nlonreg,nlatreg,nfieldsreg,vfsreg,totalundefmaskreg,ctlanl%undefbin)
   CALL write_grd(merrfilereg,nlonreg,nlatreg,nfieldsreg,vereg ,totalundefmaskreg,ctlanl%undefbin)
+
  endif
 
   !Compute rmse over selected regions and generate text ouput. 
@@ -262,15 +273,15 @@ ENDDO
     sprd_ana = 0.0d0
 
     do iarea = 1, narea
-     do i=1,nlon
-      do j=1,nlat
+     do i=1,ctlfor%nlon
+      do j=1,ctlfor%nlat
        if( lon(i,j) < vlon1(iarea) )cycle
        if( lon(i,j) > vlon2(iarea) )cycle
        if( lat(i,j) < vlat1(iarea) )cycle
        if( lat(i,j) > vlat2(iarea) )cycle
 
         do vid = 1, commonnfields 
-         if ( totalundefmask(i,j,vid) ) then
+         if ( totalundefmaska(i,j,vid) ) then
                 dep = vfm(i,j,vid) - va(i,j,vid)
                 num_ana(iarea,vid) = num_ana(iarea,vid) + 1
                 bias_ana(iarea,vid) = bias_ana(iarea,vid) + dep
