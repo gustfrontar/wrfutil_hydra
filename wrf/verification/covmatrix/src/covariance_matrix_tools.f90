@@ -36,8 +36,14 @@ module covariance_matrix_tools
   INTEGER :: nignore=0
   INTEGER , PARAMETER :: max_nignore = 20
   character(50) :: ignorevarname(max_nignore)
+<<<<<<< HEAD
+  
+  character(50) :: input_endian='little_endian'
+  character(50) :: output_endian='big_endian'
+=======
   character(50) :: inputendian='little_endian'
   character(50) :: outputendian='big_endian'
+>>>>>>> f0f61dab801fb13a3d283a4a2eb2cc141e2977c4
 
   CHARACTER(LEN=100) :: NAMELIST_FILE='./covariance_matrix.namelist'
 
@@ -75,6 +81,16 @@ plev=undef
 dep=undef
 error=undef
 
+<<<<<<< HEAD
+!In the current version PLEV represents not only the level but also the
+!variable. 
+
+NAMELIST / GENERAL / nbv , npoints , plon , plat , pvarname , plev , &
+                     dep , error , bootstrap , bootstrap_samples   , &
+                     nignore , ignorevarname , skipx , skipy , skipz,&
+                     input_endian , output_endian
+=======
+>>>>>>> f0f61dab801fb13a3d283a4a2eb2cc141e2977c4
 
 INQUIRE(FILE=NAMELIST_FILE, EXIST=file_exist)
 
@@ -106,7 +122,7 @@ SUBROUTINE read_grd(filename,nx,ny,nz,var,undefmask,undefbin)
   REAL(r_sngl) :: buf4(nx,ny)
   REAL(r_sngl),INTENT(IN) :: undefbin
   INTEGER :: iunit,iolen
-  INTEGER :: k,n,reclength,ios
+  INTEGER :: k,n,reclength,ios ,ii,jj
   LOGICAL :: file_exist
   
 
@@ -119,7 +135,12 @@ SUBROUTINE read_grd(filename,nx,ny,nz,var,undefmask,undefbin)
  iunit=33
  INQUIRE(FILE=filename,EXIST=file_exist)
   IF(file_exist) THEN
+<<<<<<< HEAD
+   OPEN(iunit,FILE=filename,FORM='unformatted',ACCESS='direct',RECL=reclength, &
+              CONVERT=input_endian )
+=======
    OPEN(iunit,FILE=filename,FORM='unformatted',ACCESS='direct',RECL=reclength,CONVERT=inputendian)
+>>>>>>> f0f61dab801fb13a3d283a4a2eb2cc141e2977c4
   ELSE
    WRITE(*,*)"[Warning]: Could not finde file! ",filename
    undefmask=.false.
@@ -171,7 +192,12 @@ SUBROUTINE write_grd(filename,nx,ny,nz,var,undefmask,undefbin)
 
   iunit=55
   INQUIRE(IOLENGTH=iolen) iolen
+<<<<<<< HEAD
+  OPEN(iunit,FILE=filename,FORM='unformatted',ACCESS='direct',RECL=reclength, &
+             CONVERT=output_endian )
+=======
   OPEN(iunit,FILE=filename,FORM='unformatted',ACCESS='direct',RECL=reclength,CONVERT=outputendian)
+>>>>>>> f0f61dab801fb13a3d283a4a2eb2cc141e2977c4
 
   DO n=1,nz
    buf4 = REAL(var(:,:,n),r_sngl)

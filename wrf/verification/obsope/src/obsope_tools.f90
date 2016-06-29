@@ -278,7 +278,8 @@ timeslots: DO islot=1,nslots
           !This is a radar observation.
           current_radar=NINT(tmpradar(n))
           !Convert from azimuth,elevation,range to lat,lon,z
-          CALL aer2llz(radar_lon(current_radar),radar_lat(current_radar),radar_z(current_radar),tmpaz(n),tmpel(n),tmpra(n),tmplon(n),tmplat(n),tmplev(n))
+          CALL aer2llz(radar_lon(current_radar),radar_lat(current_radar),radar_z(current_radar), &
+                       tmpaz(n),tmpel(n),tmpra(n),tmplon(n),tmplat(n),tmplev(n))
           !WRITE(6,*)tmpaz(n),tmpel(n),tmpra(n),tmpdat(n)
       ENDIF
       CALL latlon_to_ij(projection,tmplat(n),tmplon(n),tmpi(n),tmpj(n))

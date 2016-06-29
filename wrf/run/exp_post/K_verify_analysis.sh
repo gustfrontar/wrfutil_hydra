@@ -21,17 +21,17 @@ CDIR=`pwd`
 
 #TODO(some of these variables should be included in a configuration file)
 ITER_BEGIN_STATS=40  #How many cycles before start the computation of accumulated rmse and bias.
-NAREA=3              #Number of verification regions where statistics will be averaged
-VLON1="0,110,110,"   #Limits for the verifcation regions.
-VLON2="360,160,170"
-VLAT1="-90,5,25,"
-VLAT2="90,25,50,"
+NAREA=2              #Number of verification regions where statistics will be averaged
+VLON1="-60,-60,"   #Limits for the verifcation regions.
+VLON2="-55,-55,"
+VLAT1="-60,-20,"
+VLAT2="-20,10,"
 REGRID_OUTPUT=".true."        #Wheter regrid ouput will be generated or not
 REGRID_RES="1.0d0"            #Resolution of regrided output.
 REGRID_VERT_RES="10000.0d0"     #Vertical resolution of regrided output (Pa)
 REGRID_VERT_ZRES="1000.0d0"   #Vertical resolution of regrided output (m)
 FILTER_INPUT=".false."        #Not coded yet.
-TMPDIRVERIF=$HOME/data/TMP/VERIFICATION_2
+TMPDIRVERIF=$HOME/data/TMP/VERIFICATION
 DO_OBSGRID=".true."
 SLOTSTEP="3"                  #Slot step for obsgrid verifcation
 SLOTOFFSET="0"                #Slot offset for obsgrid verification
@@ -41,12 +41,12 @@ GROSSERROROBSOP="10.0d0"
 GLOBALANALYSIS_DATA_VERIFICATION_FREQ=21600
 
 #CONFIGURATION
-DOMAINCONF=SINLAKU_20K                      #Define a domain
-CONFIGURATION=control40mhloc133             #Define a experiment configuration
-MCONFIGURATION=machine_forecast_60k_K       #Define a machine configuration [System type]
+DOMAINCONF=SA_60KM                          #Define a domain
+CONFIGURATION=control40msa_test             #Define a experiment configuration
+MCONFIGURATION=machine_60ksa_H_test         #Define a machine configuration [System type]
 
-VINIDATE=20080910000000
-VENDDATE=20080923000000
+VINIDATE=20100802120000
+VENDDATE=20100802120000
 
 
 MYHOST=`hostname`
@@ -145,7 +145,7 @@ echo " >>"
 echo " >> ANALYSIS VERIFICATION USING OBSERVATIONS "
 echo " >>"
 
-time verification_against_obs $CDATE $CDATE
+#time verification_against_obs $CDATE $CDATE
 
 
 CDATE=$ADATE

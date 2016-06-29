@@ -2,8 +2,14 @@
 set -ex
 PGM=covariance_matrix.exe
 F90=ifort
+<<<<<<< HEAD
+OMP=" -openmp "
+
+F90OPT='-O3 ' #-convert big_endian -O3' # -g -treceback
+=======
 OMP="-openmp "
 F90OPT='-O3' #-convert big_endian -O3' # -g -treceback
+>>>>>>> f0f61dab801fb13a3d283a4a2eb2cc141e2977c4
 
 rm -f *.mod
 rm -f *.o

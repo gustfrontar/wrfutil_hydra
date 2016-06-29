@@ -65,8 +65,8 @@ program covariance_matrix
   obsimpact=ctl%undefbin
   
 
-  !First read all the ensemble and store it in memory (if this is not possible
-  !then the code should be modified).
+!First read all the ensemble and store it in memory (if this is not possible
+!then the code should be modified).
 
    totalundefmask=.true.
 
@@ -83,6 +83,8 @@ DO i=1,nbv
        ENDDO
       ENDDO
      ENDDO
+<<<<<<< HEAD
+=======
 
      IF( smoothcov )THEN
          CALL smooth_2d(ensemble(:,:,:,i),ctl%nlon,ctl%nlat,ctl%nfields,smoothdx,smoothcovlength,undefmask)
@@ -90,6 +92,7 @@ DO i=1,nbv
           CALL write_grd('testsmooth.grd',ctl%nlon,ctl%nlat,ctl%nfields,ensemble(:,:,:,i),totalundefmask,ctl%undefbin)
          ENDIF
      ENDIF
+>>>>>>> f0f61dab801fb13a3d283a4a2eb2cc141e2977c4
 
 ENDDO ![End do over ensemble members]
 
@@ -168,8 +171,7 @@ DO ip=1,npoints
       DO jj = 1,ctl%nlat
        DO kk = 1,ctl%nfields
         IF( totalundefmask(ii,jj,kk) ) then
-        CALL com_covar_sngl(nbv,ensemble(ii,jj,kk,:),pensemble,cov)
-        covar(ii,jj,kk)=REAL(cov,r_sngl)
+        CALL com_covar_sngl(nbv,ensemble(ii,jj,kk,:),pensemble,covar(ii,jj,kk))
         obsimpact(ii,jj,kk)=covar(ii,jj,kk) * dep(ip) /( stdens + error(ip) )
         ENDIF
        ENDDO
@@ -177,11 +179,13 @@ DO ip=1,npoints
      ENDDO 
 !$OMP END PARALLEL DO
 
+
+
    if( bootstrap )then
      ALLOCATE( bssprd(ctl%nlon,ctl%nlat,ctl%nfields) , bsmean(ctl%nlon,ctl%nlat,ctl%nfields) )
      write(*,*)"Using bootstrap, with ",bootstrap_samples," samples"
-     bsmean=0.0d0
-     bssprd=0.0d0
+     bsmean=ctl%undefbin
+     bssprd=ctl%undefbin
 !$OMP PARALLEL DO PRIVATE(ii,jj,kk,is,cov,covmean,covsprd,localcov,sampleindex) 
     DO is = 1,bootstrap_samples 
      ALLOCATE( localcov(ctl%nlon,ctl%nlat,ctl%nfields) , sampleindex(nbv) )
@@ -229,7 +233,11 @@ DO ip=1,npoints
 
    CALL write_grd(bssfile,ctl%nlon,ctl%nlat,ctl%nfields,bssprd,totalundefmask,ctl%undefbin)
 
+<<<<<<< HEAD
+   deallocate( bsmean , bssprd ) 
+=======
    deallocate( bssprd , bsmean )
+>>>>>>> f0f61dab801fb13a3d283a4a2eb2cc141e2977c4
   endif
 
    WRITE(oimfile(9 :11),'(I3.3)')gridi

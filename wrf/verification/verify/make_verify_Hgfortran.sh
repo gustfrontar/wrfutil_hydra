@@ -1,10 +1,10 @@
 #!/bin/sh
 set -ex
-PGM=verify.exe
+PGM=../verify.exe
 F90=gfortran
 OMP=
 
-F90OPT='-O3' # -g -traceback' #
+F90OPT='-g -fbacktrace -O3' # -g -traceback' #
 
 BLAS=1 #0: no blas 1: using blas
 
