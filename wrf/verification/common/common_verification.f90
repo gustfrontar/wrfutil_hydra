@@ -72,10 +72,10 @@ myctl%proj_code = PROJ_MERC  !We start assuming mercartor.
    READ(iunit,'(A300)',IOSTAT=IERR)buffer
       IF(IERR /= 0)THEN
        WRITE(*,*)'End of file'
+       CLOSE(iunit)
        EXIT
       ENDIF
       IF( INDEX(buffer,'pdef ') > 0 .or. INDEX(buffer,'PDEF ') > 0 )THEN
-     
        ignore_nlon_nlat = .true. !nlon and nlat will be provided by pdef line.
        READ(buffer,*)dummyc,myctl%nlon,myctl%nlat,proj_name
                 
@@ -146,12 +146,14 @@ myctl%proj_code = PROJ_MERC  !We start assuming mercartor.
           READ(iunit,*)myctl%lev(i)
         ENDDO
        ELSEIF( INDEX(buffer,'linear') > 0 .or. INDEX(buffer,'linear') > 0)THEN
+        STOP
         READ(buffer,*)dummyc, myctl%nlev,dummyc,myctl%minlev,myctl%levres
         allocate(myctl%lev(myctl%nlev))
         DO i=1,myctl%nlev
           myctl%lev(i)=myctl%minlev + (i-1)*myctl%levres
         ENDDO
        ENDIF
+
       ENDIF
 
       IF( ( INDEX(buffer,'vars') > 0 .or. INDEX(buffer,'VARS') > 0 ) .AND. .NOT. &
