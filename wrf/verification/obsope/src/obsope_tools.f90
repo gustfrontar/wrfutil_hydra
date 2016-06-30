@@ -893,7 +893,7 @@ LOGICAL                  :: testvar
    grdnum=0
 
    DO i = 1,nobs
-      if ( obslot(i) <= inislot .OR. obslot(i) > endslot )cycle
+      if ( obslot(i) < inislot .OR. obslot(i) > endslot )cycle
       if ( obsvar(i) == undef )cycle
 
        DO iv=1,nvver
@@ -930,6 +930,8 @@ LOGICAL                  :: testvar
    ELSEWHERE
      grdobs=undef
    ENDWHERE
+
+   
 
 END SUBROUTINE obs_to_grid
 
@@ -1044,7 +1046,6 @@ ENDWHERE
 inislot=slotoffset
 
 do
-
   if( inislot > nslots )exit
   endslot=inislot+slotstep
 
@@ -1053,7 +1054,7 @@ do
   WRITE(sprdfile(8:12),'(I2.2,A1,I2.2)')inislot,'_',endslot
   WRITE(merrfile(8:12),'(I2.2,A1,I2.2)')inislot,'_',endslot
   WRITE(onumfile(8:12),'(I2.2,A1,I2.2)')inislot,'_',endslot
-  
+
 
   CALL obs_to_grid(inislot,endslot,obsmean,mean1,onum1)
   WRITE(6,*)"I will write a file ",meanfile
@@ -1119,7 +1120,7 @@ iunit=101
 Do iarea = 1,narea
 
   DO i = 1,nobs
-      if( obslot(i) <= inislot .OR. obslot(i) > endslot )cycle
+      if( obslot(i) < inislot .OR. obslot(i) > endslot )cycle
       if( obsdep(i) == undef )cycle
       if( obslon(i) < vlon1(iarea) )cycle
       if( obslon(i) > vlon2(iarea) )cycle

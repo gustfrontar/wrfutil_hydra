@@ -1,37 +1,36 @@
 #KALMAN FILTER CONFIGURATION
-MEMBER=100
+MEMBER=40
 HOMEDIR=${HOME}/share/
 DATADIR=${HOME}/data/
 INTERPANA=0 #1 - If input analysis has to be interpolated to the current domain. (If not we will assume that Analysis source and input domains have the same grid)
 FORECAST=1  #Identify this as a forecast job.
 ANALYSIS=0  #0 means this is not an analysis cycle run.
-RUN_ONLY_MEAN=0 #1 - run only the forecast initialized with the ensemble member, 0 run the full ensemble.
-MAX_DOM=2
-USE_ANALYSIS_BC=1 #1 - use analysis as BC , 0 - use forecasts as bc (e.g. global gfs)
+RUN_ONLY_MEAN=1 #1 - run only the forecast initialized with the ensemble member, 0 run the full ensemble.
+MAX_DOM=1
+USE_ANALYSIS_BC=0 #1 - use analysis as BC , 0 - use forecasts as bc (e.g. global gfs)
                   # if 1 then bc data will be taken from exp_met_em folder in the corresponding INPUT folder.
                   # if 0 then bc data will be taken from for_met_em folder in the corresponding INPUT folder.
                   # default is 1
-USE_ANALYSIS_IC=1 #1 - use global analysis as IC, 0 use LETKF analysis as IC
+USE_ANALYSIS_IC=0 #1 - use global analysis as IC, 0 use LETKF analysis as IC
                   #if 0 then profide a LETKF-analysis source (ANALYSIS_SOURCE)
                   #default is 0
 
-ANALYSIS_SOURCE=${HOME}/data/EXPERIMENTS/ANALYSIS_SINLAKU_60K_control40m/
+ANALYSIS_SOURCE=${HOME}/data/EXPERIMENTS/ANALYSIS_SINLAKU_60K_control40madaptiveinf/
 
 NVERTEXP=27  #used in forecast and da experiments.
 NVERTDB=38   #used for verification.
 
 
 #AUXILIARY VARIABLE FOR ENSEMBLE SIZE
-MM=$MEMBER                      #Variable for iteration limits.
 MEANMEMBER=`expr $MEMBER + 1 `  #This is the member ID corresponding to the ensemble mean.
 
 ASSIMILATION_FREC=21600 #Forecast initialization frequency (seconds)
-GUESFT=43200            #Forecast length (secons)
+GUESFT=259200           #Forecast length (secons)
 
 WINDOW=21600        #Forecast initialization frequency (seconds)
 WINDOW_START=0      #Window start (seconds from forecast initialization)
 WINDOW_END=$GUESFT  #Window end   (seconds from forecast initialization)
-WINDOW_FREC=300     #Output frequency for the forecast
+WINDOW_FREC=3600    #Output frequency for the forecast
 
 
 #OBSERVATION OPERATOR CONFIGURATION FOR FORECAST VERIFICATION.
@@ -50,15 +49,14 @@ BOUNDARY_DATA_FREC=10800              #Boundary data frequency. (seconds)
 BOUNDARY_DATA_PERTURBATION_FREQ=21600 #Frequency of data used to perturb boundary conditions (seconds)
 
 #INITIAL AND BOUNDARY PERTURBATIONS
-SCALE_FACTOR="0.1"         #Perturbation scale factor.(balanced random)
+SCALE_FACTOR="0.0"         #Perturbation scale factor.(balanced random)
 RANDOM_SCALE_FACTOR="0.0"  #Random perturbation scale factor.
-PERTURB_BOUNDARY=1         #If boundary perturbations will be applied. 
+PERTURB_BOUNDARY=0         #If boundary perturbations will be applied. 
 PERTURB_BOUNDARY_TYPE=1    #DUMMY
-PERTURB_ONLY_MOAD=0        #Perturb all the domains.
 
 #POSTPROC CONFIGURATION
 OUTLEVS="1000.,975.,950.,925.,900.,850.,800.,700.,600.,500.,400.,300.,250.,200.,150.,100.,"
-OUTVARS="'umet,vmet,W,QVAPOR,PSFC,RAINC,RAINNC,SST,geopt,tk,QRAIN,QSNOW,QGRAUP,QICE,QCLOUD,u10m,v10m,slp,mcape,max_dbz'"
+OUTVARS="'umet,vmet,W,QVAPOR,PSFC,RAINC,RAINNC,HGT,TSK,SST,geopt,tk,rh,rh2,u10m,v10m,slp,mcape'"
 ARWPOST_FREC=21600   # Post processing frequency (seconds)
 INPUT_ROOT_NAME='wrfout'
 INTERP_METHOD=1
@@ -77,8 +75,8 @@ fi
 EXP=FORECAST_${DOMAINCONF}_${CONFIGURATION}      # name of experiment
 
 ### initial date setting
-IDATE=20140910180000
-EDATE=20140910180000
+IDATE=20080820000000 
+EDATE=20080927000000
 
 #### DATA
 
@@ -111,4 +109,4 @@ NAMELISTWRF=$WRF/run/configuration/$DOMAINCONF/namelist.input
 NAMELISTWPS=$WRF/run/configuration/$DOMAINCONF/namelist.wps
 NAMELISTARWPOST=$WRF/run/configuration/$DOMAINCONF/namelist.ARWpost
 NAMELISTLETKF=$WRF/run/configuration/letkf.namelist.$LETKFNAMELIST
-
+NAMELISTOBSOPE=$WRF/run/configuration/obsope.namelist.$OBSOPENAMELIST

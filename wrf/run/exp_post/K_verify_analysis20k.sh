@@ -31,7 +31,7 @@ REGRID_RES="1.0d0"            #Resolution of regrided output.
 REGRID_VERT_RES="10000.0d0"     #Vertical resolution of regrided output (Pa)
 REGRID_VERT_ZRES="1000.0d0"   #Vertical resolution of regrided output (m)
 FILTER_INPUT=".false."        #Not coded yet.
-TMPDIRVERIF=$HOME/data/TMP/VERIFICATION_40M60K
+TMPDIRVERIF=$HOME/data/TMP/VERIFICATION_40M20K
 DO_OBSGRID=".true."
 SLOTSTEP="0"                  #Slot step for obsgrid verifcation
 SLOTOFFSET="1"                #Slot offset for obsgrid verification
@@ -41,9 +41,9 @@ GROSSERROROBSOP="10.0d0"
 GLOBALANALYSIS_DATA_VERIFICATION_FREQ=21600
 
 #CONFIGURATION
-DOMAINCONF=SINLAKU_60K               #Define a domain
-CONFIGURATION=control40m             #Define a experiment configuration
-MCONFIGURATION=machine_60k_K         #Define a machine configuration [System type]
+DOMAINCONF=SINLAKU_20K               #Define a domain
+CONFIGURATION=control40mhloc133      #Define a experiment configuration
+MCONFIGURATION=machine_20k_K         #Define a machine configuration [System type]
 
 VINIDATE=
 VENDDATE=

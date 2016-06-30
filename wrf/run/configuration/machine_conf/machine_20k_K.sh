@@ -1,4 +1,5 @@
 #MACHINE CONFIGURATION
+GROUP=hp150019
 SYSTEM="0"  # 0 - K computer , 1 - qsub cluster
 PROC_PER_NODE=8     #K computer number of procs per node.
 NODES_PER_MEMBER=3  #Number of nodes per ensemble member.

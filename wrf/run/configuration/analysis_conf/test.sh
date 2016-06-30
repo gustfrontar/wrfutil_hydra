@@ -1,5 +1,5 @@
 #KALMAN FILTER CONFIGURATION
-MEMBER=6           #Number of ensemble members.
+MEMBER=40           #Number of ensemble members.
 MAX_DOM=1
 HOMEDIR=${HOME}/share/
 DATADIR=${HOME}/data/
@@ -23,45 +23,43 @@ NVERTDB=38   #used for verification.
 MM=$MEMBER                      #Variable for iteration limits.
 MEANMEMBER=`expr $MEMBER + 1 `  #This is the member ID corresponding to the ensemble mean.
 
-WINDOW=300        #Assimilation frequency. (seconds)
-WINDOW_START=300  #Window start (seconds from forecast initialization)     
-WINDOW_END=300    #Window end   (seconds from forecast initialization)
-WINDOW_FREC=300   #Output frequency within window (seconds) should be the same as the maximum observation frequency.
-#ASSIMILATION_FREC=300 #Assimilation frequency  (seconds)
+WINDOW=21600        # Assimilation frequency. (seconds)
+WINDOW_START=10800  #Window start (seconds from forecast initialization)     
+WINDOW_END=32400    #Window end   (seconds from forecast initialization)
+WINDOW_FREC=3600    #Output frequency within window (seconds) should be the same as the maximum observation frequency.
+ASSIMILATION_FREC=21600 #Assimilation frequency  (seconds)
 NSLOTS=`expr $WINDOW_END \/ $WINDOW_FREC - $WINDOW_START \/ $WINDOW_FREC  + 1 `        #Number of time slots. 
-NBSLOT=`expr $WINDOW \/ $WINDOW_FREC - $WINDOW_START \/ $WINDOW_FREC + 1 `  #Time slot corresponding to the analysis.
+NBSLOT=`expr $ASSIMILATION_FREC \/ $WINDOW_FREC - $WINDOW_START \/ $WINDOW_FREC + 1 `  #Time slot corresponding to the analysis.
 if [ $NBSLOT -lt 10 ] ; then
    NBSLOT=0$NBSLOT
 fi
-
-SIGMA_OBS="2.0d3"
+FIRSTSLOT=`expr $WINDOW_START \/ $WINDOW_FREC `  #Time slot corresponding to the analysis.
+SIGMA_OBS="4.0d5"
 SIGMA_OBSV="0.2d0"
-SIGMA_OBSZ="2.0d3" 
+SIGMA_OBSZ="6.0d3" 
 SIGMA_OBST="3.0d0"
-GROSS_ERROR="15.0d0" 
-COV_INFL_MUL="1.1d0"
+GROSS_ERROR="3.0d0" 
+COV_INFL_MUL="1.0d0"
 SP_INFL_ADD="0.d0"  
-RELAX_ALPHA_SPREAD="0.0d0"
+RELAX_ALPHA_SPREAD="0.8d0"
 RELAX_ALPHA="0.0d0" 
-USE_ADAPTIVE_INFLATION=0  #1 turn on addaptive inflation (Miyoshi 2011), 0 Turn off adaptive inflation
-                          #Note that for addaptive inflation to work COV_INFL_MUL should be < 0.0
 GUESFT=$WINDOW_END  # First guess forecast length (seconds)
 
 #DOMAIN AND BOUNDARY DATA
 
-BOUNDARY_DATA_FREC=300                #Boundary data frequency. (seconds)
+BOUNDARY_DATA_FREC=21600              #Boundary data frequency. (seconds)
 BOUNDARY_DATA_PERTURBATION_FREQ=21600 #Frequency of data used to perturb boundary conditions (seconds)
 
 #INITIAL AND BOUNDARY PERTURBATIONS
 SCALE_FACTOR="0.1"         #Perturbation scale factor.
 RANDOM_SCALE_FACTOR="0.0"  #Random perturbation scale factor.
-PERTURB_BOUNDARY=1         #Si se van a perturbar o no los bordes.
-#PERTURB_BOUNDARY_TYPE=1    #DUMMY
+PERTURB_BOUNDARY=1      #DUMMY
+PERTURB_BOUNDARY_TYPE=1 #DUMMY
 
 #POSTPROC CONFIGURATION
-OUTLEVS="0.1,0.5,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,"
-OUTVARS="'umet,vmet,W,QVAPOR,QCLOUD,QRAIN,QICE,QSNOW,QGRAUP,RAINNC,tk,u10m,v10m,slp,mcape,mcin,dbz,max_dbz'"
-ARWPOST_FREC=300   # Post processing frequency (seconds)
+OUTLEVS="1000.,950.,900.,850.,800.,750.,700.,650.,600.,500.,400.,300.,200.,100.,"
+OUTVARS="'umet,vmet,W,QVAPOR,q2,RAINC,RAINNC,SST,geopt,tk,u10m,v10m,slp,mcape'"
+ARWPOST_FREC=21600   # Post processing frequency (seconds)
 INPUT_ROOT_NAME='wrfout'
 INTERP_METHOD=1
 
@@ -76,39 +74,36 @@ fi
 
 
 ### LETKF setting
-OBS=                                             # Name of observation folder.
-RADAROBS="/OSSE_OBS_WERROR_SO2KM/"               # Name of radar observation folder.
-NRADARS=1                                        # Number of available radars.
+OBS="/ucar_airs_th3x3_corrected/"                # Name of observation folder.
 EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION}      # name of experiment
 
 ### initial date setting
-IDATE=20140122170000
-EDATE=20140122193000
+IDATE=20080807000000
+EDATE=20080930180000
 
 #### DATA
 OBSDIR=${HOMEDIR}/OBS/$OBS/                                                               # observations
-RADAROBSDIR=${HOMEDIR}/OBS/$RADAROBS/
 TMPDIR=${DATADIR}/TMP/$EXP/                                                               # work directory
 OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                    # Where results should appear.
 INPUTDIR=${HOMEDIR}/INPUT/$DOMAINCONF/                                                    # This folder contains text files with the dates to compute perturbations.
 
 #### EXECUTABLES
-RUNTIMELIBS=
+RUNTIMELIBS=${HOMEDIR}/libs_sparc64/lib/
 WRF=${HOMEDIR}/LETKF_WRF/wrf/
-LETKF=$WRF/letkf/letkf.exe                                # LETKF module
+LETKF=$WRF/letkf/letkf.exe                     # LETKF module
 UPDATEBC=$WRF/model/WRFDA/da_update_bc.exe
-WRFMODEL=$WRF/model/WRFV3/                                # WRF model that run in computing nodes.
-WRFMODELPPS=$WRF/model/WRFV3/                             # WRF model that runs in pps server 
-ARWPOST=$WRF/model/ARWpost/ 
-SPAWN=
+WRFMODEL=$WRF/model/WRFV3K/ 
+WRFMODELPPS=$WRF/model/WRFV3INTEL/                          # WRF model that runs in pps server
+ARWPOST=$WRF/model/ARWpostINTEL/
+SPAWN=$WRF/spawn/
 MPIBIN=mpiexec
 
 #### SCRIPTS
 UTIL=$WRF/run/util.sh
 
+
 #### NAMELIST
 NAMELISTWRF=$WRF/run/configuration/$DOMAINCONF/namelist.input
 NAMELISTLETKF=$WRF/run/configuration/letkf.namelist.$LETKFNAMELIST
 NAMELISTARWPOST=$WRF/run/configuration/$DOMAINCONF/namelist.ARWpost
-NAMELISTOBSOPE=$WRF/run/configuration/obsope.namelist.$OBSOPENAMELIST
 
