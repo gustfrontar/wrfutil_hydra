@@ -2578,7 +2578,7 @@ echo "&general                           " > $namelist
 if [ $RUN_ONLY_MEAN -eq 1 -a $FORECAST -eq 1 ] ; then
   echo "nbv=1                            " >>$namelist
 else
-  echo "nbv=${MM}                        " >>$namelist
+  echo "nbv=${MEMBER}                    " >>$namelist
 fi
 echo "regrid_output=${REGRID_OUTPUT}     " >>$namelist
 echo "regrid_res=${REGRID_RES}           " >>$namelist
