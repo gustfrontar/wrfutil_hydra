@@ -2477,12 +2477,18 @@ NVERTEXP=$NVERTDB #Set the input number of vertical levels according to db data.
 
 
  local my_date=$CDATEL
-
  while [ $my_date -le $EDATEL  ] ; do
-
-  local met_em_file=` met_em_file_name $my_date 01 ` #[We assume that input data is only available for domain 1]
-  met_em_file=$INPUTDIR/db_met_em/$met_em_file
-  ln -sf $met_em_file $WORKDIR/
+  #Link metgrid for all the domains.
+  local my_domain=1
+  while [ $my_domain -le $MAX_DOM  ] ; do
+    if [ $my_domain -lt 10  ] ; then
+      my_domain=0$my_domain
+    fi
+    local met_em_file=` met_em_file_name $my_date $my_domain ` #[We assume that input data is only available for domain 1]
+    met_em_file=$INPUTDIR/db_met_em/$met_em_file
+    ln -sf $met_em_file $WORKDIR/
+    my_domain=`expr $my_domain + 1 `
+  done
 
   #If initial and final time in wrf are exactly equal, then wrf does not produce a wrfout.
   cp $TMPDIR/WRF/namelist.input.template $WORKDIR/namelist.input.template
