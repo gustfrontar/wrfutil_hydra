@@ -2627,8 +2627,9 @@ if [ $ANALYSIS -eq 1 ] ; then
    echo "ln -sf ${RESULTDIRG}/plev${MEM}.dat           \${my_dir}/fcst${MEM}.grd   " >> ${WORKDIR}/tmp.sh
    M=`expr $M + 1 `
   done
-   echo "ln -sf ${RESULTDIRG}/plev00001.ctl                \${my_dir}/input.ctl   " >> ${WORKDIR}/tmp.sh
-   echo "ln -sf ${RESULTDIRA}/plevganald\${my_domain}_\${my_date}.dat  \${my_dir}/anal.grd " >> ${WORKDIR}/tmp.sh   
+   echo "ln -sf ${RESULTDIRG}/plev00001.ctl                \${my_dir}/inputfor.ctl " >> ${WORKDIR}/tmp.sh
+   echo "ln -sf ${RESULTDIRA}/plevganald\${my_domain}_\${my_date}.ctl  \${my_dir}/inputanl.ctl " >> ${WORKDIR}/tmp.sh
+   echo "ln -sf ${RESULTDIRA}/plevganald\${my_domain}_\${my_date}.dat  \${my_dir}/anal.grd     " >> ${WORKDIR}/tmp.sh   
    echo "ln -sf ${RESULTDIRG}/plevmean.dat                 \${my_dir}/mean.grd    " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${RESULTDIRG}/plevsprd.dat                 \${my_dir}/sprd.grd    " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${RESULTDIRG}/plevmerr.dat                 \${my_dir}/merr.grd    " >> ${WORKDIR}/tmp.sh
@@ -2657,6 +2658,9 @@ if [ $FORECAST -eq 1  ] ; then
   echo "my_domain=\$4                                                              " >> ${WORKDIR}/tmp.sh
   echo "ln -sf ${namelist}  \${my_dir}                                             " >> ${WORKDIR}/tmp.sh
 
+  echo "ln -sf ${RESULTDIRG}/plevganald\${my_domain}_\${my_date}.ctl  \${my_dir}/inputanl.ctl " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf ${RESULTDIRG}/plevganald\${my_domain}_\${my_date}.dat  \${my_dir}/anal.grd     " >> ${WORKDIR}/tmp.sh
+
   if [ $RUN_ONLY_MEAN -eq 1 ] ; then
     local MEM=`ens_member $MEANMEMBER `
     local MEM1=`ens_member 1 `
@@ -2667,11 +2671,10 @@ if [ $FORECAST -eq 1  ] ; then
    while [ $M -le $ENDMEMBER ] ; do
     local MEM=`ens_member $M `
     echo "ln -sf ${RESULTDIRG}/plevd\${my_domain}_\${my_date}_${MEM}.dat   \${my_dir}/fcst${MEM}.grd " >> ${WORKDIR}/tmp.sh
-    echo "ln -sf ${RESULTDIRG}/plevd\${my_domain}_\${my_date}_00001.ctl    \${my_dir}/inputanl.ctl   " >> ${WORKDIR}/tmp.sh
+    echo "ln -sf ${RESULTDIRG}/plevd\${my_domain}_\${my_date}_00001.ctl    \${my_dir}/inputfor.ctl   " >> ${WORKDIR}/tmp.sh
     M=`expr $M + 1 `
    done
   fi
-   echo "ln -sf ${RESULTDIRG}/plevganald\${my_domain}_\${my_date}.dat      \${my_dir}/anal.grd    " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${RESULTDIRG}/plevmean\${my_domain}_\${my_lead}.dat       \${my_dir}/mean.grd    " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${RESULTDIRG}/plevsprd\${my_domain}_\${my_lead}.dat       \${my_dir}/sprd.grd    " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${RESULTDIRG}/plevmerr\${my_domain}_\${my_lead}.dat       \${my_dir}/merr.grd    " >> ${WORKDIR}/tmp.sh
@@ -3120,23 +3123,6 @@ LCTIME=`date_edit2  $LCTIME $LINT `
 echo $LCTIME
 
 done
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
 
