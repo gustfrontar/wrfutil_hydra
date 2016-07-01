@@ -2485,8 +2485,13 @@ NVERTEXP=$NVERTDB #Set the input number of vertical levels according to db data.
   ln -sf $met_em_file $WORKDIR/
 
   #If initial and final time in wrf are exactly equal, then wrf does not produce a wrfout.
+  cp $TMPDIR/WRF/namelist.input.template $WORKDIR/namelist.input.template
+  
+  #Force input from file == true for all the domains.
+  tmplinenumber=`grep -n "input_from_file" $WORKDIR/namelist.input.template | grep -Eo '^[^:]+' `
+  awk '{ if (NR == '$tmplinenumber') print "input_from_file=.true.,.true.,.true.,"; else print $0}' $WORKDIR/namelist.input.template > $WORKDIR/namelist.input
 
-  cp $TMPDIR/WRF/namelist.input.template $WORKDIR/namelist.input
+  #Edit namelist.input
   edit_namelist_input $WORKDIR/namelist.input $my_date $my_date $WINDOW_FREC $BOUNDARY_DATA_FREC  #For real
 
   ln -sf $TMPDIR/WRF/* $WORKDIR/
