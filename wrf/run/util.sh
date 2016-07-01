@@ -2709,6 +2709,7 @@ fi
     forecast_domain=0$forecast_domain
  fi
 
+ CDATEL=$1
  while [ $forecast_domain -le $MAX_DOM  ] ; do
 
   #RUN THE SCRIPT IN PPS NODE.
