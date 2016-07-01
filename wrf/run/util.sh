@@ -2489,10 +2489,11 @@ NVERTEXP=$NVERTDB #Set the input number of vertical levels according to db data.
     ln -sf $met_em_file $WORKDIR/
     my_domain=`expr $my_domain + 1 `
   done
+
   
   #Force input from file == true for all the domains.
   tmplinenumber=`grep -n "input_from_file" $WORKDIR/namelist.input.template | grep -Eo '^[^:]+' `
-  awk '{ if (NR == '$tmplinenumber') print "input_from_file=.true.,.true.,.true.,"; else print $0}' $TMPDIR/namelist.input.template > $WORKDIR/namelist.input
+  awk '{ if (NR == '$tmplinenumber') print "input_from_file=.true.,.true.,.true.,"; else print $0}' $TMPDIR/WRF/namelist.input.template > $WORKDIR/namelist.input
 
   #Edit namelist.input
   edit_namelist_input $WORKDIR/namelist.input $my_date $my_date $WINDOW_FREC $BOUNDARY_DATA_FREC  #For real
