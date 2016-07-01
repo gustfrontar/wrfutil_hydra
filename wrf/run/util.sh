@@ -2705,28 +2705,26 @@ fi
  chmod 766 ${WORKDIR}/tmp.sh
 
  forecast_domain=1
- if [ $forecast_domain -lt 10 ] ; then
-    forecast_domain=0$forecast_domain
- fi
-
- CDATEL=$1
  while [ $forecast_domain -le $MAX_DOM  ] ; do
-
-  #RUN THE SCRIPT IN PPS NODE.
-  local forecast_lead_time=0
-  while [ $CDATEL -le $EDATEL  ] ; do
-    RUNNING=0
-    while [ $RUNNING -le $MAX_RUNNING -a $CDATEL -le $EDATEL ] ; do
-     forecast_lead_time=`forecast_lead $forecast_lead_time `
-     mkdir -p $WORKDIR/$RUNNING
-     echo " Verifying domain $forecast_domain at $CDATEL which  $forecast_lead_time lead time. "
-     ssh $PPSSERVER " ${WORKDIR}/tmp.sh $CDATEL $WORKDIR/$RUNNING $forecast_lead_time $forecast_domain > $WORKDIR/$RUNNING/verif.log " &
-     CDATEL=`date_edit2 $CDATEL $GLOBALANALYSIS_DATA_VERIFICATION_FREQ `
-     forecast_lead_time=`expr $forecast_lead_time + $GLOBALANALYSIS_DATA_VERIFICATION_FREQ `
-     RUNNING=`expr $RUNNING + 1 `
-    done
+   if [ $forecast_domain -lt 10 ] ; then
+    forecast_domain=0$forecast_domain
+   fi
+   CDATEL=$1
+   #RUN THE SCRIPT IN PPS NODE.
+   local forecast_lead_time=0
+   while [ $CDATEL -le $EDATEL  ] ; do
+     RUNNING=0
+     while [ $RUNNING -le $MAX_RUNNING -a $CDATEL -le $EDATEL ] ; do
+      forecast_lead_time=`forecast_lead $forecast_lead_time `
+      mkdir -p $WORKDIR/$RUNNING
+      echo " Verifying domain $forecast_domain at $CDATEL which  $forecast_lead_time lead time. "
+      ssh $PPSSERVER " ${WORKDIR}/tmp.sh $CDATEL $WORKDIR/$RUNNING $forecast_lead_time $forecast_domain > $WORKDIR/$RUNNING/verif.log " &
+      CDATEL=`date_edit2 $CDATEL $GLOBALANALYSIS_DATA_VERIFICATION_FREQ `
+      forecast_lead_time=`expr $forecast_lead_time + $GLOBALANALYSIS_DATA_VERIFICATION_FREQ `
+      RUNNING=`expr $RUNNING + 1 `
+     done
     time wait 
-  done
+   done
 
  forecast_domain=`expr $forecast_domain + 1 `
  done #[Loop over model domains.]
