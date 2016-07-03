@@ -6,18 +6,21 @@
 MAX_RUNNING=40         #Number of threads
 CDATE=20130713053400   #The date
 MEMBER=1000            #Ensemble size
-BOOTSTRAP=.true.
+BOOTSTRAP=.false.
 BOOTSTRAP_SAMPLES=100
 SKIPX=1
 SKIPY=1
 SKIPZ=1
-SMOOTHCOV=.true.
-SMOOTHCOVLENGTH=1.0d5
+SMOOTHCOV=.false.
+SMOOTHCOVLENGTH=1.0d4
 SMOOTHDX=1.0d3
-COMPUTEMOMENTS=.true.
+COMPUTEMOMENTS=.false.
+COMPUTECOVAR=.false.
+COMPUTEINDEX=.true.
+DELTA=20
 MAX_MOMENTS=4
 ANALYSIS_PATH=/data1/jruiz/EXPERIMENTS/OsakaPAR_1km_control1000m_smallrandompert/            #Ensemble data path
-TMPDIR=/data1/jruiz/TMP/covariance_matrix1_smoth_100/                                        #Temporary work directory.
+TMPDIR=/data1/jruiz/TMP/covariance_matrix_index_1km_1000m/                                   #Temporary work directory.
 CTL_PATH=/data1/jruiz/EXPERIMENTS/OsakaPAR_1km_control1000m_smallrandompert/ctl/analgz.ctl   #Ensemble data ctl file.
 
 ulimit -s unlimited
@@ -35,15 +38,6 @@ my_namelist=$TMPDIR/covariance_matrix.namelist
 echo "&general                                                            " >  $my_namelist
 echo "nbv=$MEMBER                                                         " >> $my_namelist
 echo "npoints=18                                                          " >> $my_namelist
-echo "plon=135.48,135.48,135.48,135.602,135.602,135.602,135.602,135.602,   \
-          136.29,136.29,136.29,136.29,136.29,135.94,135.94,135.94,135.94,135.94,  " >> $my_namelist                                        
-echo "plat=34.7,34.7,34.7,34.71,34.71,34.71,34.71,34.71,                   \
-          34.801,34.801,34.801,34.801,34.801,34.88,34.88,34.88,34.88,34.88,       " >> $my_namelist
-echo "pvarname=tk,p,u,w,tk,p,u,dbz,w,tk,dbz,p,qv,w,tk,dbz,p,qv,           " >> $my_namelist
-echo "plev=5000,5000,5000,1957.5,1957.5,1957.5,1957.5,1957.5, \
-            5000,5000,5000,5000,5000,5000,5000,5000,5000,5000,            " >> $my_namelist
-echo "dep=1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,                            " >> $my_namelist 
-echo "error=1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,                          " >> $my_namelist
 echo "bootstrap=$BOOTSTRAP                                                " >> $my_namelist
 echo "bootstrap_samples=$BOOTSTRAP_SAMPLES                                " >> $my_namelist
 echo "nignore=9                                                           " >> $my_namelist
@@ -55,7 +49,10 @@ echo "smoothcov=$SMOOTHCOV                                                " >> $
 echo "smoothcovlength=$SMOOTHCOVLENGTH                                    " >> $my_namelist
 echo "smoothdx=$SMOOTHDX                                                  " >> $my_namelist
 echo "computemoments=$COMPUTEMOMENTS                                      " >> $my_namelist
+echo "computecovar=$COMPUTECOVAR                                          " >> $my_namelist
+echo "computeindex=$COMPUTEINDEX                                          " >> $my_namelist
 echo "max_moments=$MAX_MOMENTS                                            " >> $my_namelist
+echo "delta=$DELTA                                                        " >> $my_namelist
 echo "/                                                                   " >> $my_namelist
 
 
@@ -77,7 +74,7 @@ export KMP_NUM_THREADS=$MAX_RUNNING
     M=`expr $M + 1 `
 
    done
-time ./covariance_matrix.exe > cov.log 
+time ./covariance_matrix.exe #> cov.log 
 
 
 

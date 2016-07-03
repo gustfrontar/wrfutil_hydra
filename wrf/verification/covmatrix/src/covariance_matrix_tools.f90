@@ -238,16 +238,17 @@ REAL(r_sngl)              :: moments(nx,ny,nz,2)
 INTEGER :: imin , imax , jmin , jmax , ii , jj , kk , iii , jjj , contador
 REAL(r_sngl)              :: pensemble(nbv) , tmpcov , tmpcorr , tmpdist
 
-covst=undefbin
-corrst=undefbin
-corrstdist=undefbin
+covst=0.0e0
+corrst=0.0e0
+corrstdist=0.0e0
 
 CALL compute_moments(ensemble,nx,ny,nz,nbv,2,moments,undefmask,undefbin)
 
 moments(:,:,:,2)=sqrt(moments(:,:,:,2)) !Get standard deviation.
 
-!$OMP PARALLEL DO PRIVATE(imin,imax,jmin,jmax,iii,jjj,pensemble,tmpcov,tmpcorr,contador,tmpdist)
+!$OMP PARALLEL DO PRIVATE(imin,imax,jmin,jmax,ii,jj,kk,iii,jjj,pensemble,tmpcov,tmpcorr,contador,tmpdist)
 DO ii=1,nx
+ WRITE(*,*)ii
  DO jj=1,ny
   DO kk=1,nz
    IF( undefmask(ii,jj,kk) )THEN
@@ -271,9 +272,9 @@ DO ii=1,nx
       IF( undefmask(iii,jjj,kk) .and. tmpdist < 1.0e0 )THEN
         CALL com_covar_sngl(nbv,ensemble(iii,jjj,kk,:),pensemble,tmpcov)
         tmpcorr=tmpcov/( moments(ii,jj,kk,2) * moments(iii,jjj,kk,2) )
-        covst(ii,jj,kk)=covst(ii,jj,kk)+tmpcov
-        corrst(ii,jj,kk)=corrst(ii,jj,kk)+tmpcorr
-        corrstdist(ii,jj,kk)=corrstdist(ii,jj,kk)+tmpcorr*tmpdist
+        covst(ii,jj,kk)=covst(ii,jj,kk)+ABS(tmpcov)
+        corrst(ii,jj,kk)=corrst(ii,jj,kk)+ABS(tmpcorr)
+        corrstdist(ii,jj,kk)=corrstdist(ii,jj,kk)+ABS(tmpcorr)*tmpdist
   
         contador=contador+1
       ENDIF
@@ -282,13 +283,13 @@ DO ii=1,nx
     ENDDO
    
     IF( contador >= 1 )THEN
-      covst=covst/REAL(contador,r_sngl)
-      corrst=corrst/REAL(contador,r_sngl)
-      corrstdist=corrstdist/REAL(contador,r_sngl)
+      covst(ii,jj,kk)=covst(ii,jj,kk)/REAL(contador,r_sngl)
+      corrst(ii,jj,kk)=corrst(ii,jj,kk)/REAL(contador,r_sngl)
+      corrstdist(ii,jj,kk)=corrstdist(ii,jj,kk)/REAL(contador,r_sngl)
     ELSE
-      covst=undefbin
-      corrst=undefbin
-      corrstdist=undefbin
+      covst(ii,jj,kk)=undefbin
+      corrst(ii,jj,kk)=undefbin
+      corrstdist(ii,jj,kk)=undefbin
     ENDIF
 
    ENDIF

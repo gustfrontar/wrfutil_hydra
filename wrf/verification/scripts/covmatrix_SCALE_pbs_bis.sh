@@ -11,13 +11,13 @@ BOOTSTRAP_SAMPLES=100
 SKIPX=1
 SKIPY=1
 SKIPZ=1
-SMOOTHCOV=.true.
-SMOOTHCOVLENGTH=1.0d5
+SMOOTHCOV=.false.
+SMOOTHCOVLENGTH=1.0d4
 SMOOTHDX=1.0d3
-COMPUTEMOMENTS=.true.
+COMPUTEMOMENTS=.false.
 MAX_MOMENTS=4
 ANALYSIS_PATH=/data1/jruiz/EXPERIMENTS/OsakaPAR_1km_control1000m_smallrandompert/            #Ensemble data path
-TMPDIR=/data1/jruiz/TMP/covariance_matrix1_smoth_100/                                        #Temporary work directory.
+TMPDIR=/data1/jruiz/TMP/covariance_matrix_1000m_1km_bis/                                                  #Temporary work directory.
 CTL_PATH=/data1/jruiz/EXPERIMENTS/OsakaPAR_1km_control1000m_smallrandompert/ctl/analgz.ctl   #Ensemble data ctl file.
 
 ulimit -s unlimited
@@ -34,14 +34,11 @@ cp /data1/jruiz/LETKF_WRF/wrf/verification/covmatrix/*.exe $TMPDIR
 my_namelist=$TMPDIR/covariance_matrix.namelist
 echo "&general                                                            " >  $my_namelist
 echo "nbv=$MEMBER                                                         " >> $my_namelist
-echo "npoints=18                                                          " >> $my_namelist
-echo "plon=135.48,135.48,135.48,135.602,135.602,135.602,135.602,135.602,   \
-          136.29,136.29,136.29,136.29,136.29,135.94,135.94,135.94,135.94,135.94,  " >> $my_namelist                                        
-echo "plat=34.7,34.7,34.7,34.71,34.71,34.71,34.71,34.71,                   \
-          34.801,34.801,34.801,34.801,34.801,34.88,34.88,34.88,34.88,34.88,       " >> $my_namelist
-echo "pvarname=tk,p,u,w,tk,p,u,dbz,w,tk,dbz,p,qv,w,tk,dbz,p,qv,           " >> $my_namelist
-echo "plev=5000,5000,5000,1957.5,1957.5,1957.5,1957.5,1957.5, \
-            5000,5000,5000,5000,5000,5000,5000,5000,5000,5000,            " >> $my_namelist
+echo "npoints=13                                                          " >> $my_namelist
+echo "plon=135.851,135.851,135.8,135.8,135.8,135.8,135.8,135.925,135.925,135.925,135.925,135.33,135.33 " >> $my_namelist
+echo "plat=35.01,35.01,35.01,35.01,35.12,35.12,35.12,35.1,35.1,35.075,35.075,35.051,35.051 " >> $my_namelist
+echo "pvarname='v','tk','v','tk','v','tk','dbz','v','dbz','v','dbz','w','dbz'              " >> $my_namelist
+echo "plev=1282.5,1282.5,1097.5,1097.5,8600,8600,8600,9000,9000,1487.5,1487.5,5000,5000,               " >> $my_namelist
 echo "dep=1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,                            " >> $my_namelist 
 echo "error=1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,                          " >> $my_namelist
 echo "bootstrap=$BOOTSTRAP                                                " >> $my_namelist
