@@ -32,18 +32,17 @@ module covariance_matrix_tools
   REAL(r_size) :: smoothcovlength=1.0d5  !Lanczos filter length scale in the same unit as dx.
   REAL(r_size) :: smoothdx=1.0d3         !Data resolution 
 
+  LOGICAL :: computecovar=.true.
   INTEGER :: skipx=1,skipy=1,skipz=1
   INTEGER :: nignore=0
   INTEGER , PARAMETER :: max_nignore = 20
   character(50) :: ignorevarname(max_nignore)
-<<<<<<< HEAD
-  
-  character(50) :: input_endian='little_endian'
-  character(50) :: output_endian='big_endian'
-=======
+
+  LOGICAL :: computeindex=.true.       !Compute or not covariance and correlation index.
+  INTEGER :: delta
+
   character(50) :: inputendian='little_endian'
   character(50) :: outputendian='big_endian'
->>>>>>> f0f61dab801fb13a3d283a4a2eb2cc141e2977c4
 
   CHARACTER(LEN=100) :: NAMELIST_FILE='./covariance_matrix.namelist'
 
@@ -72,25 +71,14 @@ NAMELIST / GENERAL / nbv , npoints , plon , plat , pvarname , plev,   &
                      dep , error , bootstrap , bootstrap_samples  ,   &
                      nignore , ignorevarname , skipx , skipy , skipz, &
                      inputendian , outputendian , smoothcov ,         &
-                     smoothdx , smoothcovlength , computemoments ,    &
-                     max_moments
+                     smoothdx , smoothcovlength , computemoments ,   &
+                     max_moments , computeindex , delta , computecovar
 
 plon=undef
 plat=undef
 plev=undef
 dep=undef
 error=undef
-
-<<<<<<< HEAD
-!In the current version PLEV represents not only the level but also the
-!variable. 
-
-NAMELIST / GENERAL / nbv , npoints , plon , plat , pvarname , plev , &
-                     dep , error , bootstrap , bootstrap_samples   , &
-                     nignore , ignorevarname , skipx , skipy , skipz,&
-                     input_endian , output_endian
-=======
->>>>>>> f0f61dab801fb13a3d283a4a2eb2cc141e2977c4
 
 INQUIRE(FILE=NAMELIST_FILE, EXIST=file_exist)
 
@@ -135,12 +123,7 @@ SUBROUTINE read_grd(filename,nx,ny,nz,var,undefmask,undefbin)
  iunit=33
  INQUIRE(FILE=filename,EXIST=file_exist)
   IF(file_exist) THEN
-<<<<<<< HEAD
-   OPEN(iunit,FILE=filename,FORM='unformatted',ACCESS='direct',RECL=reclength, &
-              CONVERT=input_endian )
-=======
    OPEN(iunit,FILE=filename,FORM='unformatted',ACCESS='direct',RECL=reclength,CONVERT=inputendian)
->>>>>>> f0f61dab801fb13a3d283a4a2eb2cc141e2977c4
   ELSE
    WRITE(*,*)"[Warning]: Could not finde file! ",filename
    undefmask=.false.
@@ -192,12 +175,7 @@ SUBROUTINE write_grd(filename,nx,ny,nz,var,undefmask,undefbin)
 
   iunit=55
   INQUIRE(IOLENGTH=iolen) iolen
-<<<<<<< HEAD
-  OPEN(iunit,FILE=filename,FORM='unformatted',ACCESS='direct',RECL=reclength, &
-             CONVERT=output_endian )
-=======
   OPEN(iunit,FILE=filename,FORM='unformatted',ACCESS='direct',RECL=reclength,CONVERT=outputendian)
->>>>>>> f0f61dab801fb13a3d283a4a2eb2cc141e2977c4
 
   DO n=1,nz
    buf4 = REAL(var(:,:,n),r_sngl)
@@ -214,14 +192,14 @@ SUBROUTINE write_grd(filename,nx,ny,nz,var,undefmask,undefbin)
 END SUBROUTINE write_grd
 
 !Compute the firtst N moments of the PDF centered around the mean.
-SUBROUTINE compute_moments(ensemble,nx,ny,nz,nbv,nmoments,undefmask,undefbin)
+SUBROUTINE compute_moments(ensemble,nx,ny,nz,nbv,nmoments,moments,undefmask,undefbin)
 IMPLICIT NONE
 INTEGER, INTENT(IN)       :: nx,ny,nz,nbv !Ensemble dimensions.
 REAL(r_sngl), INTENT(IN)  :: ensemble(nx,ny,nz,nbv) !Ensemble data.
 INTEGER, INTENT(IN)       :: nmoments     !Number of moments to be computed.
 LOGICAL, INTENT(IN)       :: undefmask(nx,ny,nz) !Valid grids.
 REAL(r_sngl), INTENT(IN)  :: undefbin
-REAL(r_sngl)              :: moments(nx,ny,nz,nmoments)
+REAL(r_sngl), INTENT(OUT) :: moments(nx,ny,nz,nmoments)
 REAL(r_sngl)              :: tmp(nbv)
 INTEGER                   :: ii , jj , kk , im
 CHARACTER(20)             :: moment_out='momentXXX.grd'
@@ -247,6 +225,82 @@ moments=0.0e0
  ENDDO
 
 END SUBROUTINE compute_moments
+
+!Compute covariance strhength
+
+SUBROUTINE covariance_strenght(ensemble,covst,corrst,corrstdist,nx,ny,nz,nbv,delta,undefmask,undefbin)
+IMPLICIT NONE
+INTEGER, INTENT(IN) :: nx,ny,nz,nbv,delta
+REAL(r_sngl), INTENT(IN) :: ensemble(nx,ny,nz,nbv)  , undefbin
+LOGICAL , INTENT(IN)     :: undefmask(nx,ny,nz) 
+REAL(r_sngl), INTENT(OUT) :: covst(nx,ny,nz),corrst(nx,ny,nz),corrstdist(nx,ny,nz) !Covariance and correlation strhenght index.
+REAL(r_sngl)              :: moments(nx,ny,nz,2)
+INTEGER :: imin , imax , jmin , jmax , ii , jj , kk , iii , jjj , contador
+REAL(r_sngl)              :: pensemble(nbv) , tmpcov , tmpcorr , tmpdist
+
+covst=undefbin
+corrst=undefbin
+corrstdist=undefbin
+
+CALL compute_moments(ensemble,nx,ny,nz,nbv,2,moments,undefmask,undefbin)
+
+moments(:,:,:,2)=sqrt(moments(:,:,:,2)) !Get standard deviation.
+
+!$OMP PARALLEL DO PRIVATE(imin,imax,jmin,jmax,iii,jjj,pensemble,tmpcov,tmpcorr,contador,tmpdist)
+DO ii=1,nx
+ DO jj=1,ny
+  DO kk=1,nz
+   IF( undefmask(ii,jj,kk) )THEN
+ 
+    imin=ii-delta
+    imax=ii+delta
+    if( imin < 1 )imin=1
+    if( imax > nx)imax=nx
+    jmin=jj-delta
+    jmax=jj+delta
+    if( jmin < 1 )jmin=1
+    if( jmax > ny)jmax=ny
+
+    pensemble=ensemble(ii,jj,kk,:)
+
+    contador=0
+
+    DO iii=imin,imax
+     DO jjj=jmin,jmax
+      tmpdist= sqrt(real(iii-ii,r_sngl)**2 + real(jjj-jj,r_sngl)**2)/real(delta,r_sngl)
+      IF( undefmask(iii,jjj,kk) .and. tmpdist < 1.0e0 )THEN
+        CALL com_covar_sngl(nbv,ensemble(iii,jjj,kk,:),pensemble,tmpcov)
+        tmpcorr=tmpcov/( moments(ii,jj,kk,2) * moments(iii,jjj,kk,2) )
+        covst(ii,jj,kk)=covst(ii,jj,kk)+tmpcov
+        corrst(ii,jj,kk)=corrst(ii,jj,kk)+tmpcorr
+        corrstdist(ii,jj,kk)=corrstdist(ii,jj,kk)+tmpcorr*tmpdist
+  
+        contador=contador+1
+      ENDIF
+       
+     ENDDO
+    ENDDO
+   
+    IF( contador >= 1 )THEN
+      covst=covst/REAL(contador,r_sngl)
+      corrst=corrst/REAL(contador,r_sngl)
+      corrstdist=corrstdist/REAL(contador,r_sngl)
+    ELSE
+      covst=undefbin
+      corrst=undefbin
+      corrstdist=undefbin
+    ENDIF
+
+   ENDIF
+
+  ENDDO
+ ENDDO
+ENDDO
+!$OMP END PARALLEL DO
+
+
+
+END SUBROUTINE covariance_strenght
 
 
 !Perform a 2D smoothing of the ensemble using a Lanczos filter.

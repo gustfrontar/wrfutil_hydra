@@ -16,6 +16,9 @@ program covariance_matrix
   character(100) :: oimfile  = 'impact_xXXXyXXXzXXX.grd'
   character(100) :: bssfile  = 'bssprd_xXXXyXXXzXXX.grd' !Bootstrap spread
   character(100) :: bsmfile  = 'bsmean_xXXXyXXXzXXX.grd' !Bootstrap mean
+  character(100) :: covindexfile =      'covariance_index.grd'
+  character(100) :: corrindexfile =     'correlation_index.grd'
+  character(100) :: corrdistindexfile = 'correlationdist_index.grd'  
   character(100) :: ctl_file = 'input.ctl'
 
   real(r_sngl) ,ALLOCATABLE :: ensemble(:,:,:,:) !nlon,nlat,nfields,nens
@@ -29,10 +32,14 @@ program covariance_matrix
   real(r_sngl) ,ALLOCATABLE :: localcov(:,:,:)     !nlon,nlat,nfields
   !Obs impact how much impact an observation located at a certain location
   !will have on the state vector.
-  real(r_sngl) ,ALLOCATABLE :: obsimpact(:,:,:)    !nlon,nlat,nfields
-  real(r_sngl) ,ALLOCATABLE :: bssprd(:,:,:) !Bootstrap covariance spread
-  real(r_sngl) ,ALLOCATABLE :: bsmean(:,:,:) !Bottstrap covariance mean
+  real(r_sngl) ,ALLOCATABLE :: obsimpact(:,:,:)         !nlon,nlat,nfields
+  real(r_sngl) ,ALLOCATABLE :: bssprd(:,:,:)            !Bootstrap covariance spread
+  real(r_sngl) ,ALLOCATABLE :: bsmean(:,:,:)            !Bottstrap covariance mean
   real(r_sngl) ,ALLOCATABLE :: tmpsample(:,:),tmp(:,:)  !Temporary buffer for data resampling.
+  real(r_sngl) ,ALLOCATABLE :: moments(:,:,:,:)         !PDF moments
+  real(r_sngl) ,ALLOCATABLE :: covariance_index(:,:,:)      !Covariance strength index
+  real(r_sngl) ,ALLOCATABLE :: correlation_index(:,:,:)     !Correlation strength index
+  real(r_sngl) ,ALLOCATABLE :: correlationdist_index(:,:,:) !Correlation and distance index
   real(r_sngl) :: cov , covmean , covsprd
 
 
@@ -83,8 +90,6 @@ DO i=1,nbv
        ENDDO
       ENDDO
      ENDDO
-<<<<<<< HEAD
-=======
 
      IF( smoothcov )THEN
          CALL smooth_2d(ensemble(:,:,:,i),ctl%nlon,ctl%nlat,ctl%nfields,smoothdx,smoothcovlength,undefmask)
@@ -92,7 +97,6 @@ DO i=1,nbv
           CALL write_grd('testsmooth.grd',ctl%nlon,ctl%nlat,ctl%nfields,ensemble(:,:,:,i),totalundefmask,ctl%undefbin)
          ENDIF
      ENDIF
->>>>>>> f0f61dab801fb13a3d283a4a2eb2cc141e2977c4
 
 ENDDO ![End do over ensemble members]
 
@@ -129,12 +133,19 @@ DO i=1,ctl%nlat
   ENDIF
 ENDDO
 
+!PDF Moments computation
+
+IF( computemoments )THEN
 !Compute moments of the PDF at every grid point
+ALLOCATE( moments(ctl%nlon,ctl%nlat,ctl%nfields,max_moments) )
+CALL compute_moments(ensemble,ctl%nlon,ctl%nlat,ctl%nfields,nbv,max_moments,moments,totalundefmask,ctl%undefbin)
+DEALLOCATE( moments )
+ENDIF
 
-CALL compute_moments(ensemble,ctl%nlon,ctl%nlat,ctl%nfields,nbv,max_moments,totalundefmask,ctl%undefbin)
-
-
+!Covariance computation
 !Loop over points.
+
+IF( computecovar )THEN
 
 DO ip=1,npoints
      write(*,*)"Processing point ",ip," of ",npoints
@@ -233,11 +244,7 @@ DO ip=1,npoints
 
    CALL write_grd(bssfile,ctl%nlon,ctl%nlat,ctl%nfields,bssprd,totalundefmask,ctl%undefbin)
 
-<<<<<<< HEAD
    deallocate( bsmean , bssprd ) 
-=======
-   deallocate( bssprd , bsmean )
->>>>>>> f0f61dab801fb13a3d283a4a2eb2cc141e2977c4
   endif
 
    WRITE(oimfile(9 :11),'(I3.3)')gridi
@@ -248,7 +255,21 @@ DO ip=1,npoints
 
 ENDDO ![End do over points]
 
+ENDIF ![Endif over compuation of covariance]
 
+IF( computeindex )THEN
+  ALLOCATE( covariance_index(ctl%nlon,ctl%nlat,ctl%nfields) , correlation_index(ctl%nlon,ctl%nlat,ctl%nfields) &
+          , correlationdist_index(ctl%nlon,ctl%nlat,ctl%nfields) )
+
+  CALL covariance_strenght(ensemble,covariance_index,correlation_index,correlationdist_index &
+                           ,ctl%nlon,ctl%nlat,ctl%nfields,nbv,delta,undefmask,ctl%undefbin)
+
+  CALL write_grd(covindexfile,ctl%nlon,ctl%nlat,ctl%nfields,covariance_index,totalundefmask,ctl%undefbin)
+  CALL write_grd(corrindexfile,ctl%nlon,ctl%nlat,ctl%nfields,correlation_index,totalundefmask,ctl%undefbin)
+  CALL write_grd(corrdistindexfile,ctl%nlon,ctl%nlat,ctl%nfields,correlationdist_index,totalundefmask,ctl%undefbin)
+
+  DEALLOCATE( covariance_index , correlation_index , correlationdist_index)
+ENDIF ![Endif over computatio of the covariance and correlation index]
 
 end program covariance_matrix
 !===============================================================================
