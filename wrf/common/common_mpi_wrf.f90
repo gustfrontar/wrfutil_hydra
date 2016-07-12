@@ -1358,7 +1358,7 @@ ELSEIF( update_parameter_0d(ip) == 1 )THEN
   DO i=1,nij1
     IF( landmask1(i) == 0 .and. analp2d(i,1,ip) /= REAL(REAL(undef,r_sngl),r_size) )THEN
       DO m=1,member
-        tmpp0d(m)=tmpp0d(m)+analp2d(i,m,n)
+        tmpp0d(m)=tmpp0d(m)+analp2d(i,m,ip)
       ENDDO
       npoints=npoints+1
     ENDIF
