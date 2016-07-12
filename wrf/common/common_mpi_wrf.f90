@@ -1276,7 +1276,7 @@ REAL(r_size)               :: MIN_LOCAL_SPREAD,MIN_GLOBAL_SPREAD
 REAL(r_size)               :: tmpfield(nlon,nlat)
 INTEGER                    :: mask(nlon,nlat)
 INTEGER                    :: lambda
-REAL(r_size)               :: workp0d
+REAL(r_size)               :: workp0d(member)
 INTEGER                    :: iworkp0d , npoints
 CHARACTER(256) :: filter_type
   lambda=30  !Waves with length less than 10 will be seriously filtered

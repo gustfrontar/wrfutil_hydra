@@ -325,7 +325,7 @@ SUBROUTINE das_letkf
       IF(ilev == 1 .AND. ESTPAR) THEN !update 2d parameters.
         DO n=1,np2d
           !Check that we have to estimate this parameter and if the parameter is not undef.
-          IF( update_parameter_2d(n) == 1 .AND. guesp2d(i,1,n) .NE. REAL(REAL(UNDEF,r_sngl),r_size) )THEN
+          IF( update_parameter_2d(n) == 1 .AND. guesp2d(ij,1,n) .NE. REAL(REAL(UNDEF,r_sngl),r_size) )THEN
           !Weigths will be recomputed for the first parameter.
 
            IF(TRANSPAR)THEN !Transform parameter if necessary.
