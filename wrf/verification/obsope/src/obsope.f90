@@ -31,8 +31,8 @@ PROGRAM obsope
   !Default configuration for variable list.
   !This can be set throuhg namelist.
   variable_list=0
-  variable_list(1:12)=                                                                                   &  !List of variables to be verified
-  & (/ id_u_obs , id_v_obs , id_t_obs , id_rh_obs , id_q_obs , id_reflectivity_obs , id_radialwind_obs , &
+  variable_list(1:13)=                                                                                               &  !List of variables to be verified
+  & (/ id_u_obs , id_v_obs , id_t_obs , id_tv_obs , id_rh_obs , id_q_obs , id_reflectivity_obs , id_radialwind_obs , &
   &    id_ps_obs , id_us_obs , id_vs_obs , id_rhs_obs , id_qs_obs /)
 
 

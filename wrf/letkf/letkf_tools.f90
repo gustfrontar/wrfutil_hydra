@@ -88,6 +88,16 @@ SUBROUTINE das_letkf
     !IF(ESTPAR)analp2d= guesp2d
     !RETURN
   !END IF
+
+  !
+  ! INITIALIZE PARAMETERS (FIRST CYCLE ONLY)
+  !
+
+  IF(ESTPAR)THEN
+    CALL init_par_mpi(guesp2d,nbv,update_parameter_2d,update_parameter_0d,update_parameter_0d,param_default_value,param_sprd_init)
+  ENDIF
+
+
   !
   ! Variable localization
   !
@@ -213,7 +223,7 @@ SUBROUTINE das_letkf
 
   !Get number of 0d estimated parameters
   np0d=SUM(update_parameter_0d)
-  IF(np0d .GT. 0 )THEN
+  IF(np0d > 0 )THEN
     CALL estimate_0d_par
   ENDIF
 
@@ -266,20 +276,6 @@ SUBROUTINE das_letkf
             END DO
           END DO
         END IF                                                                         !GYL
-!        IF(n == iv3d_q .AND. ilev <= LEV_UPDATE_Q) THEN                                !GYL - limit the lower-level q spread
-!          q_mean = SUM(anal3d(ij,ilev,:,n)) / REAL(nbv,r_size)                      !GYL
-!          q_sprd = 0.0d0                                                               !GYL
-!          DO m=1,nbv                                                                !GYL
-!            q_anal(m) = anal3d(ij,ilev,m,n) - q_mean                                   !GYL
-!            q_sprd = q_sprd + q_anal(m)**2                                             !GYL
-!          END DO                                                                       !GYL
-!          q_sprd = SQRT(q_sprd / REAL(nbv-1,r_size)) / q_mean                       !GYL
-!          IF(q_sprd > Q_SPRD_MAX) THEN                                                 !GYL
-!            DO m=1,nbv                                                              !GYL
-!              anal3d(ij,ilev,m,n) = q_mean + q_anal(m) * Q_SPRD_MAX / q_sprd           !GYL
-!            END DO                                                                     !GYL
-!          END IF                                                                       !GYL
-!        END IF                                                                         !GYL
       END DO ! [ n=1,nv3d ]
 
 
@@ -926,7 +922,7 @@ END IF
       !
       ! variable localization
       !
-      CALL get_iobs( NINT(obselm(nobs_use(n))) , iobs)
+      CALL get_iobs( NINT(obselm(n)) , iobs)
     
       IF(var_local_par(nvar,iobs) < TINY(var_local_par)) CYCLE
 
