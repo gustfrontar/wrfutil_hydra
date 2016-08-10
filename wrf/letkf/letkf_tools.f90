@@ -88,6 +88,16 @@ SUBROUTINE das_letkf
     !IF(ESTPAR)analp2d= guesp2d
     !RETURN
   !END IF
+
+  !
+  ! INITIALIZE PARAMETERS (FIRST CYCLE ONLY)
+  !
+
+  IF(ESTPAR)THEN
+    CALL init_par_mpi(guesp2d,nbv,update_parameter_2d,update_parameter_0d,param_default_value,param_sprd_init)
+  ENDIF
+
+
   !
   ! Variable localization
   !
@@ -213,7 +223,7 @@ SUBROUTINE das_letkf
 
   !Get number of 0d estimated parameters
   np0d=SUM(update_parameter_0d)
-  IF(np0d .GT. 0 )THEN
+  IF(np0d .GT. 0 .AND. ESTPAR )THEN
     CALL estimate_0d_par
   ENDIF
 
@@ -421,27 +431,6 @@ SUBROUTINE das_letkf
   WRITE(6,*)"END PARAMETER SMOOTHING"
   ENDIF 
   ENDIF
-
-
-
-  !!!!
-  ! INITIALIZE PARAMETERS (FIRST CYCLE ONLY)
-  !!!!
-
-  IF(ESTPAR)THEN
-    !Initialize parameters if they are not initialized.
-    CALL init_par_mpi(analp2d,nbv,update_parameter_2d,param_default_value,param_sprd_init) 
-  
-    !Complete the analysis for the parameters that are not being estimated.
-    DO n=1,np2d
-     IF( update_parameter_2d(n) == 0  .AND. update_parameter_0d(n) == 0 )THEN
-       analp2d(:,:,n)=guesp2d(:,:,n)
-     ENDIF
-    ENDDO
-
-  ENDIF
-
-
 
   !WRITE MULTIPLICATIVE INFLATION
   IF(cov_infl_mul < 0.0d0) THEN
@@ -979,6 +968,7 @@ SUBROUTINE obs_local_sub(imin,imax,jmin,jmax,nn,nobs_use)
 END SUBROUTINE obs_local_sub
 
 SUBROUTINE estimate_0d_par()
+IMPLICIT NONE
 INTEGER   n,i,npoints,m,counterp,ierr,nobsl,k
 REAL(r_size) , ALLOCATABLE :: tmpmeanp0d(:),tmpsprdp0d(:),tmpguesp0d(:,:),tmpanalp0d(:,:),workp0d(:,:),tmptrans_p(:,:,:)
 REAL(r_size),ALLOCATABLE :: hdxf0d(:,:)
@@ -988,13 +978,13 @@ REAL(r_size),ALLOCATABLE :: dep0d(:)
 REAL(r_size)             :: parm
 
 
-    ALLOCATE(tmpmeanp0d(np0d))
-    ALLOCATE(tmpsprdp0d(np0d))
-    ALLOCATE(tmpguesp0d(nbv,np0d))
-    ALLOCATE(tmpanalp0d(nbv,np0d))
-    ALLOCATE(workp0d(nbv,np0d))
-    ALLOCATE(np2dtop0d(np0d))
-    ALLOCATE(tmptrans_p(nbv,nbv,np0d))
+ALLOCATE(tmpmeanp0d(np0d))
+ALLOCATE(tmpsprdp0d(np0d))
+ALLOCATE(tmpguesp0d(nbv,np0d))
+ALLOCATE(tmpanalp0d(nbv,np0d))
+ALLOCATE(workp0d(nbv,np0d))
+ALLOCATE(np2dtop0d(np0d))
+ALLOCATE(tmptrans_p(nbv,nbv,np0d))
 
   !First spatially average 2d parameters.
   counterp=0
@@ -1014,6 +1004,7 @@ REAL(r_size)             :: parm
      ENDDO
    ENDIF
   ENDDO
+
 
   !All the processes will have the same spatially averaged parameters.
   workp0d=0.0d0
@@ -1039,6 +1030,9 @@ IF(myrank == 0 )THEN
      ENDDO
    ENDIF
 
+
+
+
   !Compute mean and perturbations.
     tmpmeanp0d=0.0d0
     DO n=1,np0d
@@ -1050,18 +1044,24 @@ IF(myrank == 0 )THEN
        tmpguesp0d(m,n)=tmpguesp0d(m,n)-tmpmeanp0d(n)
       ENDDO
     ENDDO
-   ALLOCATE(hdxf0d(1:nobstotal,1:nbv),rdiag0d(1:nobstotal),rloc0d(1:nobstotal),dep0d(1:nobstotal) )
+   ALLOCATE(hdxf0d(nobstotal,nbv),rdiag0d(nobstotal),rloc0d(nobstotal),dep0d(nobstotal))
    DO n=1,np0d
-   WRITE(6,*)"PARAMETER ENSEMBLE MEAN (GUES): ",tmpmeanp0d(n)
-   WRITE(6,*)"PARAMETER ENSEMBLE (GUES):",tmpguesp0d(:,n)+tmpmeanp0d(n)
+    WRITE(6,*)"PARAMETER ENSEMBLE MEAN (GUES): ",tmpmeanp0d(n)
+    WRITE(6,*)"PARAMETER ENSEMBLE (GUES):",tmpguesp0d(:,n)+tmpmeanp0d(n)
    ENDDO
       !Main estimation loop over 0d parameters.
       DO n=1,np0d
           !Observation localization for 0d parameter estimation.
+          hdxf0d=0.0d0
+          rdiag0d=0.0d0
+          rloc0d=0.0d0
+          dep0d=0.0d0
           CALL obs_local_p0d(parameter_localization_type_0d(np2dtop0d(n)),np2dtop0d(n),hdxf0d,rdiag0d,rloc0d,dep0d,nobsl)
+
           WRITE(6,*)nobsl,' observations are used to estimate 0d parameters'
           parm = 1.0d0
           CALL letkf_core(nbv,nobstotal,nobsl,hdxf0d,rdiag0d,rloc0d,dep0d,parm,tmptrans_p(:,:,n))
+
 
            !Compute 0d parameter analysis
            DO m=1,nbv
@@ -1072,19 +1072,18 @@ IF(myrank == 0 )THEN
             END DO
            !Reconstruct parameter gues.
 
+
             DO m=1,nbv
               tmpguesp0d(m,n) = tmpmeanp0d(n) + tmpguesp0d(m,n)
             END DO
             tmpmeanp0d=0.0d0
-            DO m=1,nbv
-               tmpmeanp0d(n)=tmpmeanp0d(n)+tmpanalp0d(m,n)
-            ENDDO
+            CALL com_mean(nbv,tmpanalp0d(:,n),tmpmeanp0d(n))
            !Apply multiplicative inflation to the parameter.
            WRITE(6,*)"PARAMETER ENSEMBLE MEAN BEFORE INFLATION (ANAL): ",tmpmeanp0d(n)
            WRITE(6,*)"PARAMETER ENSEMBLE BEFORE INFLATION (ANAL): ",tmpanalp0d(:,n)
            WRITE(6,*)"PARAMETER FIX SPREAD",param_sprd_init(np2dtop0d(n))
-           CALL PARAMETER_INFLATION(tmpanalp0d(:,n),tmpguesp0d(:,n),tmptrans_p(:,:,n), &
-           parameter_fixinflation(np2dtop0d(n)),param_sprd_init(np2dtop0d(n)),parameter_inflation_type)
+           CALL PARAMETER_INFLATION(tmpanalp0d(:,n),tmpguesp0d(:,n),tmptrans_p(:,:,n),  &
+           & parameter_fixinflation(np2dtop0d(n)),param_sprd_init(np2dtop0d(n)),parameter_inflation_type)
 !
            !Apply additive inflation to the parameter.
            IF(ADDINFPAR)THEN
@@ -1097,38 +1096,18 @@ IF(myrank == 0 )THEN
       DO m=1,nbv
          tmpmeanp0d(n)=tmpmeanp0d(n)+tmpanalp0d(m,n)
       ENDDO
-       tmpmeanp0d(n)=tmpmeanp0d(n)/REAL(nbv,r_size)
+      tmpmeanp0d(n)=tmpmeanp0d(n)/REAL(nbv,r_size)
     ENDDO
 
   DEALLOCATE( hdxf0d,rdiag0d,rloc0d,dep0d )
-
-  !IF parameters are not perturbed (usually the first cycle) then perturb them.
-  DO n=1,np0d
-    CALL com_stdev(nbv,tmpanalp0d(:,n),tmpsprdp0d(n))
-    IF ( tmpsprdp0d(n) .EQ. 0.0d0)THEN
-    WRITE(6,*)"INITIALIZING PARAMETERS"
-    CALL com_randn(nbv,tmpanalp0d(:,n))
-    CALL com_stdev(nbv,tmpanalp0d(:,n),tmpsprdp0d(n))
-    CALL com_mean(nbv,tmpanalp0d(:,n),tmpmeanp0d(n))
-    DO i=1,nbv
-    tmpanalp0d(i,n)=(tmpanalp0d(i,n)-tmpmeanp0d(n))*param_sprd_init(np2dtop0d(n))/tmpsprdp0d(n)
-    tmpanalp0d(i,n)=tmpanalp0d(i,n)+param_default_value(np2dtop0d(n))
-    ENDDO
-    ENDIF
-
-  ENDDO
-!  ENDIF  !END FOR THE IF NP0D > 0.
-
-
 
     DO n=1,np0d
     WRITE(6,*)"PARAMETER ENSEMBLE MEAN (ANAL): ",tmpmeanp0d(n)
     WRITE(6,*)"PARAMETER ENSEMBLE (ANAL): ",tmpanalp0d(:,n)
     ENDDO
 
-
-
 ENDIF  !END FOR THE IF MY_RANK == 0
+
 
   !broadcast the estimated parameters to all process.
   CALL MPI_BCAST( tmpanalp0d, nbv*np0d, MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
@@ -1157,6 +1136,9 @@ ENDIF  !END FOR THE IF MY_RANK == 0
 
 RETURN
 END SUBROUTINE estimate_0d_par
+
+
+
 
 !-----------------------------------------------------------------------
 ! Relaxation via LETKF weight - RTPP method

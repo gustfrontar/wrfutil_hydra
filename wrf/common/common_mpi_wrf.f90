@@ -1265,17 +1265,19 @@ END SUBROUTINE smooth_par_update
 !-----------------------------------------------------------------------
 ! Initialize parameter ensemble.
 !----------------------------------------------------------------------
-SUBROUTINE init_par_mpi(analp2d,member,update_parameter,param_default_value,param_sprd_ini)
+SUBROUTINE init_par_mpi(p2d,member,update_parameter_2d,update_parameter_0d,param_default_value,param_sprd_ini)
 IMPLICIT NONE
-INTEGER     ,INTENT(IN)    :: member,update_parameter(np2d)
+INTEGER     ,INTENT(IN)    :: member,update_parameter_2d(np2d),update_parameter_0d(np2d)
 REAL(r_size),INTENT(IN)    :: param_default_value(np2d),param_sprd_ini(np2d)
-REAL(r_size),INTENT(INOUT) :: analp2d(nij1,member,np2d)
-INTEGER                    :: ip,ij,ierr,ll,l,im,jj,n
+REAL(r_size),INTENT(INOUT) :: p2d(nij1,member,np2d)
+INTEGER                    :: ip,ij,ierr,ll,l,im,jj,n , i , m
 REAL(r_size)               :: MAX_LOCAL_SPREAD,TMP_SPRD,MAX_GLOBAL_SPREAD,TMP_MEAN
 REAL(r_size)               :: MIN_LOCAL_SPREAD,MIN_GLOBAL_SPREAD
-REAL(r_size)               :: tmpfield(nlon,nlat)
+REAL(r_size)               :: tmpfield(nlon,nlat) , tmpp0d(member) , tmpsprdp0d , tmpmeanp0d
 INTEGER                    :: mask(nlon,nlat)
 INTEGER                    :: lambda
+REAL(r_size)               :: tmpwork(member)
+INTEGER                    :: tmpiwork , npoints
 CHARACTER(256) :: filter_type
   lambda=30  !Waves with length less than 10 will be seriously filtered
              !filter length is authomatically computed as 2*lambda.
@@ -1289,14 +1291,14 @@ CHARACTER(256) :: filter_type
 
 !DO over the parameters
 DO ip=1,np2d
-IF(update_parameter(ip)==1)THEN
+IF( update_parameter_2d(ip) == 1 )THEN
 
  !Check the maximum parameter sprad.
   MAX_LOCAL_SPREAD=0.0d0
   MIN_LOCAL_SPREAD=UNDEF
   DO ij=1,nij1
-    IF( analp2d(ij,1,ip) .NE. REAL(REAL(UNDEF,r_sngl),r_size) )THEN
-    CALL com_stdev(member,analp2d(ij,:,ip),TMP_SPRD)
+    IF( p2d(ij,1,ip) .NE. REAL(REAL(UNDEF,r_sngl),r_size) )THEN
+    CALL com_stdev(member,p2d(ij,:,ip),TMP_SPRD)
     IF(TMP_SPRD > MAX_LOCAL_SPREAD)MAX_LOCAL_SPREAD=TMP_SPRD
     IF(TMP_SPRD < MIN_LOCAL_SPREAD)MIN_LOCAL_SPREAD=TMP_SPRD
     ENDIF
@@ -1326,28 +1328,68 @@ IF(update_parameter(ip)==1)THEN
          DO n=0,nprocs-1
           im = n+1 + (l-1)*nprocs
           IF(im <= member) THEN
-           CALL scatter_ngrd_mpi(n,REAL(tmpfield,r_sngl),analp2d(:,im,ip),1)
+           CALL scatter_ngrd_mpi(n,REAL(tmpfield,r_sngl),p2d(:,im,ip),1)
           END IF
         END DO
       END DO
 
   !Adjust the parameter ensemble spread. 
-  !WRITE(*,*)myrank,analp2d(10,:,ip)
      DO ij=1,nij1
-      CALL com_stdev(member,analp2d(ij,:,ip),TMP_SPRD)
-      CALL com_mean(member,analp2d(ij,:,ip),TMP_MEAN)
-       IF(TMP_SPRD .ne. 0)analp2d(ij,:,ip)=(analp2d(ij,:,ip)-TMP_MEAN)*param_sprd_ini(ip)/TMP_SPRD 
-        analp2d(ij,:,ip)=analp2d(ij,:,ip)+param_default_value(ip)
-        !write(*,*)TMP_SPRD,param_sprd_ini(ip)
+      CALL com_stdev(member,p2d(ij,:,ip),TMP_SPRD)
+      CALL com_mean(member,p2d(ij,:,ip),TMP_MEAN)
+       IF(TMP_SPRD .ne. 0)p2d(ij,:,ip)=(p2d(ij,:,ip)-TMP_MEAN)*param_sprd_ini(ip)/TMP_SPRD
+        p2d(ij,:,ip)=p2d(ij,:,ip)+param_default_value(ip)
      END DO
-       !WRITE(*,*)myrank,analp2d(10,:,ip)
-
-     !ELSE
-     !  !THIS PARAMETER IS NOT BEING ESTIMATED THEN SET TO DEFALUT VALUE.
-     !   analp2d(:,:,ip)=param_defalut_value(ip)
 
   ENDIF
+
+ELSEIF( update_parameter_0d(ip) == 1 )THEN
+
+!  !First spatially average 2d parameters.
+  tmpp0d=0.0d0
+  npoints=0
+  DO ij=1,nij1
+    IF( landmask1(ij) == 0 .and. p2d(ij,1,ip) /= REAL(REAL(undef,r_sngl),r_size) )THEN
+      tmpp0d(:)=tmpp0d(:)+p2d(ij,:,ip)
+      npoints=npoints+1
+    ENDIF
+  ENDDO
+!
+!  !All the processes will have the same spatially averaged parameters.
+!  
+  CALL MPI_ALLREDUCE(tmpp0d,tmpwork,member,MPI_DOUBLE_PRECISION,MPI_SUM,&
+          & MPI_COMM_WORLD,ierr)
+  CALL MPI_ALLREDUCE(npoints,tmpiwork,1,MPI_INTEGER,MPI_SUM,&
+          & MPI_COMM_WORLD,ierr)
+  !Get the parameter mean.
+  tmpp0d=tmpwork/REAL(tmpiwork,r_size)
+  CALL com_stdev(member,tmpp0d,tmpsprdp0d)
+
+   WRITE(6,*)tmpsprdp0d
+
+   IF ( tmpsprdp0d <= 1.0d-10 )THEN
+      WRITE(6,*)"INITIALIZING 0D PARAMETERS"
+      IF( myrank == 0 )then
+       CALL com_randn(member,tmpp0d)
+       CALL com_stdev(member,tmpp0d,tmpsprdp0d)
+       CALL com_mean(member,tmpp0d,tmpmeanp0d)
+       DO i=1,member
+         tmpp0d(i)=(tmpp0d(i)-tmpmeanp0d)*param_sprd_ini(ip)/tmpsprdp0d
+         tmpp0d(i)=tmpp0d(i)+param_default_value(ip)
+       ENDDO
+      ENDIF
+
+      CALL MPI_BCAST( tmpp0d, member, MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
+
+         DO m=1,member
+            p2d(:,m,ip)=tmpp0d(m)
+        ENDDO
+
+  ENDIF ![End if over tmpsprdp0d == 0 initializatio of 0d parameters ]
+   WRITE(6,*)tmpsprdp0d
+
 ENDIF
+
 ENDDO
 
 END SUBROUTINE init_par_mpi

@@ -25,7 +25,7 @@ MCONFIGURATION=machine_60ksa_H_test #Define a machine configuration (number of n
 LETKFNAMELIST=control               #Define a letkf namelist template
 
 RESTART=1
-RESTARTDATE=20100910180000
+RESTARTDATE=20100924120000
 RESTARTITER=10
 
 

@@ -10,7 +10,7 @@ MAX_BACKGROUND_JOBS=128
 LD_LIBRARY_PATH_ADD=""
 PATH_ADD=""
 
-TOTAL_NODES_FORECAST=3
+TOTAL_NODES_FORECAST=2
 TOTAL_NODES_LETKF=1
 
 #These options control job split (in case of big jobs)
