@@ -285,7 +285,7 @@ DO ii=1,nx
     IF( contador >= 1 )THEN
       covst(ii,jj,kk)=covst(ii,jj,kk)/REAL(contador,r_sngl)
       corrst(ii,jj,kk)=corrst(ii,jj,kk)/REAL(contador,r_sngl)
-      corrstdist(ii,jj,kk)=corrstdist(ii,jj,kk)/REAL(contador,r_sngl)
+      corrstdist(ii,jj,kk)=corrstdist(ii,jj,kk)/corrst(ii,jj,kk)
     ELSE
       covst(ii,jj,kk)=undefbin
       corrst(ii,jj,kk)=undefbin

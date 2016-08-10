@@ -1380,7 +1380,6 @@ ELSEIF( update_parameter_0d(ip) == 1 )THEN
       ENDIF
 
       CALL MPI_BCAST( tmpp0d, member, MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
-
          DO m=1,member
             p2d(:,m,ip)=tmpp0d(m)
         ENDDO
