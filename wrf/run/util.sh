@@ -623,6 +623,7 @@ if [ $SYSTEM -eq 1 ]; then
   echo "ENDMEMBER=\$3                                                " >> $SCRIPT
   echo "cd \$WORKDIR                                                 " >> $SCRIPT
   echo "ulimit -s unlimited                                          " >> $SCRIPT
+
   # --- RENAME OUTPUT FOR ANALYSIS
   if [ $ANALYSIS -eq 1 ] ; then
    local LOCAL_OUTFREC=$WINDOW_FREC
@@ -648,6 +649,18 @@ if [ $SYSTEM -eq 1 ]; then
 
   done
  fi 
+
+ if [ $FORECAST -eq 1 ] ; then
+  local LOCAL_OUTFREC=$WINDOW_FREC
+  local mem=$INIMEMBER
+  while [ $mem -le $ENDMEMBER ] ; do
+    mem=`ens_member $mem`
+    echo "cat ./WRF${mem}/rsl.error.* > ./wrf${mem}.log                 " >> $SCRIPT
+    mem=`expr ${mem} + 1`
+  done
+ fi
+
+
 fi
 
 chmod 766 $SCRIPT
@@ -1735,7 +1748,7 @@ generate_run_forecast_script_torque () {
      # JOB=1
      # while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
      # MEM=`ens_member $M `
-     #    echo "${WORKDIR}/WRF_POST.sh ${WORKDIR}/WRF${MEM} $MEM && mv ${WORKDIR}/WRF$MEM/*.log ${WORKDIR}/ &  " >> $local_script
+     #    echo "${WORKDIR}/WRF_POST.sh ${WORKDIR}/WRF${MEM} $MEM && mv ${WORKDIR}/WRF$MEM/*.7log ${WORKDIR}/ &  " >> $local_script
      #    JOB=`expr $JOB + 1 `
      #    M=`expr $M + 1 `
      # done
