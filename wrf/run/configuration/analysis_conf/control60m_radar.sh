@@ -1,12 +1,12 @@
 #KALMAN FILTER CONFIGURATION
-MEMBER=60           #Number of ensemble members.
+MEMBER=60        #Number of ensemble members.
 MAX_DOM=1
 HOMEDIR=${HOME}/share/
 DATADIR=${HOME}/data/
-ANALYSIS=1   #Identify this job as an analysis job.
-FORECAST=0   #This is not a forecast job.
-INTERPANA=0  #This is used in forecast jobs (but we need to define it here too)
-RUN_ONLY_MEAN=0 #This is used in forecast jobs (but we need to define it here too)
+ANALYSIS=1       #Identify this job as an analysis job.
+FORECAST=0       #This is not a forecast job.
+INTERPANA=0      #This is used in forecast jobs (but we need to define it here too)
+RUN_ONLY_MEAN=0  #This is used in forecast jobs (but we need to define it here too)
 
 USE_ANALYSIS_BC=1 #1 - use analysis as BC , 0 - use forecasts as bc (e.g. global gfs)
                   # if 1 then bc data will be taken from exp_met_em folder in the corresponding INPUT folder.
@@ -38,12 +38,12 @@ SIGMA_OBSV="0.2d0"
 SIGMA_OBSZ="2.0d3" 
 SIGMA_OBST="3.0d0"
 GROSS_ERROR="15.0d0" 
-COV_INFL_MUL="1.0d0"
+COV_INFL_MUL="1.1d0"
 SP_INFL_ADD="0.d0"  
-RELAX_ALPHA_SPREAD="0.95d0"
+RELAX_ALPHA_SPREAD="0.90d0"
 RELAX_ALPHA="0.0d0" 
 USE_ADAPTIVE_INFLATION=0  #1 turn on addaptive inflation (Miyoshi 2011), 0 Turn off adaptive inflation
-                          #Note that for addaptive inflation to work COV_INFL_MUL should be < 0.0
+				  #Note that for addaptive inflation to work COV_INFL_MUL should be < 0.0
 GUESFT=$WINDOW_END  # First guess forecast length (seconds)
 
 #DOMAIN AND BOUNDARY DATA
@@ -52,10 +52,10 @@ BOUNDARY_DATA_FREC=21600              #Boundary data frequency. (seconds)
 BOUNDARY_DATA_PERTURBATION_FREQ=21600 #Frequency of data used to perturb boundary conditions (seconds)
 
 #INITIAL AND BOUNDARY PERTURBATIONS
-SCALE_FACTOR="0.05"        #Perturbation scale factor.
-RANDOM_SCALE_FACTOR="0.0"  #Random perturbation scale factor.
-PERTURB_BOUNDARY=1         #DUMMY
-PERTURB_BOUNDARY_TYPE=1    #DUMMY
+SCALE_FACTOR="0.05"         #Perturbation scale factor.
+RANDOM_SCALE_FACTOR="0.005" #Random perturbation scale factor.
+PERTURB_BOUNDARY=1          #DUMMY
+PERTURB_BOUNDARY_TYPE=1     #DUMMY
 
 #POSTPROC CONFIGURATION
 OUTLEVS="0.1,0.5,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,"
@@ -75,16 +75,17 @@ fi
 
 
 ### LETKF setting
-OBS="/ucar_airs_th3x3_corrected/"                # Name of observation folder.
-RADAROBS="/OBS_CONTROL_0.0ms_0db_noerror/"       # Name of radar observation folder.
+OBS=""                # Name of observation folder.
+RADAROBS="/OBS_0.5ms_2db_wt_noatt/"              # Name of radar observation folder.
 EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION}      # name of experiment
 
 ### initial date setting
-IDATE=20080807000000
-EDATE=20080930180000
+IDATE=20140122173000
+EDATE=20140122200000
 
 #### DATA
 OBSDIR=${HOMEDIR}/OBS/$OBS/                                                               # observations
+NRADARS=1
 RADAROBSDIR=${HOMEDIR}/OBS/$RADAROBS/
 TMPDIR=${DATADIR}/TMP/$EXP/                                                               # work directory
 OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                    # Where results should appear.
@@ -93,11 +94,11 @@ INPUTDIR=${HOMEDIR}/INPUT/$DOMAINCONF/                                          
 #### EXECUTABLES
 RUNTIMELIBS=${HOMEDIR}/libs_sparc64/lib/
 WRF=${HOMEDIR}/LETKF_WRF/wrf/
-LETKF=$WRF/letkf/letkf_noeigenexa.exe                     # LETKF module
-UPDATEBC=$WRF/model/WRFDA/da_update_bc.exe
-WRFMODEL=$WRF/model/WRFV3K/                               # WRF model that run in computing nodes.
-WRFMODELPPS=$WRF/model/WRFV3INTEL/                          # WRF model that runs in pps server 
-ARWPOST=$WRF/model/ARWpostINTEL/
+LETKF=$WRF/letkf/letkf.exe                     # LETKF module
+UPDATEBC=$WRF/model/WRFDA/da_update_bc.exe     
+WRFMODEL=$WRF/model/WRFV3/                     # WRF model that run in computing nodes.
+WRFMODELPPS=$WRF/model/WRFV3/                  # WRF model that runs in pps server 
+ARWPOST=$WRF/model/ARWpost/
 SPAWN=$WRF/spawn/
 MPIBIN=mpiexec
 
