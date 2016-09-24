@@ -19,6 +19,15 @@ MODULE obsop_tools
   IMPLICIT NONE
   PUBLIC
 
+  TYPE GRID
+   REAL(r_size) :: minlon , maxlon , minlat , maxlat  !Grid limits (degree)
+   REAL(r_size) :: minlev , maxlev                    !Grid limits (hPa or meter)
+   REAL(r_size) :: res , vres                         !Grid resolution (degree and p or z)
+   INTEGER      :: nlon , nlat , nlev                 !Grid size 
+
+   REAL(r_size), ALLOCATABLE :: lon(:,:) , lat(:,:) , lev(:,:) !Full coordinates
+  END TYPE
+
   INTEGER,SAVE :: nobs , nobsradar
   REAL(r_size),ALLOCATABLE,SAVE :: obselm(:)
   REAL(r_size),ALLOCATABLE,SAVE :: obslon(:)
@@ -415,6 +424,11 @@ IF( nobs + nobsradar .GT. 0)THEN
 !$OMP END PARALLEL DO
 
 ENDIF
+
+
+! Perform superobbing 
+
+   CALL superobbing()
 
 
 do n=1,nobs+nobsradar
@@ -1255,5 +1269,95 @@ end do
 
 
 END SUBROUTINE OBSAREA
+
+
+SUBROUTINE superobbing()
+IMPLICIT NONE
+TYPE(GRID) :: so_grid
+INTEGER i,j,k,it
+REAL(r_size),ALLOCATABLE :: solon(:,:) , solat(:,:) , solev(:,:), sodep(:,:)
+
+!Lets do a loop over the variables that are going to be superobbed
+DO i = 1,nsovar
+  DO it = 1,nslots
+  
+  !For each variable get the grid.
+  CALL get_grid( so_grid) 
+
+  
+
+
+  ENDDO !End do over times
+ENDDO  !End do over variables that will be superobbed.
+
+
+END SUBROUTINE superobbing
+
+
+!Compute regrid grid.
+!This grid will be used to generate a grided output
+!for the errors computed from the observations.
+!------------------------------------------------------
+SUBROUTINE get_grid(my_grid)
+IMPLICIT NONE
+TYPE(GRID) , INTENT(INOUT) :: my_grid
+INTEGER      :: i,j,k
+
+  mygrid%minlon=1d30
+  mygrid%maxlon=-1d30
+  mygrid%minlat=1d30
+  mygrid%maxlat=-1d30
+
+  DO i=1,nlon-1
+   DO j=1,nlat-1
+     if( lat(i,j) > my_grid%maxlat )my_grid%maxlat=lat(i,j)
+     if( lat(i,j) < my_grid%minlat )my_grid%minlat=lat(i,j)
+     if( lon(i,j) > my_grid%maxlon )my_grid%maxlon=lon(i,j)
+     if( lon(i,j) < my_grid%minlon )my_grid%minlon=lon(i,j)
+   ENDDO
+  ENDDO
+
+  my_grid%nlon=CEILING( (my_grid%maxlon-my_grid%minlon)/my_grid%res ) + 1
+  my_grid%nlat=CEILING( (my_grid%maxlat-my_grid%minlat)/my_grid%res ) + 1
+
+  ALLOCATE( my_grid%lon(my_grid%nlon,my_grid%nlat) , my_grid%lat(my_grid%nlon,my_grid%nlat) )
+  DO i = 1,my_grid%nlon
+   DO j = 1,my_grid%nlat
+
+    my_grid%lon(i,j)=my_grid%minlon + REAL((i-1),r_size)*my_grid%res
+    my_grid%lat(i,j)=my_grid%minlat + REAL((j-1),r_size)*my_grid%res
+
+   ENDDO
+  ENDDO
+
+  my_grid%maxlon=my_grid%minlon+my_grid%nlon*my_grid%res
+  my_grid%minlon=my_grid%minlat+my_grid%nlat*my_grid%res
+
+  my_grid%nlev=CEILING( (my_grid%maxlev-my_grid%minlev)/my_grid%vres ) + 1
+
+  ALLOCATE( mygrid%lev( my_grid%nlev ) )  
+  DO k = 1,my_grid%nlev
+    my_grid%lev(k) = my_grid%minlev + REAL((k-1),r_size)*my_grid%vres
+  ENDDO
+
+
+   WRITE(6,*)'=================================================='
+   WRITE(6,*)'   My grid ' 
+   WRITE(6,*)'=================================================='
+   WRITE(6,*)' MINLON = ',my_grid%minlon
+   WRITE(6,*)' MAXLON = ',my_grid%maxlon
+   WRITE(6,*)' MINLAT = ',my_grid%minlat
+   WRITE(6,*)' MAXLAT = ',my_grid%maxlat
+   WRITE(6,*)'NLON  = ',my_grid%nlon
+   WRITE(6,*)'NLAT  = ',my_grid%nlat
+   WRITE(6,*)'HRES  = ',my_grid%res,' (degree)'
+   WRITE(6,*)'MAXLEV= ',my_grid%maxlev
+   WRITE(6,*)'MINLEV= ',my_grid%minlev
+   WRITE(6,*)'NLEV  = ',my_grid%nlev
+   WRITE(6,*)'LEVRES= ',my_grid%vres, ' (hPa)'
+   WRITE(6,*)'=================================================='
+
+
+END SUBROUTINE get_grid
 
 END MODULE obsop_tools

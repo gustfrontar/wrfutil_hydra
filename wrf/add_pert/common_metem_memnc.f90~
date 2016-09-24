@@ -7,7 +7,10 @@ MODULE common_wrf
 !   10/15/2004 Takemasa Miyoshi  created
 !   01/23/2009 Takemasa Miyoshi  modified
 !   07/14/2010 Takemasa Miyoshi  modified for WRF
-!
+!   TODO: This routine is for NCEP data, other input sources may produce
+!   different variables inside met_em files. In that case the routine 
+!   has to be able to process the data including the new variables and
+!   automatically detecting the abssence of some other variables.
 !=======================================================================
 !$USE OMP_LIB
   USE common
@@ -22,26 +25,35 @@ MODULE common_wrf
   INTEGER,SAVE :: nlat
   INTEGER,SAVE :: nlev
   INTEGER,PARAMETER :: nv3d=7! u,v,w,t,ght,rh
-  INTEGER,PARAMETER :: nv2d=2 ! ps
+  INTEGER,PARAMETER :: nv2d=11 ! ps , slp , skintemp , soilvariables
   INTEGER,PARAMETER :: np2d=3 ! number of 2d estimated parameters
   LOGICAL,PARAMETER :: ESTPAR=.FALSE.  !If parameters will be estimated or not.
-  LOGICAL,PARAMETER :: bias_estimation = .FALSE. !If bias will be estimated or not.
   REAL(r_size) , PARAMETER :: param_default_value(np2d)= (/1.0,1.0,1.0/)!If parameter is not estimated then this value will be assigned to parameter analysis.
   REAL(r_size) , PARAMETER :: param_max_value(np2d)= (/2.0, 2.0, 2.0/)  !This is the maximum allowed value for the parameters.
   REAL(r_size) , PARAMETER :: param_min_value(np2d)= (/0.5, 0.5, 0.5/)  !This is the minimum allowed value for the parameters.
-  INTEGER,PARAMETER :: iv3d_u=1
-  INTEGER,PARAMETER :: iv3d_v=2
-  INTEGER,PARAMETER :: iv3d_w=3
-  INTEGER,PARAMETER :: iv3d_t=4
-  INTEGER,PARAMETER :: iv3d_ght=5
-  INTEGER,PARAMETER :: iv3d_rh=6
+  INTEGER,PARAMETER :: iv3d_u   =1
+  INTEGER,PARAMETER :: iv3d_v   =2
+  INTEGER,PARAMETER :: iv3d_w   =3
+  INTEGER,PARAMETER :: iv3d_t   =4
+  INTEGER,PARAMETER :: iv3d_ght =5
+  INTEGER,PARAMETER :: iv3d_rh  =6
   INTEGER,PARAMETER :: iv3d_pres=7
-  INTEGER,PARAMETER :: iv2d_ps=1
-  INTEGER,PARAMETER :: iv2d_pmsl=2
+  INTEGER,PARAMETER :: iv2d_psfc    =1
+  INTEGER,PARAMETER :: iv2d_pmsl    =2
+  INTEGER,PARAMETER :: iv2d_skintemp=3
+  INTEGER,PARAMETER :: iv2d_st100200=4
+  INTEGER,PARAMETER :: iv2d_st040100=5
+  INTEGER,PARAMETER :: iv2d_st010040=6
+  INTEGER,PARAMETER :: iv2d_st000010=7
+  INTEGER,PARAMETER :: iv2d_sm100200=8
+  INTEGER,PARAMETER :: iv2d_sm040100=9
+  INTEGER,PARAMETER :: iv2d_sm010040=10
+  INTEGER,PARAMETER :: iv2d_sm000010=11
 
-  INTEGER,PARAMETER :: ip2d_hfx=1
-  INTEGER,PARAMETER :: ip2d_qfx=2
-  INTEGER,PARAMETER :: ip2d_ust=3
+
+  INTEGER,PARAMETER :: ip2d_hfxfactor=1
+  INTEGER,PARAMETER :: ip2d_qfxfactor=2
+  INTEGER,PARAMETER :: ip2d_ustfactor=3
 
   REAL(4),SAVE      :: p0 != 1.0e+5
   REAL(4),PARAMETER :: t0 = 300.0
@@ -59,7 +71,7 @@ MODULE common_wrf
 !  REAL(r_size),ALLOCATABLE,SAVE :: fcori(:,:)
   REAL(r_size),ALLOCATABLE,SAVE :: phi0(:,:)
   REAL(r_size),ALLOCATABLE,SAVE :: landmask(:,:)
-  CHARACTER(4),SAVE :: element(nv3d+nv2d)
+  CHARACTER(20),SAVE :: element(nv3d+nv2d)
   REAL(r_sngl),ALLOCATABLE,SAVE :: dnw(:)
   REAL(r_sngl),ALLOCATABLE,SAVE :: znu(:)
 !  CHARACTER(19),SAVE  :: DATE
@@ -82,15 +94,31 @@ SUBROUTINE set_common_wrf(inputfile)
   !
   ! Elements
   !
-  element(iv3d_u)  = 'UU   '
-  element(iv3d_v)  = 'VV   '
-  element(iv3d_t)  = 'TT   '
-  element(iv3d_ght) = 'GHT  '
-  element(iv3d_rh) = 'RH  '
-  element(iv3d_pres)  = 'PRES '
+  !3D variables
+  element(iv3d_u)    = 'UU'
+  element(iv3d_v)    = 'VV'
+  element(iv3d_w)    = 'WW'
+  element(iv3d_t)    = 'TT'
+  element(iv3d_ght)  = 'GHT'
+  element(iv3d_rh)   = 'RH'
+  element(iv3d_pres) = 'PRES'
+  !2D variables
+  element(nv3d+iv2d_psfc)     = 'PSFC'
+  element(nv3d+iv2d_pmsl)     = 'PMSL'
+  element(nv3d+iv2d_skintemp) = 'SKINTEMP'
+  element(nv3d+iv2d_st100200) = 'ST100200'
+  element(nv3d+iv2d_st040100) = 'ST040100'
+  element(nv3d+iv2d_st010040) = 'ST010040'
+  element(nv3d+iv2d_st000010) = 'ST100200'
+  element(nv3d+iv2d_sm100200) = 'SM100200'
+  element(nv3d+iv2d_sm040100) = 'SM040100'
+  element(nv3d+iv2d_sm010040) = 'SM010040'
+  element(nv3d+iv2d_sm000010) = 'SM100200'
 
-  element(nv3d+iv2d_ps)   = 'PS  '
-  element(nv3d+iv2d_pmsl) = 'PMSL'
+  !2D parameters
+  element(nv3d+nv2d+ip2d_hfxfactor)='HFXFACTOR'
+  element(nv3d+nv2d+ip2d_hfxfactor)='QFXFACTOR'
+  element(nv3d+nv2d+ip2d_hfxfactor)='USTFACTOR'
   !
   ! Lon, Lat, F, phi0
   !
@@ -115,109 +143,32 @@ SUBROUTINE set_common_wrf(inputfile)
   
 
   WRITE(6,*) '*** MODEL RESOLUTION IS = ',dx
-
-!  ALLOCATE(buf4(nlon,nlat))
-!  ALLOCATE(lon(nlon,nlat))
-!  ALLOCATE(lat(nlon,nlat))
-!  ALLOCATE(lonu(nlon,nlat))
-!  ALLOCATE(latu(nlon,nlat))
-!  ALLOCATE(lonv(nlon,nlat))
-!  ALLOCATE(latv(nlon,nlat))
-!  ALLOCATE(phi0(nlon,nlat))
-!  ALLOCATE(landmask(nlon,nlat))
-
-!  ALLOCATE(start(3),count(3))
-!  start = (/ 1,1,1 /)
-!  !!! XLONG
-!  count = (/ nlon-1,nlat-1,1 /)
-!  lon=0.0d0
-!  CALL check_io(NF_INQ_VARID(ncid,'XLONG_M',varid))
-!  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat-1)))
-!  lon(1:nlon-1,1:nlat-1)=REAL(buf4(1:nlon-1,1:nlat-1),r_size)  
-!  !!! XLAT
-!  count = (/ nlon-1,nlat-1,1 /)
-!  lat = 0.0d0
-!  CALL check_io(NF_INQ_VARID(ncid,'XLAT_M',varid))
-!  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat-1)))
-!  lat(1:nlon-1,1:nlat-1)=REAL(buf4(1:nlon-1,1:nlat-1),r_size)
-!  !!! XLONG_U
-!  count = (/ nlon,nlat-1,1 /)
-!  lonu = 0.0d0
-!  CALL check_io(NF_INQ_VARID(ncid,'XLONG_U',varid))
-!  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon,1:nlat-1)))
-!  lonu(1:nlon,1:nlat-1)=REAL(buf4(1:nlon,1:nlat-1),r_size)
-!  !!! XLAT_U
-!  count = (/ nlon,nlat-1,1 /)
-!  latu= 0.0d0
-!  CALL check_io(NF_INQ_VARID(ncid,'XLAT_U',varid))
-!  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon,1:nlat-1)))
-!  latu(1:nlon,1:nlat-1)=REAL(buf4(1:nlon,1:nlat-1),r_size)
-!  !!! XLONG_V
-!  count = (/ nlon-1,nlat,1 /)
-!  lonv = 0.0d0
-!  CALL check_io(NF_INQ_VARID(ncid,'XLONG_V',varid))
-!  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat)))
-!  lonv(1:nlon-1,1:nlat)=REAL(buf4(1:nlon-1,1:nlat),r_size)
-!  !!! XLAT_V
-!  count = (/ nlon-1,nlat,1 /)
-!  latv = 0.0d0
-!  CALL check_io(NF_INQ_VARID(ncid,'XLAT_V',varid))
-!  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat)))
-!  latv(1:nlon-1,1:nlat)=REAL(buf4(1:nlon-1,1:nlat),r_size)
-!!  !!! F
-!!  count = (/ nlon-1,nlat-1,1 /)
-!!  fcori = 0.0d0
-!!  CALL check_io(NF_INQ_VARID(ncid,'F',varid))
-!!  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat-1)))
-!!  fcori(1:nlon-1,1:nlat-1)=REAL(buf4(1:nlon-1,1:nlat-1),r_size) 
-!  !!! GHT
-!  count = (/ nlon-1,nlat-1,1 /)
-!  phi0 = 0.0d0
-!  CALL check_io(NF_INQ_VARID(ncid,'SOILHGT',varid))
-!  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat-1)))
-!  phi0(1:nlon-1,1:nlat-1)=REAL(buf4(1:nlon-1,1:nlat-1),r_size)
-!  !!! LANDMASK
-!  count = (/ nlon-1,nlat-1,1 /)
-!  landmask = 0.0d0
-!  CALL check_io(NF_INQ_VARID(ncid,'LANDMASK',varid))
-!  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat-1)))
-!  landmask(1:nlon-1,1:nlat-1)=REAL(buf4(1:nlon-1,1:nlat-1),r_size)
-!  deallocate(start,count)
-!
-
-  !!! P00
-  !CALL check_io(NF_INQ_VARID(ncid,'P00',varid))
-  !CALL check_io(NF_GET_VAR_REAL(ncid,varid,p0))
-
-
-  !IF( p0 .eq. 0.0d0 )THEN
-  !  WRITE(6,*)'WARNING : p0 is 0, probably leading with an ideal case a value of 1e5 will be assumed'
-  !  p0=1e5
-  !ENDIF
-  !!! DNW
-  !ALLOCATE(start(2),count(2),dnw(nlev),znu(nlev))
-  !start = (/ 1,1 /)
-  !count = (/ nlev-1,1 /)
-  !dnw(1:nlev) = 0.0
-  !CALL check_io(NF_INQ_VARID(ncid,'DNW',varid))
-  !CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,dnw(1:nlev-1)))
-  !znu(1:nlev) = 0.0
-  !CALL check_io(NF_INQ_VARID(ncid,'ZNU',varid))
-  !CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,znu(1:nlev-1)))
-
   WRITE(6,'(a)') '***  END  : READ NETCDF (CNST) ***'
   CALL check_io(NF_CLOSE(ncid))
 
 
-  WRITE(6,'(a)') 'DOMAIN CORNERS'
-!  WRITE(6,'(A4,F7.2,A4,F7.2)')"LON",lon(1,1),"LAT",lat(1,1)
-!  WRITE(6,'(A4,F7.2,A4,F7.2)')"LON",lon(nlon-1,1),"LAT",lat(nlon-1,1)
-!  WRITE(6,'(A4,F7.2,A4,F7.2)')"LON",lon(1,nlat-1),"LAT",lat(1,nlat-1)
-!  WRITE(6,'(A4,F7.2,A4,F7.2)')"LON",lon(nlon-1,nlat-1),"LAT",lat(nlon-1,nlat-1)
-
-
   RETURN
 END SUBROUTINE set_common_wrf
+!-----------------------------------------------------------------------
+! Get time nc
+!-----------------------------------------------------------------------
+SUBROUTINE get_date(inputfile,date)
+IMPLICIT NONE
+CHARACTER(19),INTENT(OUT) :: date
+CHARACTER(*) ,INTENT(IN)  :: inputfile
+INTEGER :: ncid , start(2) , count(2) , varid
+INCLUDE 'netcdf.inc'
+
+  CALL check_io(NF_OPEN(inputfile,NF_NOWRITE,ncid))
+
+  CALL check_io(NF_INQ_VARID(ncid,'Times',varid))
+  start = (/  1,1 /)
+  count = (/ 19,1 /)
+  CALL check_io(NF_GET_VARA_TEXT(ncid,varid,start,count,date))
+
+  CALL check_io(NF_CLOSE(ncid))
+
+END SUBROUTINE get_date
 !-----------------------------------------------------------------------
 ! File I/O
 !-----------------------------------------------------------------------
@@ -241,42 +192,20 @@ auxfieldg=0.0e0
 
 IF ( flag .EQ. '3d' )THEN
 
+   varname=element(iv)
    SELECT CASE (iv)
       CASE(iv3d_u)
        nxvar=nlon
        nyvar=nlat-1
        nzvar=nlev
-       varname='UU'
       CASE(iv3d_v)
        nxvar=nlon-1
        nyvar=nlat
        nzvar=nlev
-       varname='VV'
-      CASE(iv3d_w)
+      CASE(iv3d_w,iv3d_t,iv3d_rh,iv3d_ght,iv3d_pres)
        nxvar=nlon-1
        nyvar=nlat-1
        nzvar=nlev
-       varname='WW'
-      CASE(iv3d_t)
-       nxvar=nlon-1
-       nyvar=nlat-1
-       nzvar=nlev
-       varname='TT'
-      CASE(iv3d_ght)
-       nxvar=nlon-1
-       nyvar=nlat-1
-       nzvar=nlev
-       varname='GHT'
-      CASE(iv3d_rh)
-       nxvar=nlon-1
-       nyvar=nlat-1
-       nzvar=nlev
-       varname='RH'
-      CASE(iv3d_pres)
-       nxvar=nlon-1
-       nyvar=nlat-1
-       nzvar=nlev
-       varname='PRES'
 
       CASE DEFAULT
        WRITE(6,*)"3D Variable non-recognized, retrieve none: ",iv
@@ -313,20 +242,9 @@ END IF
 
 IF ( flag .EQ. '2d' )THEN
    ALLOCATE(start(3),count(3))
-      SELECT CASE (iv)
-      CASE(iv2d_ps)
-       nxvar=nlon-1
-       nyvar=nlat-1
-       varname='PSFC'
-      CASE(iv2d_pmsl)
-       nxvar=nlon-1
-       nyvar=nlat-1
-       varname='PMSL'
-      CASE DEFAULT
-       WRITE(6,*)"2D variable not recognized, retrieve none : ",iv
-       RETURN
-      END SELECT
-  
+      varname=element(nv3d+iv)
+      nxvar=nlon-1
+      nyvar=nlat-1
 
       start = (/ 1,1,1 /)
       count = (/ nxvar,nyvar,1,1 /) !READ ONE SINGLE LEVEL
@@ -363,43 +281,20 @@ auxfieldg=0.0e0
 
 IF ( flag .EQ. '3d' )THEN
 
+   varname=element(iv)
    SELECT CASE (iv)
       CASE(iv3d_u)
        nxvar=nlon
        nyvar=nlat-1
        nzvar=nlev
-       varname='UU'
       CASE(iv3d_v)
        nxvar=nlon-1
        nyvar=nlat
        nzvar=nlev
-       varname='VV'
-      CASE(iv3d_w)
+      CASE(iv3d_w,iv3d_t,iv3d_ght,iv3d_rh,iv3d_pres)
        nxvar=nlon-1
        nyvar=nlat-1
        nzvar=nlev
-       varname='WW'
-      CASE(iv3d_t)
-       nxvar=nlon-1
-       nyvar=nlat-1
-       nzvar=nlev
-       varname='TT'
-      CASE(iv3d_ght)
-       nxvar=nlon-1
-       nyvar=nlat-1
-       nzvar=nlev
-       varname='GHT'
-      CASE(iv3d_rh)
-       nxvar=nlon-1
-       nyvar=nlat-1
-       nzvar=nlev
-       varname='RH'
-     CASE(iv3d_pres)
-       nxvar=nlon-1
-       nyvar=nlat-1
-       nzvar=nlev
-       varname='PRES'
-
 
       CASE DEFAULT
        WRITE(6,*)"3D Variable not recognized. Won't be written: ",iv
@@ -421,7 +316,7 @@ IF ( flag .EQ. '3d' )THEN
    IF( iv == iv3d_w )THEN
      ierr=NF_INQ_VARID(ncid,varname,varid)
      IF(ierr /= nf_noerr)THEN
-       WRITE(6,*)'WARNING!!!! : WW NOT PRESENT IN INPUT FILE'
+       WRITE(6,*)'WARNING!!!! : WW not present in output file. We will create the variable in the output file.'
        CALL check_io(NF_INQ_VARID(ncid,'TT',varidt))
        CALL check_io(NF_INQ_VARID(ncid,'UU',varidu))
        !Use u-wind as a template for WW and create the variable.
@@ -449,21 +344,10 @@ END IF
 
 IF ( flag .EQ. '2d' )THEN
 
+   varname=element(nv3d+iv)
    ALLOCATE(start(3),count(3))
-      SELECT CASE (iv)
-      CASE(iv2d_ps)
        nxvar=nlon-1
        nyvar=nlat-1
-       varname='PSFC'
-      CASE(iv2d_pmsl)
-       nxvar=nlon-1
-       nyvar=nlat-1
-       varname='PRES'
-
-      CASE DEFAULT
-       WRITE(6,*)"Variable not recognized, won't be written",iv
-       RETURN
-      END SELECT
 
       start = (/ 1,1,1 /)
       count = (/ nxvar,nyvar,1,1 /) !READ ONE SINGLE LEVEL
@@ -777,20 +661,19 @@ INCLUDE 'netcdf.inc'
      !Open the file
      CALL open_wrf_file(filename,'ro',ncid)
 
-
-     !CALL check_io( NF_GET_ATT_TEXT(ncid,NF_GLOBAL,'START_DATE',DATE) )
-     !CALL check_io(NF_GET_ATT_TEXT(ncid,NF_GLOBAL,'SIMULATION_START_DATE',DATE) )
-     !Get data 
      DO iv=1,nv3d
        tmp=0.0e0
+       WRITE(*,*)'Reading variable ',element(iv),' iv = ',iv
        CALL read_var_wrf(ncid,iv,slev,elev,tmp,'3d')
        variables3d(:,:,:,iv)=REAL(tmp,r_size)
      ENDDO
      DO iv=1,nv2d
        tmp=0.0e0
+       WRITE(*,*)'Reading variable ',element(nv3d+iv),' iv = ',iv
        CALL read_var_wrf(ncid,iv,slev,elev,tmp(:,:,1),'2d')
        variables2d(:,:,iv)=REAL(tmp(:,:,1),r_size)
      ENDDO
+     WRITE(*,*)'Finish reading file ',filename
 
 END SUBROUTINE read_grd
 

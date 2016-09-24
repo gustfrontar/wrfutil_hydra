@@ -149,26 +149,7 @@ SUBROUTINE set_common_wrf(inputfile)
 
   RETURN
 END SUBROUTINE set_common_wrf
-!-----------------------------------------------------------------------
-! Get time nc
-!-----------------------------------------------------------------------
-SUBROUTINE get_date(inputfile,date)
-IMPLICIT NONE
-CHARACTER(19),INTENT(OUT) :: date
-CHARACTER(*) ,INTENT(IN)  :: inputfile
-INTEGER :: ncid , start(2) , count(2) , varid
-INCLUDE 'netcdf.inc'
 
-  CALL check_io(NF_OPEN(inputfile,NF_NOWRITE,ncid))
-
-  CALL check_io(NF_INQ_VARID(ncid,'Times',varid))
-  start = (/  1,1 /)
-  count = (/ 19,1 /)
-  CALL check_io(NF_GET_VARA_TEXT(ncid,varid,start,count,date))
-
-  CALL check_io(NF_CLOSE(ncid))
-
-END SUBROUTINE get_date
 !-----------------------------------------------------------------------
 ! File I/O
 !-----------------------------------------------------------------------
@@ -727,5 +708,59 @@ SUBROUTINE write_grd(filename,v3d,v2d)
 RETURN
 
 END SUBROUTINE write_grd
+
+!-----------------------------------------------------------------------
+! Get time nc
+!-----------------------------------------------------------------------
+SUBROUTINE get_date(inputfile,date)
+IMPLICIT NONE
+CHARACTER(19),INTENT(OUT) :: date
+CHARACTER(*) ,INTENT(IN)  :: inputfile
+INTEGER :: ncid , start(2) , count(2) , varid
+INCLUDE 'netcdf.inc'
+
+  CALL check_io(NF_OPEN(inputfile,NF_NOWRITE,ncid))
+
+  CALL check_io(NF_INQ_VARID(ncid,'Times',varid))
+  start = (/  1,1 /)
+  count = (/ 19,1 /)
+  CALL check_io(NF_GET_VARA_TEXT(ncid,varid,start,count,date))
+
+  CALL check_io(NF_CLOSE(ncid))
+
+END SUBROUTINE get_date
+
+!-----------------------------------------------------------------------
+! Put time nc
+!-----------------------------------------------------------------------
+
+SUBROUTINE put_date(inputfile,date)
+IMPLICIT NONE
+CHARACTER(19), INTENT(IN) :: DATE
+CHARACTER(*) , INTENT(IN) :: inputfile
+INTEGER :: ncid , start(2) , count(2) , varid
+INCLUDE 'netcdf.inc'
+
+
+  !OPEN NC FILE
+  CALL open_wrf_file(inputfile,'rw',ncid)
+  
+  rstart = (/ 1,1 /)
+  rend   = (/ 19,1/)
+
+  !Modify input date 
+  CALL check_io(NF_PUT_ATT_TEXT(ncid,NF_GLOBAL,'START_DATE',19,date))
+  CALL check_io(NF_PUT_ATT_TEXT(ncid,NF_GLOBAL,'SIMULATION_START_DATE',19,date))
+  CALL check_io(NF_INQ_VARID(ncid,'Times',varid))
+  CALL check_io(NF_PUT_VARA_TEXT(ncid,varid,rstart,rend,DATE))
+
+  !CLOSE FILES
+  CALL close_wrf_file(ncid)
+
+RETURN
+
+END SUBROUTINE write_grd
+
+
 
 END MODULE common_wrf
