@@ -748,6 +748,7 @@ mkdir -p $DIRNAME/ENSINPUT
 mkdir -p $DIRNAME/met_em
 mkdir -p $DIRNAME/pert_met_em
 mkdir -p $DIRNAME/SPAWN
+mkdir -p $DIRNAME/NAMELIST
 #Aditional executables for forecast jobs.
 #if [ $FORECAST -eq 1 ] ; then
 mkdir -p $DIRNAME/WPS
@@ -924,18 +925,18 @@ copy_data () {
 
 #COPY LETKF
 cp $LETKF $TMPDIR/LETKF/letkf.exe
-cp $NAMELISTLETKF $TMPDIR/LETKF/letkf.namelist.template
+cp $NAMELISTLETKF $TMPDIR/NAMELIST/letkf.namelist.template
 
 #COPY WRF
 cp $WRFMODEL/run/*         $TMPDIR/WRF/
-rm -f $TMPDIR/WRF/*.exe $TMPDIR/WRF/namelist.input
+rm -f $TMPDIR/WRF/*.exe    $TMPDIR/NAMELIST/namelist.input
 cp $WRFMODEL/main/wrf.exe  $TMPDIR/WRF/
 cp $WRFMODEL/main/real.exe $TMPDIR/WRF/
 cp $ARWPOST/ARWpost.exe    $TMPDIR/WRF/
 cp -r $ARWPOST/src         $TMPDIR/WRF/
 cp $UPDATEBC               $TMPDIR/WRF/da_update_bc.exe
-cp $NAMELISTWRF            $TMPDIR/WRF/namelist.input.template
-cp $NAMELISTARWPOST        $TMPDIR/WRF/namelist.ARWpost.template
+cp $NAMELISTWRF            $TMPDIR/NAMELIST/namelist.input.template
+cp $NAMELISTARWPOST        $TMPDIR/NAMELIST/namelist.ARWpost.template
 
 
 #In case pps and computing nodes are different (as in K computer)
@@ -965,11 +966,11 @@ chmod 766 $TMPDIR/SCRIPTS/*.sh
 
 #if [ $FORECAST -eq 1 -a $INTERPANA -eq 1 ] ; then
 #COPY WPS
-cp $NAMELISTWPS   $TMPDIR/WPS/namelist.wps.template
+cp $NAMELISTWPS $TMPDIR/NAMELIST/namelist.wps.template
 cp -r $WPS/* $TMPDIR/WPS/
-#cp $WRF_TO_WPS/wrf_to_wps.exe     $TMPDIR/wrf_to_wps/
-#cp $WRF_TO_WPS/merge_wrfinput.exe $TMPDIR/WRF/
-ln -sf $GEOG                      $TMPDIR/GEOG
+mkdir $TMPDIR/WPS/GEOG
+ln -sf $GEOG/* $TMPDIR/WPS/GEOG
+rm -fr $TMPDIR/WPS/namelist*
 #fi
 
 }
@@ -1335,8 +1336,10 @@ generate_run_forecast_script_k () {
 
    #CREATE THE SCRIPT TO BE SUBMITED TO K COMPUTER
    # CREATE NAMELIST FOR REAL AND WRF
-   cp $TMPDIR/WRF/namelist.input.template $WORKDIR/namelist.input.real
-   cp $TMPDIR/WRF/namelist.input.template $WORKDIR/namelist.input.wrf
+   rm -fr $WORKDIR/namelist.input*
+
+   cp $TMPDIR/NAMELIST/namelist.input.template $WORKDIR/namelist.input.real
+   cp $TMPDIR/NAMELIST/namelist.input.template $WORKDIR/namelist.input.wrf
 
    edit_namelist_input $WORKDIR/namelist.input.real $CDATE $BDYDATE $WINDOW_FREC $BOUNDARY_DATA_FREC  #For real
    edit_namelist_input $WORKDIR/namelist.input.wrf  $CDATE $FDATE   $WINDOW_FREC $BOUNDARY_DATA_FREC  #For wrf
@@ -1586,8 +1589,10 @@ generate_run_forecast_script_torque () {
 
    #CREATE THE SCRIPT TO BE SUBMITED TO K COMPUTER
    # CREATE NAMELIST FOR REAL AND WRF
-   cp $TMPDIR/WRF/namelist.input.template $WORKDIR/namelist.input.real
-   cp $TMPDIR/WRF/namelist.input.template $WORKDIR/namelist.input.wrf
+   rm -fr $WORKDIR/namelist.input*
+ 
+   cp $TMPDIR/NAMELIST/namelist.input.template $WORKDIR/namelist.input.real
+   cp $TMPDIR/NAMELIST/namelist.input.template $WORKDIR/namelist.input.wrf
 
    edit_namelist_input $WORKDIR/namelist.input.real $CDATE $BDYDATE $WINDOW_FREC $BOUNDARY_DATA_FREC  #For real
    edit_namelist_input $WORKDIR/namelist.input.wrf  $CDATE $FDATE   $WINDOW_FREC $BOUNDARY_DATA_FREC  #For wrf
@@ -1797,7 +1802,9 @@ generate_run_letkf_script_k () {
       local_script=$1
 
       # CREATE NAMELIST FOR LETKF
-      cp $TMPDIR/LETKF/letkf.namelist.template $TMPDIR/LETKF/letkf.namelist
+      rm -fr $TMPDIR/LETKF/letkf.namelist
+ 
+      cp $TMPDIR/NAMELIST/letkf.namelist.template $TMPDIR/LETKF/letkf.namelist
       edit_namelist_letkf $TMPDIR/LETKF/letkf.namelist
       cp $TMPDIR/LETKF/letkf.namelist $RESULTDIRA
 
@@ -1885,8 +1892,12 @@ generate_run_letkf_script_torque () {
       local_script=$1
 
       # CREATE NAMELIST FOR LETKF
-      cp $TMPDIR/LETKF/letkf.namelist.template $TMPDIR/LETKF/letkf.namelist
+      rm -fr $TMPDIR/LETKF/letkf.namelist
+
+      cp $TMPDIR/NAMELIST/letkf.namelist.template $TMPDIR/LETKF/letkf.namelist
       edit_namelist_letkf $TMPDIR/LETKF/letkf.namelist
+ 
+      # COPY NAMELIST TO OUTPUT DIRECTORY
       cp $TMPDIR/LETKF/letkf.namelist $RESULTDIRA
 
       if [ ! -n "$ELAPSE_LETKF" ] ; then
@@ -2245,50 +2256,47 @@ done
 }
 
 
-get_geo_em() {
+get_domain() {
 
-local local_script=$1
 local WORKDIR=$TMPDIR/domain
 local DUMMYDATE=20000101000000
 
 mkdir -p $WORKDIR
 
+local local_script=$WORKDIR/get_domain.sh
+
+cd $WORKDIR
+
 #GENERATE THE SCRIPT TO GET UNPERTURBED MET_EM FILE FOR THE CURRENT TIME.
 echo "#!/bin/bash                                                               "  > $local_script            
 echo "set -x                                                                    " >> $local_script
-echo "DATE=$DUMMYDATE               #INITIAL DATE                               " >> $local_script
+echo "DATE=$DUMMYDATE               #DUMMY DATE                                 " >> $local_script
 echo "BOUNDARY_DATA_FREQ=$BOUNDARY_DATA_FREC #Boundary data frequency (seconds) " >> $local_script
-echo "WORKDIR=$WORKDIR              #Temporary work directory                   " >> $local_script
 echo "source $TMPDIR/SCRIPTS/util.sh                                            " >> $local_script
 
 echo "ulimit -s unlimited                                                       " >> $local_script
 echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH             " >> $local_script
 echo "export PATH=$LD_PATH_ADD:$PATH                                            " >> $local_script
-echo "mkdir -p \$WORKDIR                                                        " >> $local_script
-echo "cd \$WORKDIR                                                              " >> $local_script
-echo "rm -fr \$WORKDIR/geo_em*                                                  " >> $local_script
+echo "mkdir -p $WORKDIR                                                         " >> $local_script
+echo "cd $WORKDIR                                                               " >> $local_script
+echo "rm -fr  $WORKDIR/geo_em*                                                  " >> $local_script
 
 #################################################
 #   CYCLE TO CREATE GEO_EM FOR DIFFERENT DOMAINS
 #################################################
-local my_domain=1
 
-
-echo "   ln -sf  $TMPDIR/WPS               ./                                  " >> $local_script
-echo "   cp $TMPDIR/WRF/namelist.wps.template ./namelist.wps                   " >> $local_script
+echo "   ln -sf  $TMPDIR/WPS/*             ./                                  " >> $local_script
+echo "   rm ./namelist.wps                                                     " >> $local_script
+echo "   cp $TMPDIR/NAMELIST/namelist.wps.template ./namelist.wps              " >> $local_script
 echo "   edit_namelist_wps ./namelist.wps \$DATE \$DATE \$BOUNDARY_DATA_FREQ   " >> $local_script
 echo "   ./geogrid.exe > ./geogrid.log                                         " >> $local_script
-echo "   ./metgrid.exe > ./metgrid.log                                         " >> $local_script
-
-done
 
 #We are done!
 chmod 766 $local_script
 
 echo " Generating domain "
 
-
-ssh $PPSSERVER " $local_script > $TMPDIR/met_em/get_met_em.log  2>&1 " &
+ssh $PPSSERVER " $local_script > $TMPDIR/domain/get_domain.log  2>&1 " &
 
 }
 
@@ -2296,7 +2304,6 @@ get_met_em_from_grib () {
 #This function generates the unperturbed met_em files from grib data.
 #It can generate a met_em file for an arbitrary time by time interpolationg met_em files
 
-local local_script=$1
 local EXEC=$TMPDIR/add_pert/time_interp_metem.exe
 
 #TODO (SO FAR MET_EM IS GENERATED ONLY FROM A CONTROL RUN
@@ -2317,11 +2324,11 @@ if [ ! -n "$USE_ANALYSIS_BC" ] ; then
 fi
 
 if [ $USE_ANALYSIS_BC -eq 1 ] ; then
-   local GRIBDIR=$INPUTDIR/grib/
+   local GRIBDIR=$GRIBDIR/
    echo " Using global analysis as Boundary conditions "
 fi
 if [ $USE_ANALYSIS_BC -eq 0 ] ; then
-   local GRIBDIR=$INPUTDIR/grib/$CDATE/
+   local GRIBDIR=$GRIBDIR/$CDATE/
    echo " Using global forecast as Boundary conditions "
 fi
 
@@ -2332,17 +2339,17 @@ fi
 
 #CHECK IF WE HAVE geo_em.d?? IF NOT CREATE THEM.
         
-if [ ! -e $TMPDIR/domain/geo_em.d01 ]; then
-  
-   get_geo_em()
-
+if [ ! -e $TMPDIR/domain/geo_em.d01 ] ; then
+   get_domain
 fi
 
 
 local METEMDIR=$TMPDIR/met_em/
 
 cd $METEMDIR
-                                        
+
+local local_script=$METEMDIR/get_met_em_from_grib.sh
+
 #GENERATE THE SCRIPT TO GET UNPERTURBED MET_EM FILE FOR THE CURRENT TIME.
 echo "#!/bin/bash                                                               "  > $local_script            
 echo "set -x                                                                    " >> $local_script
@@ -2362,38 +2369,38 @@ echo "cd $METEMDIR                                                              
  echo "CDATE=$CDATE                                                             " >> $local_script
  echo "while [  \$CDATE -le $BDYDATE ] ; do                                     " >> $local_script
  echo "CFILE=\`met_em_file_name \$CDATE $my_domain\`                            " >> $local_script
- echo "LDATE=\`date_floor \$CDATE $BOUNDARY_DATA_GRIB_FREQ \`                   " >> $local_script 
- echo "UDATE=\`date_edit2 \$LDATE $BOUNDARY_DATA_GRIB_FREQ \`                   " >> $local_script
+ echo "CDATE1=\`date_floor \$CDATE $BOUNDARY_DATA_GRIB_FREQ \`                  " >> $local_script 
+ echo "CDATE2=\`date_edit2 \$CDATE1 $BOUNDARY_DATA_GRIB_FREQ \`                 " >> $local_script
 
  echo "TMPFILE1=\`met_em_file_name \$CDATE1 01 \`                               " >> $local_script
  echo "TMPFILE2=\`met_em_file_name \$CDATE2 01 \`                               " >> $local_script
- echo "if [  ! -e  \$CFILE ]                                                    " >> $local_script  #If CFILE is present we can go to the next time.
+ echo "if [  ! -e  \$CFILE ] ; then                                             " >> $local_script  #If CFILE is present we can go to the next time.
     #IF perturbed met_ems are not present generate them                            
-    echo "if [  ! -e  \$TMPFILE1 ]                                                 " >> $local_script                                                              
-    echo "   ln -sf  $TMPDIR/WPS               ./                                  " >> $local_script
-    echo "   ln -sf  $TMPDIR/domain/geo_em.d*  ./                                  " >> $local_script
-    echo "   ln -sf  $GRIBDIR/\${CDATE1}.grib  ./                                  " >> $local_script
-    echo "   cp $TMPDIR/WRF/namelist.wps.template ./namelist.wps                   " >> $local_script
+    echo "if [  ! -e  \$TMPFILE1 ] ; then                                          " >> $local_script                                                              
+    echo "   ln -sf  $TMPDIR/WPS/*             ./                                  " >> $local_script
+    echo "   ln -sf  $TMPDIR/domain/*.nc       ./                                  " >> $local_script
+    echo "   rm ./namelist.wps                                                     " >> $local_script
+    echo "   cp $TMPDIR/NAMELIST/namelist.wps.template ./namelist.wps              " >> $local_script
     echo "   edit_namelist_wps ./namelist.wps \$CDATE1 \$CDATE1 $BOUNDARY_DATA_GRIB_FREQ   " >> $local_script
-    echo "   ./link_grib.csh ./\${CDATE1}.grib                                     " >> $local_script
+    echo "   ./link_grib.csh $GRIBDIR/\${CDATE1}.grib                              " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                           " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                         " >> $local_script
     echo "fi                                                                       " >> $local_script
 
-    echo "if [ ! -e  \$TMPFILE2 ]                                                  " >> $local_script
-    echo "   ln -sf  $TMPDIR/WPS           ./                                      " >> $local_script
-    echo "   ln -sf  $TMPDIR/domain/geo_em.d*          ./                          " >> $local_script
-    echo "   ln -sf  $TMPGRIBDIR/\${CDATE2}.grib       ./                          " >> $local_script
-    echo "   cp $TMPDIR/WRF/namelist.wps.template ./namelist.wps                   " >> $local_script
+    echo "if [ ! -e  \$TMPFILE2 ] ; then                                           " >> $local_script
+    echo "   ln -sf  $TMPDIR/WPS/*                     ./                          " >> $local_script
+    echo "   ln -sf  $TMPDIR/domain/*.nc               ./                          " >> $local_script
+    echo "   rm ./namelist.wps                                                     " >> $local_script
+    echo "   cp $TMPDIR/NAMELIST/namelist.wps.template ./namelist.wps              " >> $local_script
     echo "   edit_namelist_wps ./namelist.wps \$CDATE2 \$CDATE2 $BOUNDARY_DATA_GRIB_FREQ   " >> $local_script
-    echo "   ./link_grib.csh ./\${CDATE2}.grib                                     " >> $local_script
+    echo "   ./link_grib.csh $TMPGRIBDIR/\${CDATE2}.grib                           " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                           " >> $local_script
     echo " fi                                                                      " >> $local_script
     #Copy the unperturbed met_em file (this one will be modified).
 
 local my_domain=1
 
-while [ $my_domain -le $PMAX_DOM ] ; do
+while [ $my_domain -le $MAX_DOM ] ; do
  if [ $my_domain -lt 10 ] ; then 
     my_domain=0$my_domain
  fi
@@ -2408,25 +2415,25 @@ while [ $my_domain -le $PMAX_DOM ] ; do
     # ctrl_met_em.nc = time_int [ input_file1.nc , input_file2.nc ] 
     echo "   $EXEC                                                                 " >> $local_script
     echo "fi                                                                       " >> $local_script  #End if over CFILE existance
-my_domain=`expr $my_domain + 1 `
+
+    my_domain=`expr $my_domain + 1 `
 done
 
     echo "    CDATE=\`date_edit2 \$CDATE $BOUNDARY_DATA_FREQ \`                   " >> $local_script
-    echo "done                                                                     " >> $local_script  #End do for time loop
+    echo "done                                                                    " >> $local_script  #End do for time loop
 
 #We are done!
 chmod 766 $local_script
 
 echo "Generating unperturbed met em files "
 
-ssh $PPSSERVER " $local_script > get_met_em.log  2>&1 " &
+ssh $PPSSERVER " $local_script > $METEMDIR/get_met_em.log  2>&1 " &
 
 }
 
 
 perturb_met_em_from_grib () {
 
-local local_script=$1
 local EXEC=$TMPDIR/add_pert/compute_pert_metem.exe
 local EXECTI=$TMPDIR/add_pert/time_interp_metem.exe
 
@@ -2489,6 +2496,8 @@ fi
 local METEMDIR=$TMPDIR/met_em/                                              
 local PERTMETEMDIR=$TMPDIR/pert_met_em/  
 
+local local_script=$PERTMETEMDIR/perturb_met_em_from_grib.sh
+
 
 #GENERATE THE SCRIPT TO GET PERTURBED MET_EM FILE FOR THE CURRENT TIME.                     
 echo "#!/bin/bash                                                               "  > $local_script            
@@ -2521,7 +2530,7 @@ echo "rm -fr \$WORKDIR/met_em*                                                  
 
  echo "CDATE=\$INIDATE                                                          " >> $local_script
  echo "while [  \$CDATE -le \$ENDDATE ] ; do                                    " >> $local_script
- echo "CFILE=\`met_em_file_name \$CDATE 01 \`                            " >> $local_script
+ echo "CFILE=\`met_em_file_name \$CDATE 01 \`                                   " >> $local_script
  echo "if [ ! -e \$WORKDIR/\$CFILE ];then                                       " >> $local_script
  echo "cp \$METEMDIR/\$CFILE \$WORKDIR                                          " >> $local_script
 
@@ -2537,11 +2546,12 @@ echo "rm -fr \$WORKDIR/met_em*                                                  
     echo "   TMPFILE2=\`met_em_file_name \$CDATE2a 01 \`                             " >> $local_script
 
     #IF perturbed met_ems are not present generate them                            
-    echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE1 ];then                                 " >> $local_script
+    echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE1 ] ; then                               " >> $local_script
     echo "   ln -sf  $TMPDIR/WPS               ./                                    " >> $local_script
     echo "   ln -sf  $TMPDIR/domain/geo_em.d*  ./                                    " >> $local_script
     echo "   ln -sf  $PERTGRIBDIR/\${CDATE1a}.grib       ./                          " >> $local_script
-    echo "   cp $TMPDIR/WRF/namelist.wps.template ./namelist.wps                     " >> $local_script
+    echo "   rm ./namelist.wps                                                       " >> $local_script
+    echo "   cp $TMPDIR/NAMELIST/namelist.wps.template ./namelist.wps                " >> $local_script
     echo "   edit_namelist_wps ./namelist.wps \$CDATE1a \$CDATE1a  $BOUNDARY_DATA_PERTURBATION_FREQ   " >> $local_script
     echo "   ./link_grib.csh ./\${CDATE1a}.grib                                      " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
@@ -2549,11 +2559,12 @@ echo "rm -fr \$WORKDIR/met_em*                                                  
     echo "   mv met_em*   $PERTMETEMDIR                                              " >> $local_script
     echo "   fi                                                                      " >> $local_script
 
-    echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE2 ];then                                 " >> $local_script
+    echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE2 ] ; then                               " >> $local_script
     echo "   ln -sf  $TMPDIR/WPS               ./                                    " >> $local_script
     echo "   ln -sf  $TMPDIR/domain/geo_em.d*  ./                                    " >> $local_script
     echo "   ln -sf  $PERTGRIBDIR/\${CDATE2a}.grib       ./                          " >> $local_script
-    echo "   cp $TMPDIR/WRF/namelist.wps.template ./namelist.wps                     " >> $local_script
+    echo "   rm ./namelist.wps                                                       " >> $local_script
+    echo "   cp $TMPDIR/NAMELIST/namelist.wps.template ./namelist.wps                " >> $local_script
     echo "   edit_namelist_wps ./namelist.wps \$CDATE2a \$CDATE2a  $BOUNDARY_DATA_PERTURBATION_FREQ   " >> $local_script
     echo "   ./link_grib.csh ./\${CDATE2a}.grib                                      " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
@@ -2566,11 +2577,12 @@ echo "rm -fr \$WORKDIR/met_em*                                                  
     echo "   TMPFILE1=\`met_em_file_name \$CDATE1b 01 \`                             " >> $local_script
     echo "   TMPFILE2=\`met_em_file_name \$CDATE2b 01 \`                             " >> $local_script
 
-    echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE1 ];then                                 " >> $local_script
+    echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE1 ] ; then                               " >> $local_script
     echo "   ln -sf  $TMPDIR/WPS               ./                                    " >> $local_script
     echo "   ln -sf  $TMPDIR/domain/geo_em.d*  ./                                    " >> $local_script
     echo "   ln -sf  $PERTGRIBDIR/\${CDATE1b}.grib       ./                          " >> $local_script
-    echo "   cp $TMPDIR/WRF/namelist.wps.template ./namelist.wps                     " >> $local_script
+    echo "   rm ./namelist.wps                                                       " >> $local_script
+    echo "   cp $TMPDIR/NAMELIST/namelist.wps.template ./namelist.wps                " >> $local_script
     echo "   edit_namelist_wps ./namelist.wps \$CDATE1b \$CDATE1b  $BOUNDARY_DATA_PERTURBATION_FREQ   " >> $local_script
     echo "   ./link_grib.csh ./\${CDATE1b}.grib                                      " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
@@ -2578,11 +2590,12 @@ echo "rm -fr \$WORKDIR/met_em*                                                  
     echo "   mv met_em*   $PERTMETEMDIR                                              " >> $local_script
     echo "   fi                                                                      " >> $local_script
 
-    echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE2 ];then                                 " >> $local_script
+    echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE2 ] ; then                               " >> $local_script
     echo "   ln -sf  $TMPDIR/WPS               ./                                    " >> $local_script
     echo "   ln -sf  $TMPDIR/domain/geo_em.d*  ./                                    " >> $local_script
     echo "   ln -sf  $PERTGRIBDIR/\${CDATE2b}.grib       ./                          " >> $local_script
-    echo "   cp $TMPDIR/WRF/namelist.wps.template ./namelist.wps                     " >> $local_script
+    echo "   rm ./namelist.wps                                                       " >> $local_script
+    echo "   cp $TMPDIR/NAMELIST/namelist.wps.template ./namelist.wps                " >> $local_script
     echo "   edit_namelist_wps ./namelist.wps \$CDATE2b \$CDATE2b  $BOUNDARY_DATA_PERTURBATION_FREQ   " >> $local_script
     echo "   ./link_grib.csh ./\${CDATE2b}.grib                                      " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
@@ -2628,7 +2641,6 @@ done
 echo "done                                                                        " >> $local_script
 
 
-
 #We are done!
 chmod 766 $local_script
 
@@ -2646,7 +2658,7 @@ while [ $M -le $ENDMEMBER ] ; do
        TMP_SCALE_FACTOR=$SCALE_FACTOR
        TMP_RANDOM_SCALE_FACTOR=$RANDOM_SCALE_FACTOR
     fi
-    ssh $PPSSERVER " $local_script $MEM $TMP_SCALE_FACTOR $TMP_RANDOM_SCALE_FACTOR > $TMPDIR/add_pert/perturb_met_em${MEM}.log  2>&1 " &
+    ssh $PPSSERVER " $local_script $MEM $TMP_SCALE_FACTOR $TMP_RANDOM_SCALE_FACTOR > $TMPDIR/ENSINPUT/perturb_met_em${MEM}.log  2>&1 " &
     RUNNING=`expr $RUNNING + 1 `
     M=`expr $M + 1 `
   done
@@ -2654,8 +2666,6 @@ while [ $M -le $ENDMEMBER ] ; do
 done
 
 }
-
-
 
 wrf_to_met_em () {
 #This function transforms WRF output into met_em files
@@ -2680,7 +2690,6 @@ fi
 echo ">>> [Warning]: This function works only if analysis files are in mercator or lat-lon grids"
 local EXEC=$TMPDIR/wrf_to_wps/wrf_to_wps.exe
 local APATH=$ANALYSIS_SOURCE/anal/$CDATE/
-
 
 echo "#!/bin/bash                                                               "  > $local_script
 echo "set -x                                                                    " >> $local_script
@@ -2710,6 +2719,7 @@ echo "ln -fs ./output.grd \$ungrib_file                                        "
 #  FROM UNGRIB BINARY FORMAT TO MET_EM
 #################################################
 echo "ln -fs \$TMPDIR/WPS/* ./                                                 " >> $local_script
+echo "rm ./namelist.wps                                                        " >> $local_script
 echo "cp namelist.wps.template namelist.wps                                    " >> $local_script
 echo "edit_namelist_wps ./namelist.wps $CDATE $CDATE $BOUNDARY_DATA_FREC       " >> $local_script
 echo "$MPIBIN -np 1 ./metgrid.exe                                              " >> $local_script
@@ -2734,7 +2744,6 @@ done
 
 fi
 
-
 }
 
 arw_postproc () {
@@ -2753,7 +2762,9 @@ arw_postproc () {
 
   INPUT_ROOT_NAME=tmpin
   OUTPUT_ROOT_NAME=tmpout
-  cp $TMPDIR/WRF/namelist.ARWpost.template $WORKDIR/namelist.ARWpost
+  rm -fr $WORKDIR/namelist.ARWpost
+
+  cp $TMPDIR/NAMELIST/namelist.ARWpost.template $WORKDIR/namelist.ARWpost
   edit_namelist_arwpost $WORKDIR/namelist.ARWpost $CDATE $CDATE $ARWPOST_FREC
 
   echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH " >  ${WORKDIR}/tmp.sh
@@ -2837,7 +2848,6 @@ arw_postproc_forecast () {
   echo "OUTLEVS=${OUTLEVS}                                            " >> ${WORKDIR}/tmp.sh
   echo "INTERP_METHOD=${INTERP_METHOD}                                " >> ${WORKDIR}/tmp.sh
 
-
  local my_domain=1
  while [ $my_domain -le $MAX_DOM ] ; do
   if [ $my_domain -lt 10 ] ; then 
@@ -2847,7 +2857,8 @@ arw_postproc_forecast () {
   local TMPDATE=$IDATE
   while [ $TMPDATE -le $EDATE  ] ; do
    local input_file=`wrfout_file_name $TMPDATE $my_domain `
-   echo "cp ${TMPDIR}/WRF/namelist.ARWpost.template ./namelist.ARWpost                                          " >> ${WORKDIR}/tmp.sh
+   echo "rm ./namelist.ARWpost                                                                                  " >> ${WORKDIR}/tmp.sh
+   echo "cp ${TMPDIR}/NAMELIST/namelist.ARWpost.template ./namelist.ARWpost                                     " >> ${WORKDIR}/tmp.sh
    echo "edit_namelist_arwpost ${WORKDIR}/\${MEM}/namelist.ARWpost $TMPDATE $TMPDATE $ARWPOST_FREC              " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${GUESDIR}/\${MEM}/${input_file} ./${INPUT_ROOT_NAME}                                           " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${GUESDIR}/plevd${my_domain}_${TMPDATE}_\${MEM}.dat ./${OUTPUT_ROOT_NAME}.dat                   " >> ${WORKDIR}/tmp.sh
@@ -2920,7 +2931,7 @@ NVERTEXP=$NVERTDB #Set the input number of vertical levels according to db data.
   
   #Force input from file == true for all the domains.
   tmplinenumber=`grep -n "input_from_file" $TMPDIR/WRF/namelist.input.template | grep -Eo '^[^:]+' `
-  awk '{ if (NR == '$tmplinenumber') print "input_from_file=.true.,.true.,.true.,"; else print $0}' $TMPDIR/WRF/namelist.input.template > $WORKDIR/namelist.input
+  awk '{ if (NR == '$tmplinenumber') print "input_from_file=.true.,.true.,.true.,"; else print $0}' $TMPDIR/NAMELIST/namelist.input.template > $WORKDIR/namelist.input
 
   #Edit namelist.input
   edit_namelist_input $WORKDIR/namelist.input $my_date $my_date $WINDOW_FREC $BOUNDARY_DATA_FREC  #For real
@@ -2948,7 +2959,7 @@ NVERTEXP=$NVERTDB #Set the input number of vertical levels according to db data.
   time ssh $PPSSERVER $WORKDIR/tmp.sh
 
   #Post process input file
-  cp ${TMPDIR}/WRF/namelist.ARWpost.template $WORKDIR/namelist.ARWpost
+  cp ${TMPDIR}/NAMELIST/namelist.ARWpost.template $WORKDIR/namelist.ARWpost
   ln -sf $TMPDIR/WRF/ARWpost.exe $WORKDIR/
   ln -sf $TMPDIR/WRF/src         $WORKDIR/
   edit_namelist_arwpost ${WORKDIR}/namelist.ARWpost $my_date $my_date $LARWPOSTFREC
