@@ -2346,7 +2346,6 @@ if [ ! -e $TMPDIR/domain/geo_em.d01 ] ; then
    get_domain
 fi
 
-
 local METEMDIR=$TMPDIR/met_em/
 
 cd $METEMDIR
@@ -2370,7 +2369,7 @@ echo "cd $METEMDIR                                                              
 #intermediate file format and not with the met_em format.
 
  echo "CDATE=$CDATE                                                             " >> $local_script
- echo "while [  \$CDATE -le $BDYDATE ] ; do                                     " >> $local_script
+ echo "while [  \$CDATE -le $FDATE ] ; do                                       " >> $local_script
  echo "CFILE=\`met_em_file_name \$CDATE $my_domain\`                            " >> $local_script
  echo "CDATE1=\`date_floor \$CDATE  $BOUNDARY_DATA_FREQ \`                      " >> $local_script 
  echo "CDATE2=\`date_edit2 \$CDATE1 $BOUNDARY_DATA_FREQ \`                      " >> $local_script
@@ -2407,9 +2406,6 @@ while [ $my_domain -le $MAX_DOM ] ; do
  if [ $my_domain -lt 10 ] ; then 
     my_domain=0$my_domain
  fi
-#    echo "   CFILE=\`met_em_file_name \$CDATE $my_domain\`                         " >> $local_script
-#    echo "   TMPFILE1=\`met_em_file_name \$CDATE1 $my_domain \`                    " >> $local_script
-#    echo "   TMPFILE2=\`met_em_file_name \$CDATE2 $my_domain \`                    " >> $local_script
     echo "   cp \$TMPFILE2  \$CFILE                                                " >> $local_script
     echo "   ln -sf $METEMDIR/\$CFILE ./ctrl_met_em.nc                             " >> $local_script
     echo "   ln -sf $METEMDIR/\$TMPFILE1 ./input_file1.nc                          " >> $local_script
@@ -2422,7 +2418,7 @@ while [ $my_domain -le $MAX_DOM ] ; do
     my_domain=`expr $my_domain + 1 `
 done
 
-    echo "    CDATE=\`date_edit2 \$CDATE $BOUNDARY_DATA_FREQ \`                   " >> $local_script
+    echo "    CDATE=\`date_edit2 \$CDATE $METEM_DATA_FREC \`                                 " >> $local_script
     echo "done                                                                    " >> $local_script  #End do for time loop
 
 #We are done!

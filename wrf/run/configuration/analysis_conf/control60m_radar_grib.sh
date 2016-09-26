@@ -65,12 +65,20 @@ INPUT_ROOT_NAME='wrfout'
 INTERP_METHOD=1
 
 
-#Compute DUMMY increment for boundary data preparation.
+#Compute increment for met_em_generation 
 rest=`expr  $GUESFT % $BOUNDARY_DATA_FREC `   
 if [ $rest == 0 ] ; then
 DINC=$GUESFT
 else
 DINC=`expr $GUESFT + $BOUNDARY_DATA_FREC - $rest `
+fi
+
+rate=`expr $GUESFT \/ $BOUNDARY_DATA_FREC `
+rest=`expr $GUESFT \* $BOUNDARY_DATA_FREC \* $rate `
+if [ $rate -le 0 ] ; then
+METEM_DATA_FREQ=$GUESFT
+else
+METEM_DATA_FREQ=$rest
 fi
 
 
