@@ -747,10 +747,10 @@ mkdir -p $DIRNAME/OBS
 mkdir -p $DIRNAME/ENSINPUT
 mkdir -p $DIRNAME/SPAWN
 #Aditional executables for forecast jobs.
-if [ $FORECAST -eq 1 ] ; then
+#if [ $FORECAST -eq 1 ] ; then
 mkdir -p $DIRNAME/WPS
-mkdir -p $DIRNAME/wrf_to_wps
-fi
+#mkdir -p $DIRNAME/wrf_to_wps
+#fi
 #-------------------------------------------------------------------------------
 }
 
@@ -961,14 +961,14 @@ cp $WRF/verification/verify/verify.exe       $TMPDIR/verification/verify.exe
 cp $UTIL        $TMPDIR/SCRIPTS/util.sh
 chmod 766 $TMPDIR/SCRIPTS/*.sh
 
-if [ $FORECAST -eq 1 -a $INTERPANA -eq 1 ] ; then
+#if [ $FORECAST -eq 1 -a $INTERPANA -eq 1 ] ; then
 #COPY WPS
 cp $NAMELISTWPS   $TMPDIR/WPS/namelist.wps.template
 cp -r $WPS/* $TMPDIR/WPS/
-cp $WRF_TO_WPS/wrf_to_wps.exe     $TMPDIR/wrf_to_wps/
-cp $WRF_TO_WPS/merge_wrfinput.exe $TMPDIR/WRF/
+#cp $WRF_TO_WPS/wrf_to_wps.exe     $TMPDIR/wrf_to_wps/
+#cp $WRF_TO_WPS/merge_wrfinput.exe $TMPDIR/WRF/
 ln -sf $GEOG                      $TMPDIR/GEOG
-fi
+#fi
 
 }
 

@@ -416,6 +416,14 @@ IF( nobs + nobsradar .GT. 0)THEN
 
 ENDIF
 
+!
+!PERFORM SUPEROBING ON REQUESTED OBSERVATION TYPES
+!
+
+   CALL superobbing()
+
+
+
 
 do n=1,nobs+nobsradar
    CALL com_stdev(nbv,tmphdxf(n,:),tmpsprd(n) )
@@ -1255,5 +1263,17 @@ end do
 
 
 END SUBROUTINE OBSAREA
+
+!Perform data superobbing for selected observation types.
+SUBROUTINE superobbing
+IMPLICIT NONE
+
+
+
+
+
+
+END SUBROUTINE SUPEROBING
+
 
 END MODULE obsop_tools

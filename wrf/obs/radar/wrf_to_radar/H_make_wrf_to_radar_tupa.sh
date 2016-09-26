@@ -3,8 +3,11 @@ set -ex
 PGM=./wrf_to_radar.exe
 F90=ifort  
 
-LIB_NETCDF="-L/usr/local/lib/ -lnetcdf"
-INC_NETCDF="-I/usr/local/include/"
+LIB_NETCDF="-L/usr/local/netcdf.intel/lib -lnetcdff"
+INC_NETCDF="-I/usr/local/netcdf.intel/include/ "
+
+#LIB_NETCDF="-L/usr/local/lib/ -lnetcdf"
+#INC_NETCDF="-I/usr/local/include/"
 
 
 OMP=
