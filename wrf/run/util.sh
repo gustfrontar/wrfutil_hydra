@@ -144,7 +144,7 @@ date_diff () {
 date_floor () {
         if [ $# -lt 2 ]; then
                 echo "Usage : date_floor"
-                echo "    date_diff [yyyy][mm][dd][hh][mn] [interval(seconds)]"
+                echo "    date_floor [yyyy][mm][dd][hh][mn] [interval(seconds)]"
                 echo "    ex) date_edit 201005051200 3600"
                 exit 1
         fi
@@ -2301,6 +2301,9 @@ ssh $PPSSERVER " $local_script > $TMPDIR/domain/get_domain.log  2>&1 " &
 }
 
 get_met_em_from_grib () {
+
+#TODO VER DE COMPATIBILIZAR LAS DIFERENTES FRECUENCIAS. CUAL ES LA FRECUENCIA QUE DEBERIAMOS USAR EN EL LOOP SOBRE LAS FECHAS. 
+
 #This function generates the unperturbed met_em files from grib data.
 #It can generate a met_em file for an arbitrary time by time interpolationg met_em files
 
@@ -2369,8 +2372,8 @@ echo "cd $METEMDIR                                                              
  echo "CDATE=$CDATE                                                             " >> $local_script
  echo "while [  \$CDATE -le $BDYDATE ] ; do                                     " >> $local_script
  echo "CFILE=\`met_em_file_name \$CDATE $my_domain\`                            " >> $local_script
- echo "CDATE1=\`date_floor \$CDATE $BOUNDARY_DATA_GRIB_FREQ \`                  " >> $local_script 
- echo "CDATE2=\`date_edit2 \$CDATE1 $BOUNDARY_DATA_GRIB_FREQ \`                 " >> $local_script
+ echo "CDATE1=\`date_floor \$CDATE  $BOUNDARY_DATA_FREQ \`                      " >> $local_script 
+ echo "CDATE2=\`date_edit2 \$CDATE1 $BOUNDARY_DATA_FREQ \`                      " >> $local_script
 
  echo "TMPFILE1=\`met_em_file_name \$CDATE1 01 \`                               " >> $local_script
  echo "TMPFILE2=\`met_em_file_name \$CDATE2 01 \`                               " >> $local_script
@@ -2381,7 +2384,7 @@ echo "cd $METEMDIR                                                              
     echo "   ln -sf  $TMPDIR/domain/*.nc       ./                                  " >> $local_script
     echo "   rm ./namelist.wps                                                     " >> $local_script
     echo "   cp $TMPDIR/NAMELIST/namelist.wps.template ./namelist.wps              " >> $local_script
-    echo "   edit_namelist_wps ./namelist.wps \$CDATE1 \$CDATE1 $BOUNDARY_DATA_GRIB_FREQ   " >> $local_script
+    echo "   edit_namelist_wps ./namelist.wps \$CDATE1 \$CDATE1 $BOUNDARY_DATA_FREQ   " >> $local_script
     echo "   ./link_grib.csh $GRIBDIR/\${CDATE1}.grib                              " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                           " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                         " >> $local_script
@@ -2392,7 +2395,7 @@ echo "cd $METEMDIR                                                              
     echo "   ln -sf  $TMPDIR/domain/*.nc               ./                          " >> $local_script
     echo "   rm ./namelist.wps                                                     " >> $local_script
     echo "   cp $TMPDIR/NAMELIST/namelist.wps.template ./namelist.wps              " >> $local_script
-    echo "   edit_namelist_wps ./namelist.wps \$CDATE2 \$CDATE2 $BOUNDARY_DATA_GRIB_FREQ   " >> $local_script
+    echo "   edit_namelist_wps ./namelist.wps \$CDATE2 \$CDATE2 $BOUNDARY_DATA_FREQ   " >> $local_script
     echo "   ./link_grib.csh $TMPGRIBDIR/\${CDATE2}.grib                           " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                           " >> $local_script
     echo " fi                                                                      " >> $local_script
@@ -2404,9 +2407,9 @@ while [ $my_domain -le $MAX_DOM ] ; do
  if [ $my_domain -lt 10 ] ; then 
     my_domain=0$my_domain
  fi
-    echo "   CFILE=\`met_em_file_name \$CDATE $my_domain\`                         " >> $local_script
-    echo "   TMPFILE1=\`met_em_file_name \$CDATE1 $my_domain \`                    " >> $local_script
-    echo "   TMPFILE2=\`met_em_file_name \$CDATE2 $my_domain \`                    " >> $local_script
+#    echo "   CFILE=\`met_em_file_name \$CDATE $my_domain\`                         " >> $local_script
+#    echo "   TMPFILE1=\`met_em_file_name \$CDATE1 $my_domain \`                    " >> $local_script
+#    echo "   TMPFILE2=\`met_em_file_name \$CDATE2 $my_domain \`                    " >> $local_script
     echo "   cp \$TMPFILE2  \$CFILE                                                " >> $local_script
     echo "   ln -sf $METEMDIR/\$CFILE ./ctrl_met_em.nc                             " >> $local_script
     echo "   ln -sf $METEMDIR/\$TMPFILE1 ./input_file1.nc                          " >> $local_script
