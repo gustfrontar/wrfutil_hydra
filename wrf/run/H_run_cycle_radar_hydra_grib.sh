@@ -80,25 +80,27 @@ echo '>>>'
 echo ">>> COPYING DATA TO WORK DIRECTORY "          
 echo '>>>'                                         
 
-copy_data   
+#copy_data   
 
 echo '>>>'                                           
 echo ">>> GENERATING DOMAIN "          
 echo '>>>' 
 
-get_domain
+#get_domain
 
 echo '>>>'                                           
 echo ">>> SET METEM DATA FREQ "          
 echo '>>>' 
 
-set_pre_processing_intervals
+#set_pre_processing_intervals
 
 echo '>>>'                                           
-echo ">>> GET INITIAL RANDOM DATES TO CONSTRUCT RANDOM BOUNDARY PERTURBATIONS "          
+echo ">>> GET INITIAL RANDOM DATES "          
 echo '>>>' 
 
-get_random_perturbations
+get_random_dates 
+
+exit
 
 ##################################################
 # START CYCLE IN TIME

@@ -3610,125 +3610,105 @@ done
 
 }
 
+get_random_dates () {
 
-get_random_perturbations () {
+#This function generates (or reads from a file) a set of random generated dates.
+#There are two dates for each ensemble member. These two dates are used in the computation of the random 
+#perturbations that are used to generate the boundary and initial ensemble perturbations.
 
-if [ $INPUT_PERT_DATES_FROM_FILE -eq 0 ] ; then
+if [ $RESTART -eq 0 ] ; then
+  
+  if [ $INPUT_PERT_DATES_FROM_FILE -eq 0 ] ; then
+
+     echo "Generating a new set of random dates"
+
+     local MAX_TIMES=`date_diff $ENDPERTDATE $INIPERTDATE `
+
+     local MAX_TIMES=`expr $MAX_TIMES \/ $BOUNDARY_DATA_PERTURBATION_FREQ `
+
+     local EXP_LENGTH=`date_diff $EDATE $IDATE `
+     local EXP_LENGTH=`expr $MAX_TIMES \/ $BOUNDARY_DATA_PERTURBATION_FREQ `
 
 
+     local M=1
 
-local MAX_TIMES=`date_diff $ENDPERTDATE $INIPERTDATE `
-local MAX_TIMES=`expr MAX_TIMES \/ $BOUNDARY_DATA_PERTURBATION_FREQ `
+     while [ $M -lt $MEMBER ] ; do
 
-local EXP_LENGTH=`date_diff $EDATE $IDATE `
-local EXP_LENGTH=`expr MAX_TIMES \/ $BOUNDARY_DATA_PERTURBATION_FREQ `
+       local MEM=`ens_member $M `
+       local PROCEED=0
+       while [ $PROCEED -eq 0  ] ; do
 
-local M=1
+         #Generate random numbers to pick random dates.
+         #First date is totally random. Second date is within 5-25 days from the previous date. 
+         local TMPNUM=`expr $EXP_LENGTH \/ 4 `
+         local TMPTIME=`expr $MAX_TIMES - $TMPNUM - 25 `
+         local number1=$RANDOM
+         let "number1 %=$TMPTIME "
+         local number2=$RANDOM
+         let "number2 %=20"
+         local number2=`expr $number1 + $number2 + 5`
 
-while [ $M -lt $MEMBER ]
-do
+         local PROCEED=1
+         #Test to see if number1 and number2 has been chosen before.
+         if [ $M -gt 1 ] ; then
+            for element in $(seq 1 `expr $M - 1 `  ) ; do
+              if [ ${hist_number1[$element]} -eq $number1 ] && [ ${hist_number2[$element]} -eq $number2  ] ; then
+                 PROCEED=0
+                 echo "Number 1 and number 2 has been chosen before, let's chose another combination"
+                 echo "If this happens a lot, increase the size of the analysis data base "
+              fi
+            done
+         fi
+         if [ $PROCEED -eq 1 ] ; then
+            hist_number1[$M]=$number1
+            hist_number2[$M]=$number2
+         fi
+       done
 
-  local MEM=`ens_member $M `
+       #Get dates corresponding to these random numbers
+       #2009 has been used for the generation of the perturbations.
+       local INTERVAL=`expr $number1 \* 24 \* 60 \* 60 `
+       INI_RANDOM_DATE1[${M}]=`date_edit2 $INIPERTDATE $INTERVAL `
+  
+       local INTERVAL=`expr $number2 \* 24 \* 60 \* 60 `
+       INI_RANDOM_DATE2[${M}]=`date_edit2 $INIPERTDATE $INTERVAL `
 
-  local PROCEED=0
-  while [ $PROCEED -eq 0  ]
-  do
 
-  #Generate random numbers to pick random dates.
-  #First date is totally random. Second date is within 5-25 days from the previous date. 
+       M=`expr $M + 1 `
+     done
 
-  local TMPNUM=`expr $EXP_LENGTH \/ 4 `
-  local TMPTIME=`expr $MAX_TIMES - $TMPNUM - 25 `
-  local number1=$RANDOM
-  let "number1 %=$TMPTIME "
-  local number2=$RANDOM
-  let "number2 %=20"
-  local number2=`expr $number1 + $number2 + 5`
 
-  local PROCEED=1
-  #Test to see if number1 and number2 has been chosen before.
-  if [ $M -gt 1 ]
-  then
-    for element in $(seq 1 `expr $M - 1 `  )
-    do
-     if [ ${hist_number1[$element]} -eq $number1 ] && [ ${hist_number2[$element]} -eq $number2  ]
-     then
-       PROCEED=0
-       echo "Number 1 and number 2 has been chosen before, let's chose another combination"
-       echo "If this happens a lot, increase the size of the analysis data base "
-     fi
+  else
+    echo "Reading a set of random dates from file: $INI_PERT_DATE_FILE "
+    while read line; do 
+      echo $line  > $TMPDIR/tmp_file
+      read INI_RANDOM_DATE1[$M] INI_RANDOM_DATE2[$M] < $TMPDIR/tmp_file
+    done < $INI_PERT_DATE_FILE
+
+  fi
+
+  if [  ! -e  $OUTPUTDIR/initial_random_dates ] ; then
+
+  
+    local M=1
+    while [ $M -lt $MEMBER ] ; do
+      echo ${INI_RANDOM_DATE1[$M]} " " ${INI_RANDOM_DATE2[$M]}  >> $OUTPUTDIR/initial_perturbation_dates
+      M=`expr $M + 1 `
     done
-  fi
-  if [ $PROCEED -eq 1 ]
-  then
-  hist_number1[$M]=$number1
-  hist_number2[$M]=$number2
+
   fi
 
-  done
 
-  #Get dates corresponding to these random numbers
-  #2009 has been used for the generation of the perturbations.
-  local INTERVAL=`expr $number1 \* 24 \* 60 \* 60 `
-  INI_RANDOM_DATE1[$M]=`date_edit2 $PINI $INTERVAL`
+else #RESTART = 1 
 
-  local INTERVAL=`expr $number2 \* 24 \* 60 \* 60 `
-  INI_RANDOM_DATE2[$M]=`date_edit2 $PINI $INTERVAL`
+    #This is a restart run read the initial random dates from the OUTPUTDIR.
+    echo "Reading a set of random dates from file: $OUTPUTDIR/initial_perturbation_dates "
+    while read line; do 
+      echo $line  > $TMPDIR/tmp_file
+      read INI_RANDOM_DATE1[$M] INI_RANDOM_DATE2[$M] < $TMPDIR/tmp_file
+    done < $OUTPUTDIR/initial_perturbation_dates
 
-  echo $DATE1 $DATE2 >> $TMPDIR/initial_perturbation_dates
-
-
- M=`expr $M + 1 `
-done
-
-
-else
-
-while read line; do 
-    echo $line  > $TMPDIR/tmp_file
-    read INI_RANDOM_DATE1[$M] INI_RANDOM_DATE2[$M] < $TMPDIR/tmp_file
-done < $INI_PERT_DATE_FILE
-
-fi
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+fi #FI over the restart = 0 contion.
 
 
 }

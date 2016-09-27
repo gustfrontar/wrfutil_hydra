@@ -73,6 +73,8 @@ EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION}      # name of experiment
 IDATE=20140122173000
 EDATE=20140122200000
 
+
+
 #### DATA
 OBSDIR=${HOMEDIR}/OBS/$OBS/                                                               # observations
 NRADARS=1
@@ -87,6 +89,9 @@ GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/
 
 
 #Random dates for boundary perturbations.
+INIPERTDATE=20060101000000
+ENDPERTDATE=20091231180000
+
 INPUT_PERT_DATES_FROM_FILE=0           #0 - generate a new set of random dates, 1 - read random dates from a file. 
 INI_PERT_DATE_FILE=${HOMEDIR}/DATA/RANDOM_PERTS/random_perts.txt  #List of initial random dates.
 
