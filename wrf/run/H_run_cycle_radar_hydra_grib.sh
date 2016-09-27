@@ -67,7 +67,6 @@ echo $my_log
 {
 safe_init_tmpdir $TMPDIR
 
-
 save_configuration $CDIR/$MYSCRIPT
 
 echo ">>>> I'm RUNNING IN $MYHOST and my PID is $PID" 
@@ -83,12 +82,23 @@ echo '>>>'
 
 copy_data   
 
-
 echo '>>>'                                           
 echo ">>> GENERATING DOMAIN "          
 echo '>>>' 
 
 get_domain
+
+echo '>>>'                                           
+echo ">>> SET METEM DATA FREQ "          
+echo '>>>' 
+
+set_pre_processing_intervals
+
+echo '>>>'                                           
+echo ">>> GET INITIAL RANDOM DATES TO CONSTRUCT RANDOM BOUNDARY PERTURBATIONS "          
+echo '>>>' 
+
+get_random_perturbations
 
 ##################################################
 # START CYCLE IN TIME
@@ -124,8 +134,6 @@ echo " >>"
 
 get_met_em_from_grib
 
-exit
-
 echo " >>"                                                           
 echo " >> GENERATING PERTURBATIONS"                                  
 echo " >>"                                                           
@@ -133,6 +141,8 @@ echo " >>"
 #PERTURB MET_EM FILES USING RANDOM BALANCED OR RANDOM SMOOTHED PERTURBATIONS (run in PPS)
 
 perturb_met_em_from_grib
+
+exit
 
 echo " >>"                                                           
 echo " >> ENSEMBLE FORECASTS AND LETKF"

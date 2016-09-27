@@ -49,7 +49,7 @@ GUESFT=$WINDOW_END  # First guess forecast length (seconds)
 
 #DOMAIN AND BOUNDARY DATA
 
-BOUNDARY_DATA_FREC=21600              #Boundary data frequency. (seconds)
+BOUNDARY_DATA_FREQ=21600              #Boundary data frequency. (seconds)
 BOUNDARY_DATA_PERTURBATION_FREQ=21600 #Frequency of data used to perturb boundary conditions (seconds)
 
 #INITIAL AND BOUNDARY PERTURBATIONS
@@ -66,15 +66,6 @@ INPUT_ROOT_NAME='wrfout'
 INTERP_METHOD=1
 
 
-#Compute DUMMY increment for boundary data preparation.
-rest=`expr  $GUESFT % $BOUNDARY_DATA_FREC `   
-if [ $rest == 0 ] ; then
-DINC=$GUESFT
-else
-DINC=`expr $GUESFT + $BOUNDARY_DATA_FREC - $rest `
-fi
-
-
 ### LETKF setting
 OBS="/ucar_airs_th3x3_corrected/"                # Name of observation folder.
 EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION}      # name of experiment
@@ -82,6 +73,10 @@ EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION}      # name of experiment
 ### initial date setting
 IDATE=20080807000000
 EDATE=20080930180000
+
+#Initial and final dates for the perturbation database.
+INIPERTDATE=20060101000000
+ENDPERTDATE=20091231180000
 
 #### DATA
 OBSDIR=${HOMEDIR}/OBS/$OBS/                                                               # observations

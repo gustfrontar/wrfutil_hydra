@@ -49,7 +49,7 @@ GUESFT=$WINDOW_END  # First guess forecast length (seconds)
 
 #DOMAIN AND BOUNDARY DATA
 
-BOUNDARY_DATA_FREC=21600              #Boundary data frequency. (seconds)
+BOUNDARY_DATA_FREQ=21600              #Boundary data frequency. (seconds)
 BOUNDARY_DATA_PERTURBATION_FREQ=21600 #Frequency of data used to perturb boundary conditions (seconds)
 
 #INITIAL AND BOUNDARY PERTURBATIONS

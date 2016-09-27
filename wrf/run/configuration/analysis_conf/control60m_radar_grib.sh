@@ -48,7 +48,7 @@ GUESFT=$WINDOW_END  # First guess forecast length (seconds)
 
 #DOMAIN AND BOUNDARY DATA
 
-BOUNDARY_DATA_FREC=21600              #Boundary data frequency. (seconds)
+BOUNDARY_DATA_FREQ=21600              #Boundary data frequency. (seconds)
 BOUNDARY_DATA_PERTURBATION_FREQ=21600 #Frequency of data used to perturb boundary conditions (seconds)
 
 #INITIAL AND BOUNDARY PERTURBATIONS
@@ -63,24 +63,6 @@ OUTVARS="'umet,vmet,W,QVAPOR,QCLOUD,QRAIN,QICE,QSNOW,QGRAUP,RAINNC,tk,u10m,v10m,
 ARWPOST_FREC=21600   # Post processing frequency (seconds)
 INPUT_ROOT_NAME='wrfout'
 INTERP_METHOD=1
-
-
-#Compute increment for met_em_generation 
-rest=`expr  $GUESFT % $BOUNDARY_DATA_FREC `   
-if [ $rest == 0 ] ; then
-DINC=$GUESFT
-else
-DINC=`expr $GUESFT + $BOUNDARY_DATA_FREC - $rest `
-fi
-
-rate=`expr $GUESFT \/ $BOUNDARY_DATA_FREC `
-rest=`expr $GUESFT \* $BOUNDARY_DATA_FREC \* $rate `
-if [ $rate -le 0 ] ; then
-METEM_DATA_FREQ=$GUESFT
-else
-METEM_DATA_FREQ=$rest
-fi
-
 
 ### LETKF setting
 OBS=""                # Name of observation folder.
@@ -97,9 +79,17 @@ NRADARS=1
 RADAROBSDIR=${HOMEDIR}/OBS/$RADAROBS/
 TMPDIR=${DATADIR}/TMP/$EXP/                                                               # work directory
 OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                    # Where results should appear.
-GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/ARGENTINA/
-PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/
+GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/ARGENTINA/                                         # Folder where bdy and inita data gribs are located.
+GRIBTABLE="Vtable.GFS"                                                                    # Bdy and init data source Vtable name.
+PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                    # Folder where data for perturbing bdy are located.
+PERTGRIBTABLE="Vtable.CFSR"                                                               # Bdy perturbation source vtable name.
 GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/
+
+
+#Random dates for boundary perturbations.
+INPUT_PERT_DATES_FROM_FILE=0           #0 - generate a new set of random dates, 1 - read random dates from a file. 
+INI_PERT_DATE_FILE=${HOMEDIR}/DATA/RANDOM_PERTS/random_perts.txt  #List of initial random dates.
+
 
 #### EXECUTABLES
 RUNTIMELIBS=${HOMEDIR}/libs_sparc64/lib/

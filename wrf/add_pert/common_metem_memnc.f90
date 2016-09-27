@@ -738,7 +738,7 @@ SUBROUTINE put_date(inputfile,date)
 IMPLICIT NONE
 CHARACTER(19), INTENT(IN) :: DATE
 CHARACTER(*) , INTENT(IN) :: inputfile
-INTEGER :: ncid , start(2) , count(2) , varid
+INTEGER :: ncid , rstart(2) , rend(2) ,  varid
 INCLUDE 'netcdf.inc'
 
 
@@ -748,18 +748,21 @@ INCLUDE 'netcdf.inc'
   rstart = (/ 1,1 /)
   rend   = (/ 19,1/)
 
-  !Modify input date 
-  CALL check_io(NF_PUT_ATT_TEXT(ncid,NF_GLOBAL,'START_DATE',19,date))
-  CALL check_io(NF_PUT_ATT_TEXT(ncid,NF_GLOBAL,'SIMULATION_START_DATE',19,date))
   CALL check_io(NF_INQ_VARID(ncid,'Times',varid))
   CALL check_io(NF_PUT_VARA_TEXT(ncid,varid,rstart,rend,DATE))
+
+
+  !Modify input date 
+  CALL check_io(NF_REDEF(ncid))
+  CALL check_io(NF_PUT_ATT_TEXT(ncid,NF_GLOBAL,'START_DATE',19,date))
+  CALL check_io(NF_PUT_ATT_TEXT(ncid,NF_GLOBAL,'SIMULATION_START_DATE',19,date))
 
   !CLOSE FILES
   CALL close_wrf_file(ncid)
 
 RETURN
 
-END SUBROUTINE write_grd
+END SUBROUTINE put_date
 
 
 

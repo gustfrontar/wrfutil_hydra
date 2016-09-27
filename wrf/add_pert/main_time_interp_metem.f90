@@ -23,11 +23,11 @@ USE common_perturb_ensemble
  REAL(r_size) :: rmse
 
  REAL(r_size) :: tmp
- CHARACTER(10) :: input_par
- INTEGER       :: current_time , max_time
+ CHARACTER(19) :: input_par
+ INTEGER       :: max_time
  REAL(r_size)  :: time_factor
 
- INTEGER :: iy , im , id , ih
+ INTEGER :: iy , im , id , ih , imin
  REAL(r_size) :: sec , tai1 , tai2 , ctai
 
 !-----------------------------------------------------------------------------
@@ -37,12 +37,12 @@ USE common_perturb_ensemble
 
   CALL GETARG ( 1, input_par )
   READ(input_par,*)cdate
-  WRITE(*,*)"CURRENT TIME is ",current_time  !YYYY-MM-DD_HH:MM:SS
+  WRITE(*,*)"CURRENT TIME is ",cdate  !YYYY-MM-DD_HH:MM:SS
 
 !--------------------------------------------------------------------------------
 
 !Get model domain from the first ensemble member.
-CALL set_common_wrf(met_ema1)
+CALL set_common_wrf(met_em1)
 
 ALLOCATE( gues3d(nlon,nlat,nlev,nv3d,2),gues2d(nlon,nlat,nv2d,2) )
 
@@ -61,7 +61,7 @@ ALLOCATE( levels(nlev) )
  READ(date1(6:7),*)im
  READ(date1(9:10),*)id
  READ(date1(12:13),*)ih
- READ(date1(15:16),*)im
+ READ(date1(15:16),*)imin
  READ(date1(18:19),*)sec
  CALL com_utc2tai(iy,im,id,ih,imin,sec,tai1)
 
@@ -70,7 +70,7 @@ ALLOCATE( levels(nlev) )
  READ(date2(6:7),*)im
  READ(date2(9:10),*)id
  READ(date2(12:13),*)ih
- READ(date2(15:16),*)im
+ READ(date2(15:16),*)imin
  READ(date2(18:19),*)sec
  CALL com_utc2tai(iy,im,id,ih,imin,sec,tai2)
 
@@ -79,12 +79,12 @@ ALLOCATE( levels(nlev) )
  READ(cdate(6:7),*)im
  READ(cdate(9:10),*)id
  READ(cdate(12:13),*)ih
- READ(cdate(15:16),*)im
+ READ(cdate(15:16),*)imin
  READ(cdate(18:19),*)sec
  CALL com_utc2tai(iy,im,id,ih,imin,sec,ctai)
 
  !Interpolate perturbation linearly in time
- IF ( ctai < ctai2 .and. ctai > ctai1)
+ IF ( ctai < tai2 .and. ctai > tai1)THEN
      IF( tai2 - tai1 .NE. 0.0d0 )THEN
       time_factor= (ctai-tai1) / (tai2 - tai1)
      ELSE
@@ -93,7 +93,10 @@ ALLOCATE( levels(nlev) )
  ELSE
      WRITE(*,*)"[Error]: The requested date is not within the time range, "
      STOP
- END
+ ENDIF
+
+! WRITE(*,*)ctai, tai1, tai2, time_factor
+
  gues3d(:,:,:,:,1)=(1.0d0-time_factor)*gues3d(:,:,:,:,1) + (time_factor)*gues3d(:,:,:,:,2)
  gues2d(:,:,:,1)=(1.0d0-time_factor)*gues2d(:,:,:,1) + (time_factor)*gues2d(:,:,:,2)
 

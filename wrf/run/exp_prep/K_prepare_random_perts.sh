@@ -8,17 +8,17 @@
 #   to compute the perturbations for the initial and boundary conditions.
 #=======================================================================
 MEMBER=100               #Number of ensemble members
-MAX_TIMES=1090           #Maximum number of different states to generate perturbations.
+MAX_TIMES=7300           #Maximum number of different states to generate perturbations.
 EXP_LENGTH=260           #Number of assimilation cycles in the experiment.
-CONFIGURATION=SA_60KM    #SINLAKU_60K
+CONFIGURATION=CORDOBA_2K #SINLAKU_60K
 ### directory settings
-OUTPUTDIR=${HOME}/share/INPUT/$CONFIGURATION/pert_date/       # FINAL DESTINATION OF THE PERTURBATIONS.
+OUTPUTDIR=${HOME}/share/DATA/PERT_DATES/20140122/       # FINAL DESTINATION OF THE PERTURBATIONS.
 BOUNDARY_DATA_FREQ=6
 CWD=`pwd`
 
 #PERTURBATION DATA BASE INFO.
-PINI=20080101000000
-PEND=20101231000000
+PINI=20060101000000
+PEND=20091231000000
 
 #EXPERIMENT DATES
 EINI=20100801000000
