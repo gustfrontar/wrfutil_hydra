@@ -1,24 +1,26 @@
 #This script generates pseudo-radar observations from WRF outputs.
 ulimit -s unlimited
 
-EXPERIMENT_NAME=OSSE_OBS_WERROR
+EXPERIMENT_NAME=OSSE_20140122_DBZ2.5_VR1.0
 
-MODELDATAPATH="$HOME/datos/EXPERIMENTS/NATURERUN_CORDOBA_2K_paula/forecast/20140122120000/00001/"
-RADARDATAPATH="$HOME/share/OBS/$EXPERIMENT_NAME"   
+MODELDATAPATH="$HOME/datosmate/WRF_NATURE_RUNV2/"
+RADARDATAPATH="$HOME/datos/OBS/$EXPERIMENT_NAME"   
 
 TMPDIR="$HOME/data/TMP/WRF_TO_RADAR/"
-EXEC="$HOME/share/LETKF_WRF/wrf/obs/radar/wrf_to_radar/wrf_to_radar.exe"
+EXEC="$HOME/datos/LETKF_WRF/wrf/obs/radar/wrf_to_radar/wrf_to_radar.exe"
 
 RADARFILE=""
 
+DOMAIN="03"
+
 source ../../../run/util.sh #Date functions.
 
-INIDATE=20140122120000
-ENDDATE=20140122220000
+INIDATE=20140122194500
+ENDDATE=20140122210000
 
 NAMELIST_WRF2RADAR="$TMPDIR/w2r.namelist"
 
-frec=3600                           #Observation frequency in seconds.
+frec=300                           #Observation frequency in seconds.
 add_obs_error=".FALSE."        
 reflectivity_error="2.5d0"
 radialwind_error="1.0d0"   
@@ -34,8 +36,8 @@ radar_min_az="1.0d0"
 radar_max_az="360.0d0"           
 radar_min_r="500.0d0"   
 radar_max_r="240.0d3"
-radar_min_el="0.0d0"
-radar_max_el="30.0d0"
+radar_min_el="0.5d0"
+radar_max_el="30.5d0"
 use_wt=".TRUE."                   #Include or not the effect of terminal velocity      
 radar_lambda="10.0d0"            
 use_level_list=".FALSE."       
@@ -90,7 +92,7 @@ do
 cd $TMPDIR
 
 
-MODELFILE=`wrfout_file_name $cdate 01`
+MODELFILE=`wrfout_file_name $cdate $DOMAIN`
 itime=`add_zeros 1 4 `
 
 
@@ -106,7 +108,7 @@ ln -sf $EXEC ./wrf_to_radar.exe
   while [ $iradar -le $n_radar ] 
   do
     iradar=`add_zeros $iradar 4`
-    mv oradar${iradar}_0001.grd $RADARDATAPATH/RADAR_${cdate}.grd
+    mv oradar${iradar}_0001.grd $RADARDATAPATH/RADAR${iradar}_${cdate}.grd
     iradar=`expr $iradar + 1 `
   done
 

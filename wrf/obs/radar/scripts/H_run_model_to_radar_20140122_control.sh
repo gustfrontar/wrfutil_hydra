@@ -108,7 +108,7 @@ ln -sf $EXEC ./wrf_to_radar.exe
   while [ $iradar -le $n_radar ] 
   do
     iradar=`add_zeros $iradar 4`
-    mv oradar${iradar}_0001.grd $RADARDATAPATH/RADAR_${cdate}.grd
+    mv oradar${iradar}_0001.grd $RADARDATAPATH/RADAR${iradar}_${cdate}.grd
     iradar=`expr $iradar + 1 `
   done
 

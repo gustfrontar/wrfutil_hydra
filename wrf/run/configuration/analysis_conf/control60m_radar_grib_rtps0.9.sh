@@ -40,7 +40,7 @@ SIGMA_OBST="3.0d0"
 GROSS_ERROR="15.0d0" 
 COV_INFL_MUL="1.1d0"
 SP_INFL_ADD="0.d0"  
-RELAX_ALPHA_SPREAD="0.0d0"
+RELAX_ALPHA_SPREAD="0.9d0"
 RELAX_ALPHA="0.0d0" 
 USE_ADAPTIVE_INFLATION=0  #1 turn on addaptive inflation (Miyoshi 2011), 0 Turn off adaptive inflation
 				  #Note that for addaptive inflation to work COV_INFL_MUL should be < 0.0

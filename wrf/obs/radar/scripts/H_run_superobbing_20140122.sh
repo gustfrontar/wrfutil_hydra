@@ -94,7 +94,7 @@ ln -sf $PROCOBSPATH/radar_${DATE_FLOOR}.dat ./radarobs.dat
 ln -sf $PROCOBSPATH/radar_${DATE_FLOOR}.grd ./super.grd
 
 echo "Input  data: $RAWOBSPATH/$RAWOBSPATH/RADAR_${CDATE}.grd "
-echo "Output data: $PROCOBSPATH/radar_${DATE_FLOOR}.dat "
+echo "Output data: $PROCOBSPATH/radar01_${DATE_FLOOR}.dat "
 
 ./radar_prep.exe 
 

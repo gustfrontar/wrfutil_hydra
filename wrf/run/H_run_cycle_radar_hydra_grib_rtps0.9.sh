@@ -19,7 +19,7 @@ CDIR=`pwd`
 
 #CONFIGURATION
 DOMAINCONF=CORDOBA_2K                   #Define a domain
-CONFIGURATION=control60m_radar_grib     #Define a experiment configuration
+CONFIGURATION=control60m_radar_grib_rtps0.9     #Define a experiment configuration
 MCONFIGURATION=machine_radar60m_Hydra   #Define a machine configuration (number of nodes, etc)
 LETKFNAMELIST=control                   #Define a letkf namelist template
 
@@ -65,9 +65,6 @@ echo $my_log
 
 #Start of the section that will be output to my log.
 {
-safe_init_tmpdir $TMPDIR
-
-save_configuration $CDIR/$MYSCRIPT
 
 echo ">>>> I'm RUNNING IN $MYHOST and my PID is $PID" 
 echo ">>>> My config file is $CONFIGURATION         " 
@@ -75,6 +72,19 @@ echo ">>>> My domain is $DOMAINCONF                 "
 echo ">>>> My machine is $MCONFIGURATION            " 
 echo ">>>> I' am $CDIR/$MYSCRIPT                    "
 echo ">>>> My LETKFNAMELIST is $LETKFNAMELIST       " 
+
+echo '>>>'                                           
+echo ">>> INITIALIZING TMPDIR "          
+echo '>>>'
+
+safe_init_tmpdir $TMPDIR
+
+
+echo '>>>'                                           
+echo ">>> SAVING CONFIGURATION "          
+echo '>>>'
+
+save_configuration $CDIR/$MYSCRIPT
 
 echo '>>>'                                           
 echo ">>> COPYING DATA TO WORK DIRECTORY "          
