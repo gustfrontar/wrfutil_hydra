@@ -6,7 +6,6 @@
 #                                                   2010.05.11 M.Kunii
 # =======================================================================
 
-
 # -----------------------------
 #    date_edit
 # -----------------------------
@@ -2579,6 +2578,10 @@ echo "fi                                                                        
 THEDATE=$CDATE
 
 while [ $THEDATE -le $FDATE  ] ; do
+
+   if [ $perturb_met_em -eq 1 ] ; then
+
+   echo "CFILE=\`met_em_file_name $THEDATE 01 \`                                  " >> $local_script
    #We have the initial random dates, we have to compute the random date corresponding to the current
    #time. So we compute the difference between the current date and the initial date.
    echo "LDATE=\`date_floor $THEDATE $BOUNDARY_DATA_PERTURBATION_FREQ \`             " >> $local_script
@@ -2589,12 +2592,11 @@ while [ $THEDATE -le $FDATE  ] ; do
    echo "DATEP1B=\`date_edit2 \$DATEP1 \$l_time_diff \`                              " >> $local_script
    echo "DATEP2B=\`date_edit2 \$DATEP2 \$u_time_diff \`                              " >> $local_script
 
-   echo "CFILE=\`met_em_file_name $THEDATE 01 \`                                  " >> $local_script
+
    echo "if [ ! -e \$WORKDIR/\$CFILE ];then                                       " >> $local_script
    echo "cp $METEMDIR/\$CFILE \$WORKDIR                                           " >> $local_script
 
    #Original data will be perturbed only at the initial cycle or if the Perturb_boundary option is enabled.
-   if [ $perturb_met_em -eq 1 ] ; then
     echo " Boundary data is going to be perturbed"
     #Get the dates that we will use to create the perturbation and link the corresponding met_em files
  
@@ -2613,7 +2615,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
     echo "   mv met_em*   $PERTMETEMDIR                                              " >> $local_script
-    echo "   fi                                                                      " >> $local_script
+    echo "fi                                                                         " >> $local_script
 
     echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE2A ] ; then                              " >> $local_script
     echo "   ln -sf  $TMPDIR/WPS/*             ./                                    " >> $local_script
@@ -2626,7 +2628,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
     echo "   mv met_em* $PERTMETEMDIR                                                " >> $local_script
-    echo "   fi                                                                      " >> $local_script
+    echo "fi                                                                         " >> $local_script
 
     #Repeat for the upper date.
     echo "   TMPFILE1B=\`met_em_file_name \$DATEP1B 01 \`                            " >> $local_script
@@ -2643,7 +2645,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
     echo "   mv met_em*   $PERTMETEMDIR                                              " >> $local_script
-    echo "   fi                                                                      " >> $local_script
+    echo "fi                                                                         " >> $local_script
 
     echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE2B ] ; then                               " >> $local_script
     echo "   ln -sf  $TMPDIR/WPS/*             ./                                    " >> $local_script
@@ -2656,52 +2658,53 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
     echo "   mv met_em* $PERTMETEMDIR                                                " >> $local_script
-    echo "   fi                                                                      " >> $local_script
+    echo "fi                                                                         " >> $local_script
 
     echo "  rm -fr FILE*                                                             " >> $local_script
 
 
-local my_domain=1
+    local my_domain=1
 
-while [ $my_domain -le $PMAX_DOM ] ; do
- if [ $my_domain -lt 10 ] ; then 
-    my_domain=0$my_domain
- fi
-    echo "   TMPFILEA1=\`met_em_file_name \$DATEP1A $my_domain \`                    " >> $local_script
-    echo "   TMPFILEA2=\`met_em_file_name \$DATEP2A $my_domain \`                    " >> $local_script
-    echo "   TMPFILEB1=\`met_em_file_name \$DATEP1B $my_domain \`                    " >> $local_script
-    echo "   TMPFILEB2=\`met_em_file_name \$DATEP2B $my_domain \`                    " >> $local_script
+    while [ $my_domain -le $PMAX_DOM ] ; do
+      if [ $my_domain -lt 10 ] ; then 
+       my_domain=0$my_domain
+      fi
+      echo "   TMPFILEA1=\`met_em_file_name \$DATEP1A $my_domain \`                    " >> $local_script
+      echo "   TMPFILEA2=\`met_em_file_name \$DATEP2A $my_domain \`                    " >> $local_script
+      echo "   TMPFILEB1=\`met_em_file_name \$DATEP1B $my_domain \`                    " >> $local_script
+      echo "   TMPFILEB2=\`met_em_file_name \$DATEP2B $my_domain \`                    " >> $local_script
 
-    echo "   ln -sf $PERTMETEMDIR/\$TMPFILE1A ./input_filea1.nc                      " >> $local_script
-    echo "   ln -sf $PERTMETEMDIR/\$TMPFILE2A ./input_filea2.nc                      " >> $local_script
-    echo "   ln -sf $PERTMETEMDIR/\$TMPFILE1B ./input_fileb1.nc                      " >> $local_script
-    echo "   ln -sf $PERTMETEMDIR/\$TMPFILE2B ./input_fileb2.nc                      " >> $local_script
+      echo "   ln -sf $PERTMETEMDIR/\$TMPFILE1A ./input_filea1.nc                      " >> $local_script
+      echo "   ln -sf $PERTMETEMDIR/\$TMPFILE2A ./input_filea2.nc                      " >> $local_script
+      echo "   ln -sf $PERTMETEMDIR/\$TMPFILE1B ./input_fileb1.nc                      " >> $local_script
+      echo "   ln -sf $PERTMETEMDIR/\$TMPFILE2B ./input_fileb2.nc                      " >> $local_script
 
-    echo "CFILE=\`met_em_file_name $THEDATE $my_domain \`                            " >> $local_script
-    echo "   cp $METEMDIR/\$CFILE ./                                                 " >> $local_script
-    echo "   chmod 766 ./ctrl_met_em.nc                                              " >> $local_script
-    echo "   ln -sf ./\$CFILE ./ctrl_met_em.nc                                       " >> $local_script  
-    #Get the time dinstance in seconds between the current time and LDATE
-    echo "   TIMEDISTANCE=\`date_diff $THEDATE \$LDATE \`                            " >> $local_script
-    #Run the program 
-    # ctrl_met_em.nc = ctrl_met_em.nc + scale_factor *[ ( input_file1.nc - input_file2.nc ) ]
-    # the [] indicates a time interpolation between LDATE and UDATE.
-    echo "   $EXEC \$SCALE_FACTOR \$RANDOM_SCALE_FACTOR \$TIMEDISTANCE $BOUNDARY_DATA_PERTURBATION_FREQ " >> $local_script
+      echo "CFILE=\`met_em_file_name $THEDATE $my_domain \`                            " >> $local_script
+      echo "   cp $METEMDIR/\$CFILE ./                                                 " >> $local_script
+      echo "   chmod 766 ./ctrl_met_em.nc                                              " >> $local_script
+      echo "   ln -sf ./\$CFILE ./ctrl_met_em.nc                                       " >> $local_script  
+      #Get the time dinstance in seconds between the current time and LDATE
+      echo "   TIMEDISTANCE=\`date_diff $THEDATE \$LDATE \`                            " >> $local_script
+      #Run the program 
+      # ctrl_met_em.nc = ctrl_met_em.nc + scale_factor *[ ( input_file1.nc - input_file2.nc ) ]
+      # the [] indicates a time interpolation between LDATE and UDATE.
+      echo "   $EXEC \$SCALE_FACTOR \$RANDOM_SCALE_FACTOR \$TIMEDISTANCE $BOUNDARY_DATA_PERTURBATION_FREQ " >> $local_script
 
-    my_domain=`expr $my_domain + 1 `
+      my_domain=`expr $my_domain + 1 `
 
-done
-  echo  "fi                                                                          " >> $local_script
+    done
+   echo  "fi                                                                          " >> $local_script
 
   else #Else  over perturbation of met_ems.
+   local my_domain=1
    while [ $my_domain -le $PMAX_DOM ] ; do
     if [ $my_domain -lt 10 ] ; then
       my_domain=0$my_domain
     fi
     echo "CFILE=\`met_em_file_name $THEDATE $my_domain \`                             " >> $local_script
-    echo "   cp $METEMDIR/\$CFILE ./                                                  " >> $local_script
+    echo "ln -sf $METEMDIR/\$CFILE ./                                                 " >> $local_script
+    my_domain=`expr $my_domain + 1  `
    done
-  
 
   fi #Fi over perturbation of met_ems.
 

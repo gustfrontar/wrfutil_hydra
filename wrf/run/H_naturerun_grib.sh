@@ -1,16 +1,7 @@
 #!/bin/bash
 #=======================================================================
-# K_driver.sh
-#   To run the WRF-LETKF in the K computer.
-#   This scripts prepares all the data needed to run the letkf cycle 
-#   then submmits the job to the K computer.
-#   Based on the script developed by Shigenori Otsuka
-#   Diferences from V3:
-#   -Boundary perturbations, met em are perturbed and real is run in 
-#    K computer nodes.
-#   -Letkf incorporates relaxation to prior inflation and eigen exa
-#    matrix computations.
-#   -LETKF uses NETCDF IO.
+# Main driver for nature run (i.e. free WRF run) experiments.
+#   To run the WRF-LETKF in a cluster with qsub.
 #=======================================================================
 #set -x
 #-----------------------------------------------------------------------
@@ -22,9 +13,8 @@ CDIR=`pwd`
 
 #CONFIGURATION
 DOMAINCONF=CORDOBA_2K                  #Define a domain
-CONFIGURATION=cordoba_naturerun        #Define a experiment configuration
-MCONFIGURATION=machine_cordoba_naturerun         #Define a machine configuration (number of nodes, etc)
-LETKFNAMELIST=control                  #Define a letkf namelist template
+CONFIGURATION=control_run              #Define a experiment configuration
+MCONFIGURATION=machine_nature_run      #Define a machine configuration (number of nodes, etc)
 
 RESTART=0
 RESTARTDATE=20080823060000
@@ -59,7 +49,6 @@ safe_init_outputdir $OUTPUTDIR
 
 set_my_log
 
-
 {
 
 echo ">>>> I'm RUNNING IN $MYHOST and my PID is $PID"
@@ -69,20 +58,48 @@ echo ">>>> My machine is $MCONFIGURATION            "
 echo ">>>> I' am $CDIR/$MYSCRIPT                    "
 echo ">>>> My LETKFNAMELIST is $LETKFNAMELIST       "
 
+echo '>>>'                                           
+echo ">>> INITIALIZING TMPDIR "          
+echo '>>>'
+
 safe_init_tmpdir $TMPDIR
 
-echo '>>>'
-echo ">>> COPYING DATA TO WORK DIRECTORY "
+echo '>>>'                                           
+echo ">>> SAVING CONFIGURATION "          
 echo '>>>'
 
+save_configuration $CDIR/$MYSCRIPT
+
+echo '>>>'                                           
+echo ">>> COPYING DATA TO WORK DIRECTORY "          
+echo '>>>'                                         
+
 copy_data
+
+echo '>>>'                                           
+echo ">>> GENERATING DOMAIN "          
+echo '>>>' 
+
+get_domain
+
+echo '>>>'                                           
+echo ">>> SET METEM DATA FREQ "          
+echo '>>>' 
+
+set_pre_processing_intervals
+
+echo '>>>'                                           
+echo ">>> GET INITIAL RANDOM DATES "          
+echo '>>>' 
+
+get_random_dates
 
 ##################################################
 # START CYCLE IN TIME
 ##################################################
 
 echo '>>>'
-echo ">>> STARTING WRF-LETKF CYCLE FROM $IDATE TO $EDATE"
+echo ">>> STARTING WRF SIMULATIONS FROM $IDATE TO $EDATE"
 echo '>>>'
 
 if [ $RESTART -eq 0 ] ; then
@@ -96,21 +113,27 @@ fi
 while test $CDATE -le $EDATE
 do
 
-echo '>>>'
-echo ">>> BEGIN COMPUTATION OF $CDATE  ITERATION: $ITER"
-echo '>>>'
+echo '>>>'                                                           
+echo ">>> BEGIN SIMULATION STARTING ON $CDATE  ( ITERATION: $ITER )"             
+echo '>>>'                                                           
 
 set_cycle_dates
 
-echo " >>"
-echo " >> GENERATING PERTURBATIONS"
-echo " >>"
+echo " >>"                                                           
+echo " >> GET THE UNPERTURBED INITIAL AND BOUNDARY CONDITIONS"                                  
+echo " >>" 
+
+#RUN MODEL PRE-PROCESSING FROM GLOBAL ANALYSIS OR FORECASTS (run in PPS)
+
+get_met_em_from_grib
+
+echo " >>"                                                           
+echo " >> GENERATING PERTURBATIONS"                                  
+echo " >>"                                                           
 
 #PERTURB MET_EM FILES USING RANDOM BALANCED OR RANDOM SMOOTHED PERTURBATIONS (run in PPS)
 
-METEMDIR=$METEMDIRFOR/$CDATE/
-run_script=$TMPDIR/SCRIPTS/perturb_met_em.sh
-perturb_met_em $run_script
+perturb_met_em_from_grib
 
 echo " >>"
 echo " >> ENSEMBLE FORECASTS"
