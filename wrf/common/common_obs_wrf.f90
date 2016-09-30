@@ -978,12 +978,17 @@ SUBROUTINE z2k_fast(z_full,ri,rj,rlev,rk)
     j=INT(rj)
     zlev(1:nlev-1)=z_full(i,j,1:nlev-1)
     !Find rk
-    DO k=FLOOR(rk),nlev-1
+    DO k=1,nlev-2
       zindex=k
       IF(zlev(k) > rlev) EXIT ! assuming increasing order of zlev
     END DO
-    ak = (rlev - zlev(zindex-1)) / (zlev(zindex) - zlev(zindex-1))
-    rk = REAL(zindex-1,r_size) + ak
+
+    IF( zindex > 1)THEN
+      ak = (rlev - zlev(zindex-1)) / (zlev(zindex) - zlev(zindex-1))
+      rk = REAL(zindex-1,r_size) + ak
+    ELSE
+      rk = -1.0d0 !Data is below topography.
+    ENDIF
 
   RETURN
 END SUBROUTINE z2k_fast

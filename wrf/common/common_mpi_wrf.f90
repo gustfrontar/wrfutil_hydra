@@ -435,14 +435,14 @@ SUBROUTINE scatter_ngrd_mpi(nrank,vg,v,ndim)
     END DO
   END IF
 
-  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+  !CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
   CALL MPI_SCATTER(bufs,ns,MPI_REAL,&
                  & bufr,nr,MPI_REAL,nrank,MPI_COMM_WORLD,ierr)
   DO n=1,ndim
       v(:,n) = REAL(bufr(1:nij1,n),r_size)
   END DO
 
-  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+  !CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
   RETURN
 END SUBROUTINE scatter_ngrd_mpi
@@ -499,7 +499,7 @@ SUBROUTINE gather_ngrd_mpi(nrank,v,vg,ndim)
       bufs(1:nij1,n) = REAL(v(:,n),r_sngl)
   END DO
 
-  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+!  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
   CALL MPI_GATHER(bufs,ns,MPI_REAL,&
                 & bufr,nr,MPI_REAL,nrank,MPI_COMM_WORLD,ierr)
 
@@ -510,7 +510,7 @@ SUBROUTINE gather_ngrd_mpi(nrank,v,vg,ndim)
 
   END IF
 
-  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+!  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
   RETURN
 END SUBROUTINE gather_ngrd_mpi
@@ -523,7 +523,7 @@ SUBROUTINE read_ens_mpi(file,member,v3d,v2d)
   INTEGER,INTENT(IN) :: member
   REAL(r_size),INTENT(OUT) :: v3d(nij1,nlev,member,nv3d)
   REAL(r_size),INTENT(OUT) :: v2d(nij1,member,nv2d)
-  REAL(r_sngl) :: fieldg(nlon,nlat)
+  REAL(r_sngl) :: fieldg(nlon,nlat,nlev)
   INTEGER :: l,n,ll,im,im2,i,iunit,iv,ilev
   CHARACTER(20) :: filename='xxxx00000'
   INTEGER(4) :: ncid(member)
@@ -544,21 +544,21 @@ SUBROUTINE read_ens_mpi(file,member,v3d,v2d)
   !Read one field at a time and scatter to process.
   DO iv=1,nv3d
    !READ THE DATA 1 LEVEL AT A TIME
-   DO ilev=1,nlev
+   !DO ilev=1,nlev
       DO l=1,ll 
       im = myrank+1 + (l-1)*nprocs
       IF( im <= member)THEN
-          CALL read_var_wrf(ncid(im),iv,ilev,ilev,fieldg,'3d')
+          CALL read_var_wrf(ncid(im),iv,1,nlev,fieldg,'3d')
       ENDIF
 
      DO n=0,nprocs-1
       im2 = n+1 + (l-1)*nprocs
       IF(im2 <= member) THEN
-        CALL scatter_ngrd_mpi(n,fieldg,v3d(:,ilev,im2,iv),1)
+        CALL scatter_ngrd_mpi(n,fieldg,v3d(:,1:nlev,im2,iv),nlev)
       END IF
      END DO
     END DO
-   END DO  !End do over levels
+   !END DO  !End do over levels
   END DO  !End do over variables
 
 

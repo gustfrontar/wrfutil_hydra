@@ -77,7 +77,7 @@ PROGRAM letkf
 ! Observations
 !-----------------------------------------------------------------------
   !
-  ! CONVENTIONAL OBS
+  ! CONVENTIONAL AND RADAR OBS
   !
   CALL set_letkf_obs
 
@@ -106,7 +106,7 @@ PROGRAM letkf
   CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
   CALL write_ensmspr_mpi('gues',nbv,gues3d,gues2d)
 
-  IF(ESTPAR)CALL write_enspmspr_mpi('gues',nbv,guesp2d)
+!  IF(ESTPAR)CALL write_enspmspr_mpi('gues',nbv,guesp2d)
 !
   CALL CPU_TIME(rtimer)
   WRITE(6,'(A,2F10.2)') '### TIMER(READ_GUES):',rtimer,rtimer-rtimer00
@@ -164,8 +164,8 @@ PROGRAM letkf
     CALL monit_mean('gues',omb)
 !   Compute RMSE and BIAS for the analysis mean. 
     CALL monit_mean('anal',oma)
-!    CALL monit_obs(monitobs,nobs,obselm,obslon,obslat,obslev,obsdat,&
-!     & obserr,obstyp,omb,oma,obslot)
+    CALL monit_obs(monitobs,nobs,obselm,obslon,obslat,obslev,obsdat,&
+     & obserr,obstyp,omb,oma,obslot)
   END IF
 !
   CALL CPU_TIME(rtimer)

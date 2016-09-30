@@ -275,7 +275,7 @@ SUBROUTINE das_letkf
                 & + gues3d(ij,ilev,k,n) * (transrlx(k,m) + transm(k,n))                !GYL
             END DO
           END DO
-        END IF                                                                         !GYL
+          END IF                                                                         !GYL
       END DO ! [ n=1,nv3d ]
 
 

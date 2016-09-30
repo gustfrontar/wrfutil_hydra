@@ -418,7 +418,7 @@ INTEGER, ALLOCATABLE         :: start(:),count(:)
 INTEGER                      :: nxvar,nyvar,nzvar,ierr
 CHARACTER(2), INTENT(IN)     :: flag
 CHARACTER(20)                :: varname,auxvarname
-LOGICAL                      :: PAREXIST
+LOGICAL                      :: PAREXIST , READVAR
 varname='                    '
 auxvarname='                    '
 fieldg=0.0e0
@@ -433,39 +433,46 @@ IF ( flag .EQ. '3d' )THEN
        nxvar=nlon
        nyvar=nlat-1
        nzvar=nlev-1
+       readvar=present_variable(iv)
       CASE(iv3d_v)
        nxvar=nlon-1
        nyvar=nlat
-       nzvar=nlev-1
+       nzvar=nlev-1  
+       readvar=present_variable(iv)
       CASE(iv3d_w)
        nxvar=nlon-1
        nyvar=nlat-1
        nzvar=nlev
+       readvar=present_variable(iv)
       CASE(iv3d_p)
        nxvar=nlon-1
        nyvar=nlat-1
        nzvar=nlev-1
        auxvarname='PB'
+       readvar=present_variable(iv)
       CASE(iv3d_ph)
        nxvar=nlon-1
        nyvar=nlat-1
        nzvar=nlev-1
        auxvarname='PHB'
+       readvar=present_variable(iv)
       CASE(iv3d_t,iv3d_qv,iv3d_qc,iv3d_qr,iv3d_qci,iv3d_qg,iv3d_qs,iv3d_coant,iv3d_cobck,iv3d_cobbu)
        nxvar=nlon-1
        nyvar=nlat-1
        nzvar=nlev-1
+       readvar=present_variable(iv)
       CASE(iv3d_tv)
        varname='T'
        nxvar=nlon-1
        nyvar=nlat-1
        nzvar=nlev-1
+       readvar=present_variable(iv)
       CASE DEFAULT
        WRITE(6,*)"3D Variable non-recognized, retrieve none: ",iv
        RETURN
   END SELECT
 
- IF( present_variable(iv) )THEN
+ IF( readvar )THEN
 
    IF( slev > nzvar )RETURN
    IF( elev > nzvar )THEN
@@ -524,18 +531,20 @@ IF ( flag .EQ. '2d' )THEN
       SELECT CASE (iv)
       CASE(iv2d_ps,iv2d_t2,iv2d_q2)
        nxvar=nlon-1
-       nyvar=nlat-1
+       nyvar=nlat-1 
+       readvar=present_variable(nv3d+iv)
       CASE(iv2d_mu)
        nxvar=nlon-1
        nyvar=nlat-1
        varname='MU'
        auxvarname='MUB'
+       readvar=.true.
       CASE DEFAULT
        WRITE(6,*)"2D variable not recognized, retrieve none : ",iv
        RETURN
       END SELECT
 
-  IF( present_variable(nv3d+iv) )THEN
+  IF( readvar )THEN
   
       start = (/ 1,1,1 /)
       count = (/ nxvar,nyvar,1,1 /) !READ ONE SINGLE LEVEL
@@ -566,12 +575,13 @@ IF ( flag .EQ. 'pa' )THEN
       CASE(ip2d_hfx,ip2d_qfx,ip2d_ust)
        nxvar=nlon-1
        nyvar=nlat-1
+       readvar=present_variable(nv3d+nv2d+iv)
       CASE DEFAULT
        WRITE(6,*)"2D parameter not recognized, will retrieve none : ",iv
        RETURN
       END SELECT
 
-  IF( present_variable(nv3d+nv2d+iv) )THEN
+  IF( readvar  )THEN
       start = (/ 1,1,1 /)
       count = (/ nxvar,nyvar,1,1 /) !READ ONE SINGLE LEVEL
 
@@ -604,7 +614,7 @@ INTEGER, ALLOCATABLE         :: start(:),count(:)
 INTEGER                      :: nxvar,nyvar,nzvar
 CHARACTER(2), INTENT(IN)     :: flag
 CHARACTER(20)                :: varname,auxvarname
-LOGICAL                      :: PAREXIST
+LOGICAL                      :: PAREXIST , WRITEVAR
 varname='                    '
 auxvarname='                    '
 auxfieldg=0.0e0
@@ -616,35 +626,40 @@ IF ( flag .EQ. '3d' )THEN
        nxvar=nlon
        nyvar=nlat-1
        nzvar=nlev-1
+       writevar=present_variable(iv)
       CASE(iv3d_v)
        nxvar=nlon-1
        nyvar=nlat
        nzvar=nlev-1
+       writevar=present_variable(iv)
       CASE(iv3d_w)
        nxvar=nlon-1
        nyvar=nlat-1
        nzvar=nlev
+       writevar=present_variable(iv)
       CASE(iv3d_p)
        nxvar=nlon-1
        nyvar=nlat-1
        nzvar=nlev-1
        auxvarname='PB'
+       writevar=present_variable(iv)
       CASE(iv3d_ph)
        nxvar=nlon-1
        nyvar=nlat-1
        nzvar=nlev-1
        auxvarname='PHB'
+       writevar=present_variable(iv)
       CASE(iv3d_t,iv3d_qv,iv3d_qc,iv3d_qr,iv3d_qci,iv3d_qg,iv3d_qs,iv3d_coant,iv3d_cobck,iv3d_cobbu)
        nxvar=nlon-1
        nyvar=nlat-1
        nzvar=nlev-1
-
+       writevar=present_variable(iv)
       CASE DEFAULT
        WRITE(6,*)"3D Variable not recognized. Won't be written: ",iv
        RETURN
       END SELECT
 
- IF( present_variable(iv) )THEN
+ IF( writevar )THEN
 
   ALLOCATE(start(4),count(4))
 
@@ -676,17 +691,19 @@ IF ( flag .EQ. '2d' )THEN
       CASE(iv2d_ps,iv2d_t2,iv2d_q2)
        nxvar=nlon-1
        nyvar=nlat-1
+       writevar=present_variable(nv3d+iv)
       CASE(iv2d_mu)
        nxvar=nlon-1
        nyvar=nlat-1
        varname='MU'
        auxvarname='MUB'
+       writevar=.true.
       CASE DEFAULT
        WRITE(6,*)"Variable not recognized, won't be written",iv
        RETURN
       END SELECT
 
- IF( present_variable(nv3d+iv) )THEN
+ IF( writevar )THEN
       start = (/ 1,1,1 /)
       count = (/ nxvar,nyvar,1,1 /) !READ ONE SINGLE LEVEL
       IF( iv == iv2d_mu )THEN
@@ -708,6 +725,7 @@ IF ( flag .EQ. 'pa' )THEN
       
       SELECT CASE (iv)
       CASE(ip2d_hfx,ip2d_qfx,ip2d_ust)
+       writevar=present_variable(nv3d+nv2d+iv)
        nxvar=nlon-1
        nyvar=nlat-1
       CASE DEFAULT
@@ -715,7 +733,7 @@ IF ( flag .EQ. 'pa' )THEN
        RETURN
       END SELECT
 
- IF( present_variable(nv3d+nv2d+iv) )THEN
+ IF( writevar )THEN
       start = (/ 1,1,1 /)
       count = (/ nxvar,nyvar,1,1 /) !WRITE ONE SINGLE LEVEL
 

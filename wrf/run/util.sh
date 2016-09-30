@@ -2426,7 +2426,7 @@ echo "cd $METEMDIR                                                              
 
  echo "TMPFILE1=\`met_em_file_name \$CDATE1 01 \`                               " >> $local_script
  echo "TMPFILE2=\`met_em_file_name \$CDATE2 01 \`                               " >> $local_script
- echo "if [  ! -e  \$CFILE ] ; then                                             " >> $local_script  #If CFILE is present we can go to the next time.
+# echo "if [  ! -e  \$CFILE ] ; then                                             " >> $local_script  #If CFILE is present we can go to the next time.
     #IF perturbed met_ems are not present generate them                            
     echo "if [  ! -e  \$TMPFILE1 ] ; then                                          " >> $local_script                                                              
     echo "   ln -sf  $TMPDIR/WPS/*             ./                                  " >> $local_script
@@ -2461,10 +2461,11 @@ while [ $my_domain -le $MAX_DOM ] ; do
     my_domain=0$my_domain
  fi
     echo "CFILE=\`met_em_file_name \$CDATE $my_domain\`                            " >> $local_script
+    echo "if [  ! -e  \$CFILE ] ; then                                             " >> $local_script  #If CFILE is present we can go to the next time.
     echo "TMPFILE1=\`met_em_file_name \$CDATE1 $my_domain \`                       " >> $local_script
     echo "TMPFILE2=\`met_em_file_name \$CDATE2 $my_domain \`                       " >> $local_script
 
-    echo "   cp \$TMPFILE2  \$CFILE                                                " >> $local_script
+    echo "   cp \$TMPFILE1  \$CFILE                                                " >> $local_script
     echo "   ln -sf \$CFILE ./ctrl_met_em.nc                                       " >> $local_script
     echo "   ln -sf \$TMPFILE1 ./input_file1.nc                                    " >> $local_script
     echo "   ln -sf \$TMPFILE2 ./input_file2.nc                                    " >> $local_script

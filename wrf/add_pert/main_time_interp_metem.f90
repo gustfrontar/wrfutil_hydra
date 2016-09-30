@@ -84,14 +84,14 @@ ALLOCATE( levels(nlev) )
  CALL com_utc2tai(iy,im,id,ih,imin,sec,ctai)
 
  !Interpolate perturbation linearly in time
- IF ( ctai < tai2 .and. ctai > tai1)THEN
+ IF ( ctai <= tai2 .and. ctai >= tai1)THEN
      IF( tai2 - tai1 .NE. 0.0d0 )THEN
       time_factor= (ctai-tai1) / (tai2 - tai1)
      ELSE
       time_factor=1.0d0
      ENDIF
  ELSE
-     WRITE(*,*)"[Error]: The requested date is not within the time range, "
+     WRITE(*,*)"[Error]: The requested date is not within the time range, ", ctai ," ", tai1, " " , tai2
      STOP
  ENDIF
 
