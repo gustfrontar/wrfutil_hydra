@@ -4,7 +4,7 @@ PGM=letkf.exe
 F90=mpif90
 OMP=
 
-F90OPT='-g -traceback -check bounds -convert big_endian' #-O3 -convert big_endian' #-Kfast,parallel' # -Hs'
+F90OPT='-O3 -convert big_endian' #-O3 -g -traceback -check-bounds -convert big_endian' #-Kfast,parallel' # -Hs'
 
 
 BLAS=0 #0: no blas 1: using blas

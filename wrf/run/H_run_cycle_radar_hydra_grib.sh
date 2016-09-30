@@ -18,10 +18,8 @@
 CDIR=`pwd`
 
 #CONFIGURATION
-DOMAINCONF=CORDOBA_2K                   #Define a domain
 CONFIGURATION=control60m_radar_grib     #Define a experiment configuration
 MCONFIGURATION=machine_radar60m_Hydra   #Define a machine configuration (number of nodes, etc)
-LETKFNAMELIST=control                   #Define a letkf namelist template
 
 RESTART=0
 RESTARTDATE=20080810000000

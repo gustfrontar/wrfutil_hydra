@@ -1,4 +1,6 @@
 #KALMAN FILTER CONFIGURATION
+DOMAINCONF=CORDOBA_2K                  #Define a domain
+
 MEMBER=1        #Number of ensemble members.
 MAX_DOM=1
 HOMEDIR=${HOME}/share/
@@ -109,9 +111,9 @@ UTIL=$WRF/run/util.sh
 
 
 #### NAMELIST
-NAMELISTWRF=$WRF/run/configuration/$DOMAINCONF/namelist.input            #Namelist for WRF model.
-NAMELISTWPS=$WRF/run/configuration/$DOMAINCONF/namelist.wps              #Namelist for WRF pre processing tools
-NAMELISTLETKF=$WRF/run/configuration/letkf.namelist.$LETKFNAMELIST       #Namelist for LETKF
-NAMELISTARWPOST=$WRF/run/configuration/$DOMAINCONF/namelist.ARWpost      #Namelist for post-processing tools.
-NAMELISTOBSOPE=$WRF/run/configuration/obsope.namelist.$OBSOPENAMELIST    #Namelist for observation operator.
+NAMELISTWRF=$WRF/run/configuration/domain_conf/$DOMAINCONF/namelist.input            #Namelist for WRF model.
+NAMELISTWPS=$WRF/run/configuration/domain_conf/$DOMAINCONF/namelist.wps              #Namelist for WRF pre processing tools
+NAMELISTLETKF=$WRF/run/configuration/letkf_conf/letkf.namelist.$LETKFNAMELIST       #Namelist for LETKF
+NAMELISTARWPOST=$WRF/run/configuration/domain_conf/$DOMAINCONF/namelist.ARWpost      #Namelist for post-processing tools.
+NAMELISTOBSOPE=$WRF/run/configuration/letkf_conf/obsope.namelist.$OBSOPENAMELIST    #Namelist for observation operator.
 

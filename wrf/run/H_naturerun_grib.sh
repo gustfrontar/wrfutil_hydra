@@ -12,7 +12,6 @@ CDIR=`pwd`
 
 
 #CONFIGURATION
-DOMAINCONF=CORDOBA_2K                  #Define a domain
 CONFIGURATION=control_run              #Define a experiment configuration
 MCONFIGURATION=machine_nature_run      #Define a machine configuration (number of nodes, etc)
 
