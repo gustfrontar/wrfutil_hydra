@@ -104,8 +104,9 @@ pert2d=0.0d0
 
 DO iv=1,nv3d
    if( PERTURB_ATMOSPHERE )then
-      WRITE(*,*)'Adding balanced perturbation to field ',element(iv),' iv= ',iv
+      WRITE(*,*)'Adding balanced perturbation to field ',element(iv),' iv=',iv," amp_factor = ",amp_factor
       pert3d=amp_factor*( var3d1 - var3d2)
+         
    endif
 ENDDO
 
@@ -132,6 +133,12 @@ DO iv=1,nv2d
 
 ENDDO
 
+
+!Get perturbation maximum and minimum
+
+CALL pert_max_min(pert3d,pert2d)
+
+
 END SUBROUTINE PERTURB_MEMBER_BALANCED
 
 SUBROUTINE  PERTURB_MEMBER_RANDOM(var3d,var2d,pert3d,pert2d)
@@ -141,9 +148,9 @@ SUBROUTINE  PERTURB_MEMBER_RANDOM(var3d,var2d,pert3d,pert2d)
   REAL(r_size) :: tmpfield(nlon,nlat,nlev) , tmpval(1)
   INTEGER      :: i , j , k , iv
   INTEGER      :: filter_size_x , filter_size_z 
-  REAL(r_size) :: AMP , SCLH , SCLV 
+  REAL(r_size) :: AMP , SCLH , SCLV , tmp_amp_factor 
   REAL(r_size) :: dz
-  REAL(r_size) :: max_pert , min_pert , amp_factor
+  REAL(r_size) :: max_pert , min_pert 
   INTEGER      :: maskh(nlon,nlat),maskv(nlev)
   CHARACTER(256) :: filter_type 
   INTEGER      :: ii,jj,kk
@@ -210,8 +217,8 @@ SUBROUTINE  PERTURB_MEMBER_RANDOM(var3d,var2d,pert3d,pert2d)
 
          !Match the perturbation standard deviation with the requested standard
          !deviation.
-         amp_factor =  AMP / ( pert_var )
-         tmpfield= tmpfield * amp_factor
+         tmp_amp_factor =  AMP / ( pert_var )
+         tmpfield= tmpfield * tmp_amp_factor
 
 
 
@@ -219,10 +226,47 @@ SUBROUTINE  PERTURB_MEMBER_RANDOM(var3d,var2d,pert3d,pert2d)
 
      ENDDO
 
-
+  CALL pert_max_min(pert3d,pert2d)
 
   RETURN
 END SUBROUTINE PERTURB_MEMBER_RANDOM
+
+SUBROUTINE PERT_MAX_MIN(pert3d,pert2d)
+IMPLICIT NONE
+REAL(r_size) , INTENT(IN) :: pert3d(nlon,nlat,nlev,nv3d) , pert2d(nlon,nlat,nv2d)
+INTEGER                   :: iv , i , j , k
+REAL(r_size)              :: pert_max , pert_min
+
+  DO iv=1,nv3d
+     DO k=1,nlev
+      pert_max=-9.0d9
+      pert_min=9.0d9
+
+      DO i=1,nlon
+       DO j=1,nlat
+   
+          IF( pert3d(i,j,k,iv) < pert_min)pert_min=pert3d(i,j,k,iv)
+          IF( pert3d(i,j,k,iv) > pert_max)pert_max=pert3d(i,j,k,iv)
+
+       ENDDO
+      ENDDO
+
+     IF( iv == iv3d_t  )THEN
+       WRITE(*,*)"Temperature pert. range at level ",iv," is ",pert_min,pert_max
+     ELSEIF( iv == iv3d_u )THEN
+       WRITE(*,*)"U-wind  pert. range at level ",iv," is ",pert_min,pert_max
+     ELSEIF( iv == iv3d_v )THEN
+       WRITE(*,*)"V-wind  pert. range at level ",iv," is ",pert_min,pert_max
+     ELSEIF( iv == iv3d_rh )THEN
+       WRITE(*,*)"RH  pert. range at level ",iv," is ",pert_min,pert_max
+     ENDIF
+ 
+     ENDDO
+
+  ENDDO
+
+RETURN
+END SUBROUTINE PERT_MAX_MIN
 
 SUBROUTINE CHECK_PERT(var3d,var2d)
 IMPLICIT NONE

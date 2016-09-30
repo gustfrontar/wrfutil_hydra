@@ -84,7 +84,7 @@ GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/                                       
 
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
 SCALE_FACTOR="0.05"         #Perturbation scale factor.
-RANDOM_SCALE_FACTOR="0.005" #Random perturbation scale factor.
+RANDOM_SCALE_FACTOR="0.5"   #Random perturbation scale factor.
 PERTURB_BOUNDARY=1          #Wheter boundary perturbations are going to be perturbed.
 PERTURB_BOUNDARY_TYPE=1     #DUMMY
 #Random dates for boundary perturbations.

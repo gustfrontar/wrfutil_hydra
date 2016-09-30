@@ -2588,11 +2588,6 @@ while [ $THEDATE -le $FDATE  ] ; do
    echo "LDATE=\`date_floor $THEDATE $BOUNDARY_DATA_PERTURBATION_FREQ \`             " >> $local_script
    echo "l_time_diff=\`date_diff \$LDATE $PERTREFDATE \`                             " >> $local_script
    echo "u_time_diff=\`expr \$l_time_diff + $BOUNDARY_DATA_PERTURBATION_FREQ \`      " >> $local_script
-   echo "DATEP1A=\`date_edit2 \$DATEP1 \$l_time_diff \`                              " >> $local_script
-   echo "DATEP2A=\`date_edit2 \$DATEP2 \$u_time_diff \`                              " >> $local_script
-   echo "DATEP1B=\`date_edit2 \$DATEP1 \$l_time_diff \`                              " >> $local_script
-   echo "DATEP2B=\`date_edit2 \$DATEP2 \$u_time_diff \`                              " >> $local_script
-
 
    echo "if [ ! -e \$WORKDIR/\$CFILE ];then                                       " >> $local_script
    echo "cp $METEMDIR/\$CFILE \$WORKDIR                                           " >> $local_script
@@ -2600,7 +2595,8 @@ while [ $THEDATE -le $FDATE  ] ; do
    #Original data will be perturbed only at the initial cycle or if the Perturb_boundary option is enabled.
     echo " Boundary data is going to be perturbed"
     #Get the dates that we will use to create the perturbation and link the corresponding met_em files
- 
+    echo "DATEP1A=\`date_edit2 \$DATEP1 \$l_time_diff \`                              " >> $local_script
+    echo "DATEP2A=\`date_edit2 \$DATEP2 \$l_time_diff \`                              " >> $local_script
     echo "   TMPFILE1A=\`met_em_file_name \$DATEP1A 01 \`                           " >> $local_script
     echo "   TMPFILE2A=\`met_em_file_name \$DATEP2A 01 \`                           " >> $local_script
 
@@ -2632,6 +2628,9 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "fi                                                                         " >> $local_script
 
     #Repeat for the upper date.
+    echo "DATEP1B=\`date_edit2 \$DATEP1 \$u_time_diff \`                              " >> $local_script
+    echo "DATEP2B=\`date_edit2 \$DATEP2 \$u_time_diff \`                              " >> $local_script
+
     echo "   TMPFILE1B=\`met_em_file_name \$DATEP1B 01 \`                            " >> $local_script
     echo "   TMPFILE2B=\`met_em_file_name \$DATEP2B 01 \`                            " >> $local_script
 
@@ -2641,7 +2640,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./namelist.wps                                                       " >> $local_script
     echo "   cp $TMPDIR/NAMELIST/namelist.wps.template ./namelist.wps                " >> $local_script
     echo "   edit_namelist_wps ./namelist.wps \$DATEP1B \$DATEP1B  $BOUNDARY_DATA_PERTURBATION_FREQ   " >> $local_script
-    echo "   ./link_grib.csh $PERTGRIBDIR/\${DATEP1B}.grib                           " >> $local_script
+    echo "   ./link_grib.csh $PERTGRIBDIR/\${DATEP1B}.grb                            " >> $local_script
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
@@ -2654,7 +2653,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./namelist.wps                                                       " >> $local_script
     echo "   cp $TMPDIR/NAMELIST/namelist.wps.template ./namelist.wps                " >> $local_script
     echo "   edit_namelist_wps ./namelist.wps \$DATEP2B \$DATEP2B  $BOUNDARY_DATA_PERTURBATION_FREQ   " >> $local_script
-    echo "   ./link_grib.csh  $PERTGRIBDIR/\${DATEP2B}.grib                          " >> $local_script
+    echo "   ./link_grib.csh  $PERTGRIBDIR/\${DATEP2B}.grb                           " >> $local_script
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
@@ -2670,10 +2669,10 @@ while [ $THEDATE -le $FDATE  ] ; do
       if [ $my_domain -lt 10 ] ; then 
        my_domain=0$my_domain
       fi
-      echo "   TMPFILEA1=\`met_em_file_name \$DATEP1A $my_domain \`                    " >> $local_script
-      echo "   TMPFILEA2=\`met_em_file_name \$DATEP2A $my_domain \`                    " >> $local_script
-      echo "   TMPFILEB1=\`met_em_file_name \$DATEP1B $my_domain \`                    " >> $local_script
-      echo "   TMPFILEB2=\`met_em_file_name \$DATEP2B $my_domain \`                    " >> $local_script
+      echo "   TMPFILE1A=\`met_em_file_name \$DATEP1A $my_domain \`                    " >> $local_script
+      echo "   TMPFILE2A=\`met_em_file_name \$DATEP2A $my_domain \`                    " >> $local_script
+      echo "   TMPFILE1B=\`met_em_file_name \$DATEP1B $my_domain \`                    " >> $local_script
+      echo "   TMPFILE2B=\`met_em_file_name \$DATEP2B $my_domain \`                    " >> $local_script
 
       echo "   ln -sf $PERTMETEMDIR/\$TMPFILE1A ./input_filea1.nc                      " >> $local_script
       echo "   ln -sf $PERTMETEMDIR/\$TMPFILE2A ./input_filea2.nc                      " >> $local_script

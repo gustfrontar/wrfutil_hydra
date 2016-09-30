@@ -24,6 +24,7 @@ USE common_perturb_ensemble
  CHARACTER(15)            :: met_ema1='input_filea1.nc',met_ema2='input_filea2.nc'
  CHARACTER(15)            :: met_emb1='input_fileb1.nc',met_emb2='input_fileb2.nc'
  CHARACTER(15)            :: ctrl_met_em='ctrl_met_em.nc'    !Where perturbation will be dadded
+ CHARACTER(19)            :: my_date
  LOGICAL                  :: USE_RANDOM_PERT
  INTEGER :: ilat, ilon ,ilev ,ivar , kk  , nlev_pert
  REAL(r_size) :: rmse
@@ -99,6 +100,14 @@ ALLOCATE( pert3db(nlon,nlat,nlev,nv3d),pert2db(nlon,nlat,nv2d) )
 ALLOCATE( levels(nlev) )
 
 !Get perturbation at the initial time in the window.
+ WRITE(*,*)"Processing perturbation at the beginning of the window"
+ WRITE(*,*)"Perturbation 1 will be obtained as the difference between "
+ WRITE(*,*)"the following dates: "
+ CALL get_date(met_ema1,my_date)
+ WRITE(*,*)my_date
+ CALL get_date(met_ema2,my_date)
+ WRITE(*,*)my_date
+
  CALL read_grd(met_ema1,gues3d(:,:,:,:,1),gues2d(:,:,:,1))
  CALL read_grd(met_ema2,gues3d(:,:,:,:,2),gues2d(:,:,:,2))
 
@@ -109,15 +118,23 @@ ALLOCATE( levels(nlev) )
                               pert3da(:,:,:,:),pert2da(:,:,:)  )
 
 !Get perturbation at the final time in the window.
+
+ WRITE(*,*)"Processing perturbation at the beginning of the window"
+ WRITE(*,*)"Perturbation 2 will be obtained as the difference between "
+ WRITE(*,*)"the following dates: "
+ CALL get_date(met_emb1,my_date)
+ WRITE(*,*)my_date
+ CALL get_date(met_emb2,my_date)
+ WRITE(*,*)my_date
+
  CALL read_grd(met_emb1,gues3d(:,:,:,:,1),gues2d(:,:,:,1))
  CALL read_grd(met_emb2,gues3d(:,:,:,:,2),gues2d(:,:,:,2))
-
 
  levels=gues3d(1,1,:,iv3d_pres,1)  !Get input levels.
 
  CALL PERTURB_MEMBER_BALANCED(gues3d(:,:,:,:,1),gues2d(:,:,:,1),   &
                               gues3d(:,:,:,:,2),gues2d(:,:,:,2),   &
-                              pert3da(:,:,:,:),pert2da(:,:,:)  )
+                              pert3db(:,:,:,:),pert2db(:,:,:)  )
 
  !Interpolate perturbation linearly in time
  time_factor=( REAL(current_time,r_size) / REAL(max_time,r_size) )
