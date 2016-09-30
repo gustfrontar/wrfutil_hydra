@@ -13,7 +13,7 @@ GEOGDIR=${HOME}/share/LETKF_WRF/wrf/model/GEOG/
 OUTPUTDIR=${HOME}/share/INPUT/$CONFIGURATION/             # FINAL DESTINATION OF THE PERTURBATIONS.
 TMPDIR=${HOME}/data/TMP/PREPARE_${CONFIGURATION}_DB       # TEMPORARY WORK DIRECTORY.
 
-MAXRUNNING=2 #Maximum simultaneous process running in pps servers
+MAXRUNNING=5 #Maximum simultaneous process running in pps servers
 
 GRIBSOURCE=CFSR
 BOUNDARY_DATA_FREQ=21600    #Boundary data perturbations will be output at the oringinal data frequency.

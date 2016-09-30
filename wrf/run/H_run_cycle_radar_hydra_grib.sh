@@ -19,7 +19,7 @@ CDIR=`pwd`
 
 #CONFIGURATION
 CONFIGURATION=control60m_radar_grib     #Define a experiment configuration
-MCONFIGURATION=machine_radar60m_Hydra   #Define a machine configuration (number of nodes, etc)
+MCONFIGURATION=machine_radar60m         #Define a machine configuration (number of nodes, etc)
 
 RESTART=0
 RESTARTDATE=20080810000000
@@ -153,19 +153,19 @@ mkdir -p $RESULTDIRG
 mkdir -p $RESULTDIRA
 
 echo " >>"
-echo " >> WAITING FOR ENSEMBLE RUN"
+echo " >> RUNNING THE ENSEMBLE"
 echo " >>"
 
 run_ensemble_forecast
 
 echo " >>"
-echo " >> WAITING FOR ENSEMBLE RUN"
+echo " >> GETTING OBSERVATIONS "
 echo " >>"
 
 get_observations
 
 echo " >>"
-echo " >> WAITING FOR LETKF"
+echo " >> RUNNING LETKF"
 echo " >>"
 
 run_letkf

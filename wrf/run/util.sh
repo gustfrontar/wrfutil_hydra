@@ -1080,7 +1080,7 @@ else
 fi
 
 cp -r $CDIR/configuration/machine_conf/${MCONFIGURATION}.sh  $DESTDIR  #Save machine conf.
-cp -r $CDIR/configuration/$DOMAINCONF                        $DESTDIR  #Save domain conf.
+cp -r $CDIR/configuration/domain_conf/$DOMAINCONF            $DESTDIR  #Save domain conf.
 cp -r $MYSCRIPT                                              $DESTDIR  #Save main script.
 
 }
