@@ -1,15 +1,13 @@
 #!/bin/bash
 #=======================================================================
-# K_driver.sh
+# Driver Script
 #   To run the WRF-LETKF in a qsub cluster.
 #   This scripts prepares all the data needed to run the letkf cycle 
-#   then submmits the job to the K computer.
-#   Based on the script developed by Shigenori Otsuka
-#   Diferences from V3:
-#   -Boundary perturbations, met em are perturbed and real is run in 
-#    K computer nodes.
+#   then submmits the job to the torque queu
+#   New developments:
+#   -WPS is run in pre/post nodes and real and wrf are run in computation nodes.
 #   -Letkf incorporates relaxation to prior inflation and eigen exa
-#    matrix computations.
+#    matrix computations. 
 #   -LETKF uses NETCDF IO.
 #=======================================================================
 #set -x
@@ -20,11 +18,8 @@
 CDIR=`pwd`
 
 #CONFIGURATION
-#CONFIGURATION
-DOMAINCONF=CORDOBA_2K               #Define a domain
-CONFIGURATION=control60m_radar      #Define a experiment configuration
-MCONFIGURATION=machine_radar60m_H   #Define a machine configuration (number of nodes, etc)
-LETKFNAMELIST=control               #Define a letkf namelist template
+CONFIGURATION=control60m_radar_grib_Hakushu     #Define a experiment configuration
+MCONFIGURATION=machine_radar60m_Hakushu         #Define a machine configuration (number of nodes, etc)
 
 RESTART=0
 RESTARTDATE=20080810000000
@@ -60,12 +55,15 @@ safe_init_outputdir $OUTPUTDIR
 
 set_my_log
 
+echo '>>>'
+echo ">>> OUTPUT WILL BE REDIRECTED TO THE FOLLOWING FILE"
+echo '>>>'
+
 echo $my_log
 
 #Start of the section that will be output to my log.
 {
 safe_init_tmpdir $TMPDIR
-
 
 save_configuration $CDIR/$MYSCRIPT
 
@@ -81,6 +79,24 @@ echo ">>> COPYING DATA TO WORK DIRECTORY "
 echo '>>>'                                         
 
 copy_data   
+
+echo '>>>'                                           
+echo ">>> GENERATING DOMAIN "          
+echo '>>>' 
+
+get_domain
+
+echo '>>>'                                           
+echo ">>> SET METEM DATA FREQ "          
+echo '>>>' 
+
+set_pre_processing_intervals
+
+echo '>>>'                                           
+echo ">>> GET INITIAL RANDOM DATES "          
+echo '>>>' 
+
+get_random_dates 
 
 
 ##################################################
@@ -110,12 +126,20 @@ echo '>>>'
 set_cycle_dates   
 
 echo " >>"                                                           
+echo " >> GET THE UNPERTURBED INITIAL AND BOUNDARY CONDITIONS"                                  
+echo " >>" 
+
+#RUN MODEL PRE-PROCESSING FROM GLOBAL ANALYSIS OR FORECASTS (run in PPS)
+
+get_met_em_from_grib
+
+echo " >>"                                                           
 echo " >> GENERATING PERTURBATIONS"                                  
 echo " >>"                                                           
 
 #PERTURB MET_EM FILES USING RANDOM BALANCED OR RANDOM SMOOTHED PERTURBATIONS (run in PPS)
-run_script=$TMPDIR/SCRIPTS/perturb_met_em.sh                         
-perturb_met_em $run_script                                           
+
+perturb_met_em_from_grib
 
 echo " >>"                                                           
 echo " >> ENSEMBLE FORECASTS AND LETKF"
@@ -129,19 +153,19 @@ mkdir -p $RESULTDIRG
 mkdir -p $RESULTDIRA
 
 echo " >>"
-echo " >> WAITING FOR ENSEMBLE RUN"
+echo " >> RUNNING THE ENSEMBLE"
 echo " >>"
 
 run_ensemble_forecast
 
 echo " >>"
-echo " >> WAITING FOR ENSEMBLE RUN"
+echo " >> GETTING OBSERVATIONS "
 echo " >>"
 
 get_observations
 
 echo " >>"
-echo " >> WAITING FOR LETKF"
+echo " >> RUNNING LETKF"
 echo " >>"
 
 run_letkf
