@@ -1,0 +1,23 @@
+&datetime
+ start_date = 'SYYYY-SMM-SDD_SHH:SMN:SSS',
+ end_date   = 'EYYYY-EMM-EDD_EHH:EMN:ESS',
+ interval_seconds = OUTPUTFREQ,
+ tacc = 0,
+ debug_level = 0,
+/
+
+&io
+ input_root_name = 'INPUT_ROOT_NAME'
+ output_root_name = 'OUTPUT_ROOT_NAME'
+ plot = 'list'
+ fields = OUTPUTVARS
+ mercator_defs = .true.
+ frames_per_outfile=1
+ split_output=.false.
+/
+
+&interp
+ interp_method = INTERP_METHOD,
+ interp_levels = OUTPUTLEVS
+/
+

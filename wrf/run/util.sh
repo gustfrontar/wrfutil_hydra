@@ -2517,7 +2517,7 @@ local PERTDATEDIR=$INPUTDIR/pert_date
 
 local PERTGRIBDIR=$PERTGRIBDIR/
 
-if [ ! -e $PERTGRIBDIR ] ; then
+if [ ! -e $PERTGRIBDIR -a $PERTURB_BOUNDARY -eq 1 ] ; then
    echo "[Error]: Can not find BC data in $PERTGRIBDIR "
    exit
 fi
