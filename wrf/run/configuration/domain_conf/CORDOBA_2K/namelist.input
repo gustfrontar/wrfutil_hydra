@@ -59,7 +59,7 @@
  bldt                                = 0,     0,     0,
  cu_physics                          = 0,     1,     0,
  cudt                                = 5,     5,     5,
- isfflx                              = 0,
+ isfflx                              = 1,
  ifsnow                              = 0,
  icloud                              = 1,
  surface_input_source                = 1,
@@ -89,9 +89,9 @@
  /
 
  &bdy_control
- spec_bdy_width                      = 10,
+ spec_bdy_width                      = 5,
  spec_zone                           = 1,
- relax_zone                          = 9,
+ relax_zone                          = 4,
  specified                           = .true., .false.,.false.,
  nested                              = .false., .true., .true.,
  /
