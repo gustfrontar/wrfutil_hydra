@@ -1,5 +1,5 @@
 #KALMAN FILTER CONFIGURATION
-DOMAINCONF=SA_40K                  #Define a domain
+DOMAINCONF=SA_40KNOLH           #Define a domain
 
 MEMBER=1        #Number of ensemble members.
 MAX_DOM=1
@@ -76,7 +76,7 @@ OBSDIR=${HOMEDIR}/DATA/OBS/$OBS/                                                
 NRADARS=1
 RADAROBSDIR=${HOMEDIR}/DATA/OBS/$RADAROBS/
 TMPDIR=${HOME}/TMP/$EXP/                                                                  # work directory
-OUTPUTDIR=${HOME}/salidas/EXPERIMENTS/$EXP/                                               # Where results should appear.
+OUTPUTDIR=${HOME}/share/EXPERIMENTS/$EXP/                                                 # Where results should appear.
 GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/SA/                                                # Folder where bdy and inita data gribs are located.
 GRIBTABLE="Vtable.GFS"                                                                    # Bdy and init data source Vtable name.
 PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/SA/                                           # Folder where data for perturbing bdy are located.
