@@ -1,0 +1,409 @@
+MODULE common_airs
+USE common
+USE common_mtx
+
+IMPLICIT NONE
+PUBLIC
+
+INTEGER,PARAMETER :: id_co_obs=5002
+INTEGER,PARAMETER :: id_totco_obs=5001
+!
+! surface observations codes > 9999
+!
+LOGICAL,PARAMETER :: verbose = .FALSE.
+INTEGER,PARAMETER :: airstype = 21 ! observation type record for AIRS
+REAL(r_size),PARAMETER :: lon1 =  270.0d0 ! minimum longitude
+REAL(r_size),PARAMETER :: lon2 =  340.0d0 ! maximum longitude
+REAL(r_size),PARAMETER :: lat1 =  -70.0d0 ! minimum latitude
+REAL(r_size),PARAMETER :: lat2 =   20.0d0 ! maximum latitude
+
+REAL(r_size),PARAMETER :: coef_error = 1.0d0  
+INTEGER,PARAMETER :: iskip = 3
+INTEGER,PARAMETER :: nunit=70
+INTEGER,PARAMETER :: nx=30
+INTEGER,PARAMETER :: ny=45
+INTEGER,PARAMETER :: nzt=28
+INTEGER,PARAMETER :: nzco=100
+INTEGER,PARAMETER :: n_trapezoids=9 !Number of CO Layers in AIRS Retrievals.
+ 
+REAL(r_dble) :: rlon(nx,ny)
+REAL(r_dble) :: rlat(nx,ny)
+REAL(r_dble) :: time(nx,ny),time1,time2
+REAL(r_sngl) :: COVMR(n_trapezoids,nx,ny)
+REAL(r_sngl) :: COVMRE(n_trapezoids,nx,ny)
+REAL(r_sngl) :: COVMRQC(n_trapezoids,nx,ny)
+REAL(r_sngl) :: COAVEKERN(n_trapezoids,n_trapezoids,nx,ny)
+REAL(r_size) :: COPRIOR(12,nzco,2) 
+REAL(r_size) :: smooth_profile(n_trapezoids)
+REAL(r_size) :: pressure_trapezoids(n_trapezoids+1)   !Pressure limits of AIRS CO Trapezoid function.
+REAL(r_size) :: pressure_levels(nzco)                 !Pressure levels of AIRS CO Suplementary retrievals.
+INTEGER      :: level_trapezoids(n_trapezoids+1)
+
+REAL(r_sngl) :: psurf(nx,ny)
+INTEGER(2) :: qq(nx,ny)
+
+CONTAINS
+!=======================================================================
+! READING HDF
+!=======================================================================
+SUBROUTINE read_hdf(filename)
+IMPLICIT NONE
+CHARACTER(*) :: filename
+INTEGER :: statn
+INTEGER :: fid
+INTEGER :: nswath
+INTEGER :: nchar
+INTEGER :: swid
+INTEGER :: swopen,swinqswath,swattach,swrdattr,swrdfld,swdetach,swclose
+CHARACTER(256) :: swathname
+INTEGER :: i,j,k
+  !
+  ! open
+  !
+  !READ(5,'(A)') filename
+  PRINT *,filename
+  !PRINT *,filename
+  fid = swopen(filename,1)
+  IF(fid == -1) THEN
+    PRINT *,'IO ERROR: opening file ',filename
+    STOP
+  END IF
+  nswath = swinqswath(filename,swathname,nchar)
+  IF(nswath /= 1) THEN
+    PRINT *,'FILE ERROR: bad nswath ',nswath
+    STOP
+  END IF
+  IF(swathname /= 'L2_Standard_atmospheric&surface_product') THEN
+    PRINT *,'FILE ERROR: bad swath name ',swathname
+    STOP
+  END IF
+  swid = swattach(fid, swathname)
+  IF(swid == -1) THEN
+    PRINT *,'FILE ERROR: failed to attach to swath ',swathname
+    STOP
+  END IF
+  !
+  ! read
+  !
+!  sec = sec4
+  statn = swrdattr(swid,'start_Time',time1)
+  statn = swrdattr(swid,'end_Time',time2)
+  statn = swrdfld(swid,'Longitude',(/0,0/),(/1,1/),(/nx,ny/),rlon)
+  statn = swrdfld(swid,'Latitude',(/0,0/),(/1,1/),(/nx,ny/),rlat)
+  statn = swrdfld(swid,'Time',(/0,0/),(/1,1/),(/nx,ny/),time)
+
+  statn = swrdfld(swid,'COVMRLevSup',(/0,0,0/),(/1,1,1/),(/n_trapezoids,nx,ny/),COVMR)
+  statn = swrdfld(swid,'COVMRLevSupErr',(/0,0,0/),(/1,1,1/),(/n_trapezoids,nx,ny/),COVMRE)
+  statn = swrdfld(swid,'COVMRLevSup_QC',(/0,0,0/),(/1,1,1/),(/n_trapezoids,nx,ny/),COVMRQC)
+  statn = swrdfld(swid,'CO_ave_kern',(/0,0,0/),(/1,1,1/),(/n_trapezoids,n_trapezoids,nx,ny/),COAVEKERN)
+  statn = swrdfld(swid,'PSurfStd',(/0,0/),(/1,1/),(/nx,ny/),psurf)
+  !
+  ! close
+  !
+  statn = swdetach(swid)
+  statn = swclose(fid)
+
+END SUBROUTINE read_hdf
+
+
+SUBROUTINE read_first_guess()
+IMPLICIT NONE
+INTEGER :: ii
+  !
+  !  READ first guess data
+  !
+  !Read Northern Hemisphere prior.
+  OPEN(44,FILE='airs_co_prior_nh.tbl',FORM='FORMATTED')
+   READ(44,*)
+   READ(44,*)pressure_levels
+   DO ii=1,12
+     READ(44,*)COPRIOR(ii,:,1)
+   ENDDO
+  CLOSE(44)
+  !Read Southern Hemisphere prior.
+  OPEN(44,FILE='airs_co_prior_sh.tbl',FORM='FORMATTED')
+   READ(44,*)
+   READ(44,*)
+   DO ii=1,12
+     READ(44,*)COPRIOR(ii,:,2)
+   ENDDO
+  CLOSE(44)
+
+END SUBROUTINE read_first_guess
+
+SUBROUTINE read_trapezoid_limits()
+IMPLICIT NONE
+INTEGER :: ii
+  ! 
+  !  READ trapezoid limits in pressure (hPa)
+  !
+  !Read in the levels corresponding to trapezoid limits in AIRS data.
+   OPEN(33,FILE='co_trapezoid_layers.tbl',FORM='FORMATTED')
+    DO ii=n_trapezoids+1,1,-1
+      READ(33,*)level_trapezoids(ii),pressure_trapezoids(ii)
+    ENDDO
+
+END SUBROUTINE read_trapezoid_limits
+
+!-----------------------------------------------------------------------
+! From vertical profile to trapezoid layers. 
+!-----------------------------------------------------------------------
+!This subroutine generates the transformation matrix between a vertical profile
+!and AIRS trapezoid layers.
+!Pressure has to be in hPa.
+
+SUBROUTINE profile_to_airslayer(co_profile,co_profile_airs,surface_pressure)
+IMPLICIT NONE
+  REAL(r_size), INTENT(IN) :: co_profile(nzco)
+  REAL(r_size),ALLOCATABLE :: F(:,:),Finv(:,:)
+  INTEGER              :: ii  , jj , kk
+  REAL(r_size)         :: tmp_trapezoids_limit(4),tmp_w_value(4)
+  REAL(r_size)         :: pmin , pmax
+  REAL(r_size),INTENT(OUT) :: co_profile_airs(n_trapezoids)
+  REAL(r_size),ALLOCATABLE :: work1(:,:),work2(:,:),eivec(:,:),eival(:),tmp_co_profile(:)
+  INTEGER              :: include_level(n_trapezoids), min_trap , max_trap , n_eff_trap
+  INTEGER              :: n_pos_eival
+  REAL(r_size),ALLOCATABLE :: co_profile_eff(:) , co_profile_airs_eff(:)
+  REAL(r_size),ALLOCATABLE :: pressure_trapezoids_eff(:) ,pressure_levels_eff(:)
+  REAL(r_size),ALLOCATABLE :: log_pressure_trapezoids_eff(:) , log_pressure_levels_eff(:)
+  INTEGER                  :: ini_p_lev , ini_trap , nzco_eff , n_trapezoids_eff
+  
+  !First we need to detect the efective number of levels and the efective number
+  !of trapezoids.
+
+  !Generate the effective trapezoid layers.
+  DO ii=1,ntrapezoid
+     IF( pressure_trapezoid(ii) >= surface_pressure .AND. pressure_trapezoid(ii) <= surface_pressure )THEN
+     ini_trap=ii
+     ENDIF
+  ENDDO
+  n_trapezoids_eff=n_trapezodis-ini_trap+1
+  ALLOCATE( pressure_trapezoids_eff(n_trapezoids_eff))
+  ALLOCATE( log_pressure_trapezoids_eff(n_trapezoids_eff))
+  ALLOCATE( co_profile_airs_eff(n_trapezoids_eff))
+  pressure_trapezoids_eff(1)=surface_pressure
+  DO ii=ini_trap+1,n_trapezoid+1
+    pressure_trapezoids_eff(ii-ini_trap+1)=pressure_trapezoids(ii)
+  ENDDO
+  co_profile_airs_eff=0.0d0
+
+  !Generate the effective pressure levels
+  DO ii=1,nzco
+     IF( pressure_levels(ii) >= surface_pressure .AND. pressure_levels(ii) <= surface_pressure )THEN
+     ini_p_lev=ii
+     ENDIF
+  ENDDO
+  n_pressure_levels_eff=nzco - ini_p_lev + 1
+  ALLOCATE( pressure_levels_eff(n_pressure_levels_eff))
+  ALLOCATE( log_pressure_levels_eff(n_pressure_levels_eff))
+  ALLOCATE( co_profile_eff(n_pressure_levels_eff))
+  pressure_levels_eff(1)=surface_pressure
+  DO ii=ini_p_lev+1,nzco
+    pressure_levels_eff(ii-ini_p_lev+1)=pressure_levels(ii)
+    co_profile_eff(ii-ini_p_lev+1)=co_profile(ii)
+  ENDDO
+
+
+  !Compute pressure in logaritmic scale.
+  log_pressure_levels_eff=log10(pressure_levels_eff)
+  log_pressure_trapezoids_eff=log10(pressure_trapezoids_eff)
+
+  !For what levels we would be able to define the transformation matrix?
+  DO ii=1,n_trapezoids
+    IF( ii == 1)THEN
+      pmin=pressure_trapezoids(3)
+      pmax=pressure_trapezoids(1)
+    ELSEIF( ii==n_trapezoids)THEN
+      pmin=pressure_trapezoids(n_trapezoids)
+      pmax=pressure_trapezoids(n_trapezoids-2)
+    ELSE
+      pmin=pressure_trapezoids(ii-1)
+      pmax=pressure_trapezoids(ii+1)
+    ENDIF
+    DO jj=1,n_pressure_levels
+       IF( pressure_levels(jj) > pmin .AND. pressure_levels(jj) < pmax)THEN
+         include_level(ii)=include_level(ii)+1
+       ENDIF 
+    ENDDO
+  ENDDO
+
+  !We assume that the layers that can not be 
+  !computed from the input vertical profile are at the top or at the
+  !bottom of the troposphere. We do not consider the case in which some
+  !intermediate layers can not be computed due to low resolution in the input
+  !profile.
+  max_trap=0
+  min_trap=n_trapezoids
+  DO ii=1,n_trapezoids
+    IF(include_level(ii) > 0)max_trap=ii   
+    IF(include_level(n_trapezoids-ii+1) > 0)min_trap=ii 
+  ENDDO
+
+  IF( max_trap==0 )THEN
+      RETURN !I could not compute anything!
+  ENDIF
+
+  n_eff_trap=max_trap-min_trap+1
+  
+
+  tmp_w_value=0.0d0
+  !Define F
+  ALLOCATE( F(n_pressure_levels,n_eff_trap) )
+
+  DO ii =min_trap,max_trap
+    IF( ii == 1)THEN
+      tmp_trapezoids_limit(1)=log_pressure_trapezoids(1)-1.0e-10
+      tmp_trapezoids_limit(2:4)=log_pressure_trapezoids(ii:ii+2)
+      tmp_w_value(3)=0.5d0
+      tmp_w_value(2)=1.0d0
+    ELSEIF( ii == n_trapezoids )THEN
+      tmp_trapezoids_limit(1:3)=log_pressure_trapezoids(ii-1:ii+1)
+      tmp_trapezoids_limit(4)=log_pressure_trapezoids(n_trapezoids+1)+1.0e-10
+      tmp_w_value(3)=1.0d0
+      tmp_w_value(2)=0.5d0
+    ELSE
+      tmp_trapezoids_limit(1:4)=log_pressure_trapezoids(ii-1:ii+2)
+      tmp_w_value(2:3)=0.5d0
+    ENDIF
+
+    CALL linear_interp(n_trapezoids,n_pressure_levels, &
+  & log_pressure_trapezoids,log_pressure_levels ,      &
+  & tmp_w_value,F(ii-min_trap+1,ii))
+
+    WHERE( F(:,ii-min_trap+1) == undef )
+       F(:,ii-min_trap+1)=0.0d0
+    ENDWHERE
+  ENDDO
+
+  !Compute pseudo inverse of F according to AIRS documentation.
+  ALLOCATE(Finv(n_eff_trap,n_pressure_levels) )
+  ALLOCATE(work1(n_eff_trap,n_eff_trap),eivec(n_eff_trap,n_eff_trap),eival(n_eff_trap) )
+  ALLOCATE(work2(n_eff_trap,n_eff_trap) )
+  !Compute F^T * F
+  CALL dgemm('t','n',n_eff_trap,n_eff_trap,n_pressure_levels,1.0d0,F,n_pressure_levels,F,&
+    & n_pressure_levels,0.0d0,work1,n_eff_trap)
+  !Compute inv( F^T*F )
+  CALL mtx_eigen(1,n_eff_trap,work1,eival,eivec,n_pos_eival)
+  DO jj=1,n_eff_trap
+    DO ii=1,n_eff_trap
+      work1(ii,jj) = eivec(ii,jj) / eival(jj)
+    END DO
+  END DO
+  CALL dgemm('n','t',n_eff_trap,n_eff_trap,n_eff_trap,1.0d0,work1,n_eff_trap,eivec,&
+    & n_eff_trap,0.0d0,work2,n_eff_trap)
+  CALL dgemm('n','t',n_eff_trap,n_pressure_levels,n_eff_trap,1.0d0,work2,n_eff_trap,F,&
+    & n_pressure_levels,0.0d0,Finv,n_pressure_levels)
+
+  CALL dgemm('n','n',n_eff_trap,1,n_pressure_levels,1.0d0,Finv,n_eff_trap,co_profile,&
+    & n_pressure_levels,0.0d0,tmp_co_profile,n_eff_trap)
+
+  DO ii=1,n_trapezoids
+    IF( ii < min_trap .OR. ii > max_trap)THEN
+      co_profile_airs=undef
+    ELSE
+      co_profile_airs(ii)=tmp_co_profile(ii-min_trap+1)
+    ENDIF
+  ENDDO
+
+
+
+END SUBROUTINE profile_to_airslayer
+
+!SUBROUTINE moleccmsq_to_mixingratio(moleccmsq,deltaP,mixingratio)
+!Converts from molecules per cm2 to mixing ratio.
+!Pressure input in Pa.
+!  REAL(r_size), INTENT(IN) :: moleccsmsq , deltaP
+!  REAL(r_size), INTENT(OUT):: mixingratio
+!  REAL(r_size), PARAMETER :: Av=6.0221409d+23
+
+  !mixingratio=moleccmsq*R*g/(Av*10-3*Rd*deltaP)
+  !The factor 10-4 transforms from Pa=N/m2 to N/cm2
+  !R is the ideal gas constant.
+  !Rd is the ideal gas constant for dry air.
+  !g is the acceleration of gravity.
+
+!  mixingratio=moleccmsq*8.31*gg/(Av*10d-4*Rd*deltaP)
+
+!END SUBROUTINE moleccmsq_to_mixingratio
+
+Subroutine linear_interp(    &
+     & klevi ,&  ! in
+     & klevf ,&  ! in
+     & xi ,&  ! in
+     & xf ,&  ! in
+     & yi  ,&  ! in
+     & yf)  ! out  
+
+  ! Description:
+  ! To interpolate the array vec from the presi levels to presf levels
+  !
+  ! Copyright:
+  !
+  !    This software was developed within the context of
+  !    the EUMETSAT Satellite Application Facility on
+  !    Numerical Weather Prediction (NWP SAF), under the
+  !    Cooperation Agreement dated 25 November 1998, between
+  !    EUMETSAT and the Met Office, UK, by one or more partners
+  !    within the NWP SAF. The partners in the NWP SAF are
+  !    the Met Office, ECMWF, KNMI and MeteoFrance.
+  !
+  !    Copyright 2002, EUMETSAT, All Rights Reserved.
+  !
+  !
+  ! Method:
+  ! Linear interpolation 
+  !
+  ! Current Code Owner: SAF NWP
+  !
+  ! History:
+  ! Version   Date        Comment
+  ! -------   ----        -------
+  ! 1         09/2002     ECMWF
+
+  Implicit None
+
+  !
+  ! Subroutine arguments
+  !
+  Integer, Intent(in) :: klevi      ! number of levels of the initial grid
+  Integer, Intent(in) :: klevf      ! number of levels of the final grid
+  !
+  Real(r_size), Intent(in), Dimension(klevi)  :: xi ! initial grid
+  Real(r_size), Intent(in), Dimension(klevf)  :: xf ! final grid
+  !
+  Real(r_size), Intent(in), Dimension(klevi)  :: yi  ! initial vec array
+  Real(r_size), Intent(out), Dimension(klevf) :: yf  ! final vec array
+  !
+  ! Local scalars :
+  !
+  Integer :: jki, jkf
+  Real(r_size)    :: slope, t1, t2, p1, p2, lp1, lp2
+  !
+  !- End of header --------------------------------------------------------
+
+  yf(:) = undef
+
+  Do jkf = 1,klevf
+     Do jki = 1,klevi-1
+        p1 = xi(jki)
+        p2 = xi(jki+1)
+        If (xf(jkf) >= p1 .And. xf(jkf) < p2) Then
+           t1 = yi(jki)
+           t2 = yi(jki+1)
+           slope = (t1-t2)/(p1-p2)
+           If (t2 == 0.) slope = 0.
+           yf(jkf) = t1 + slope*(yf(jkf)-p1)
+           !
+        Else If (jki == 1 .And. xf(jkf) < p1) Then
+           yf(jkf) = undef
+        Else If (jki == (klevi-1) .And. yf(jkf) == undef ) Then
+           yf(jkf) = undef
+        End If
+     End Do
+  End Do
+
+  Return
+End Subroutine linear_interp
+
+END MODULE common_airs
+

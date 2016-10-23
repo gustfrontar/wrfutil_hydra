@@ -21,8 +21,8 @@ CDIR=`pwd`
 CONFIGURATION=exprtps08_60m_radar_grib  #Define a experiment configuration
 MCONFIGURATION=machine_radar60m_Hydra        #Define a machine configuration (number of nodes, etc)
 
-RESTART=0
-RESTARTDATE=20140122190000
+RESTART=1
+RESTARTDATE=20140122192000
 RESTARTITER=10
 
 

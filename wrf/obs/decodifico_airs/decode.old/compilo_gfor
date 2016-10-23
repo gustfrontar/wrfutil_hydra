@@ -1,0 +1,5 @@
+gfortran -o decoderconskip2 SFMT.f90 common.f90 common_wrf.f90 common_obs_wrf.f90 dec_airs_conskip_maru.f90 -L/root/hdfeos/hdfeos/lib/linux/ -lhdfeos -lGctp -L/root/hdfeos/hdfeos/hdf5/linux64/hdf5-1.8.8/lib -lhdf5 -L/root/hdfeos/hdfeos/hdf/linux64/hdf-4.2.6/lib -lmfhdf -ldf -lz -lsz -ljpeg -L/usr/lib64 -lm
+
+
+
+

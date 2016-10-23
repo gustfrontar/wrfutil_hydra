@@ -1,0 +1,817 @@
+/home/jruiz/datosmate/PREPBUFR/DATA/obs
+/home/jruiz/datosmate/PREPBUFR/DATA/obs/airs
+ >> Making decoder..
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.001.L2.RetStd.v6.0.7.0.G13063045434.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.001.L2.SUBX2RET.v6.0.7.0.G13063045434.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:02 --:--:--     0  0 1266k    0  1448    0     0    516      0  0:41:54  0:00:02  0:41:52   516 19 1266k   19  251k    0     0  66850      0  0:00:19  0:00:03  0:00:16 66844100 1266k  100 1266k    0     0   277k      0  0:00:04  0:00:04 --:--:--  277k
+ ./tmp.hdf                                                                                           
+ =================== SUMARY ==========================
+   P    ,  NT  
+   1100.00000                  0
+   1000.00000                  0
+   925.000000                  0
+   850.000000                  0
+   700.000000                  0
+   600.000000                  0
+   500.000000                  0
+   400.000000                  0
+   300.000000                  0
+   250.000000                  0
+   200.000000                  0
+   150.000000                  0
+   100.000000                  0
+   70.0000000                  0
+   50.0000000                  0
+   30.0000000                  0
+   20.0000000                  0
+   15.0000000                  0
+   10.0000000                  0
+   7.00000000                  0
+   5.00000000                  0
+   3.00000000                  0
+   2.00000000                  0
+   1.50000000                  0
+   1.00000000                  0
+  0.500000000                  0
+  0.200000003                  0
+  0.100000001                  0
+ =====================================================
+ =================== SUMARY ==========================
+   P    ,  NQ 
+   1100.00000                  0
+   1000.00000                  0
+   925.000000                  0
+   850.000000                  0
+   700.000000                  0
+   600.000000                  0
+   500.000000                  0
+   400.000000                  0
+   300.000000                  0
+   250.000000                  0
+   200.000000                  0
+   150.000000                  0
+   100.000000                  0
+   70.0000000                  0
+ =====================================================
+  LAT MEAN   -65.912398629780313       LON MEAN   -138.33135369559324     
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.015.L2.RetStd.v6.0.7.0.G13063050023.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.015.L2.SUBX2RET.v6.0.7.0.G13063050023.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0 1265k    0  1448    0     0    780      0  0:27:40  0:00:01  0:27:39   780 27 1265k   27  350k    0     0   129k      0  0:00:09  0:00:02  0:00:07  129k100 1265k  100 1265k    0     0   370k      0  0:00:03  0:00:03 --:--:--  370k
+ ./tmp.hdf                                                                                           
+ =================== SUMARY ==========================
+   P    ,  NT  
+   1100.00000                 19
+   1000.00000                 19
+   925.000000                 20
+   850.000000                 20
+   700.000000                 21
+   600.000000                 21
+   500.000000                 21
+   400.000000                 21
+   300.000000                 21
+   250.000000                 21
+   200.000000                 21
+   150.000000                 21
+   100.000000                 21
+   70.0000000                 21
+   50.0000000                 19
+   30.0000000                 19
+   20.0000000                 20
+   15.0000000                 20
+   10.0000000                 21
+   7.00000000                 21
+   5.00000000                 21
+   3.00000000                 21
+   2.00000000                 21
+   1.50000000                 21
+   1.00000000                 21
+  0.500000000                 21
+  0.200000003                 21
+  0.100000001                 21
+ =====================================================
+ =================== SUMARY ==========================
+   P    ,  NQ 
+   1100.00000                 21
+   1000.00000                 21
+   925.000000                 21
+   850.000000                 21
+   700.000000                 21
+   600.000000                 21
+   500.000000                 21
+   400.000000                 21
+   300.000000                 21
+   250.000000                 21
+   200.000000                 21
+   150.000000                 21
+   100.000000                 21
+   70.0000000                 21
+ =====================================================
+  LAT MEAN   -57.374264283256373       LON MEAN   -12.354029682868207     
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.016.L2.RetStd.v6.0.7.0.G13063045725.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.016.L2.SUBX2RET.v6.0.7.0.G13063045725.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0 1264k    0  1448    0     0    738      0  0:29:15  0:00:01  0:29:14   738  4 1264k    4 57594    0     0  23830      0  0:00:54  0:00:02  0:00:52 23828 25 1264k   25  324k    0     0  99147      0  0:00:13  0:00:03  0:00:10 99140 90 1264k   90 1140k    0     0   265k      0  0:00:04  0:00:04 --:--:--  265k100 1264k  100 1264k    0     0   294k      0  0:00:04  0:00:04 --:--:--  401k
+ ./tmp.hdf                                                                                           
+ =================== SUMARY ==========================
+   P    ,  NT  
+   1100.00000                  0
+   1000.00000                  0
+   925.000000                  0
+   850.000000                  2
+   700.000000                  6
+   600.000000                  8
+   500.000000                 10
+   400.000000                 16
+   300.000000                 16
+   250.000000                 16
+   200.000000                 16
+   150.000000                 16
+   100.000000                 16
+   70.0000000                 16
+   50.0000000                  0
+   30.0000000                  0
+   20.0000000                  0
+   15.0000000                  0
+   10.0000000                  6
+   7.00000000                  9
+   5.00000000                 12
+   3.00000000                 16
+   2.00000000                 16
+   1.50000000                 16
+   1.00000000                 16
+  0.500000000                 16
+  0.200000003                 16
+  0.100000001                 16
+ =====================================================
+ =================== SUMARY ==========================
+   P    ,  NQ 
+   1100.00000                 16
+   1000.00000                 16
+   925.000000                 16
+   850.000000                 16
+   700.000000                 16
+   600.000000                 16
+   500.000000                 16
+   400.000000                 16
+   300.000000                 16
+   250.000000                 16
+   200.000000                 16
+   150.000000                 16
+   100.000000                 16
+   70.0000000                 16
+ =====================================================
+  LAT MEAN   -76.275694786488415       LON MEAN   -44.185757648180719     
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.017.L2.RetStd.v6.0.7.0.G13063050234.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.017.L2.SUBX2RET.v6.0.7.0.G13063050234.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0 1266k    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  1 1266k    1 24290    0     0  10739      0  0:02:00  0:00:02  0:01:58 10738 42 1266k   42  532k    0     0   164k      0  0:00:07  0:00:03  0:00:04  164k100 1266k  100 1266k    0     0   319k      0  0:00:03  0:00:03 --:--:--  319k
+ ./tmp.hdf                                                                                           
+ =================== SUMARY ==========================
+   P    ,  NT  
+   1100.00000                  0
+   1000.00000                  0
+   925.000000                  0
+   850.000000                  0
+   700.000000                  0
+   600.000000                  0
+   500.000000                  0
+   400.000000                  0
+   300.000000                  0
+   250.000000                  0
+   200.000000                  0
+   150.000000                  0
+   100.000000                  0
+   70.0000000                  0
+   50.0000000                  0
+   30.0000000                  0
+   20.0000000                  0
+   15.0000000                  0
+   10.0000000                  0
+   7.00000000                  0
+   5.00000000                  0
+   3.00000000                  0
+   2.00000000                  0
+   1.50000000                  0
+   1.00000000                  0
+  0.500000000                  0
+  0.200000003                  0
+  0.100000001                  0
+ =====================================================
+ =================== SUMARY ==========================
+   P    ,  NQ 
+   1100.00000                  0
+   1000.00000                  0
+   925.000000                  0
+   850.000000                  0
+   700.000000                  0
+   600.000000                  0
+   500.000000                  0
+   400.000000                  0
+   300.000000                  0
+   250.000000                  0
+   200.000000                  0
+   150.000000                  0
+   100.000000                  0
+   70.0000000                  0
+ =====================================================
+  LAT MEAN   -74.770440219974901       LON MEAN   -135.00684947035205     
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.028.L2.RetStd.v6.0.7.0.G13063050720.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.028.L2.SUBX2RET.v6.0.7.0.G13063050720.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0 1265k    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  5 1265k    5 68683    0     0  30348      0  0:00:42  0:00:02  0:00:40 30337 35 1265k   35  445k    0     0   131k      0  0:00:09  0:00:03  0:00:06  131k100 1265k  100 1265k    0     0   305k      0  0:00:04  0:00:04 --:--:--  305k
+ ./tmp.hdf                                                                                           
+ =================== SUMARY ==========================
+   P    ,  NT  
+   1100.00000                 16
+   1000.00000                 16
+   925.000000                 16
+   850.000000                 16
+   700.000000                 17
+   600.000000                 17
+   500.000000                 17
+   400.000000                 17
+   300.000000                 17
+   250.000000                 17
+   200.000000                 17
+   150.000000                 17
+   100.000000                 17
+   70.0000000                 17
+   50.0000000                 16
+   30.0000000                 16
+   20.0000000                 16
+   15.0000000                 16
+   10.0000000                 17
+   7.00000000                 17
+   5.00000000                 17
+   3.00000000                 17
+   2.00000000                 17
+   1.50000000                 17
+   1.00000000                 17
+  0.500000000                 17
+  0.200000003                 17
+  0.100000001                 17
+ =====================================================
+ =================== SUMARY ==========================
+   P    ,  NQ 
+   1100.00000                 17
+   1000.00000                 17
+   925.000000                 17
+   850.000000                 17
+   700.000000                 17
+   600.000000                 17
+   500.000000                 17
+   400.000000                 17
+   300.000000                 17
+   250.000000                 17
+   200.000000                 17
+   150.000000                 17
+   100.000000                 17
+   70.0000000                 17
+ =====================================================
+  LAT MEAN    17.448061647451031       LON MEAN   -15.916890596930831     
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.029.L2.RetStd.v6.0.7.0.G13063050333.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.029.L2.SUBX2RET.v6.0.7.0.G13063050333.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0 1265k    0  2896    0     0   1533      0  0:14:04  0:00:01  0:14:03  1533  0 1265k    0  2896    0     0    538      0  0:40:07  0:00:05  0:40:02   538  1 1265k    1 19280    0     0   1871      0  0:11:32  0:00:10  0:11:22  1871 94 1265k   94 1193k    0     0   113k      0  0:00:11  0:00:10  0:00:01  113k100 1265k  100 1265k    0     0   114k      0  0:00:11  0:00:11 --:--:--  127k
+ ./tmp.hdf                                                                                           
+ =================== SUMARY ==========================
+   P    ,  NT  
+   1100.00000                 43
+   1000.00000                 58
+   925.000000                 62
+   850.000000                 63
+   700.000000                 76
+   600.000000                 76
+   500.000000                 76
+   400.000000                 76
+   300.000000                 76
+   250.000000                 76
+   200.000000                 76
+   150.000000                 76
+   100.000000                 76
+   70.0000000                 76
+   50.0000000                 43
+   30.0000000                 56
+   20.0000000                 58
+   15.0000000                 58
+   10.0000000                 76
+   7.00000000                 76
+   5.00000000                 76
+   3.00000000                 76
+   2.00000000                 76
+   1.50000000                 76
+   1.00000000                 76
+  0.500000000                 76
+  0.200000003                 76
+  0.100000001                 76
+ =====================================================
+ =================== SUMARY ==========================
+   P    ,  NQ 
+   1100.00000                 76
+   1000.00000                 76
+   925.000000                 76
+   850.000000                 76
+   700.000000                 76
+   600.000000                 76
+   500.000000                 76
+   400.000000                 76
+   300.000000                 76
+   250.000000                 76
+   200.000000                 76
+   150.000000                 76
+   100.000000                 76
+   70.0000000                 76
+ =====================================================
+  LAT MEAN   -4.2522745667613364       LON MEAN   -20.638194793296442     
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.030.L2.RetStd.v6.0.7.0.G13063050354.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.030.L2.SUBX2RET.v6.0.7.0.G13063050354.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0 1265k    0  2896    0     0   1481      0  0:14:34  0:00:01  0:14:33  1481  8 1265k    8  105k    0     0  40925      0  0:00:31  0:00:02  0:00:29 40919 46 1265k   46  587k    0     0   163k      0  0:00:07  0:00:03  0:00:04  163k100 1265k  100 1265k    0     0   318k      0  0:00:03  0:00:03 --:--:--  318k
+ ./tmp.hdf                                                                                           
+ =================== SUMARY ==========================
+   P    ,  NT  
+   1100.00000                 62
+   1000.00000                 77
+   925.000000                 92
+   850.000000                 92
+   700.000000                123
+   600.000000                123
+   500.000000                124
+   400.000000                124
+   300.000000                124
+   250.000000                124
+   200.000000                124
+   150.000000                124
+   100.000000                124
+   70.0000000                124
+   50.0000000                 62
+   30.0000000                 78
+   20.0000000                 96
+   15.0000000                 97
+   10.0000000                121
+   7.00000000                121
+   5.00000000                124
+   3.00000000                124
+   2.00000000                124
+   1.50000000                124
+   1.00000000                124
+  0.500000000                124
+  0.200000003                124
+  0.100000001                124
+ =====================================================
+ =================== SUMARY ==========================
+   P    ,  NQ 
+   1100.00000                124
+   1000.00000                124
+   925.000000                124
+   850.000000                124
+   700.000000                124
+   600.000000                124
+   500.000000                124
+   400.000000                124
+   300.000000                124
+   250.000000                124
+   200.000000                124
+   150.000000                124
+   100.000000                124
+   70.0000000                124
+ =====================================================
+  LAT MEAN   -25.899841069316839       LON MEAN   -25.553431153914275     
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.031.L2.RetStd.v6.0.7.0.G13063050942.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.031.L2.SUBX2RET.v6.0.7.0.G13063050942.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0 1265k    0  1448    0     0    762      0  0:28:19  0:00:01  0:28:18   762  0 1265k    0  1448    0     0    174      0  2:04:04  0:00:08  2:03:56   174  1 1265k    1 17832    0     0   1215      0  0:17:46  0:00:14  0:17:32  1215  1 1265k    1 17832    0     0    964      0  0:22:23  0:00:18  0:22:05   964  2 1265k    2 34216    0     0   1311      0  0:16:28  0:00:26  0:16:02  1372  2 1265k    2 34216    0     0   1120      0  0:19:16  0:00:30  0:18:46  1143  3 1265k    3 50600    0     0   1366      0  0:15:48  0:00:37  0:15:11  1709  3 1265k    3 50600    0     0   1097      0  0:19:40  0:00:46  0:18:54  1042  5 1265k    5 66984    0     0   1297      0  0:16:38  0:00:51  0:15:47  1483  5 1265k    5 66984    0     0   1268      0  0:17:01  0:00:52  0:16:09  1225 97 1265k   97 1228k    0     0  23395      0  0:00:55  0:00:53  0:00:02 52698100 1265k  100 1265k    0     0  24090      0  0:00:53  0:00:53 --:--:-- 74394
+ ./tmp.hdf                                                                                           
+ =================== SUMARY ==========================
+   P    ,  NT  
+   1100.00000                 70
+   1000.00000                 72
+   925.000000                 75
+   850.000000                 76
+   700.000000                 92
+   600.000000                 96
+   500.000000                124
+   400.000000                138
+   300.000000                144
+   250.000000                144
+   200.000000                144
+   150.000000                144
+   100.000000                144
+   70.0000000                144
+   50.0000000                 70
+   30.0000000                 72
+   20.0000000                 75
+   15.0000000                 76
+   10.0000000                 92
+   7.00000000                 94
+   5.00000000                128
+   3.00000000                136
+   2.00000000                144
+   1.50000000                144
+   1.00000000                144
+  0.500000000                144
+  0.200000003                144
+  0.100000001                144
+ =====================================================
+ =================== SUMARY ==========================
+   P    ,  NQ 
+   1100.00000                144
+   1000.00000                144
+   925.000000                144
+   850.000000                144
+   700.000000                144
+   600.000000                144
+   500.000000                144
+   400.000000                144
+   300.000000                144
+   250.000000                144
+   200.000000                144
+   150.000000                144
+   100.000000                144
+   70.0000000                144
+ =====================================================
+  LAT MEAN   -47.297454508119557       LON MEAN   -32.123833524852635     
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.032.L2.RetStd.v6.0.7.0.G13063050203.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.032.L2.SUBX2RET.v6.0.7.0.G13063050203.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0 1265k    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  4 1265k    4 61938    0     0  25813      0  0:00:50  0:00:02  0:00:48 25807 44 1265k   44  556k    0     0   170k      0  0:00:07  0:00:03  0:00:04  170k100 1265k  100 1265k    0     0   348k      0  0:00:03  0:00:03 --:--:--  348k
+ ./tmp.hdf                                                                                           
+ =================== SUMARY ==========================
+   P    ,  NT  
+   1100.00000                 14
+   1000.00000                 14
+   925.000000                 17
+   850.000000                 26
+   700.000000                 53
+   600.000000                 63
+   500.000000                 74
+   400.000000                 91
+   300.000000                 92
+   250.000000                 92
+   200.000000                 92
+   150.000000                 92
+   100.000000                 92
+   70.0000000                 92
+   50.0000000                 14
+   30.0000000                 14
+   20.0000000                 16
+   15.0000000                 25
+   10.0000000                 53
+   7.00000000                 64
+   5.00000000                 80
+   3.00000000                 94
+   2.00000000                 94
+   1.50000000                 94
+   1.00000000                 94
+  0.500000000                 94
+  0.200000003                 94
+  0.100000001                 94
+ =====================================================
+ =================== SUMARY ==========================
+   P    ,  NQ 
+   1100.00000                 94
+   1000.00000                 94
+   925.000000                 94
+   850.000000                 94
+   700.000000                 94
+   600.000000                 94
+   500.000000                 94
+   400.000000                 94
+   300.000000                 94
+   250.000000                 94
+   200.000000                 94
+   150.000000                 94
+   100.000000                 94
+   70.0000000                 94
+ =====================================================
+  LAT MEAN   -67.866007199670449       LON MEAN   -46.510393290861884     
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.044.L2.RetStd.v6.0.7.0.G13063050607.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.044.L2.SUBX2RET.v6.0.7.0.G13063050607.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0 1265k    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0 20 1265k   20  254k    0     0  86934      0  0:00:14  0:00:02  0:00:12 86916 89 1265k   89 1128k    0     0   286k      0  0:00:04  0:00:03  0:00:01  286k100 1265k  100 1265k    0     0   321k      0  0:00:03  0:00:03 --:--:--  321k
+ ./tmp.hdf                                                                                           
+ =================== SUMARY ==========================
+   P    ,  NT  
+   1100.00000                 18
+   1000.00000                 18
+   925.000000                 18
+   850.000000                 18
+   700.000000                 18
+   600.000000                 18
+   500.000000                 18
+   400.000000                 18
+   300.000000                 18
+   250.000000                 18
+   200.000000                 18
+   150.000000                 18
+   100.000000                 18
+   70.0000000                 18
+   50.0000000                 18
+   30.0000000                 18
+   20.0000000                 18
+   15.0000000                 18
+   10.0000000                 18
+   7.00000000                 18
+   5.00000000                 18
+   3.00000000                 18
+   2.00000000                 18
+   1.50000000                 18
+   1.00000000                 18
+  0.500000000                 18
+  0.200000003                 18
+  0.100000001                 18
+ =====================================================
+ =================== SUMARY ==========================
+   P    ,  NQ 
+   1100.00000                 18
+   1000.00000                 18
+   925.000000                 18
+   850.000000                 18
+   700.000000                 18
+   600.000000                 18
+   500.000000                 18
+   400.000000                 18
+   300.000000                 18
+   250.000000                 18
+   200.000000                 18
+   150.000000                 18
+   100.000000                 18
+   70.0000000                 18
+ =====================================================
+  LAT MEAN    27.843373487600878       LON MEAN   -38.133583256373512     
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.045.L2.RetStd.v6.0.7.0.G13063050443.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.045.L2.SUBX2RET.v6.0.7.0.G13063050443.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0 1265k    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  2 1265k    2 32978    0     0  14729      0  0:01:27  0:00:02  0:01:25 14728 20 1265k   20  265k    0     0  82797      0  0:00:15  0:00:03  0:00:12 82794 64 1265k   64  812k    0     0   187k      0  0:00:06  0:00:04  0:00:02  187k100 1265k  100 1265k    0     0   260k      0  0:00:04  0:00:04 --:--:--  341k
+ ./tmp.hdf                                                                                           
+ =================== SUMARY ==========================
+   P    ,  NT  
+   1100.00000                 70
+   1000.00000                 96
+   925.000000                104
+   850.000000                106
+   700.000000                134
+   600.000000                135
+   500.000000                145
+   400.000000                149
+   300.000000                150
+   250.000000                150
+   200.000000                150
+   150.000000                150
+   100.000000                150
+   70.0000000                150
+   50.0000000                 70
+   30.0000000                 95
+   20.0000000                107
+   15.0000000                109
+   10.0000000                137
+   7.00000000                137
+   5.00000000                150
+   3.00000000                150
+   2.00000000                150
+   1.50000000                150
+   1.00000000                150
+  0.500000000                150
+  0.200000003                150
+  0.100000001                150
+ =====================================================
+ =================== SUMARY ==========================
+   P    ,  NQ 
+   1100.00000                150
+   1000.00000                150
+   925.000000                150
+   850.000000                150
+   700.000000                150
+   600.000000                150
+   500.000000                150
+   400.000000                150
+   300.000000                150
+   250.000000                150
+   200.000000                150
+   150.000000                150
+   100.000000                150
+   70.0000000                150
+ =====================================================
+  LAT MEAN    6.1784017357527503       LON MEAN   -43.126520095990749     
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.046.L2.RetStd.v6.0.7.0.G13063050330.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.046.L2.SUBX2RET.v6.0.7.0.G13063050330.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0 1265k    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0 15 1265k   15  193k    0     0  81160      0  0:00:15  0:00:02  0:00:13 81163 81 1265k   81 1027k    0     0   304k      0  0:00:04  0:00:03  0:00:01  304k100 1265k  100 1265k    0     0   374k      0  0:00:03  0:00:03 --:--:--  373k
+ ./tmp.hdf                                                                                           
+ =================== SUMARY ==========================
+   P    ,  NT  
+   1100.00000                 70
+   1000.00000                 75
+   925.000000                121
+   850.000000                128
+   700.000000                150
+   600.000000                150
+   500.000000                150
+   400.000000                150
+   300.000000                150
+   250.000000                150
+   200.000000                150
+   150.000000                150
+   100.000000                150
+   70.0000000                150
+   50.0000000                 70
+   30.0000000                 80
+   20.0000000                131
+   15.0000000                134
+   10.0000000                149
+   7.00000000                149
+   5.00000000                149
+   3.00000000                150
+   2.00000000                150
+   1.50000000                150
+   1.00000000                150
+  0.500000000                150
+  0.200000003                150
+  0.100000001                150
+ =====================================================
+ =================== SUMARY ==========================
+   P    ,  NQ 
+   1100.00000                150
+   1000.00000                150
+   925.000000                150
+   850.000000                150
+   700.000000                150
+   600.000000                150
+   500.000000                150
+   400.000000                150
+   300.000000                150
+   250.000000                150
+   200.000000                150
+   150.000000                150
+   100.000000                150
+   70.0000000                150
+ =====================================================
+  LAT MEAN   -15.516635120742679       LON MEAN   -47.822830459933243     
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.047.L2.RetStd.v6.0.7.0.G13063050559.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.047.L2.SUBX2RET.v6.0.7.0.G13063050559.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0 1265k    0  2896    0     0   1451      0  0:14:52  0:00:01  0:14:51  1451  0 1265k    0  2896    0     0    387      0  0:55:47  0:00:07  0:55:40   387  1 1265k    1 19280    0     0   2307      0  0:09:21  0:00:08  0:09:13  2307 64 1265k   64  821k    0     0  89425      0  0:00:14  0:00:09  0:00:05 89425100 1265k  100 1265k    0     0   129k      0  0:00:09  0:00:09 --:--:--  147k
+ ./tmp.hdf                                                                                           
+ =================== SUMARY ==========================
+   P    ,  NT  
+   1100.00000                 70
+   1000.00000                 74
+   925.000000                 87
+   850.000000                 92
+   700.000000                114
+   600.000000                121
+   500.000000                125
+   400.000000                143
+   300.000000                150
+   250.000000                150
+   200.000000                150
+   150.000000                150
+   100.000000                150
+   70.0000000                150
+   50.0000000                 70
+   30.0000000                 75
+   20.0000000                 84
+   15.0000000                 87
+   10.0000000                116
+   7.00000000                119
+   5.00000000                130
+   3.00000000                144
+   2.00000000                150
+   1.50000000                150
+   1.00000000                150
+  0.500000000                150
+  0.200000003                150
+  0.100000001                150
+ =====================================================
+ =================== SUMARY ==========================
+   P    ,  NQ 
+   1100.00000                150
+   1000.00000                150
+   925.000000                150
+   850.000000                150
+   700.000000                150
+   600.000000                150
+   500.000000                150
+   400.000000                150
+   300.000000                150
+   250.000000                150
+   200.000000                150
+   150.000000                150
+   100.000000                150
+   70.0000000                150
+ =====================================================
+  LAT MEAN   -37.065759307306131       LON MEAN   -53.318554372505709     
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.048.L2.RetStd.v6.0.7.0.G13063050552.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.048.L2.SUBX2RET.v6.0.7.0.G13063050552.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  3 1265k    3 51555    0     0  25027      0  0:00:51  0:00:02  0:00:49 25038 44 1265k   44  562k    0     0   187k      0  0:00:06  0:00:02  0:00:04  187k100 1265k  100 1265k    0     0   354k      0  0:00:03  0:00:03 --:--:--  354k
+ ./tmp.hdf                                                                                           
+ =================== SUMARY ==========================
+   P    ,  NT  
+   1100.00000                 70
+   1000.00000                 70
+   925.000000                 73
+   850.000000                 76
+   700.000000                118
+   600.000000                127
+   500.000000                141
+   400.000000                150
+   300.000000                150
+   250.000000                150
+   200.000000                150
+   150.000000                150
+   100.000000                150
+   70.0000000                150
+   50.0000000                 70
+   30.0000000                 72
+   20.0000000                 72
+   15.0000000                 77
+   10.0000000                127
+   7.00000000                135
+   5.00000000                146
+   3.00000000                150
+   2.00000000                150
+   1.50000000                150
+   1.00000000                150
+  0.500000000                150
+  0.200000003                150
+  0.100000001                150
+ =====================================================
+ =================== SUMARY ==========================
+   P    ,  NQ 
+   1100.00000                150
+   1000.00000                150
+   925.000000                150
+   850.000000                150
+   700.000000                150
+   600.000000                150
+   500.000000                150
+   400.000000                150
+   300.000000                150
+   250.000000                150
+   200.000000                150
+   150.000000                150
+   100.000000                150
+   70.0000000                150
+ =====================================================
+  LAT MEAN   -58.182451867692514       LON MEAN   -62.305391635005719     
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.049.L2.RetStd.v6.0.7.0.G13063050451.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.049.L2.SUBX2RET.v6.0.7.0.G13063050451.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0 1264k    0  1448    0     0    798      0  0:27:03  0:00:01  0:27:02   797 32 1264k   32  408k    0     0   147k      0  0:00:08  0:00:02  0:00:06  147k100 1264k  100 1264k    0     0   369k      0  0:00:03  0:00:03 --:--:--  369k
+ ./tmp.hdf                                                                                           
+ =================== SUMARY ==========================
+   P    ,  NT  
+   1100.00000                  0
+   1000.00000                  0
+   925.000000                  0
+   850.000000                  0
+   700.000000                  7
+   600.000000                 11
+   500.000000                 12
+   400.000000                 13
+   300.000000                 13
+   250.000000                 13
+   200.000000                 13
+   150.000000                 13
+   100.000000                 13
+   70.0000000                 13
+   50.0000000                  0
+   30.0000000                  0
+   20.0000000                  0
+   15.0000000                  0
+   10.0000000                  4
+   7.00000000                  9
+   5.00000000                 11
+   3.00000000                 13
+   2.00000000                 13
+   1.50000000                 13
+   1.00000000                 13
+  0.500000000                 13
+  0.200000003                 13
+  0.100000001                 13
+ =====================================================
+ =================== SUMARY ==========================
+   P    ,  NQ 
+   1100.00000                 13
+   1000.00000                 13
+   925.000000                 13
+   850.000000                 13
+   700.000000                 13
+   600.000000                 13
+   500.000000                 13
+   400.000000                 13
+   300.000000                 13
+   250.000000                 13
+   200.000000                 13
+   150.000000                 13
+   100.000000                 13
+   70.0000000                 13
+ =====================================================
+  LAT MEAN   -76.808798346678770       LON MEAN   -95.687284573515299     
+ >> downloading.. HTTP_services.cgi?FILENAME=%2FAqua_AIRS_Level2%2FAIRX2RET.006%2F2010%2F213%2FAIRS.2010.08.01.061.L2.RetStd.v6.0.7.0.G13063051544.hdf&FORMAT=SERGLw&LABEL=AIRS.2010.08.01.061.L2.SUBX2RET.v6.0.7.0.G13063051544.hdf&SHORTNAME=AIRX2RET&SERVICE=SUBSET_AIRS_L1L2&VERSION=1.02&DATASET_VERSION=006&VARIABLES=LatGranuleCen%2CpressStd%2CNumSpecialData%2CH2O_dof%2CLonGranuleCen%2Cstart_hour%2Cstart_month%2CCH4_first_guess%2Cnum_demgeoqa%2CH2OMMRLevStdErr%2CtotH2OStd_QC%2CLatitude%2Cnum_scansets%2CtotH2OStdErr%2Corbit_path%2CNumSO2FOVs%2CH2OMMRSurf_QC%2CNumBadData%2CH2OMMRStd_QC%2Ceq_x_tai%2CH2OMMRLevStd%2CNumTotalData%2Cstart_Time%2CH2O_verticality%2Cend_Longitude%2Cend_orbit%2Cstart_orbit_row%2Cstart_year%2CpressH2O%2CH2OMMRSurfErr%2CNumMissingData%2CH2OMMRStdErr%2Cnum_H2O_Func%2Cinstrument%2Cstart_minute%2Cstart_sec%2Cstart_day%2Corbitgeoqa%2Cnum_satgeoqa%2CDayNightFlag%2Cprocessing_level%2CLocTimeGranuleCen%2Cnum_fpe%2CAutomaticQAFlag%2CNumOceanSurface%2Cnum_glintgeoqa%2CtotH2OStd%2Cnum_moongeoqa%2Cstart_Latitude%2CTAirStd%2Cgranule_number%2CH2OMMRStd%2Cnum_scanlines%2CLongitude%2CNumProcessData%2CTime%2CMWHingeSurfFreqGHz%2CTSurfAir_QC%2CCO_first_guess%2CTAirStd_QC%2Cstart_orbit%2Cnum_zengeoqa%2Cnum_ftptgeoqa%2CTemp_dof%2Cend_Latitude%2CH2OMMRSurf%2Cstart_Longitude%2CTAirStdErr%2Cnode_type%2CH2OMMRLevStd_QC%2CTSurfAir%2Cend_Time%2Cend_orbit_row%2Ceq_x_longitude%2CNumLandSurface%2CTSurfAirErr
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0

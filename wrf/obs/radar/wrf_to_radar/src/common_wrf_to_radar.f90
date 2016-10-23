@@ -303,7 +303,7 @@ real(r_size)  :: ss , tmp
      WRITE(current_radar_file(7:10),'(I4.4)')iradar
      WRITE(current_radar_file(12:15),'(I4.4)')im
 
-     CALL radar_write_file( radar_1 , radar_1%radarv3d_model(:,:,:,radar_1%iv3d_vr), radar_1%radarv3d_model(:,:,:,radar_1%iv3d_vr), &
+     CALL radar_write_file( radar_1 , radar_1%radarv3d_model(:,:,:,radar_1%iv3d_ref), radar_1%radarv3d_model(:,:,:,radar_1%iv3d_vr), &
                                       radar_1%qcflag , radar_1%attenuation ,  current_radar_file , endian )
 
   ENDDO ![Endo over radars]
@@ -371,7 +371,7 @@ real(r_size)  :: ss
      WRITE(current_radar_file(7:10),'(I4.4)')iradar
      WRITE(current_radar_file(12:15),'(I4.4)')im
 
-     CALL radar_write_file( radar_1 , radar_1%radarv3d_model(:,:,:,radar_1%iv3d_vr), radar_1%radarv3d_model(:,:,:,radar_1%iv3d_vr), &
+     CALL radar_write_file( radar_1 , radar_1%radarv3d_model(:,:,:,radar_1%iv3d_ref), radar_1%radarv3d_model(:,:,:,radar_1%iv3d_vr), &
                                       radar_1%qcflag , radar_1%attenuation ,  current_radar_file , endian )
 
   ENDDO ![Endo over radars]
