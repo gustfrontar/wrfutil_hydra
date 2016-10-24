@@ -4,7 +4,7 @@ ulimit -s unlimited
 EXPERIMENT_NAME=OSSE_20140122_DBZ2.5_VR1.0
 
 MODELDATAPATH="$HOME/datosmate/WRF_NATURE_RUNV2/"
-RADARDATAPATH="$HOME/datos/OBS/$EXPERIMENT_NAME"   
+RADARDATAPATH="$HOME/datos/DATA/OBS/$EXPERIMENT_NAME"   
 
 TMPDIR="$HOME/data/TMP/WRF_TO_RADAR/"
 EXEC="$HOME/datos/LETKF_WRF/wrf/obs/radar/wrf_to_radar/wrf_to_radar.exe"
@@ -16,7 +16,7 @@ DOMAIN="03"
 source ../../../run/util.sh #Date functions.
 
 INIDATE=20140122150000
-ENDDATE=20140122194500
+ENDDATE=20140122210000
 
 NAMELIST_WRF2RADAR="$TMPDIR/w2r.namelist"
 
@@ -36,7 +36,7 @@ radar_min_az="1.0d0"
 radar_max_az="360.0d0"           
 radar_min_r="500.0d0"   
 radar_max_r="240.0d3"
-radar_min_el="0.5d0"
+radar_min_el="0.0d0"
 radar_max_el="30.5d0"
 use_wt=".TRUE."                   #Include or not the effect of terminal velocity      
 radar_lambda="10.0d0"            

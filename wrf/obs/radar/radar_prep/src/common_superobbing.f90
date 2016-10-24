@@ -259,7 +259,14 @@ grid_stdvr=0.0d0
 !AVERAGE DATA AND INCLUDE OBSERVATIONA ERROR.
     !We will compute the i,j,k for each radar grid point and box average the data.
 
- 
+
+!TODO COMPUTE MAXIMUM AND MINIMUM OF REF AND VR BEFORE PROCEEDING 
+    min_obs_ref=999.0d0
+    max_obs_ref=-999.0d0
+    min_obs_vr=999.0d0
+    max_obs_vr=-999.0d0
+
+
 
 
     DO ia=1,current_radar%na
@@ -278,6 +285,16 @@ grid_stdvr=0.0d0
          k=ANINT(realk)
 
          IF ( current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_ref) .NE. current_radar%missing )THEN !PROCESS REFLECITIVITY
+
+            IF(current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_ref) > max_obs_ref)THEN
+              max_obs_ref=current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_ref)
+            ENDIF
+            IF(current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_ref) < min_obs_ref)THEN
+              min_obs_ref=current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_ref)
+            ENDIF
+
+
+
             IF( ( USE_ATTENUATION .and. current_radar%attenuation(ia,ir,ie) > attenuation_threshold ) .or.  &
                 ( .not. USE_ATTENUATION ) )THEN
               !Estimate attenuation
@@ -305,6 +322,14 @@ grid_stdvr=0.0d0
              ELSE
                 tmpw=minz
              ENDIF
+
+            IF(current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_vr) > max_obs_vr)THEN
+              max_obs_vr=current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_vr)
+            ENDIF
+            IF(current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_vr) < min_obs_vr)THEN
+              min_obs_vr=current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_vr)
+            ENDIF
+
 
             !Wind will be averaged using an average weighted by returned power.
             !(this should reduce noise). 
@@ -368,6 +393,7 @@ grid_stdvr=0.0d0
            IF( grid_count_vr(ii,jj,kk) > 0.0d0 )THEN
  
               grid_vr(ii,jj,kk) = grid_vr(ii,jj,kk) / grid_w_vr(ii,jj,kk)
+
  
               !if( grid_vr(ii,jj,kk) < -90 )write(*,*)grid_vr(ii,jj,kk),grid_w_vr(ii,jj,kk),grid_count_vr(ii,jj,kk),ii,jj,kk
 
@@ -404,6 +430,12 @@ grid_stdvr=0.0d0
      ENDDO
     ENDDO
 
+
+    WRITE(*,*)"Input reflectivity obs. range = ",10*log10(min_obs_ref)," to ",10*log10(max_obs_ref)
+    WRITE(*,*)"Input radial vel. obs. range = ",min_obs_vr," to ",max_obs_vr
+
+
+
     !COMPUTE REFLECTIIVITY ERROR VARIANCE in DBZ
     IF( SIMULATE_ERROR )THEN
     stderror=0.0d0
@@ -427,7 +459,11 @@ grid_stdvr=0.0d0
 
    !WRITE THE DATA
    !WRITE FILE HEADER.
-   OPEN(UNIT=99,FILE='radarobs.dat',STATUS='unknown',FORM='unformatted')
+  IF( endian == 'b')THEN
+   OPEN(UNIT=99,FILE='radarobs.dat',STATUS='unknown',FORM='unformatted',CONVERT='big_endian')
+  ELSEIF( endian == 'l' )THEN
+   OPEN(UNIT=99,FILE='radarobs.dat',STATUS='unknown',FORM='unformatted',CONVERT='little_endian')
+  ENDIF
    !Introduce a small header with the radar possition and two values that might be useful.
    write(99)REAL(current_radar%lon0,r_sngl)
    write(99)REAL(current_radar%lat0,r_sngl)
@@ -476,7 +512,7 @@ grid_stdvr=0.0d0
            WRITE(99)wk
            nobs=nobs +1
            if( grid_vr(ii,jj,kk) > max_obs_vr)max_obs_vr=grid_vr(ii,jj,kk)
-           if( grid_vr(ii,jj,kk) < max_obs_vr)min_obs_vr=grid_vr(ii,jj,kk)
+           if( grid_vr(ii,jj,kk) < min_obs_vr)min_obs_vr=grid_vr(ii,jj,kk)
 
            !WRITE(*,*)wk
        ENDIF
@@ -484,7 +520,7 @@ grid_stdvr=0.0d0
      ENDDO
     ENDDO
 
-    WRITE(*,*)"Reflectivity obs. range = ",min_obs_ref," to ",max_obs_ref
+    WRITE(*,*)"Reflectivity obs. range = ",10*log10(min_obs_ref)," to ",10*log10(max_obs_ref)
     WRITE(*,*)"Radial vel. obs. range = ",min_obs_vr," to ",max_obs_vr
 
 
@@ -493,7 +529,11 @@ grid_stdvr=0.0d0
 !WRITE GRIDDED DATA (FOR DEBUG)
 !Write gridded file (for debug but also might be usefull for model verification)
 IF(DEBUG_OUTPUT)THEN
-   open(UNIT=101,FILE='super.grd',STATUS='unknown',FORM='unformatted')
+   IF( endian == 'b')THEN
+     OPEN(UNIT=101,FILE='super.grd',STATUS='unknown',FORM='unformatted',CONVERT='big_endian')
+   ELSEIF( endian == 'l' )THEN
+     OPEN(UNIT=101,FILE='super.grd',STATUS='unknown',FORM='unformatted',CONVERT='little_endian')
+   ENDIF
    DO kk=1,nlev
       WRITE(101)REAL(grid_ref(:,:,kk),r_sngl)
    ENDDO
@@ -547,7 +587,12 @@ IF(DEBUG_OUTPUT)THEN
    CLOSE(101)
 
  IF( SIMULATE_ERROR )THEN
-   OPEN(UNIT=101,FILE='error.grd',STATUS='unknown',FORM='unformatted')
+  IF( endian == 'b' )THEN
+   OPEN(UNIT=101,FILE='error.grd',STATUS='unknown',FORM='unformatted',CONVERT='big_endian')
+  ELSEIF( endian == 'l' )THEN
+   OPEN(UNIT=101,FILE='error.grd',STATUS='unknown',FORM='unformatted',CONVERT='little_endian')
+  ENDIF
+
    DO kk=1,nlev
       WRITE(101)REAL(grid_error_ref(:,:,kk),r_sngl)
    ENDDO

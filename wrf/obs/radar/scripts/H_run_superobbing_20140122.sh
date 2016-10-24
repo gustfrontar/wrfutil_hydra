@@ -15,17 +15,17 @@ DT=300   #Time interval between two obs (seconds)
 OBSNAME=OSSE_20140122_DBZ2.5_VR1.0
 PROCOBSNAME=${OBSNAME}_SO2KM
 
-RAWOBSPATH=$HOME/share/OBS/$OBSNAME
-PROCOBSPATH=$HOME/share/OBS/$PROCOBSNAME
+RAWOBSPATH=$HOME/datos/DATA/OBS/$OBSNAME
+PROCOBSPATH=$HOME/datos/DATA/OBS/$PROCOBSNAME
 
-TMPDIR=$HOME/data/TMP/RADAR_PREP_$PROCOBSNAME
+TMPDIR=$HOME/datos/TMP/RADAR_PREP_$PROCOBSNAME
 NAMELIST=$TMPDIR/radarprep.namelist
 
 DX=2000.0d0      #Horizontal resolution
 DZ=500.0d0       #Vertical resolution
 MAXRANGE=240d3   #Maximum horizontal range
 MAXZ=20d3        #Maximum vertical range 
-DBZ_TO_POWER=.TRUE.  #Power transformation flag
+DBZ_TO_POWER=.FALSE. #Power transformation flag
 DEBUG_OUTPUT=.TRUE.  #Debug ouput flag (binary file to visualize data in grads)
 ERROR_REF=2.5d0      #Reflectivity error
 ERROR_VR=1.0d0       #Radial velocity error
@@ -88,12 +88,13 @@ do
 #of DT in order to be used in the assimilation experiments.
 DATE_FLOOR=`date_floor $CDATE $DT `
 
+#En este script asumimos que tenemos un unico radar. Si fueran mas tendriamos que hacer un loop 
+#Sobre el numero de radar.
+ln -sf $RAWOBSPATH/RADAR0001_${CDATE}.grd   ./radar_input.grd
+ln -sf $PROCOBSPATH/radar01_${DATE_FLOOR}.dat ./radarobs.dat
+ln -sf $PROCOBSPATH/radar01_${DATE_FLOOR}.grd ./super.grd
 
-ln -sf $RAWOBSPATH/RADAR_${CDATE}.grd       ./radar_input.grd
-ln -sf $PROCOBSPATH/radar_${DATE_FLOOR}.dat ./radarobs.dat
-ln -sf $PROCOBSPATH/radar_${DATE_FLOOR}.grd ./super.grd
-
-echo "Input  data: $RAWOBSPATH/$RAWOBSPATH/RADAR_${CDATE}.grd "
+echo "Input  data: $RAWOBSPATH/RADAR_${CDATE}.grd "
 echo "Output data: $PROCOBSPATH/radar01_${DATE_FLOOR}.dat "
 
 ./radar_prep.exe 

@@ -11,7 +11,7 @@ INC_NETCDF="-I/usr/local/netcdf.intel/include/ "
 
 
 OMP=
-F90OPT=' -convert big_endian -O3 -openmp'
+F90OPT='-O3 -openmp'
 
 cd ./src
 

@@ -267,6 +267,7 @@ SUBROUTINE radar_write_file( input_radar , reflectivity , wind , qcflag , attenu
 
     iunit=99
     !Write data in PAWR data format.
+    WRITE(*,*)"I will write ",output_file," with endian: ",endian
     if( endian == 'b' )then
         OPEN(iunit,FILE=output_file,FORM='unformatted',ACCESS='sequential' &
              ,CONVERT='big_endian')
@@ -291,7 +292,7 @@ SUBROUTINE radar_write_file( input_radar , reflectivity , wind , qcflag , attenu
                   REAL( input_radar%beam_wid_v(1), r_sngl), &
                   REAL( input_radar%range_resolution, r_sngl), &
                   REAL( input_radar%lambda      , r_sngl), &
-                  REAL( undefs  )
+                  UNDEFS
 
     !READ DATA DIMESION HEADER
     WRITE(iunit)input_radar%na , input_radar%nr , input_radar%ne , nvar
@@ -431,6 +432,7 @@ iunit=98
     DO ie=1,input_radar % ne
       READ(iunit) buf2d4
       input_radar%radarv3d(:,:,ie,ivar)=REAL(buf2d4,r_size) 
+      
     ENDDO
   ENDDO
 

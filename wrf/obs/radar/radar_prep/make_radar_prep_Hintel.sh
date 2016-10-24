@@ -5,7 +5,7 @@ PGM=./radar_prep.exe
 F90=ifort  #mpif90
 
 OMP=
-F90OPT='-O3 -convert big_endian'
+F90OPT='-O3'
 
 cd ./src
 
