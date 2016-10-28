@@ -10,7 +10,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 LIB_NETCDF="-L/usr/local/lib/ -lnetcdff"
 INC_NETCDF="-I/usr/local/include/ "
 
-PGM=./round_second.exe
+PGM=./round_seconds.exe
 F90=ifort  #mpif90
 
 OMP=

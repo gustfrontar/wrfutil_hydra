@@ -1,6 +1,6 @@
 #MACHINE CONFIGURATION
 SYSTEM="1"          # 0 - K computer , 1 - qsub cluster
-PROC_PER_NODE=12    #Hakushu has 40, Hydra has 24
+PROC_PER_NODE=24    #Hakushu has 40, Hydra has 24
 PROC_PER_MEMBER=24  #Number of nodes per ensemble member.
 PPSSERVER=tormenta  #Hostname of pps server (for perturbation generation and post processing)
 MAX_RUNNING=1       #Maximum number of simultaneous processes running in PPS servers.
@@ -9,7 +9,7 @@ MAX_BACKGROUND_JOBS=10000
 LD_LIBRARY_PATH_ADD=""
 PATH_ADD=""
 
-TOTAL_NODES_FORECAST=2
+TOTAL_NODES_FORECAST=1
 TOTAL_NODES_LETKF=1
 
 #These options control job split (in case of big jobs)

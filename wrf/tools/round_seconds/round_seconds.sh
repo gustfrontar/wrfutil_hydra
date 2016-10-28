@@ -1,16 +1,16 @@
-DATAPATH=/...../
+DATAPATH=/tmp  #Carpeta donde estan los wrfout que tienen el problema de los segundos.
+
+execfile=$HOME/share/LETKF_WRF/wrf/tools/round_seconds/round_seconds.exe
 
 cd $DATAPATH
 
 for f in wrfout*; do
   echo "Procesing file -> $f"
-  
-  ln -sf $f ./input_file.nc
-  ./round_second.exe 
-
-  wrfout_d03_2014-01-22_16:50:00
+ 
   new_file_name=${f:0:28}00
-
   mv $f $new_file_name
+  
+  ln -sf $new_file_name ./input_file.nc
+  $execfile
   
 done

@@ -26,7 +26,7 @@ USE common_round_seconds
  READ(my_date(15:16),*)imn
  READ(my_date(18:19),*)sec
 
- WRITE(my_date(18:19),*)"00"
+ WRITE(my_date(18:19),'(A2)')"00"
 
  CALL put_date(input_file,my_date)
 
