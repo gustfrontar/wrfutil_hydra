@@ -71,14 +71,14 @@ PERTURB_RH_AMP = 5.0d0
 PERTURB_WIND_AMP = 0.5d0
 
 !Perturbation lenght scale (horizontal)
-PERTURB_T_SCLH = 40000d0
-PERTURB_RH_SCLH = 40000d0
-PERTURB_WIND_SCLH = 40000d0
+PERTURB_T_SCLH = 40000d0 !4000.0d0 !40000d0
+PERTURB_RH_SCLH = 40000d0 !4000.0d0 !40000d0
+PERTURB_WIND_SCLH = 40000d0 !4000.0d0 !40000d0
 
 !Perturbation length scale (vertical)
-PERTURB_T_SCLV = 5000d0
-PERTURB_RH_SCLV = 5000d0
-PERTURB_WIND_SCLV = 5000d0
+PERTURB_T_SCLV = 5000d0 !500.0d0 !5000d0
+PERTURB_RH_SCLV = 5000d0 !500.0d0 !5000d0
+PERTURB_WIND_SCLV = 5000d0 !500.0d0 !5000d0
 
 !-----------------------------------------------------------------------------
 ! BALANCED PERTURBATION PARAMETERS (this should go to a namelist )
