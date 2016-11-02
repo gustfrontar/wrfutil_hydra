@@ -12,6 +12,7 @@ MODULE common_perturb_ensemble
 !$USE OMP_LIB
   USE common
   USE common_wrf
+  USE common_namelist
   USE common_smooth2d
   IMPLICIT NONE
   PUBLIC
@@ -19,17 +20,17 @@ MODULE common_perturb_ensemble
 ! General parameters
 !-----------------------------------------------------------------------
 
-  LOGICAL :: PERTURB_T , PERTURB_RH , PERTURB_WIND   !Whether this variables will be perturbed.
-  REAL(r_size) :: PERTURB_T_AMP , PERTURB_RH_AMP , PERTURB_WIND_AMP   !Amplitude of the perturbations.
-  REAL(r_size) :: PERTURB_T_SCLH , PERTURB_RH_SCLH , PERTURB_WIND_SCLH  !Horizontal scale of the perturbations.
-  REAL(r_size) :: PERTURB_T_SCLV , PERTURB_RH_SCLV , PERTURB_WIND_SCLV  !Horizontal scale of the perturbations.
+!  LOGICAL :: PERTURB_T , PERTURB_RH , PERTURB_WIND   !Whether this variables will be perturbed.
+!  REAL(r_size) :: PERTURB_T_AMP , PERTURB_RH_AMP , PERTURB_WIND_AMP   !Amplitude of the perturbations.
+!  REAL(r_size) :: PERTURB_T_SCLH , PERTURB_RH_SCLH , PERTURB_WIND_SCLH  !Horizontal scale of the perturbations.
+!  REAL(r_size) :: PERTURB_T_SCLV , PERTURB_RH_SCLV , PERTURB_WIND_SCLV  !Horizontal scale of the perturbations.
 
-  LOGICAL :: PERTURB_ATMOSPHERE= .TRUE.  !If atmospheric variables will be perturbed
-  LOGICAL :: PERTURB_SST       = .TRUE.  !If sst will be perturbed
-  LOGICAL :: PERTURB_SOIL      = .TRUE.  !If soiltemp and soilmoisture will be perturbed
+!  LOGICAL :: PERTURB_ATMOSPHERE= .TRUE.  !If atmospheric variables will be perturbed
+!  LOGICAL :: PERTURB_SST       = .TRUE.  !If sst will be perturbed
+!  LOGICAL :: PERTURB_SOIL      = .TRUE.  !If soiltemp and soilmoisture will be perturbed
 
 
-  REAL(r_size) :: amp_factor , random_amp_factor
+!  REAL(r_size) :: amp_factor , random_amp_factor
 
 CONTAINS
 

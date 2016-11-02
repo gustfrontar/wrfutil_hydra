@@ -83,10 +83,27 @@ PERTGRIBTABLE="Vtable.CFSR"                                                     
 GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/                                                 # Folder where WPS GEOG dataset is located.
 
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
-SCALE_FACTOR="0.1"         #Perturbation scale factor.
-RANDOM_SCALE_FACTOR="0.5"   #Random perturbation scale factor.
-PERTURB_BOUNDARY=1          #Wheter boundary perturbations are going to be perturbed.
-PERTURB_BOUNDARY_TYPE=1     #DUMMY
+AMP_FACTOR="0.1"             #Perturbation scale factor.
+RANDOM_AMP_FACTOR="0.5"       #Random perturbation scale factor.
+PERTURB_BOUNDARY=1            #Wether boundary conditions are going to be perturbed.
+PERTURB_ATMOSPHERE=".true."
+PERTURB_SST=".true."
+PERTURB_SOIL=".true."
+PERTURB_T=".true."
+PERTURB_RH=".true."
+PERTURB_WIND=".true."
+PERTURB_T_AMP="0.5d0"
+PERTURB_RH_AMP="5.0d0"
+PERTURB_WIND_AMP="0.5d0"
+PERTURB_T_SCLH="40000d0"
+PERTURB_RH_SCLH="40000d0"
+PERTURB_WIND_SCLH="40000d0"
+PERTURB_T_SCLV="5000d0"
+PERTURB_RH_SCLV="5000d0"
+PERTURB_WIND_SCLV="5000d0"
+NAMELISTPERTMETEM=$WRF/run/configuration/pertmetem.namelist.$LETKFNAMELIST
+
+
 #Random dates for boundary perturbations.
 INIPERTDATE=20060101000000    #Initial date in grib database (used for perturbing initial and boundary conditions)
 ENDPERTDATE=20091231180000    #Final date in grib database (used for perturbing initial and boundary conditions)

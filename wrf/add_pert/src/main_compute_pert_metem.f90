@@ -5,9 +5,11 @@ PROGRAM COMPUTE_PERTURBATION
 !
 ! [HISTORY:]
 !   02/19/2014 Juan Ruiz created
+!   13/02/2016 Major bug corrected SLP was not being perturbed.
 !=======================================================================
 USE common
 USE common_wrf
+USE common_namelist
 USE common_perturb_ensemble
 
  IMPLICIT NONE
@@ -23,64 +25,84 @@ USE common_perturb_ensemble
  CHARACTER(15)            :: met_ema1='input_filea1.nc',met_ema2='input_filea2.nc'
  CHARACTER(15)            :: met_emb1='input_fileb1.nc',met_emb2='input_fileb2.nc'
  CHARACTER(15)            :: ctrl_met_em='ctrl_met_em.nc'    !Where perturbation will be dadded
+ CHARACTER(19)            :: my_date
  LOGICAL                  :: USE_RANDOM_PERT
  INTEGER :: ilat, ilon ,ilev ,ivar , kk  , nlev_pert
  REAL(r_size) :: rmse
 
  REAL(r_size) :: tmp
- REAL(r_size) :: amp_factor , random_amp_factor 
  CHARACTER(10) :: input_par
- INTEGER       :: current_time , max_time
+! INTEGER       :: current_time , max_time
  REAL(r_size)  :: time_factor
 
+!-----------------------------------------------------------------------------
+! GET PERTURBATION AMPLITUDE (thes parameters should go to a namelist)
+!-----------------------------------------------------------------------------
+
+!  CALL GETARG ( 1, input_par )
+!  READ(input_par,*)amp_factor
+!  WRITE(*,*)"AMP_FACTOR is ",amp_factor
+!  CALL GETARG ( 2, input_par )
+!  READ(input_par,*)random_amp_factor
+!  WRITE(*,*)"RANDOM AMP_FACTOR is ",random_amp_factor
+!  CALL GETARG ( 3, input_par )
+!  READ(input_par,*)current_time
+!  WRITE(*,*)"CURRENT TIME is ",current_time
+!  CALL GETARG ( 4, input_par )
+!  READ(input_par,*)max_time
+!  WRITE(*,*)"MAX TIME is ",max_time
+
+!  IF( current_time .GT. max_time )THEN
+!    write(*,*)"[Error] Max time = ",max_time," and Current time = ",current_time
+!    stop
+!  ENDIF  
 
 !-----------------------------------------------------------------------------
-! GET PERTURBATION AMPLITUDE
-!-----------------------------------------------------------------------------
-
-  CALL GETARG ( 1, input_par )
-  READ(input_par,*)amp_factor
-  WRITE(*,*)"AMP_FACTOR is ",amp_factor
-  CALL GETARG ( 2, input_par )
-  READ(input_par,*)amp_factor
-  WRITE(*,*)"RANDOM AMP_FACTOR is ",random_amp_factor
-  CALL GETARG ( 3, input_par )
-  READ(input_par,*)current_time
-  WRITE(*,*)"CURRENT TIME is ",current_time
-  CALL GETARG ( 4, input_par )
-  READ(input_par,*)max_time
-  WRITE(*,*)"MAX TIME is ",max_time
-
-  IF( current_time .GT. max_time )THEN
-    write(*,*)"[Error] Max time = ",max_time," and Current time = ",current_time
-    stop
-  ENDIF  
-
-!-----------------------------------------------------------------------------
-! RANDOM PERTURBATION PARAMETERS
+! RANDOM PERTURBATION PARAMETERS (this should go to a namelist )
 !-----------------------------------------------------------------------------
 
 !Wheter variables will be perturbed
-PERTURB_T = .TRUE.
-PERTURB_RH = .TRUE.
-PERTURB_WIND = .TRUE.
+!PERTURB_T = .TRUE.
+!PERTURB_RH = .TRUE.
+!PERTURB_WIND = .TRUE.
 
 !Perturbation amplitude.
-PERTURB_T_AMP = 1.0d0
-PERTURB_RH_AMP = 10.0d0
-PERTURB_WIND_AMP = 1.0d0
+!PERTURB_T_AMP = 0.5d0
+!PERTURB_RH_AMP = 5.0d0
+!PERTURB_WIND_AMP = 0.5d0
 
 !Perturbation lenght scale (horizontal)
-PERTURB_T_SCLH = 10000d0
-PERTURB_RH_SCLH = 10000d0
-PERTURB_WIND_SCLH = 10000d0
+!PERTURB_T_SCLH = 40000d0
+!PERTURB_RH_SCLH = 40000d0
+!PERTURB_WIND_SCLH = 40000d0
 
 !Perturbation length scale (vertical)
-PERTURB_T_SCLV = 10000d0
-PERTURB_RH_SCLV = 10000d0
-PERTURB_WIND_SCLV = 10000d0
+!PERTURB_T_SCLV = 5000d0
+!PERTURB_RH_SCLV = 5000d0
+!PERTURB_WIND_SCLV = 5000d0
+
+!-----------------------------------------------------------------------------
+! BALANCED PERTURBATION PARAMETERS (this should go to a namelist )
+!-----------------------------------------------------------------------------
+
+!PERTURB_ATMOSPHERE= .TRUE.  !If atmospheric variables will be perturbed
+!PERTURB_SST       = .TRUE.  !If sst will be perturbed
+!PERTURB_SOIL      = .TRUE.  !If soiltemp and soilmoisture will be perturbed
 
 !--------------------------------------------------------------------------------
+
+!Get configuration from namelist.
+CALL read_namelist()
+
+WRITE(*,*)"CURRENT TIME is ",current_time
+WRITE(*,*)"MAX TIME is ",max_time
+
+IF( current_time .GT. max_time )THEN
+    write(*,*)"[Error] Max time = ",max_time," and Current time = ",current_time
+    stop
+ENDIF
+
+
 
 !Get model domain from the first ensemble member.
 CALL set_common_wrf(met_ema1)
@@ -91,49 +113,57 @@ ALLOCATE( pert3db(nlon,nlat,nlev,nv3d),pert2db(nlon,nlat,nv2d) )
 
 ALLOCATE( levels(nlev) )
 
-
 !Get perturbation at the initial time in the window.
+ WRITE(*,*)"Processing perturbation at the beginning of the window"
+ WRITE(*,*)"Perturbation 1 will be obtained as the difference between "
+ WRITE(*,*)"the following dates: "
+ CALL get_date(met_ema1,my_date)
+ WRITE(*,*)my_date
+ CALL get_date(met_ema2,my_date)
+ WRITE(*,*)my_date
+
  CALL read_grd(met_ema1,gues3d(:,:,:,:,1),gues2d(:,:,:,1))
  CALL read_grd(met_ema2,gues3d(:,:,:,:,2),gues2d(:,:,:,2))
 
  levels=gues3d(1,1,:,iv3d_pres,1)  !Get input levels.
 
- pert3da= amp_factor * ( gues3d(:,:,:,:,1) - gues3d(:,:,:,:,2)   )
- pert2da= amp_factor * ( gues2d(:,:,:,1) - gues2d(:,:,:,2)   )
-
- !ADD ALSO A RANDOM PERTURBATION
- IF( random_amp_factor > 0.0d0 )THEN
-  ALLOCATE(rpert3d(nlon,nlat,nlev,nv3d),rpert2d(nlon,nlat,nv2d))
-  CALL PERTURB_MEMBER(gues3d(:,:,:,:,1),gues2d(:,:,:,1),rpert3d,rpert2d)
-  pert3da=pert3da+random_amp_factor*rpert3d
-  pert2da=pert2da+random_amp_factor*rpert2d
-  DEALLOCATE(rpert3d,rpert2d)
- ENDIF
+ CALL PERTURB_MEMBER_BALANCED(gues3d(:,:,:,:,1),gues2d(:,:,:,1),   &
+                              gues3d(:,:,:,:,2),gues2d(:,:,:,2),   &
+                              pert3da(:,:,:,:),pert2da(:,:,:)  )
 
 !Get perturbation at the final time in the window.
+
+ WRITE(*,*)"Processing perturbation at the beginning of the window"
+ WRITE(*,*)"Perturbation 2 will be obtained as the difference between "
+ WRITE(*,*)"the following dates: "
+ CALL get_date(met_emb1,my_date)
+ WRITE(*,*)my_date
+ CALL get_date(met_emb2,my_date)
+ WRITE(*,*)my_date
+
  CALL read_grd(met_emb1,gues3d(:,:,:,:,1),gues2d(:,:,:,1))
  CALL read_grd(met_emb2,gues3d(:,:,:,:,2),gues2d(:,:,:,2))
 
-
  levels=gues3d(1,1,:,iv3d_pres,1)  !Get input levels.
 
- pert3db= amp_factor * ( gues3d(:,:,:,:,1) - gues3d(:,:,:,:,2)   )
- pert2db= amp_factor * ( gues2d(:,:,:,1) - gues2d(:,:,:,2)   )
-
-
- !ADD ALSO A RANDOM PERTURBATION
- IF( random_amp_factor > 0.0d0 )THEN
-  ALLOCATE(rpert3d(nlon,nlat,nlev,nv3d),rpert2d(nlon,nlat,nv2d))
-  CALL PERTURB_MEMBER(gues3d(:,:,:,:,1),gues2d(:,:,:,1),rpert3d,rpert2d)
-  pert3db=pert3db+random_amp_factor*rpert3d
-  pert2db=pert2db+random_amp_factor*rpert2d
-  DEALLOCATE(rpert3d,rpert2d)
- ENDIF
+ CALL PERTURB_MEMBER_BALANCED(gues3d(:,:,:,:,1),gues2d(:,:,:,1),   &
+                              gues3d(:,:,:,:,2),gues2d(:,:,:,2),   &
+                              pert3db(:,:,:,:),pert2db(:,:,:)  )
 
  !Interpolate perturbation linearly in time
  time_factor=( REAL(current_time,r_size) / REAL(max_time,r_size) )
  pert3da=(1.0d0-time_factor)*pert3da + (time_factor)*pert3db
  pert2da=(1.0d0-time_factor)*pert2da + (time_factor)*pert2db
+
+
+ !ADD A RANDOM PERTURBATION TO THE TIME INTERPOLATED BALANCED PERTURBATION.
+ IF( random_amp_factor > 0.0d0 )THEN
+  ALLOCATE(rpert3d(nlon,nlat,nlev,nv3d),rpert2d(nlon,nlat,nv2d))
+  CALL PERTURB_MEMBER_RANDOM(gues3d(:,:,:,:,1),gues2d(:,:,:,1),rpert3d,rpert2d)
+  pert3da=pert3da+random_amp_factor*rpert3d
+  pert2da=pert2da+random_amp_factor*rpert2d
+  DEALLOCATE(rpert3d,rpert2d)
+ ENDIF
 
  nlev_pert=nlev
 
@@ -177,40 +207,14 @@ ALLOCATE( levels(nlev) )
   ENDDO
  ENDDO
 
- !WRITE(*,*)pert3d_final(50,50,:,1)
-
-
  gues3d(:,:,:,:,1)=gues3d(:,:,:,:,1) + pert3d_final  
  gues2d(:,:,:,1)  =gues2d(:,:,:,1)   + pert2da
 
- !Check that relative humidity is possitive
- DO ilon=1,nlon
-  DO ilat=1,nlat
-   DO ilev=1,nlev
-     if( gues3d(ilon,ilat,ilev,iv3d_rh,1) < 0.01d0)then
-       gues3d(ilon,ilat,ilev,iv3d_rh,1)=0.01d0
-     endif
-   ENDDO
-  ENDDO
- ENDDO
+ !Check that positive variables are stil possitive
+ CALL check_pert(gues3d,gues2d)
 
 
  CALL write_grd(ctrl_met_em,gues3d(:,:,:,:,1),gues2d(:,:,:,1))
 
-
- !DO ilev=1,final_nlevs+1
- ! DO ivar=1,nv3d
- !    rmse=0.0d0
- !    DO ilat=1,nlat
- !      DO ilon=1,nlon
- !        rmse=rmse+pert3d_final(ilat,ilon,ilev,ivar)**2
- !      ENDDO
- !    ENDDO
- !    WRITE(*,*)"Average perturbation amplitude for var ",ivar," lev ",ilev," is ",sqrt(rmse/(nlon*nlat))
- ! ENDDO
- !ENDDO
-
-
 END PROGRAM COMPUTE_PERTURBATION
-
 
