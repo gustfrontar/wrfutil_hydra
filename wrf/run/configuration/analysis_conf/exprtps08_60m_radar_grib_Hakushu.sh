@@ -1,5 +1,5 @@
 #KALMAN FILTER CONFIGURATION
-DOMAINCONF=CORDOBA_2K                   #Define a domain
+DOMAINCONF=CORDOBA_2KBIS               #Define a domain
 LETKFNAMELIST=control                   #Define a letkf namelist template
 
 MEMBER=60        #Number of ensemble members.

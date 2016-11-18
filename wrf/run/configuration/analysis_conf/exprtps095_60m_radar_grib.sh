@@ -1,5 +1,5 @@
 #KALMAN FILTER CONFIGURATION
-DOMAINCONF=CORDOBA_2KBIS               #Define a domain
+DOMAINCONF=CORDOBA_2K                   #Define a domain
 LETKFNAMELIST=control                   #Define a letkf namelist template
 
 MEMBER=60        #Number of ensemble members.
@@ -43,7 +43,7 @@ SIGMA_OBST="3.0d0"
 GROSS_ERROR="15.0d0" 
 COV_INFL_MUL="1.1d0"
 SP_INFL_ADD="0.d0"  
-RELAX_ALPHA_SPREAD="0.9d0"
+RELAX_ALPHA_SPREAD="0.95d0"
 RELAX_ALPHA="0.0d0" 
 USE_ADAPTIVE_INFLATION=0  #1 turn on addaptive inflation (Miyoshi 2011), 0 Turn off adaptive inflation
 				  #Note that for addaptive inflation to work COV_INFL_MUL should be < 0.0
@@ -74,8 +74,8 @@ EDATE=20140122200000
 OBSDIR=${HOMEDIR}/DATA/OBS/$OBS/                                                          # Folder where conventional observations are.
 NRADARS=1                                                                                 # Number of available radars.
 RADAROBSDIR=${HOMEDIR}/DATA/OBS/$RADAROBS/                                                # Folder where radar observations are.
-TMPDIR=${HOMEDIR}/TMP/$EXP/                                                               # Temporal work directory (should be accessible for all computation nodes)
-OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                    # Where results will be stored.
+TMPDIR=${HOME}/TMP/$EXP/                                                                  # Temporal work directory (should be accessible for all computation nodes)
+OUTPUTDIR=${HOME}/salidas/EXPERIMENTS/$EXP/                                               # Where results will be stored.
 GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/ARGENTINA/                                         # Folder where bdy and initial grib files are located.
 GRIBTABLE="Vtable.GFS"                                                                    # Bdy and init data source Vtable name.
 PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                    # Folder where data for perturbing bdy are located.
@@ -84,7 +84,7 @@ GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/                                       
 
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
 SCALE_FACTOR="0.05"         #Perturbation scale factor.
-RANDOM_SCALE_FACTOR="0.0"   #Random perturbation scale factor.
+RANDOM_SCALE_FACTOR="0.5"   #Random perturbation scale factor.
 PERTURB_BOUNDARY=1          #Wheter boundary perturbations are going to be perturbed.
 PERTURB_BOUNDARY_TYPE=1     #DUMMY
 #Random dates for boundary perturbations.
