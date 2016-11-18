@@ -52,10 +52,25 @@ BOUNDARY_DATA_FREQ=21600              #Boundary data frequency. (seconds)
 BOUNDARY_DATA_PERTURBATION_FREQ=21600 #Frequency of data used to perturb boundary conditions (seconds)
 
 #INITIAL AND BOUNDARY PERTURBATIONS
-SCALE_FACTOR="0.05"         #Perturbation scale factor.
-RANDOM_SCALE_FACTOR="0.005" #Random perturbation scale factor.
-PERTURB_BOUNDARY=1          #DUMMY
-PERTURB_BOUNDARY_TYPE=1     #DUMMY
+AMP_FACTOR="0.05"             #Perturbation scale factor.
+RANDOM_AMP_FACTOR="0.5"       #Random perturbation scale factor.
+PERTURB_BOUNDARY=1            #Wether boundary conditions are going to be perturbed.
+PERTURB_ATMOSPHERE=".true."
+PERTURB_SST=".true."
+PERTURB_SOIL=".true."
+PERTURB_T=".true."
+PERTURB_RH=".true."
+PERTURB_WIND=".true."
+PERTURB_T_AMP="0.5d0"
+PERTURB_RH_AMP="5.0d0"
+PERTURB_WIND_AMP="0.5d0"
+PERTURB_T_SCLH="40000d0"
+PERTURB_RH_SCLH="40000d0"
+PERTURB_WIND_SCLH="40000d0"
+PERTURB_T_SCLV="5000d0"
+PERTURB_RH_SCLV="5000d0"
+PERTURB_WIND_SCLV="5000d0"
+NAMELISTPERTMETEM=$WRF/run/configuration/pertmetem.namelist.$LETKFNAMELIST
 
 #POSTPROC CONFIGURATION
 OUTLEVS="0.1,0.5,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,"

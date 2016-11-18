@@ -1,7 +1,7 @@
 #KALMAN FILTER CONFIGURATION
 DOMAINCONF=AMBA                  #Define a domain
 
-MEMBER=1        #Number of ensemble members.
+MEMBER=10        #Number of ensemble members.
 MAX_DOM=1
 HOMEDIR=${HOME}/share/
 DATADIR=${HOME}/data/
@@ -28,7 +28,7 @@ MM=$MEMBER                      #Variable for iteration limits.
 MEANMEMBER=`expr $MEMBER + 1 `  #This is the member ID corresponding to the ensemble mean.
 
 ASSIMILATION_FREC=21600 #Forecast initialization frequency (seconds)
-GUESFT=21600 #604800           #Forecast length (secons)
+GUESFT=604800           #Forecast length (secons)
 
 WINDOW=21600        #Forecast initialization frequency (seconds)
 WINDOW_START=0      #Window start (seconds from forecast initialization)
@@ -59,7 +59,7 @@ PERTURB_BOUNDARY_TYPE=1   #DUMMY
 
 #POSTPROC CONFIGURATION
 OUTLEVS="0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0"
-OUTVARS="'CO,umet,vmet,W,QVAPOR,QCLOUD,QRAIN,QICE,QSNOW,QGRAUP,RAINNC,tk,u10m,v10m,slp'"
+OUTVARS="'co,umet,vmet,QVAPOR,QCLOUD,QRAIN,QICE,QSNOW,QGRAUP,RAINNC,tk,t2m,pressure,u10m,v10m,slp'"
 ARWPOST_FREC=21600   # Post processing frequency (seconds)
 INPUT_ROOT_NAME='wrfout'
 INTERP_METHOD=1

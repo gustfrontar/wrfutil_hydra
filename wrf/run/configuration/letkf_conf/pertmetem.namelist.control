@@ -1,0 +1,31 @@
+&balanced
+ perturb_atmosphere = @PERTURB_ATMOSPHERE@
+ perturb_sst        = @PERTURB_SST@
+ perturb_soil       = @PERTURB_SOIL@
+ 
+ amp_factor         = @AMP_FACTOR@
+ current_time       = @CURRENT_TIME@
+ max_time           = @MAX_TIME@
+/
+
+&random
+ perturb_t         = @PERTURB_T@
+ perturb_rh        = @PERTURB_RH@
+ perturb_wind      = @PERTURB_WIND@
+
+ perturb_t_amp     = @PERTURB_T_AMP@
+ perturb_rh_amp    = @PERTURB_RH_AMP@
+ perturb_wind_amp  = @PERTURB_WIND_AMP@
+
+ random_amp_factor =  @RANDOM_AMP_FACTOR@
+
+ perturb_t_sclh    =  @PERTURB_T_SCLH@
+ perturb_rh_sclh   =  @PERTURB_RH_SCLH@
+ perturb_wind_sclh =  @PERTURB_WIND_SCLH@
+
+ perturb_t_sclv    =  @PERTURB_T_SCLV@
+ perturb_rh_sclv   =  @PERTURB_RH_SCLV@
+ perturb_wind_sclv =  @PERTURB_WIND_SCLV@
+
+/
+

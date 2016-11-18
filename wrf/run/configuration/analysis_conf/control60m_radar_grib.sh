@@ -79,14 +79,31 @@ OUTPUTDIR=${HOME}/salidas/EXPERIMENTS/$EXP/                                     
 GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/ARGENTINA/                                         # Folder where bdy and initial grib files are located.
 GRIBTABLE="Vtable.GFS"                                                                    # Bdy and init data source Vtable name.
 PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                    # Folder where data for perturbing bdy are located.
-PERTGRIBTABLE="Vtable.CFSR"                                                               # Bdy perturbation source vtable name.
+PERTGRIBTABLE="Vtable.CFSR2_web"                                                          # Bdy perturbation source vtable name.
 GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/                                                 # Folder where WPS GEOG dataset is located.
 
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
-SCALE_FACTOR="0.05"         #Perturbation scale factor.
-RANDOM_SCALE_FACTOR="0.5"   #Random perturbation scale factor.
-PERTURB_BOUNDARY=1          #Wheter boundary perturbations are going to be perturbed.
-PERTURB_BOUNDARY_TYPE=1     #DUMMY
+AMP_FACTOR="0.05"             #Perturbation scale factor.
+RANDOM_AMP_FACTOR="0.5"       #Random perturbation scale factor.
+PERTURB_BOUNDARY=1            #Wether boundary conditions are going to be perturbed.
+PERTURB_ATMOSPHERE=".true."
+PERTURB_SST=".true."
+PERTURB_SOIL=".true."
+PERTURB_T=".true."
+PERTURB_RH=".true."
+PERTURB_WIND=".true."
+PERTURB_T_AMP="0.5d0"
+PERTURB_RH_AMP="5.0d0"
+PERTURB_WIND_AMP="0.5d0"
+PERTURB_T_SCLH="40000d0"
+PERTURB_RH_SCLH="40000d0"
+PERTURB_WIND_SCLH="40000d0"
+PERTURB_T_SCLV="5000d0"
+PERTURB_RH_SCLV="5000d0"
+PERTURB_WIND_SCLV="5000d0"
+NAMELISTPERTMETEM=$WRF/run/configuration/pertmetem.namelist.$LETKFNAMELIST
+
+
 #Random dates for boundary perturbations.
 INIPERTDATE=20060101000000    #Initial date in grib database (used for perturbing initial and boundary conditions)
 ENDPERTDATE=20091231180000    #Final date in grib database (used for perturbing initial and boundary conditions)
@@ -100,9 +117,9 @@ RUNTIMELIBS=${HOMEDIR}/libs_sparc64/lib/       #Libs that will be included in LD
 WRF=${HOMEDIR}/LETKF_WRF/wrf/                  # WRF folder (for computing nodes)
 LETKF=$WRF/letkf/letkf.exe                     # LETKF module (for computing nodes)
 UPDATEBC=$WRF/model/WRFDA/da_update_bc.exe     # Update bc tool (WRFVAR) (for computing nodes)
-WRFMODEL=$WRF/model/WRFV3/                     # WRF model that run in computing nodes.
-WRFMODELPPS=$WRF/model/WRFV3/                  # WRF model that runs in pps server  (usually the same as the one for the computing nodes)
-WPS=$WRF/model/WPS/                            # WRF model pre processing utilities (for pps server)
+WRFMODEL=$WRF/model/WRFV3.6/                   # WRF model that run in computing nodes.
+WRFMODELPPS=$WRF/model/WRFV3.6/                # WRF model that runs in pps server  (usually the same as the one for the computing nodes)
+WPS=$WRF/model/WPS3.6/                         # WRF model pre processing utilities (for pps server)
 ARWPOST=$WRF/model/ARWpost/                    # WRF model post processing utilities that run in computing nodes.
 SPAWN=$WRF/spawn/
 MPIBIN=mpiexec
