@@ -1824,7 +1824,7 @@ generate_run_forecast_script_k () {
      M=$INIMEMBER
      while [  $M -le $ENDMEMBER ] ; do
       JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
          echo "$MPIBIN -np ${NODES_PER_MEMBER} --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_REAL.sh \${BASEDIR}/WRF${MEM}/ &  " >> $local_script
          JOB=`expr $JOB + 1 `
@@ -1838,7 +1838,7 @@ generate_run_forecast_script_k () {
      M=$INIMEMBER
      while [  $M -le $ENDMEMBER ] ; do
       JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
          echo "$MPIBIN -np ${NODES_PER_MEMBER} --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_INTERPANA.sh \${BASEDIR}/WRF${MEM}/ &  " >> $local_script
          JOB=`expr $JOB + 1 `
@@ -1852,7 +1852,7 @@ generate_run_forecast_script_k () {
      M=$INIMEMBER
      while [  $M -le $ENDMEMBER ];do
       JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ];do
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ];do
       MEM=`ens_member $M `
          echo "$MPIBIN -np 1 --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_PRE.sh \${BASEDIR}/WRF${MEM} ${MEM} &  " >> $local_script
          JOB=`expr $JOB + 1 `
@@ -1872,7 +1872,7 @@ generate_run_forecast_script_k () {
      M=$INIMEMBER
      while [  $M -le $ENDMEMBER ] ; do
       JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
          echo "$MPIBIN -np ${NODES_PER_MEMBER} --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_WRF.sh \${BASEDIR}/WRF${MEM} &  " >> $local_script
          JOB=`expr $JOB + 1 `
@@ -1884,7 +1884,7 @@ generate_run_forecast_script_k () {
      M=$INIMEMBER
      while [  $M -le $ENDMEMBER ] ; do
       JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
 
          echo "$MPIBIN -np 1 --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_POST.sh \${BASEDIR}/WRF${MEM} $MEM &  " >> $local_script
@@ -2040,7 +2040,7 @@ generate_run_forecast_script_torque () {
      M=$INIMEMBER
      while [  $M -le $ENDMEMBER ] ; do
       JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
          echo "sleep 0.3"    >> $local_script
          echo "$MPIBIN -np ${PROC_PER_MEMBER} -f $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_REAL.sh $WORKDIR/WRF${MEM}/ > $WORKDIR/WRF${MEM}/real.log &  " >> $local_script
@@ -2054,7 +2054,7 @@ generate_run_forecast_script_torque () {
       M=$INIMEMBER
       while [  $M -le $ENDMEMBER ];do
        JOB=1
-       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ];do
+       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ];do
        MEM=`ens_member $M `
           echo "$WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM} &  " >> $local_script
           JOB=`expr $JOB + 1 `
@@ -2074,7 +2074,7 @@ generate_run_forecast_script_torque () {
      M=$INIMEMBER
      while [  $M -le $ENDMEMBER ] ; do
       JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
          echo "sleep 0.3 "  >> $local_script
          echo "$MPIBIN -np ${PROC_PER_MEMBER} -f ${WORKDIR}/machinefile.${JOB} ${WORKDIR}/WRF_WRF.sh ${WORKDIR}/WRF${MEM} > ${WORKDIR}/WRF${MEM}/wrf.log &  " >> $local_script
