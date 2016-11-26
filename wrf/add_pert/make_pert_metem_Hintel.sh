@@ -20,7 +20,7 @@ F90=ifort  #mpif90
 
 
 OMP=
-F90OPT='-convert big_endian -O3 -g -traceback'
+F90OPT='-convert big_endian -O3 '
 
 cd ./src
 

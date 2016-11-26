@@ -126,4 +126,4 @@ NAMELISTWRF=$WRF/run/configuration/$DOMAINCONF/namelist.input
 NAMELISTLETKF=$WRF/run/configuration/letkf.namelist.$LETKFNAMELIST
 NAMELISTARWPOST=$WRF/run/configuration/$DOMAINCONF/namelist.ARWpost
 NAMELISTOBSOPE=$WRF/run/configuration/obsope.namelist.$OBSOPENAMELIST
-
+NAMELISTPERTMETEM=$WRF/run/configuration/letkf_conf/pertmetem.namelist.control      #Namelist for boundary conditions perturbation.

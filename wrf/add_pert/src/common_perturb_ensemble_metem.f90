@@ -243,8 +243,8 @@ REAL(r_size)              :: pert_max , pert_min
       pert_max=-9.0d9
       pert_min=9.0d9
 
-      DO i=1,nlon
-       DO j=1,nlat
+      DO i=1,nlon-1
+       DO j=1,nlat-1
    
           IF( pert3d(i,j,k,iv) < pert_min)pert_min=pert3d(i,j,k,iv)
           IF( pert3d(i,j,k,iv) > pert_max)pert_max=pert3d(i,j,k,iv)
@@ -253,13 +253,13 @@ REAL(r_size)              :: pert_max , pert_min
       ENDDO
 
      IF( iv == iv3d_t  )THEN
-       WRITE(*,*)"Temperature pert. range at level ",iv," is ",pert_min,pert_max
+       WRITE(*,*)"Temperature pert. range at level ",k," is ",pert_min,pert_max
      ELSEIF( iv == iv3d_u )THEN
-       WRITE(*,*)"U-wind  pert. range at level ",iv," is ",pert_min,pert_max
+       WRITE(*,*)"U-wind  pert. range at level ",k," is ",pert_min,pert_max
      ELSEIF( iv == iv3d_v )THEN
-       WRITE(*,*)"V-wind  pert. range at level ",iv," is ",pert_min,pert_max
+       WRITE(*,*)"V-wind  pert. range at level ",k," is ",pert_min,pert_max
      ELSEIF( iv == iv3d_rh )THEN
-       WRITE(*,*)"RH  pert. range at level ",iv," is ",pert_min,pert_max
+       WRITE(*,*)"RH  pert. range at level ",k," is ",pert_min,pert_max
      ENDIF
  
      ENDDO

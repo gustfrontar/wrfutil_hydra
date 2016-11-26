@@ -1,14 +1,11 @@
-#!/bin/bash
+#PBS -l nodes=@@NODES@@:ppn=@@PPN@@
+#PBS -S /bin/bash
+
 #=======================================================================
-# Driver Script
-#   To run the WRF-LETKF in a qsub cluster.
-#   This scripts prepares all the data needed to run the letkf cycle 
-#   then submmits the job to the torque queu
-#   New developments:
-#   -WPS is run in pre/post nodes and real and wrf are run in computation nodes.
-#   -Letkf incorporates relaxation to prior inflation and eigen exa
-#    matrix computations. 
-#   -LETKF uses NETCDF IO.
+# This script runs multiple data assimilation cycles.
+# The driver script sets the TMP directory with all the required data
+# and this scripts executes multiple data assimilation cycle and the output
+# goes to the TMP directory.
 #=======================================================================
 #set -x
 #-----------------------------------------------------------------------
@@ -17,55 +14,43 @@
 #Get root dir
 CDIR=`pwd`
 
-#CONFIGURATION
-CONFIGURATION=exprtps08_60m_radar_grib  #Define a experiment configuration
-MCONFIGURATION=machine_radar60m_Hydra        #Define a machine configuration (number of nodes, etc)
+CONFIGURATION=@@CONFIGURATION@@
 
-RESTART=1
-RESTARTDATE=20140122192000
+source @@CONFFILE@@
+source @@MCONFFILE@@
+
+source $TMPDIR/SCRIPTS/util.sh
+
+RESTART=@@RESTART@@
+RESTARTDATE=@@RESTARTDATE@@
 RESTARTITER=10
 
+PPSSERVER=`hostname`
 
-MYHOST=`hostname`
-PID=$$
-MYSCRIPT=${0##*/}
+#In this case we will use the same number of nodes for the forecast and for LETKF.
+TOTAL_NODES_LETKF=$TOTAL_NODES_FORECAST
 
-if [ -e $CDIR/configuration/analysis_conf/${CONFIGURATION}.sh ];then
-source $CDIR/configuration/analysis_conf/${CONFIGURATION}.sh
-else
-echo "CAN'T FIND CONFIGURATION FILE $CDIR/configuration/analysis_conf/${CONFIGURATION}.sh"
-exit
-fi
+#Override value of GRIBDIR and PERTGRIBDIR
+GRIBDIR=$TMPDIR/GRIB/
+PERTGRIBDIR=$TMPDIR/PERTGRIB/
+MYHOST=@@MYHOST@@
+PID=@@PID@@
+MYSCRIPT=@@MYSCRIPT@@
 
-if [ -e $CDIR/configuration/machine_conf/${MCONFIGURATION}.sh ];then
-source $CDIR/configuration/machine_conf/${MCONFIGURATION}.sh
-else
-echo "CAN'T FIND MACHINE CONFIGURATION FILE $CDIR/configuration/machine_conf/${MCONFIGURATION}.sh"
-exit
-fi
+#Overrride the value of OBSDIR and RADAROBSDIR.
+OBSDIR=$TMPDIR/OBS/
+RADAROBSDIR=$TMPDIR/RADAROBS/
 
+#Overrride the value of output dir.
+OUTPUTDIR=$TMPDIR/output/
 
-source $UTIL
-
-echo '>>>'
-echo ">>> INITIALIZING WORK DIRECTORY AND OUTPUT DIRECTORY"
-echo '>>>'
-
+#Create a copy of the OUTPUTDIR structure in the TMPDIR.
 safe_init_outputdir $OUTPUTDIR
 
+#Set output log
 set_my_log
 
-echo '>>>'
-echo ">>> OUTPUT WILL BE REDIRECTED TO THE FOLLOWING FILE"
-echo '>>>'
-
-echo $my_log
-
-#Start of the section that will be output to my log.
 {
-safe_init_tmpdir $TMPDIR
-
-save_configuration $CDIR/$MYSCRIPT
 
 echo ">>>> I'm RUNNING IN $MYHOST and my PID is $PID" 
 echo ">>>> My config file is $CONFIGURATION         " 
@@ -74,17 +59,6 @@ echo ">>>> My machine is $MCONFIGURATION            "
 echo ">>>> I' am $CDIR/$MYSCRIPT                    "
 echo ">>>> My LETKFNAMELIST is $LETKFNAMELIST       " 
 
-echo '>>>'                                           
-echo ">>> COPYING DATA TO WORK DIRECTORY "          
-echo '>>>'                                         
-
-copy_data   
-
-echo '>>>'                                           
-echo ">>> GENERATING DOMAIN "          
-echo '>>>' 
-
-get_domain
 
 echo '>>>'                                           
 echo ">>> SET METEM DATA FREQ "          
@@ -97,7 +71,6 @@ echo ">>> GET INITIAL RANDOM DATES "
 echo '>>>' 
 
 get_random_dates 
-
 
 ##################################################
 # START CYCLE IN TIME
@@ -114,7 +87,6 @@ else
 CDATE=$RESTARTDATE
 ITER=$RESTARTITER
 fi
-
 
 while test $CDATE -le $EDATE
 do
@@ -141,6 +113,7 @@ echo " >>"
 
 perturb_met_em_from_grib
 
+
 echo " >>"                                                           
 echo " >> ENSEMBLE FORECASTS AND LETKF"
 echo " >>"
@@ -156,7 +129,7 @@ echo " >>"
 echo " >> RUNNING THE ENSEMBLE"
 echo " >>"
 
-run_ensemble_forecast
+run_ensemble_forecast_noqueue
 
 echo " >>"
 echo " >> GETTING OBSERVATIONS "
@@ -168,7 +141,7 @@ echo " >>"
 echo " >> RUNNING LETKF"
 echo " >>"
 
-run_letkf
+run_letkf_noqueue
 
 echo " >>"
 echo " >> DOING POST PROCESSING"
@@ -190,6 +163,5 @@ RESTART=0    #TURN RESTART FLAG TO 0 IN CASE IT WAS GREATHER THAN 0.
 done	### MAIN LOOP ###
 
 echo "NORMAL END"
-
 
 } > $my_log 2>&1

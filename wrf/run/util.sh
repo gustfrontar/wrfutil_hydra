@@ -722,6 +722,34 @@ chmod 766 $SCRIPT
 
 }
 
+#-------------------------------------------------------------------------------
+# Edit multiple cycle script.
+#-------------------------------------------------------------------------------
+edit_multiplecycle () {
+
+local SCRIPT=$1
+
+local CONFFILE="${TMPDIR}/configuration/configuration.sh"
+local MCONFFILE="${TMPDIR}/configuration/machine_configuration.sh"
+
+#Set multiple cycle script.
+sed -i 's/@@NODES@@/'${TOTAL_NODES_FORECAST}'/g'     $SCRIPT
+sed -i 's/@@PPN@@/'${PROC_PER_NODE}'/g'              $SCRIPT
+#For some reason pipe is requiered in this case or an error can occour.
+sed -i 's|@@CONFFILE@@|'${CONFFILE}'|g'              $SCRIPT
+sed -i 's|@@MCONFFILE@@|'${MCONFFILE}'|g'            $SCRIPT
+sed -i 's/@@RESTART@@/'${RESTART}'/g'                $SCRIPT
+sed -i 's/@@RESTARTDATE@@/'${RESTARTDATE}'/g'        $SCRIPT
+sed -i 's/@@CONFIGURATION@@/'${CONFIGURATION}'/g'    $SCRIPT
+
+#These are only for the logs.
+sed -i 's/@@MYHOST@@/'${MYHOST}'/g'                  $SCRIPT
+sed -i 's/@@PID@@/'${PID}'/g'                        $SCRIPT
+sed -i 's/@@MYSCRIPT@@/'${MYSCRIPT}'/g'              $SCRIPT
+
+
+}
+
 safe_rm_tmpdir () {
 #-------------------------------------------------------------------------------
 # Safely remove a temporary directory
@@ -757,7 +785,6 @@ res=$? && ((res != 0)) && exit $res
 #-------------------------------------------------------------------------------
 }
 
-:
 safe_init_tmpdir () {
 #-------------------------------------------------------------------------------
 # Safely initialize a temporary directory
@@ -810,8 +837,8 @@ mkdir -p $DIRNAME/WPS
 #fi
 
 #DEFINE SOME VARIABLES
-METEMDIR=$DIRNAME/met_em/
-PERTMETEMDIR=$DIRNAME/pert_met_em/
+#METEMDIR=$DIRNAME/met_em/
+#PERTMETEMDIR=$DIRNAME/pert_met_em/
 
 #-------------------------------------------------------------------------------
 }
@@ -984,7 +1011,7 @@ copy_data () {
 
 #COPY LETKF
 cp $LETKF $TMPDIR/LETKF/letkf.exe
-cp $NAMELISTLETKF $TMPDIR/NAMELIST/letkf.namelist.template
+cp $NAMELISTLETKF     $TMPDIR/NAMELIST/letkf.namelist.template
 cp $NAMELISTPERTMETEM $TMPDIR/NAMELIST/pertmetem.namelist.template
 
 #COPY WRF
@@ -998,6 +1025,7 @@ cp $UPDATEBC               $TMPDIR/WRF/da_update_bc.exe
 cp $NAMELISTWRF            $TMPDIR/NAMELIST/namelist.input.template
 cp $NAMELISTARWPOST        $TMPDIR/NAMELIST/namelist.ARWpost.template
 
+cp $INI_PERT_DATE_FILE     $TMPDIR/NAMELIST/ini_pert_date_file
 
 #In case pps and computing nodes are different (as in K computer)
 #then copy both wrf and real.
@@ -1043,6 +1071,57 @@ rm -fr $TMPDIR/WPS/namelist*
 
 
 }
+
+
+copy_data_multiplecycles () {
+
+#COPY GRIB
+mkdir -p $TMPDIR/GRIB
+mkdir -p $TMPDIR/PERTGRIB
+
+cp -r $GRIBDIR/*     $TMPDIR/GRIB/
+cp -r $PERTGRIBDIR/* $TMPDIR/PERTGRIB/
+
+#COPY OBS
+if [ ! -z "$OBS" ] ; then
+   echo "Copying $OBSDIR"
+   mkdir -p $TMPDIR/OBS/
+   cp -r $OBSDIR/*/*.dat     $TMPDIR/OBS/
+fi
+
+if [ ! -z "$RADAROBS" ] ; then
+   echo "Copying $RADAROBSDIR"
+   mkdir -p $TMPDIR/RADAROBS/
+   cp -r $RADAROBSDIR/*.dat $TMPDIR/RADAROBS/
+fi
+
+#COPY RESTART DATA
+if [ $RESTART -eq 1 ];then
+ cp -r $OUTPUTDIR/anal/$RESTART_DATE $TMP/output/anal/
+ cp -r $OUTPUTDIR/*.log              $TMP/output/
+fi
+
+#COPY JOB SCRIPT
+
+cp $CDIR/H_run_multiple_cycles.sh                       $TMPDIR/SCRIPTS/
+
+#Save the current configuration files in the output directory.
+mkdir -p $TMPDIR/configuration/
+
+if [ $FORECAST -eq 1 ] ; then
+
+ cp $CDIR/configuration/forecast_conf/${CONFIGURATION}.sh  $TMPDIR/configuration/configuration.sh  #Save experiment conf.
+
+else
+
+ cp $CDIR/configuration/analysis_conf/${CONFIGURATION}.sh  $TMPDIR/configuration/configuration.sh  #Save experiment conf.
+
+fi
+
+cp $CDIR/configuration/machine_conf/${MCONFIGURATION}.sh   $TMPDIR/configuration/machine_configuration.sh  #Save machine conf.
+
+}
+
 
 set_cycle_dates () {
 
@@ -1117,17 +1196,17 @@ local DESTDIR=$OUTPUTDIR/configuration/
 #Save the current configuration files in the output directory.
 if [ $FORECAST -eq 1 ] ; then
 
- cp -r $CDIR/configuration/forecast_conf/${CONFIGURATION}.sh  $DESTDIR  #Save experiment conf.
+ cp $CDIR/configuration/forecast_conf/${CONFIGURATION}.sh  $DESTDIR/configuration.sh  #Save experiment conf.
 
 else
 
- cp -r $CDIR/configuration/analysis_conf/${CONFIGURATION}.sh  $DESTDIR  #Save experiment conf.
+ cp $CDIR/configuration/analysis_conf/${CONFIGURATION}.sh  $DESTDIR/configuration.sh  #Save experiment conf.
 
 fi
 
-cp -r $CDIR/configuration/machine_conf/${MCONFIGURATION}.sh  $DESTDIR  #Save machine conf.
-cp -r $CDIR/configuration/domain_conf/$DOMAINCONF            $DESTDIR  #Save domain conf.
-cp -r $MYSCRIPT                                              $DESTDIR  #Save main script.
+cp $CDIR/configuration/machine_conf/${MCONFIGURATION}.sh  $DESTDIR/machine_configuration.sh  #Save machine conf.
+cp -r $CDIR/configuration/domain_conf/$DOMAINCONF         $DESTDIR  #Save domain conf.
+cp -r $MYSCRIPT                                           $DESTDIR  #Save main script.
 
 }
 
@@ -1275,6 +1354,106 @@ move_forecast_data
 
 }
 
+run_ensemble_forecast_noqueue () {
+
+#=====================================================================
+# This function submits and waits for the ensemble forecast jobs.
+# If one or more jobs fails then the jobs are re-done up to max_redo 
+# times.
+# If the number of ensemble members is larger than the maximum number
+# of members per job (MAX_MEMBER_PER_JOB) then the job is splitted into
+# several smaller jobs.
+# Split jobs are submitted to the queue. There are a maximum of 
+# MAX_SUBMITT_JOB simultaneous submissions.
+#=====================================================================
+
+max_redo=3   #Maximum number of retries.
+my_redo=0 
+
+while [ $my_redo -le $max_redo  ] ; do 
+
+ echo "This is attemp number $my_redo to run the ensemble forecast"
+
+ #Prepare and submit the jobs
+
+ if [ $RUN_ONLY_MEAN -eq 1 ] ; then
+  INIMEMBER=$MEANMEMBER
+  ENDMEMBER=$MEANMEMBER
+ else
+  INIMEMBER=1
+  ENDMEMBER=$MEMBER
+ fi
+ 
+
+   
+ #echo $INIMEMBER $ENDMEMBER $MEANMEMBER
+
+
+ local IM=$INIMEMBER
+ local EM=$ENDMEMBER
+ local WORKDIR=$TMPDIR/run/wrf/
+
+    tmp_mem=1
+    my_test=0
+    while [ $tmp_mem -le $EM ] ; do
+      tmp_mem=`ens_member $tmp_mem`
+      grep "SUCCESS COMPLETE WRF" ${WORKDIR}/wrf${tmp_mem}.log > /dev/null 2>&1
+      tmp_test=$?
+      if [ $tmp_test -ne 0 ]; then
+        my_test=1
+      fi
+      tmp_mem=`expr $tmp_mem + 1 `
+    done
+    if [ $my_test -ne 0 ] ; then
+      run_forecast_script=rf_scr.sh
+
+      echo "Running script $run_forecast_script that will run ensemble members from $IM to $EM " 
+      generate_run_forecast_script_torque $run_forecast_script $WORKDIR $IM $EM
+
+	      bash ${WORKDIR}/$run_forecast_script 
+	    
+	    fi
+
+	 #Check how the jobs finished
+
+	 error_check=0
+
+
+	 IM=$INIMEMBER
+	 EM=$ENDMEMBER
+	 my_job=1
+	   
+	   check_forecast $WORKDIR $IM $EM
+	   if [ -e $WORKDIR/REDO ] ; then
+	     error_check=1
+	     echo "[Warnning]: Ensemble run corresponding to ens member from $IM to $EM failed"
+	   fi
+
+	 #Take action according to forecast error check
+
+	 if [ $error_check -eq 0 ] ; then
+	    my_redo=`expr $max_redo + 1 ` #Break the cycle we are done!
+	 else
+	   my_redo=`expr $my_redo + 1 `   #At least one job fail: redo!
+	   if [ $my_redo -gt $max_redo ] ; then
+	     #We cannot continue with the cycle
+	     echo "[Error] : Forecast job fails more than $max_redo times "
+	     echo "CYCLE ABNORMAL END -> ABORT EXECUTION "
+	     exit 1
+	   fi
+	 fi
+
+
+	done
+
+	#Move the forecast to its final destination.
+
+	move_forecast_data
+
+
+	}
+
+
 move_forecast_data(){
 #Copy data from the temporal directory to the final destination.
 #Take into accoutn job split.
@@ -1296,7 +1475,7 @@ move_forecast_data(){
       EM=$ENDMEMBER
     fi
 
-   WORKDIR=$TMPDIR/run/${my_job}/
+   WORKDIR=$TMPDIR/run/*/
 
    if [ $FORECAST -eq 1 ] ; then
     M=$IM
@@ -1403,6 +1582,65 @@ run_letkf () {
 
 
 }
+
+
+run_letkf_noqueue () {
+
+#=====================================================================
+# This function runs letkf but assuming not queue is necessary.
+# Usually this function will be used in a multiple cycle job.
+#=====================================================================
+
+ #Prepare and run the jobs
+
+ run_letkf_script=$TMPDIR/SCRIPTS/rda_scr.sh
+
+ generate_run_letkf_script_torque $run_letkf_script
+
+ echo "Running LETKF-DA job " 
+ 
+ $run_letkf_script 
+
+ #COPY DATA TO THE FINAL DESTINATION DIR.
+   M=1
+   while [ $M -le $MEMBER ] ; do
+     MEM=`ens_member $M`
+     mv $TMPDIR/LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRA}/anal${MEM}
+     M=`expr $M + 1 `
+   done
+   MEM=`ens_member ${MEANMEMBER}`
+   mv ${TMPDIR}/LETKF/gues${MEM}            ${RESULTDIRG}/
+   mv ${TMPDIR}/LETKF/anal${MEM}            ${RESULTDIRA}/
+   mv ${TMPDIR}/LETKF/NOUT*                 ${RESULTDIRA}/
+
+   if [ $USE_ADAPTIVE_INFLATION -eq 1 ] ; then
+     mv $TMPDIR/LETKF/infl_mul.grd          ${RESULTDIRA}/
+   fi
+
+
+ #Check how the jobs finished
+ local error_check=0
+ local MMS=`ens_member $MEANMEMBER`
+ if [ ! -e ${RESULTDIRA}/anal$MMS ] ; then
+   echo "[Error]: Cannot find analysis ensemble mean."
+   error_check=1
+ fi
+ grep  "PARTIAL OBSERVATIONAL DEPARTURE" ${RESULTDIRA}/NOUT-000 > null
+ if [ $? -ne 0  ] ; then
+  echo "[Error]: LETKF do not finish properly."
+  tail ${RESULTDIRA}/NOUT-000
+  error_check=1
+ fi
+
+ if [ $error_check -ne 0 ] ; then
+     echo "[Warning] : Letkf-DA attemp $my_redo fails." 
+     echo "CYCLE ABNORMAL END -> ABORT EXECUTION "
+     exit 1
+ fi
+
+
+}
+
 
 generate_run_forecast_script_k () {
    local local_script=$1   #Name of local script
@@ -2447,19 +2685,21 @@ fi
 
 #local METEMDIR=$TMPDIR/met_em/
 
+METEMDIR=$TMPDIR/met_em/
+
 cd $METEMDIR
 
 local local_script=$METEMDIR/get_met_em_from_grib.sh
 
 #GENERATE THE SCRIPT TO GET UNPERTURBED MET_EM FILE FOR THE CURRENT TIME.
-echo "#!/bin/bash                                                               "  > $local_script            
-echo "set -x                                                                    " >> $local_script
-echo "source $TMPDIR/SCRIPTS/util.sh                                            " >> $local_script
-echo "ulimit -s unlimited                                                       " >> $local_script
-echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:$LD_LIBRARY_PATH              " >> $local_script
-echo "export PATH=$LD_PATH_ADD:$PATH                                            " >> $local_script
-echo "mkdir -p $METEMDIR                                                        " >> $local_script
-echo "cd $METEMDIR                                                              " >> $local_script
+echo "#!/bin/bash                                                                 "  > $local_script            
+echo "set -x                                                                      " >> $local_script
+echo "source $TMPDIR/SCRIPTS/util.sh                                              " >> $local_script
+echo "ulimit -s unlimited                                                         " >> $local_script
+echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:$LD_LIBRARY_PATH                " >> $local_script
+echo "export PATH=$LD_PATH_ADD:$PATH                                              " >> $local_script
+echo "mkdir -p $METEMDIR                                                          " >> $local_script
+echo "cd $METEMDIR                                                                " >> $local_script
 
 #################################################
 #   CYCLE TO CREATE THE UNPERTURBED MET_EM
@@ -2467,15 +2707,15 @@ echo "cd $METEMDIR                                                              
 #TODO: This function will be much more efficient if time interpolation is performed for the 
 #intermediate file format and not with the met_em format.
 
- echo "CDATE=$CDATE                                                             " >> $local_script
- echo "while [  \$CDATE -le $FDATE ] ; do                                       " >> $local_script
- echo "CFILE=\`met_em_file_name \$CDATE 01 \`                                   " >> $local_script
- echo "CDATE1=\`date_floor \$CDATE  $BOUNDARY_DATA_FREQ \`                      " >> $local_script 
- echo "CDATE2=\`date_edit2 \$CDATE1 $BOUNDARY_DATA_FREQ \`                      " >> $local_script
+ echo "CDATE=$CDATE                                                               " >> $local_script
+ echo "while [  \$CDATE -le $FDATE ] ; do                                         " >> $local_script
+ echo "CFILE=\`met_em_file_name \$CDATE 01 \`                                     " >> $local_script
+ echo "CDATE1=\`date_floor \$CDATE  $BOUNDARY_DATA_FREQ \`                        " >> $local_script 
+ echo "CDATE2=\`date_edit2 \$CDATE1 $BOUNDARY_DATA_FREQ \`                        " >> $local_script
 
- echo "TMPFILE1=\`met_em_file_name \$CDATE1 01 \`                               " >> $local_script
- echo "TMPFILE2=\`met_em_file_name \$CDATE2 01 \`                               " >> $local_script
-# echo "if [  ! -e  \$CFILE ] ; then                                             " >> $local_script  #If CFILE is present we can go to the next time.
+ echo "TMPFILE1=\`met_em_file_name \$CDATE1 01 \`                                 " >> $local_script
+ echo "TMPFILE2=\`met_em_file_name \$CDATE2 01 \`                                 " >> $local_script
+# echo "if [  ! -e  \$CFILE ] ; then                                              " >> $local_script  #If CFILE is present we can go to the next time.
     #IF perturbed met_ems are not present generate them                            
     echo "if [  ! -e  \$TMPFILE1 ] ; then                                          " >> $local_script                                                              
     echo "   ln -sf  $TMPDIR/WPS/*             ./                                  " >> $local_script
@@ -2587,6 +2827,7 @@ if [ $PERTURB_ONLY_MOAD -eq 1 ] ; then
    PMAX_DOM=$MAX_DOM
 fi
 
+PERTMETEMDIR=$TMPDIR/pert_met_em/
 
 local local_script=$PERTMETEMDIR/perturb_met_em_from_grib.sh
 
@@ -2779,6 +3020,8 @@ while [ $M -le $ENDMEMBER ] ; do
 
     DATE1=${INI_RANDOM_DATE1[$M]}
     DATE2=${INI_RANDOM_DATE2[$M]}
+
+    sleep  0.3
 
     ssh $PPSSERVER " $local_script $MEM $DATE1 $DATE2 > $TMPDIR/ENSINPUT/perturb_met_em${MEM}.log  2>&1 " & 
 
@@ -3531,37 +3774,51 @@ fi
 
 }
 
+#################################################################################
+#  CHECK POSTPROCESING FOR FORECAST AND ANALYSIS EXPERIMENTS.
+#################################################################################
 
 check_postproc () {
 #TO DO, add checks over forecasts.
-
-local M=1
 local cycle_error=0
 local my_domain=1
+
+if [ $RUN_ONLY_MEAN -eq 1 ] ; then
+   INIMEMBER=$MEANMEMBER
+   ENDMEMBER=$MEANMEMBER
+else
+   INIMEMBER=1
+   ENDMEMBER=$MEMBER
+fi
+
+local M=$INIMEMBER
 
 while [ $my_domain -le $MAX_DOM ] ; do
  if [ $my_domain -lt 10 ] ; then
   my_domain=0$my_domain
  fi
- while [ $M -le $MEANMEMBER ] ; do
+ while [ $M -le $ENDMEMBER ] ; do
   local MEM=`ens_member $M `
-
-  grep  "Successful completion of ARWpost" ${RESULTDIRG}/arwpost${MEM}.log > null
-  if [ $? -ne 0 ] ; then
-    echo "[Error]: ARWPOST for gues ensemble member $MEM"
-    echo "====================================="
-    echo "SHOWING LAST PART OF arwpost${MEM}.log     "
-    tail ${RESULTDIRG}/arwpostd${my_domain}_${MEM}.log
-    cycle_error=1
+  if [ $FORECAST -eq 1 -o $ANALYSIS -eq 1 ] ; then
+   grep  "Successful completion of ARWpost" ${RESULTDIRG}/arwpostd${my_domain}_${MEM}.log > null
+   if [ $? -ne 0 ] ; then
+     echo "[Error]: ARWPOST for gues ensemble member $MEM"
+     echo "====================================="
+     echo "SHOWING LAST PART OF arwpost${MEM}.log     "
+     tail ${RESULTDIRG}/arwpostd${my_domain}_${MEM}.log
+     cycle_error=1
+   fi
   fi
 
-  grep  "Successful completion of ARWpost" ${RESULTDIRA}/arwpost${MEM}.log > null
-  if [ $? -ne 0 ] ; then
-    echo "[Error]: ARWPOST for anal ensemble member $MEM"
-    echo "====================================="
-    echo "SHOWING LAST PART OF arwpost${MEM}.log     "
-    tail ${RESULTDIRA}/arwpostd${my_domain}_${MEM}.log
-    cycle_error=1
+  if [ $ANALYSIS -eq 1 ] ; then
+   grep  "Successful completion of ARWpost" ${RESULTDIRA}/arwpostd${my_domain}_${MEM}.log > null
+   if [ $? -ne 0 ] ; then
+     echo "[Error]: ARWPOST for anal ensemble member $MEM"
+     echo "====================================="
+     echo "SHOWING LAST PART OF arwpost${MEM}.log     "
+     tail ${RESULTDIRA}/arwpostd${my_domain}_${MEM}.log
+     cycle_error=1
+   fi
   fi
 
   M=`expr $M + 1 `
@@ -3569,13 +3826,12 @@ while [ $my_domain -le $MAX_DOM ] ; do
  my_domain=`expr $my_domain + 1 `
 done
 
-if [ $cycle_error -eq 1 ] ; then
-   echo "POSTPROCESING ABNORMAL END -> STOP EXECUTION "
-   exit 1
-fi
-
-
 }
+
+
+#################################################################################
+#  CHECK LETKF OUTPUT
+#################################################################################
 
 check_analysis () {
 
@@ -3601,6 +3857,9 @@ fi
 
 }
 
+#################################################################################
+#  CHECK ENSEMBLE FORECAST OUPUT
+#################################################################################
 
 check_forecast () {
 
@@ -3664,6 +3923,9 @@ fi
 
 }
 
+#################################################################################
+#  DOWNLOAD CFSR DATA
+#################################################################################
 
 download_cfsr () {
 local LITIME=$1   #Start Time
@@ -3694,6 +3956,10 @@ echo $LCTIME
 done
 
 }
+
+#################################################################################
+#  GENERATE RANDOM DATES FOR BOUNDARY PERTURBATION
+#################################################################################
 
 get_random_dates () {
 
@@ -3772,7 +4038,7 @@ if [ $RESTART -eq 0 ] ; then
 
 
   else
-    echo "Reading a set of random dates from file: $INI_PERT_DATE_FILE "
+    echo "Reading a set of random dates from file: $TMPDIR/NAMELIST/ini_pert_date_file "
     M=1
     while read line; do 
       echo $line  > $TMPDIR/tmp_file
@@ -3780,7 +4046,7 @@ if [ $RESTART -eq 0 ] ; then
       INI_RANDOM_DATE1[${M}]=$TMPINDATE1
       INI_RANDOM_DATE2[${M}]=$TMPINDATE2  
       M=`expr $M + 1 `
-    done < $INI_PERT_DATE_FILE
+    done < $TMPDIR/NAMELIST/ini_pert_date_file
 
   fi
 
