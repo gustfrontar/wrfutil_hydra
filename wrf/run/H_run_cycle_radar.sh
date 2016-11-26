@@ -144,6 +144,7 @@ echo " >>"
 echo " >> WAITING FOR LETKF"
 echo " >>"
 
+exit
 run_letkf
 
 echo " >>"

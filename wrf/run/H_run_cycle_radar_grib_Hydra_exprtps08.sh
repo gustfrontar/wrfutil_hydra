@@ -22,7 +22,7 @@ CONFIGURATION=exprtps08_60m_radar_grib_Hydra   #Define a experiment configuratio
 MCONFIGURATION=machine_radar60m_Hydra          #Define a machine configuration (number of nodes, etc)
 
 RESTART=0
-RESTARTDATE=20140122174500
+RESTARTDATE=20140122191000
 RESTARTITER=10
 
 

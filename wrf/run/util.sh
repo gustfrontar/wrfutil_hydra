@@ -2280,7 +2280,7 @@ generate_run_letkf_script_torque () {
       #CREATE THE FILES WHERE THE GUES AND ANAL ENSEMBLE MEANS WILL BE STORED.
       echo "cp gs${NBSLOT}${MEM} gues${MM}                                                " >> $local_script
       echo "cp gs${NBSLOT}${MEM} anal${MM}                                                " >> $local_script
-      echo "$MPIBIN -np ${TOTAL_PROC_LETKF} $TMPDIR/LETKF/run_letkf.sh                    " >> $local_script
+      echo "time $MPIBIN -np ${TOTAL_PROC_LETKF} $TMPDIR/LETKF/run_letkf.sh               " >> $local_script
 
       echo "rm -f ${TMPDIR}/LETKF/*.dat   "  >> $local_script
 

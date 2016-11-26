@@ -1,19 +1,11 @@
 #KALMAN FILTER CONFIGURATION
-<<<<<<< HEAD
-DOMAINCONF=CORDOBA_2KBIS                #Define a domain
-=======
-<<<<<<< HEAD
 DOMAINCONF=CORDOBA_2KBIS               #Define a domain
-=======
-DOMAINCONF=CORDOBA_2K                   #Define a domain
->>>>>>> 04329f68398c7206e7226f6ac36c2685cf611d0b
->>>>>>> 680bb21c94ea7f50eb1958a5eeecc9aadf8f7347
 LETKFNAMELIST=control                   #Define a letkf namelist template
 
 MEMBER=60        #Number of ensemble members.
 MAX_DOM=1        #Maximum number of WRF domains.
 HOMEDIR=${HOME}/share/   
-DATADIR=${HOME}/salidas/
+DATADIR=${HOME}/data/
 ANALYSIS=1       #Identify this job as an analysis job.
 FORECAST=0       #This is not a forecast job.
 INTERPANA=0      #This is used in forecast jobs (but we need to define it here too)
@@ -50,16 +42,8 @@ SIGMA_OBSZ="2.0d3"
 SIGMA_OBST="3.0d0"
 GROSS_ERROR="15.0d0" 
 COV_INFL_MUL="1.1d0"
-SP_INFL_ADD="0.d0"  
-<<<<<<< HEAD
-RELAX_ALPHA_SPREAD="0.8d0"
-=======
-<<<<<<< HEAD
+SP_INFL_ADD="0.0d0"  
 RELAX_ALPHA_SPREAD="0.9d0"
-=======
-RELAX_ALPHA_SPREAD="0.0d0"
->>>>>>> 04329f68398c7206e7226f6ac36c2685cf611d0b
->>>>>>> 680bb21c94ea7f50eb1958a5eeecc9aadf8f7347
 RELAX_ALPHA="0.0d0" 
 USE_ADAPTIVE_INFLATION=0  #1 turn on addaptive inflation (Miyoshi 2011), 0 Turn off adaptive inflation
 				  #Note that for addaptive inflation to work COV_INFL_MUL should be < 0.0
@@ -90,11 +74,6 @@ EDATE=20140122200000
 OBSDIR=${HOMEDIR}/DATA/OBS/$OBS/                                                          # Folder where conventional observations are.
 NRADARS=1                                                                                 # Number of available radars.
 RADAROBSDIR=${HOMEDIR}/DATA/OBS/$RADAROBS/                                                # Folder where radar observations are.
-<<<<<<< HEAD
-TMPDIR=/home/jruiz/TMP/$EXP/                                                              # Temporal work directory (should be accessible for all computation nodes)
-OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                    # Where results will be stored.
-=======
-<<<<<<< HEAD
 TMPDIR=${HOMEDIR}/TMP/$EXP/                                                               # Temporal work directory (should be accessible for all computation nodes)
 OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                    # Where results will be stored.
 GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/ARGENTINA/                                         # Folder where bdy and initial grib files are located.
@@ -105,40 +84,9 @@ GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/                                       
 
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
 SCALE_FACTOR="0.05"         #Perturbation scale factor.
-RANDOM_SCALE_FACTOR="0.0"   #Random perturbation scale factor.
+RANDOM_SCALE_FACTOR="0.5"   #Random perturbation scale factor.
 PERTURB_BOUNDARY=1          #Wheter boundary perturbations are going to be perturbed.
 PERTURB_BOUNDARY_TYPE=1     #DUMMY
-=======
-TMPDIR=${HOME}/TMP/$EXP/                                                                  # Temporal work directory (should be accessible for all computation nodes)
-OUTPUTDIR=${HOME}/salidas/EXPERIMENTS/$EXP/                                               # Where results will be stored.
->>>>>>> 680bb21c94ea7f50eb1958a5eeecc9aadf8f7347
-GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/ARGENTINA/                                         # Folder where bdy and initial grib files are located.
-GRIBTABLE="Vtable.GFS"                                                                    # Bdy and init data source Vtable name.
-PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                    # Folder where data for perturbing bdy are located.
-PERTGRIBTABLE="Vtable.CFSR2_web"                                                          # Bdy perturbation source vtable name.
-GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/                                                 # Folder where WPS GEOG dataset is located.
-
-#INITIAL AND BOUNDARY PERTURBATIONS
-AMP_FACTOR="0.05"             #Perturbation scale factor.
-RANDOM_AMP_FACTOR="0.5"       #Random perturbation scale factor.
-PERTURB_BOUNDARY=1            #Wether boundary conditions are going to be perturbed.
-PERTURB_ATMOSPHERE=".true."   #Wether atmospheric conditions will be perturbed (boundary and first cycle)
-PERTURB_SST=".true."          #Wether SST will be perturbed.
-PERTURB_SOIL=".true."         #Wether SOIL conditions will be perturbed (soil moisture and soil temperature)
-PERTURB_T=".true."            #Wether ATM temperature will be perturbed.
-PERTURB_RH=".true."           #Wether ATM RH will be perturbed
-PERTURB_WIND=".true."         #Wether ATM winds will be perturbed.
-PERTURB_T_AMP="0.5d0"         #T random perturbation amplitude
-PERTURB_RH_AMP="5.0d0"        #RH random perturbation amplitude 
-PERTURB_WIND_AMP="0.5d0"      #WIND random perturbation amplitude
-PERTURB_T_SCLH="40000d0"      #T random perturbation horizontal scale
-PERTURB_RH_SCLH="40000d0"     #RH random perturbation horizontal scale
-PERTURB_WIND_SCLH="40000d0"   #WIND random perturbation horizontal scale
-PERTURB_T_SCLV="5000d0"       #T random perturbation vertical scale
-PERTURB_RH_SCLV="5000d0"      #RH random perturbation vertical scale
-PERTURB_WIND_SCLV="5000d0"    #WIND random perturbation vertical scale
-
->>>>>>> 04329f68398c7206e7226f6ac36c2685cf611d0b
 #Random dates for boundary perturbations.
 INIPERTDATE=20060101000000    #Initial date in grib database (used for perturbing initial and boundary conditions)
 ENDPERTDATE=20091231180000    #Final date in grib database (used for perturbing initial and boundary conditions)
@@ -152,15 +100,9 @@ RUNTIMELIBS=${HOMEDIR}/libs_sparc64/lib/       #Libs that will be included in LD
 WRF=${HOMEDIR}/LETKF_WRF/wrf/                  # WRF folder (for computing nodes)
 LETKF=$WRF/letkf/letkf.exe                     # LETKF module (for computing nodes)
 UPDATEBC=$WRF/model/WRFDA/da_update_bc.exe     # Update bc tool (WRFVAR) (for computing nodes)
-<<<<<<< HEAD
 WRFMODEL=$WRF/model/WRFV3/                     # WRF model that run in computing nodes.
 WRFMODELPPS=$WRF/model/WRFV3/                  # WRF model that runs in pps server  (usually the same as the one for the computing nodes)
 WPS=$WRF/model/WPS/                            # WRF model pre processing utilities (for pps server)
-=======
-WRFMODEL=$WRF/model/WRFV3.6/                   # WRF model that run in computing nodes.
-WRFMODELPPS=$WRF/model/WRFV3.6/                # WRF model that runs in pps server  (usually the same as the one for the computing nodes)
-WPS=$WRF/model/WPS3.6/                         # WRF model pre processing utilities (for pps server)
->>>>>>> 04329f68398c7206e7226f6ac36c2685cf611d0b
 ARWPOST=$WRF/model/ARWpost/                    # WRF model post processing utilities that run in computing nodes.
 SPAWN=$WRF/spawn/
 MPIBIN=mpiexec
@@ -174,13 +116,5 @@ NAMELISTWPS=$WRF/run/configuration/domain_conf/$DOMAINCONF/namelist.wps         
 NAMELISTLETKF=$WRF/run/configuration/letkf_conf/letkf.namelist.$LETKFNAMELIST       #Namelist for LETKF
 NAMELISTARWPOST=$WRF/run/configuration/domain_conf/$DOMAINCONF/namelist.ARWpost     #Namelist for post-processing tools.
 NAMELISTOBSOPE=$WRF/run/configuration/letkf_conf/obsope.namelist.$OBSOPENAMELIST    #Namelist for observation operator.
-<<<<<<< HEAD
 NAMELISTPERTMETEM=$WRF/run/configuration/letkf_conf/pertmetem.namelist.control      #Namelist for boundary conditions perturbation.
-=======
-<<<<<<< HEAD
-
-=======
-NAMELISTPERTMETEM=$WRF/run/configuration/letkf_conf/pertmetem.namelist.$LETKFNAMELIST
->>>>>>> 04329f68398c7206e7226f6ac36c2685cf611d0b
->>>>>>> 680bb21c94ea7f50eb1958a5eeecc9aadf8f7347
 
