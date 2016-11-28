@@ -21,8 +21,8 @@ CDIR=`pwd`
 CONFIGURATION=exprtps08_60m_radar_grib_Hydra            #Define a experiment configuration
 MCONFIGURATION=machine_radar60m_multiple_Hydra          #Define a machine configuration (number of nodes, etc)
 
-RESTART=0
-RESTARTDATE=20140122174500
+RESTART=1
+RESTARTDATE=20140122184500
 RESTARTITER=10
 
 MYHOST=`hostname`
@@ -70,7 +70,6 @@ echo '>>>'
 copy_data
 
 copy_data_multiplecycles
-
 
 #Generating the domain requires acces to GEOG database.
 echo '>>>'                                           

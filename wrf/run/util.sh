@@ -864,6 +864,14 @@ if [ -e "$DIRNAME" -a $RESTART -eq 0 ]; then
    echo "[Error] $DIRNAME exists: Please remove it manually to avoid data loss"
    exit 1
 fi
+if [ ! -e "$DIRNAME" -a $RESTART -eq 1 ]; then
+   echo "[Error] $DIRNAME does not exist"
+   exit 1
+fi
+if [ -e "$DIRNAME" -a $RESTART -eq 1 ]; then
+  echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) " 
+fi
+
 
 mkdir -p $DIRNAME
 res=$? && ((res != 0)) && exit $res
@@ -881,7 +889,7 @@ fi
 #res=$? && ((res != 0)) && exit $res
 
 # SET OUTPUT DIRECTORY
-if [ $RESTART -eq 0  ] ; then
+#if [ $RESTART -eq 0  ] ; then
 
  echo "This is a new experiment -> Building output directory from scracth"
  if [ $ANALYSIS -eq 1 ] ; then
@@ -897,23 +905,23 @@ if [ $RESTART -eq 0  ] ; then
  mkdir -p $DIRNAME/configuration
  mkdir -p $DIRNAME/joblogs
 
-else
- if [ $ANALYSIS -eq 1  ] ; then
-  if [ ! -e $DIRNAME/gues/ -o ! -e $DIRNAME/anal/ ] ; then
-   echo "[Error] This is a restart run but OUTPUTDIR=$DIRNAME does not exist "
-   exit 1
-  fi
-  echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) "
- elif [ $FORECAST -eq 1 ] ; then
-  if [ ! -e $DIRNAME/forecast/ ] ; then 
-   echo "[Error] This is a restart run but OUTPUTDIR=$DIRNAME does not exist "
-   exit 1
-  else
-   echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) "
-  fi
- fi
+#else
+# if [ $ANALYSIS -eq 1  ] ; then
+#  if [ ! -e $DIRNAME/gues/ -o ! -e $DIRNAME/anal/ ] ; then
+#   echo "[Error] This is a restart run but OUTPUTDIR=$DIRNAME does not exist "
+#   exit 1
+#  fi
+#  echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) "
+# elif [ $FORECAST -eq 1 ] ; then
+#  if [ ! -e $DIRNAME/forecast/ ] ; then 
+#   echo "[Error] This is a restart run but OUTPUTDIR=$DIRNAME does not exist "
+#   exit 1
+#  else
+#   echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) "
+#  fi
+# fi
  
-fi
+#fi
 
 
 #-------------------------------------------------------------------------------
@@ -1096,9 +1104,13 @@ if [ ! -z "$RADAROBS" ] ; then
 fi
 
 #COPY RESTART DATA
-if [ $RESTART -eq 1 ];then
- cp -r $OUTPUTDIR/anal/$RESTART_DATE $TMP/output/anal/
- cp -r $OUTPUTDIR/*.log              $TMP/output/
+if [ $RESTART -eq 1 ] ; then
+ mkdir -p $TMPDIR/output
+ mkdir -p $TMPDIR/output/anal
+
+ cp -r $OUTPUTDIR/anal/$RESTARTDATE   $TMPDIR/output/anal/
+ cp -r $OUTPUTDIR/*.log                $TMPDIR/output/
+ cp    $OUTPUTDIR/initial_random_dates $TMPDIR/output/
 fi
 
 #COPY JOB SCRIPT
@@ -1599,7 +1611,7 @@ run_letkf_noqueue () {
 
  echo "Running LETKF-DA job " 
  
- $run_letkf_script 
+ bash $run_letkf_script 
 
  #COPY DATA TO THE FINAL DESTINATION DIR.
    M=1
@@ -4038,6 +4050,7 @@ if [ $RESTART -eq 0 ] ; then
 
 
   else
+
     echo "Reading a set of random dates from file: $TMPDIR/NAMELIST/ini_pert_date_file "
     M=1
     while read line; do 
