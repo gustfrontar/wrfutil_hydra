@@ -21,7 +21,7 @@ CDIR=`pwd`
 CONFIGURATION=exprtps08_60m_radar_grib_Hydra            #Define a experiment configuration
 MCONFIGURATION=machine_radar60m_multiple_Hydra          #Define a machine configuration (number of nodes, etc)
 
-RESTART=1
+RESTART=0
 RESTARTDATE=20140122184500
 RESTARTITER=10
 
@@ -82,6 +82,9 @@ get_domain
 edit_multiplecycle $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh
 
 #Run multiple cycles with only one QSUB
+
+exit 
+
 sub_and_wait $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh  
 
 
