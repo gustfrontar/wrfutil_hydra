@@ -864,6 +864,14 @@ if [ -e "$DIRNAME" -a $RESTART -eq 0 ]; then
    echo "[Error] $DIRNAME exists: Please remove it manually to avoid data loss"
    exit 1
 fi
+if [ ! -e "$DIRNAME" -a $RESTART -eq 1 ]; then
+   echo "[Error] $DIRNAME does not exist"
+   exit 1
+fi
+if [ -e "$DIRNAME" -a $RESTART -eq 1 ]; then
+  echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) " 
+fi
+
 
 mkdir -p $DIRNAME
 res=$? && ((res != 0)) && exit $res
@@ -881,7 +889,7 @@ fi
 #res=$? && ((res != 0)) && exit $res
 
 # SET OUTPUT DIRECTORY
-if [ $RESTART -eq 0  ] ; then
+#if [ $RESTART -eq 0  ] ; then
 
  echo "This is a new experiment -> Building output directory from scracth"
  if [ $ANALYSIS -eq 1 ] ; then
@@ -897,23 +905,23 @@ if [ $RESTART -eq 0  ] ; then
  mkdir -p $DIRNAME/configuration
  mkdir -p $DIRNAME/joblogs
 
-else
- if [ $ANALYSIS -eq 1  ] ; then
-  if [ ! -e $DIRNAME/gues/ -o ! -e $DIRNAME/anal/ ] ; then
-   echo "[Error] This is a restart run but OUTPUTDIR=$DIRNAME does not exist "
-   exit 1
-  fi
-  echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) "
- elif [ $FORECAST -eq 1 ] ; then
-  if [ ! -e $DIRNAME/forecast/ ] ; then 
-   echo "[Error] This is a restart run but OUTPUTDIR=$DIRNAME does not exist "
-   exit 1
-  else
-   echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) "
-  fi
- fi
+#else
+# if [ $ANALYSIS -eq 1  ] ; then
+#  if [ ! -e $DIRNAME/gues/ -o ! -e $DIRNAME/anal/ ] ; then
+#   echo "[Error] This is a restart run but OUTPUTDIR=$DIRNAME does not exist "
+#   exit 1
+#  fi
+#  echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) "
+# elif [ $FORECAST -eq 1 ] ; then
+#  if [ ! -e $DIRNAME/forecast/ ] ; then 
+#   echo "[Error] This is a restart run but OUTPUTDIR=$DIRNAME does not exist "
+#   exit 1
+#  else
+#   echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) "
+#  fi
+# fi
  
-fi
+#fi
 
 
 #-------------------------------------------------------------------------------
@@ -1096,9 +1104,13 @@ if [ ! -z "$RADAROBS" ] ; then
 fi
 
 #COPY RESTART DATA
-if [ $RESTART -eq 1 ];then
- cp -r $OUTPUTDIR/anal/$RESTART_DATE $TMP/output/anal/
- cp -r $OUTPUTDIR/*.log              $TMP/output/
+if [ $RESTART -eq 1 ] ; then
+ mkdir -p $TMPDIR/output
+ mkdir -p $TMPDIR/output/anal
+
+ cp -r $OUTPUTDIR/anal/$RESTARTDATE   $TMPDIR/output/anal/
+ cp -r $OUTPUTDIR/*.log                $TMPDIR/output/
+ cp    $OUTPUTDIR/initial_random_dates $TMPDIR/output/
 fi
 
 #COPY JOB SCRIPT
@@ -1599,7 +1611,7 @@ run_letkf_noqueue () {
 
  echo "Running LETKF-DA job " 
  
- $run_letkf_script 
+ bash $run_letkf_script 
 
  #COPY DATA TO THE FINAL DESTINATION DIR.
    M=1
@@ -1824,7 +1836,7 @@ generate_run_forecast_script_k () {
      M=$INIMEMBER
      while [  $M -le $ENDMEMBER ] ; do
       JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
          echo "$MPIBIN -np ${NODES_PER_MEMBER} --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_REAL.sh \${BASEDIR}/WRF${MEM}/ &  " >> $local_script
          JOB=`expr $JOB + 1 `
@@ -1838,7 +1850,7 @@ generate_run_forecast_script_k () {
      M=$INIMEMBER
      while [  $M -le $ENDMEMBER ] ; do
       JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
          echo "$MPIBIN -np ${NODES_PER_MEMBER} --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_INTERPANA.sh \${BASEDIR}/WRF${MEM}/ &  " >> $local_script
          JOB=`expr $JOB + 1 `
@@ -1852,7 +1864,7 @@ generate_run_forecast_script_k () {
      M=$INIMEMBER
      while [  $M -le $ENDMEMBER ];do
       JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ];do
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ];do
       MEM=`ens_member $M `
          echo "$MPIBIN -np 1 --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_PRE.sh \${BASEDIR}/WRF${MEM} ${MEM} &  " >> $local_script
          JOB=`expr $JOB + 1 `
@@ -1872,7 +1884,7 @@ generate_run_forecast_script_k () {
      M=$INIMEMBER
      while [  $M -le $ENDMEMBER ] ; do
       JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
          echo "$MPIBIN -np ${NODES_PER_MEMBER} --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_WRF.sh \${BASEDIR}/WRF${MEM} &  " >> $local_script
          JOB=`expr $JOB + 1 `
@@ -1884,7 +1896,7 @@ generate_run_forecast_script_k () {
      M=$INIMEMBER
      while [  $M -le $ENDMEMBER ] ; do
       JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
 
          echo "$MPIBIN -np 1 --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_POST.sh \${BASEDIR}/WRF${MEM} $MEM &  " >> $local_script
@@ -2040,7 +2052,7 @@ generate_run_forecast_script_torque () {
      M=$INIMEMBER
      while [  $M -le $ENDMEMBER ] ; do
       JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
          echo "sleep 0.3"    >> $local_script
          echo "$MPIBIN -np ${PROC_PER_MEMBER} -f $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_REAL.sh $WORKDIR/WRF${MEM}/ > $WORKDIR/WRF${MEM}/real.log &  " >> $local_script
@@ -2054,7 +2066,7 @@ generate_run_forecast_script_torque () {
       M=$INIMEMBER
       while [  $M -le $ENDMEMBER ];do
        JOB=1
-       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ];do
+       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ];do
        MEM=`ens_member $M `
           echo "$WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM} &  " >> $local_script
           JOB=`expr $JOB + 1 `
@@ -2074,7 +2086,7 @@ generate_run_forecast_script_torque () {
      M=$INIMEMBER
      while [  $M -le $ENDMEMBER ] ; do
       JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
          echo "sleep 0.3 "  >> $local_script
          echo "$MPIBIN -np ${PROC_PER_MEMBER} -f ${WORKDIR}/machinefile.${JOB} ${WORKDIR}/WRF_WRF.sh ${WORKDIR}/WRF${MEM} > ${WORKDIR}/WRF${MEM}/wrf.log &  " >> $local_script
@@ -2607,6 +2619,7 @@ cd $WORKDIR
 #GENERATE THE SCRIPT TO GET UNPERTURBED MET_EM FILE FOR THE CURRENT TIME.
 echo "#!/bin/bash                                                               "  > $local_script            
 echo "set -x                                                                    " >> $local_script
+echo "MAX_DOM=$MAX_DOM                                                          " >> $local_script
 echo "DATE=$DUMMYDATE               #DUMMY DATE                                 " >> $local_script
 echo "BOUNDARY_DATA_FREQ=$BOUNDARY_DATA_FREQ #Boundary data frequency (seconds) " >> $local_script
 echo "source $TMPDIR/SCRIPTS/util.sh                                            " >> $local_script
@@ -2708,6 +2721,7 @@ echo "cd $METEMDIR                                                              
 #intermediate file format and not with the met_em format.
 
  echo "CDATE=$CDATE                                                               " >> $local_script
+ echo "MAX_DOM=$MAX_DOM                                                           " >> $local_script
  echo "while [  \$CDATE -le $FDATE ] ; do                                         " >> $local_script
  echo "CFILE=\`met_em_file_name \$CDATE 01 \`                                     " >> $local_script
  echo "CDATE1=\`date_floor \$CDATE  $BOUNDARY_DATA_FREQ \`                        " >> $local_script 
@@ -2875,6 +2889,7 @@ while [ $THEDATE -le $FDATE  ] ; do
    if [ $perturb_met_em -eq 1 ] ; then
 
    echo "CFILE=\`met_em_file_name $THEDATE 01 \`                                  " >> $local_script
+   echo "MAX_DOM=$MAX_DOM                                                         " >> $local_script
    #We have the initial random dates, we have to compute the random date corresponding to the current
    #time. So we compute the difference between the current date and the initial date.
    echo "LDATE=\`date_floor $THEDATE $BOUNDARY_DATA_PERTURBATION_FREQ \`             " >> $local_script
@@ -2889,8 +2904,8 @@ while [ $THEDATE -le $FDATE  ] ; do
     #Get the dates that we will use to create the perturbation and link the corresponding met_em files
     echo "DATEP1A=\`date_edit2 \$DATEP1 \$l_time_diff \`                              " >> $local_script
     echo "DATEP2A=\`date_edit2 \$DATEP2 \$l_time_diff \`                              " >> $local_script
-    echo "   TMPFILE1A=\`met_em_file_name \$DATEP1A 01 \`                           " >> $local_script
-    echo "   TMPFILE2A=\`met_em_file_name \$DATEP2A 01 \`                           " >> $local_script
+    echo "   TMPFILE1A=\`met_em_file_name \$DATEP1A ?? \`                           " >> $local_script
+    echo "   TMPFILE2A=\`met_em_file_name \$DATEP2A ?? \`                           " >> $local_script
 
     #IF perturbed met_ems are not present generate them                            
     echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE1A ] ; then                              " >> $local_script
@@ -2903,7 +2918,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv \$TMPFILE1A   $PERTMETEMDIR                                          " >> $local_script
+    echo "   mv $TMPFILE1A       $PERTMETEMDIR                                       " >> $local_script
     echo "fi                                                                         " >> $local_script
 
     echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE2A ] ; then                              " >> $local_script
@@ -2916,15 +2931,15 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv \$TMPFILE2A $PERTMETEMDIR                                            " >> $local_script
+    echo "   mv $TMPFILE2A     $PERTMETEMDIR                                         " >> $local_script
     echo "fi                                                                         " >> $local_script
 
     #Repeat for the upper date.
     echo "DATEP1B=\`date_edit2 \$DATEP1 \$u_time_diff \`                              " >> $local_script
     echo "DATEP2B=\`date_edit2 \$DATEP2 \$u_time_diff \`                              " >> $local_script
 
-    echo "   TMPFILE1B=\`met_em_file_name \$DATEP1B 01 \`                            " >> $local_script
-    echo "   TMPFILE2B=\`met_em_file_name \$DATEP2B 01 \`                            " >> $local_script
+    echo "   TMPFILE1B=\`met_em_file_name \$DATEP1B ?? \`                            " >> $local_script
+    echo "   TMPFILE2B=\`met_em_file_name \$DATEP2B ?? \`                            " >> $local_script
 
     echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE1B ] ; then                              " >> $local_script
     echo "   ln -sf  $TMPDIR/WPS/*             ./                                    " >> $local_script
@@ -2936,7 +2951,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv \$TMPFILE1B   $PERTMETEMDIR                                          " >> $local_script
+    echo "   mv $TMPFILE1B       $PERTMETEMDIR                                       " >> $local_script
     echo "fi                                                                         " >> $local_script
 
     echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE2B ] ; then                              " >> $local_script
@@ -2949,7 +2964,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv \$TMPFILE2B $PERTMETEMDIR                                            " >> $local_script
+    echo "   mv $TMPFILE2B     $PERTMETEMDIR                                         " >> $local_script
     echo "fi                                                                         " >> $local_script
 
     echo "  rm -fr FILE*                                                             " >> $local_script
@@ -3064,6 +3079,7 @@ echo "set -x                                                                    
 #First the script checks wether the perturbed met_em file exists and if it do not
 #exist the script creates the file.
 echo "MEM=\$1                      #Ensemble member                             " >> $local_script
+echo "MAX_DOM=$MAX_DOM                                                          " >> $local_script
 echo "WORKDIR=$TMPDIR/ENSINPUT/\$MEM/wrf_to_wps #Temporary work directory       " >> $local_script
 echo "EXEC=$EXEC                   #Executable                                  " >> $local_script
 echo "source $TMPDIR/SCRIPTS/util.sh                                            " >> $local_script
@@ -3146,9 +3162,9 @@ arw_postproc () {
   echo "ln -sf \${DATADIR}/\${PREFIX}\${MEM} ./tmpin                  " >> ${WORKDIR}/tmp.sh
   echo "ln -sf \${DATADIR}/plev\${MEM}.dat ./tmpout.dat               " >> ${WORKDIR}/tmp.sh
   echo "ln -sf \${DATADIR}/plev\${MEM}.ctl ./tmpout.ctl               " >> ${WORKDIR}/tmp.sh
-  echo "ln -sf $ARWPOST/src .                                         " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf $TMPDIR/WRF/src .                                      " >> ${WORKDIR}/tmp.sh
   echo "ln -sf $WORKDIR/namelist.ARWpost ./namelist.ARWpost           " >> ${WORKDIR}/tmp.sh
-  echo "$TMPDIR/WRF/ARWpost.exe > \${DATADIR}/arwpost\${MEM}.log      " >> ${WORKDIR}/tmp.sh
+  echo "$TMPDIR/WRF/ARWpost.exe > \${DATADIR}/arwpostd01_\${MEM}.log  " >> ${WORKDIR}/tmp.sh
   echo "sed -i 's/tmpout/plev'\${MEM}'/g' \${DATADIR}/plev\${MEM}.ctl " >> ${WORKDIR}/tmp.sh
 
   echo "DATADIR=${GUESDIR}                                            " >> ${WORKDIR}/tmp.sh
@@ -3156,10 +3172,11 @@ arw_postproc () {
   echo "ln -sf \${DATADIR}/\${PREFIX}\${MEM} ./tmpin                  " >> ${WORKDIR}/tmp.sh
   echo "ln -sf \${DATADIR}/plev\${MEM}.dat ./tmpout.dat               " >> ${WORKDIR}/tmp.sh
   echo "ln -sf \${DATADIR}/plev\${MEM}.ctl ./tmpout.ctl               " >> ${WORKDIR}/tmp.sh
-  echo "ln -sf $ARWPOST/src .                                         " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf $TMPDIR/WRF/src .                                      " >> ${WORKDIR}/tmp.sh
   echo "ln -sf $WORKDIR/namelist.ARWpost ./namelist.ARWpost           " >> ${WORKDIR}/tmp.sh
-  echo "$TMPDIR/WRF/ARWpost.exe > \${DATADIR}/arwpost\${MEM}.log         " >> ${WORKDIR}/tmp.sh
+  echo "$TMPDIR/WRF/ARWpost.exe > \${DATADIR}/arwpostd01_\${MEM}.log  " >> ${WORKDIR}/tmp.sh
   echo "sed -i 's/tmpout/plev'\${MEM}'/g' \${DATADIR}/plev\${MEM}.ctl " >> ${WORKDIR}/tmp.sh
+
 
   chmod 766 ${WORKDIR}/tmp.sh
 
@@ -3169,6 +3186,7 @@ arw_postproc () {
     while [ $RUNNING -le $MAX_RUNNING -a $M -le $MEANMEMBER ] ; do
       MEM=`ens_member $M`
       ssh $PPSSERVER " ${WORKDIR}/tmp.sh $MEM " & 
+      sleep 0.3
       RUNNING=`expr $RUNNING + 1 `
       M=`expr $M + 1 `
     done
@@ -4038,6 +4056,7 @@ if [ $RESTART -eq 0 ] ; then
 
 
   else
+
     echo "Reading a set of random dates from file: $TMPDIR/NAMELIST/ini_pert_date_file "
     M=1
     while read line; do 

@@ -22,7 +22,7 @@ CONFIGURATION=exprtps08_60m_radar_grib_Hydra            #Define a experiment con
 MCONFIGURATION=machine_radar60m_multiple_Hydra          #Define a machine configuration (number of nodes, etc)
 
 RESTART=0
-RESTARTDATE=20140122174500
+RESTARTDATE=20140122184500
 RESTARTITER=10
 
 MYHOST=`hostname`
@@ -71,7 +71,6 @@ copy_data
 
 copy_data_multiplecycles
 
-
 #Generating the domain requires acces to GEOG database.
 echo '>>>'                                           
 echo ">>> GENERATING DOMAIN "          
@@ -83,6 +82,9 @@ get_domain
 edit_multiplecycle $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh
 
 #Run multiple cycles with only one QSUB
+
+exit 
+
 sub_and_wait $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh  
 
 
