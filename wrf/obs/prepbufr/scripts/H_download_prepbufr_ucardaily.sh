@@ -23,12 +23,9 @@ PASSWD=pr0n0st1c0
 #  exit
 #fi
 
-OBSNAME=PREPBUFREUROPE
-
-OBSDIR=$HOME/share/DATA/OBS/prepbufr/$OBSNAME
+OBSDIR=$HOME/share/DATA/OBS/prepbufr/
 
 source $HOME/share/LETKF_WRF/wrf/run/util.sh #Load time functions.
-
 
 #
 # WKDIR

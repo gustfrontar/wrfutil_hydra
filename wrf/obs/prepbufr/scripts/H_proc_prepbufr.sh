@@ -1,20 +1,29 @@
 #!/bin/bash
+#Hourly prepbufr output 
 # Runing on LINUX
+
 SYSTEM=1 #We need this for some bash functions.
 # Initial time
-IDATE=20100801000000
+IDATE=20070101000000
 # Final time
-EDATE=20101101000000
+EDATE=20070102000000
 
-#OBSNAME
-OBSNAME=PREPBUFRSA
+MINLON=340
+MAXLON=50
+MINLAT=30
+MAXLAT=80
 
-OBSDIR=$HOME/share/OBS/$OBSNAME
+OBSNAME=PREPBUFREUROPE
+
+BUFRDIR=$HOME/share/DATA/OBS/prepbufr/
+OBSDIR=$HOME/share/DATA/OBS/$OBSNAME/
 TMPDIR=$HOME/data/TMP/PREP_$OBSNAME
 
 source $HOME/share/LETKF_WRF/wrf/run/util.sh #Load time functions.
 
 DECODER=$HOME/share/LETKF_WRF/wrf/obs/prepbufr/decoder/
+
+mkdir -p $OBSDIR
 
 #
 # WKDIR
@@ -26,9 +35,6 @@ cd $TMPDIR
 
 ln -sf $DECODER/decoder  .
 ln -sf $DECODER/grabbufr .
-#
-# Settings for DATASRC
-#
 
 #
 # Cycle run # MAIN LOOP #
@@ -41,19 +47,17 @@ do
 echo " >>>"
 echo " >>> BEGIN DECODIFICATION OF $CDATE "
 echo " >>>"
-#
-# GET NCEP PREPBUFR
-#
+
 
 #
 # DECODE
 #
 #test -f prepbufr.tmp && rm -f prepbufr.tmp
 AUXDATE=`echo $CDATE | cut -c1-10`
-ln -sf $OBSDIR/prepbufr/${AUXDATE}.prepbufr.nr prepbufr.tmp
+ln -sf $BUFRDIR/${AUXDATE}.prepbufr.nr prepbufr.tmp
 wc -c prepbufr.tmp | ./grabbufr prepbufr.tmp prepbufr.in  > info
 
-time ./decoder >> info
+time ./decoder $MINLON $MAXLON $MINLAT $MAXLAT  >> info
 
 #Correspondance between files and relative time.
 #  fort.87 t-3.dat
