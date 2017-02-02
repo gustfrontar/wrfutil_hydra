@@ -2904,8 +2904,8 @@ while [ $THEDATE -le $FDATE  ] ; do
     #Get the dates that we will use to create the perturbation and link the corresponding met_em files
     echo "DATEP1A=\`date_edit2 \$DATEP1 \$l_time_diff \`                              " >> $local_script
     echo "DATEP2A=\`date_edit2 \$DATEP2 \$l_time_diff \`                              " >> $local_script
-    echo "   TMPFILE1A=\`met_em_file_name \$DATEP1A 01 \`                           " >> $local_script
-    echo "   TMPFILE2A=\`met_em_file_name \$DATEP2A 01 \`                           " >> $local_script
+    echo "   TMPFILE1A=\`met_em_file_name \$DATEP1A ?? \`                           " >> $local_script
+    echo "   TMPFILE2A=\`met_em_file_name \$DATEP2A ?? \`                           " >> $local_script
 
     #IF perturbed met_ems are not present generate them                            
     echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE1A ] ; then                              " >> $local_script
@@ -2918,7 +2918,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv met_em*       $PERTMETEMDIR                                          " >> $local_script
+    echo "   mv $TMPFILE1A       $PERTMETEMDIR                                       " >> $local_script
     echo "fi                                                                         " >> $local_script
 
     echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE2A ] ; then                              " >> $local_script
@@ -2931,15 +2931,15 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv met_em*     $PERTMETEMDIR                                            " >> $local_script
+    echo "   mv $TMPFILE2A     $PERTMETEMDIR                                         " >> $local_script
     echo "fi                                                                         " >> $local_script
 
     #Repeat for the upper date.
     echo "DATEP1B=\`date_edit2 \$DATEP1 \$u_time_diff \`                              " >> $local_script
     echo "DATEP2B=\`date_edit2 \$DATEP2 \$u_time_diff \`                              " >> $local_script
 
-    echo "   TMPFILE1B=\`met_em_file_name \$DATEP1B 01 \`                            " >> $local_script
-    echo "   TMPFILE2B=\`met_em_file_name \$DATEP2B 01 \`                            " >> $local_script
+    echo "   TMPFILE1B=\`met_em_file_name \$DATEP1B ?? \`                            " >> $local_script
+    echo "   TMPFILE2B=\`met_em_file_name \$DATEP2B ?? \`                            " >> $local_script
 
     echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE1B ] ; then                              " >> $local_script
     echo "   ln -sf  $TMPDIR/WPS/*             ./                                    " >> $local_script
@@ -2951,7 +2951,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv met_em*       $PERTMETEMDIR                                          " >> $local_script
+    echo "   mv $TMPFILE1B       $PERTMETEMDIR                                       " >> $local_script
     echo "fi                                                                         " >> $local_script
 
     echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE2B ] ; then                              " >> $local_script
@@ -2964,7 +2964,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv met_em*     $PERTMETEMDIR                                            " >> $local_script
+    echo "   mv $TMPFILE2B     $PERTMETEMDIR                                         " >> $local_script
     echo "fi                                                                         " >> $local_script
 
     echo "  rm -fr FILE*                                                             " >> $local_script
