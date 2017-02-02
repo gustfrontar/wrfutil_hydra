@@ -40,7 +40,7 @@ do
   DAY=`echo $CTIME   | cut -c7-8`
   HOUR=`echo $CTIME  | cut -c9-10`
 
-  wgrib2 $DESTDIR/pgbh00.gdas.${YEAR}${MONTH}${DAY}${HOUR}.grb2 -set_grib_type jpeg -match ":(UGRD|VGRD|TMP|HGT|RH|PRES|SOILW|TSOIL|PRMSL|LAND|ICEC|WEASD):" -small_grib $LONRANGE $LATRANGE $DESTDIR/${YEAR}${MONTH}${DAY}${HOUR}0000.grb  > ./tmp.log  &
+  wgrib2 $ORIGINALDIR/pgbh00.gdas.${YEAR}${MONTH}${DAY}${HOUR}.grb2 -set_grib_type jpeg -match ":(UGRD|VGRD|TMP|HGT|RH|PRES|SOILW|TSOIL|PRMSL|LAND|ICEC|WEASD):" -small_grib $LONRANGE $LATRANGE $DESTDIR/${YEAR}${MONTH}${DAY}${HOUR}0000.grb  > ./tmp.log  &
 
 
   CTIME=`date_edit2 $CTIME $INT`
