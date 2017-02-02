@@ -16,12 +16,12 @@ EDATE=20070102000000
 # Frequency
 DF=86400   #file frequency in seconds
 
-EMAIL=gustfrontar@gmail.com
-PASSWD=pr0n0st1c0
-#if [ $# -ne 2 ] ; then
-#  echo "USAGE: $0 EMAIL PASSWD"
-#  exit
-#fi
+EMAIL=$1
+PASSWD=$2
+if [ $# -ne 2 ] ; then
+  echo "USAGE: $0 EMAIL PASSWD"
+  exit
+fi
 
 OBSDIR=$HOME/share/DATA/OBS/prepbufr/
 
