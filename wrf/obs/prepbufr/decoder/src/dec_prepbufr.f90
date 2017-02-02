@@ -19,12 +19,10 @@ PROGRAM dec_prepbufr
   REAL(r_size),PARAMETER :: t0c=273.15d0
   REAL(r_size),PARAMETER :: undef=9.99d33
 
-  !TODO: Put these parameters into a namelist.
+  CHARACTER(20)  :: minlonchar , maxlonchar , minlatchar , maxlatchar
 
-  REAL,PARAMETER :: minlon=240.0
-  REAL,PARAMETER :: maxlon=350.0    
-  REAL,PARAMETER :: minlat=-80.0        ! lat (-90,90)
-  REAL,PARAMETER :: maxlat= 20.0
+
+  REAL :: minlon , maxlon , minlat , maxlat
   INTEGER,PARAMETER :: maxlev = 255     !Maximum number of BUFR levels
   INTEGER,PARAMETER :: maxevn = 10      !Maximum number of BUFR event sequences
 !  CHARACTER(MXSTRL) :: head = 'SID XOB YOB DHR ELV TYP T29 ITP'
@@ -52,8 +50,6 @@ PROGRAM dec_prepbufr
   INTEGER,PARAMETER :: id_tclat_obs=99992
   INTEGER,PARAMETER :: id_tcmip_obs=99993
 
-
-
 !  CHARACTER :: var(8) = (/'P','Q','T','Z','U','V'/)
   INTEGER,PARAMETER :: nobtype = 20
   INTEGER :: IREADNS
@@ -74,6 +70,33 @@ PROGRAM dec_prepbufr
   character(32) :: primera
   character(62) :: segunda
   character(6) :: ot
+
+  ! Get domain limits
+
+  CALL getarg(1,minlonchar)
+  CALL getarg(2,maxlonchar)
+  CALL getarg(3,minlatchar)
+  CALL getarg(4,maxlatchar)
+
+  WRITE(*,*)"Domain limits are:"
+  WRITE(*,*)"MINLON=",minlonchar
+  WRITE(*,*)"MAXLON=",maxlonchar
+  WRITE(*,*)"MINLAT=",minlatchar
+  WRITE(*,*)"MAXLAT=",maxlatchar
+
+
+  READ(minlonchar,*)minlon
+  READ(maxlonchar,*)maxlon
+  READ(minlatchar,*)minlat
+  READ(maxlatchar,*)maxlat
+
+  if(  maxlat <= minlat .OR. minlon < 0 .OR. maxlon < 0 .OR. minlon > 360 .OR. maxlon > 360  & 
+       .OR. maxlat > 90 .OR. minlat < -90 )then
+    WRITE(*,*)"Error!: Input domain is not correct."
+    WRITE(*,*)"Please insert input domain as dec_prepbufr minlon maxlon minlat maxlat" 
+    WRITE(*,*)"minlon and maxlon should be from 0 to 360 with the westernmost longitude first"
+    STOP
+  endif
 
 
   !
@@ -123,8 +146,13 @@ PROGRAM dec_prepbufr
 !    print '(A,4F10.3,I)',cs,station(2:5),NINT(station(5)) ! for debugging
 !    READ(*,*)                                             ! for debugging
     wk(2:3) = station(2:3)
+ IF( maxlon > minlon )THEN 
     IF(wk(2) < minlon .OR. maxlon < wk(2) .OR. &
      & wk(3) < minlat .OR. maxlat < wk(3)) CYCLE ! domain check
+ ELSE
+     IF( ( wk(2) < minlon .AND.  wk(2) > maxlon ) .OR. &
+     & wk(3) < minlat .OR. maxlat < wk(3)) CYCLE ! domain check   
+ ENDIF
     wk(4) = station(4)
     IF(NINT(station(5)) < -3 .OR. 3 < NINT(station(5))) CYCLE
     iunit = 90+NINT(station(5))
