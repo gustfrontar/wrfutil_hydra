@@ -55,9 +55,9 @@ echo " >>>"
 #test -f prepbufr.tmp && rm -f prepbufr.tmp
 AUXDATE=`echo $CDATE | cut -c1-10`
 ln -sf $BUFRDIR/${AUXDATE}.prepbufr.nr prepbufr.tmp
-wc -c prepbufr.tmp | ./grabbufr prepbufr.tmp prepbufr.in  > info
+wc -c prepbufr.tmp | ./grabbufr prepbufr.tmp prepbufr.in  > outinfo
 
-time ./decoder $MINLON $MAXLON $MINLAT $MAXLAT  >> info
+time ./decoder $MINLON $MAXLON $MINLAT $MAXLAT  >> outinfo
 
 #Correspondance between files and relative time.
 #  fort.87 t-3.dat
@@ -104,7 +104,7 @@ mv fort.92 $OBSDIR/OBS${AUXDATE}.dat
 #T+3 relative time (store it to merge it with t-3 of the next bufr file)
 mv fort.93 t-3bis.dat
 
-mv info $OBSDIR/info$CDATE
+cat info outinfo > $OBSDIR/info$CDATE
 
 #
 # Date change ### MAIN LOOP END ###
