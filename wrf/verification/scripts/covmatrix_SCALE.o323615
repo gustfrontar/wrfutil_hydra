@@ -1,0 +1,14 @@
+--[ hostinfo v0.55-2 ]----------------------------------------
+Hostname:            h01
+Current As Of:       11/30/16 05:51:58
+Distribution:        SUSE Linux Enterprise Server 11 
+Service Pack:        3
+Kernel Version:      3.0.101-0.21-default
+Architecture:        x86_64
+IPv4 Address:        192.168.100.21  eth0    (00:1e:67:58:a4:83)
+IPv4 Address:        None            eth1    (00:1e:67:58:a4:84)
+Total/Free Memory:   516938/55801 MB
+Hard Disk:           /dev/sda 298 GB
+User Logged In:      uid=1002(jruiz) gid=100(users) on not a tty
+---------------------------------------------------------------
+

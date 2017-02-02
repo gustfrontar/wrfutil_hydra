@@ -16,6 +16,7 @@ program covariance_matrix
   character(100) :: oimfile  = 'impact_xXXXyXXXzXXX.grd'
   character(100) :: bssfile  = 'bssprd_xXXXyXXXzXXX.grd' !Bootstrap spread
   character(100) :: bsmfile  = 'bsmean_xXXXyXXXzXXX.grd' !Bootstrap mean
+  character(100) :: hstfile  = 'histgr_xXXXyXXXzXXX.grd' !Histogram.
   character(100) :: covindexfile =      'covariance_index.grd'
   character(100) :: corrindexfile =     'correlation_index.grd'
   character(100) :: corrdistindexfile = 'correlationdist_index.grd'  
@@ -40,6 +41,7 @@ program covariance_matrix
   real(r_sngl) ,ALLOCATABLE :: covariance_index(:,:,:)      !Covariance strength index
   real(r_sngl) ,ALLOCATABLE :: correlation_index(:,:,:)     !Correlation strength index
   real(r_sngl) ,ALLOCATABLE :: correlationdist_index(:,:,:) !Correlation and distance index
+  integer*2    ,ALLOCATABLE :: histogram(:,:,:,:)           !Histogram data.
   real(r_sngl) :: cov , covmean , covsprd
 
 
@@ -140,6 +142,14 @@ IF( computemoments )THEN
 ALLOCATE( moments(ctl%nlon,ctl%nlat,ctl%nfields,max_moments) )
 CALL compute_moments(ensemble,ctl%nlon,ctl%nlat,ctl%nfields,nbv,max_moments,moments,totalundefmask,ctl%undefbin)
 DEALLOCATE( moments )
+ENDIF
+
+IF( computehistogram )THEN
+!Compute histograms
+WRITE(*,*)ctl%nlon,ctl%nlat,ctl%nfields,max_histogram
+ALLOCATE( histogram(ctl%nlon,ctl%nlat,ctl%nfields,max_histogram) )
+CALL compute_histogram(ensemble,ctl%nlon,ctl%nlat,ctl%nfields,nbv,max_histogram,histogram,totalundefmask,ctl%undefbin)
+DEALLOCATE( histogram )
 ENDIF
 
 !Covariance computation

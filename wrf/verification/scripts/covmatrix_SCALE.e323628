@@ -1,0 +1,6 @@
+cp: cannot stat `/home/jruiz/share/LETKF_WRF/wrf/covmatrix/*.exe': No such file or directory
+/var/spool/PBS/mom_priv/jobs/323628.hakushu-ib.SC: line 84: ./covariance_matrix.exe: No such file or directory
+
+real	0m0.002s
+user	0m0.000s
+sys	0m0.000s

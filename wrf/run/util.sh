@@ -3158,7 +3158,7 @@ arw_postproc () {
   echo "ln -sf \${DATADIR}/plev\${MEM}.ctl ./tmpout.ctl               " >> ${WORKDIR}/tmp.sh
   echo "ln -sf $ARWPOST/src .                                         " >> ${WORKDIR}/tmp.sh
   echo "ln -sf $WORKDIR/namelist.ARWpost ./namelist.ARWpost           " >> ${WORKDIR}/tmp.sh
-  echo "$ARWPOST/ARWpost.exe > \${DATADIR}/arwpost\${MEM}.log         " >> ${WORKDIR}/tmp.sh
+  echo "$TMPDIR/WRF/ARWpost.exe > \${DATADIR}/arwpost\${MEM}.log         " >> ${WORKDIR}/tmp.sh
   echo "sed -i 's/tmpout/plev'\${MEM}'/g' \${DATADIR}/plev\${MEM}.ctl " >> ${WORKDIR}/tmp.sh
 
   chmod 766 ${WORKDIR}/tmp.sh

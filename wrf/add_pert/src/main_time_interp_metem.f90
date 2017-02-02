@@ -24,7 +24,6 @@ USE common_perturb_ensemble
 
  REAL(r_size) :: tmp
  CHARACTER(19) :: input_par
- INTEGER       :: max_time
  REAL(r_size)  :: time_factor
 
  INTEGER :: iy , im , id , ih , imin

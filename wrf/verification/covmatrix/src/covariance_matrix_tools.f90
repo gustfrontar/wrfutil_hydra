@@ -24,6 +24,8 @@ module covariance_matrix_tools
   real(r_size) :: dep(max_npoints) , error(max_npoints)
   LOGICAL :: bootstrap=.true.
   INTEGER :: bootstrap_samples=20
+  LOGICAL :: computehistogram=.true.
+  INTEGER :: max_histogram=50            !Number of bins
 
   LOGICAL  :: computemoments=.true.
   INTEGER  :: max_moments=4
@@ -72,7 +74,8 @@ NAMELIST / GENERAL / nbv , npoints , plon , plat , pvarname , plev,   &
                      nignore , ignorevarname , skipx , skipy , skipz, &
                      inputendian , outputendian , smoothcov ,         &
                      smoothdx , smoothcovlength , computemoments ,   &
-                     max_moments , computeindex , delta , computecovar
+                     max_moments , computeindex , delta , computecovar, &
+                     computehistogram , max_histogram 
 
 plon=undef
 plat=undef
@@ -191,6 +194,8 @@ SUBROUTINE write_grd(filename,nx,ny,nz,var,undefmask,undefbin)
   RETURN
 END SUBROUTINE write_grd
 
+
+
 !Compute the firtst N moments of the PDF centered around the mean.
 SUBROUTINE compute_moments(ensemble,nx,ny,nz,nbv,nmoments,moments,undefmask,undefbin)
 IMPLICIT NONE
@@ -225,6 +230,85 @@ moments=0.0e0
  ENDDO
 
 END SUBROUTINE compute_moments
+
+!Compute the firtst N moments of the PDF centered around the mean.
+SUBROUTINE compute_histogram(ensemble,nx,ny,nz,nbv,nbins,histogram,undefmask,undefbin)
+IMPLICIT NONE
+INTEGER, INTENT(IN)       :: nx,ny,nz,nbv           !Ensemble dimensions.
+REAL(r_sngl), INTENT(IN)  :: ensemble(nx,ny,nz,nbv) !Ensemble data.
+INTEGER, INTENT(IN)       :: nbins                  !Number of moments to be computed.
+LOGICAL, INTENT(IN)       :: undefmask(nx,ny,nz)    !Valid grids.
+LOGICAL                   :: tmpundefmask(nx,ny,nz)
+REAL(r_sngl), INTENT(IN)  :: undefbin
+INTEGER*2, INTENT(OUT)    :: histogram(nx,ny,nz,nbins) 
+INTEGER                   :: tmpindex , reclength , iunit
+REAL(r_sngl)              :: tmpmin(nx,ny,nz),tmpmax(nx,ny,nz)
+REAL(r_sngl)              :: tmp(nbv) , dvar
+INTEGER                   :: ii , jj , kk , im , irec
+CHARACTER(20)             :: histogram_out='histogram.grd'
+CHARACTER(20)             :: minval_out='minval.grd'
+CHARACTER(20)             :: maxval_out='maxval.grd'
+
+histogram=0
+
+tmpundefmask=.true. !Do not mask output fields.
+
+!$OMP PARALLEL DO PRIVATE(ii,jj,kk)
+  DO ii=1,nx
+   DO jj=1,ny
+    DO kk=1,nz
+       tmpmin(ii,jj,kk)=MINVAL( ensemble(ii,jj,kk,:) )
+       tmpmax(ii,jj,kk)=MAXVAL( ensemble(ii,jj,kk,:) )
+    ENDDO
+   ENDDO
+  ENDDO
+!$OMP END PARALLEL DO
+
+!$OMP PARALLEL DO PRIVATE(ii,jj,kk,im,tmp,dvar,tmpindex)
+  DO ii=1,nx
+   DO jj=1,ny
+    DO kk=1,nz
+       dvar=( tmpmax(ii,jj,kk)-tmpmin(ii,jj,kk) )/real(nbins,r_sngl)
+  
+       IF( dvar > 0 )THEN
+         DO im=1,nbv
+           tmpindex=floor( ( ensemble(ii,jj,kk,im) - tmpmin(ii,jj,kk) )/dvar ) + 1
+           IF( tmpindex > nbins )tmpindex=nbins
+           IF( tmpindex < 1     )tmpindex=1
+           !WRITE(*,*)histogram(ii,jj,kk,tmpindex),tmpindex
+           histogram(ii,jj,kk,tmpindex)=histogram(ii,jj,kk,tmpindex) + 1
+         ENDDO
+       ENDIF
+    ENDDO
+   ENDDO
+  ENDDO
+!$OMP END PARALLEL DO
+
+  INQUIRE(IOLENGTH=reclength) reclength
+  reclength = nx * ny !* reclength
+
+  iunit=55
+  !OPEN(iunit,FILE=histogram_out,FORM='unformatted',ACCESS='direct',RECL=reclength,CONVERT=outputendian)
+  OPEN(iunit,FILE=histogram_out,FORM='unformatted',ACCESS='sequential',CONVERT=outputendian)
+
+  !irec=1
+  DO ii=1,nz
+   DO jj=1,nbins 
+    !WRITE(iunit,rec=irec)histogram(:,:,ii,jj) !,r_sngl)
+    WRITE(iunit)histogram(:,:,ii,jj)
+   ! irec=irec+1
+   ENDDO
+  ENDDO
+
+  CLOSE(iunit)
+
+  CALL write_grd(minval_out,nx,ny,nz,tmpmin,tmpundefmask,undefbin)
+  CALL write_grd(maxval_out,nx,ny,nz,tmpmax,tmpundefmask,undefbin)
+
+
+
+END SUBROUTINE compute_histogram
+
 
 !Compute covariance strhength
 
