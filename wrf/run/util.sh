@@ -2918,7 +2918,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv $TMPFILE1A       $PERTMETEMDIR                                       " >> $local_script
+    echo "   mv \$TMPFILE1A       $PERTMETEMDIR                                       " >> $local_script
     echo "fi                                                                         " >> $local_script
 
     echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE2A ] ; then                              " >> $local_script
@@ -2931,7 +2931,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv $TMPFILE2A     $PERTMETEMDIR                                         " >> $local_script
+    echo "   mv \$TMPFILE2A     $PERTMETEMDIR                                         " >> $local_script
     echo "fi                                                                         " >> $local_script
 
     #Repeat for the upper date.
@@ -2951,7 +2951,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv $TMPFILE1B       $PERTMETEMDIR                                       " >> $local_script
+    echo "   mv \$TMPFILE1B       $PERTMETEMDIR                                       " >> $local_script
     echo "fi                                                                         " >> $local_script
 
     echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE2B ] ; then                              " >> $local_script
@@ -2964,7 +2964,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv $TMPFILE2B     $PERTMETEMDIR                                         " >> $local_script
+    echo "   mv \$TMPFILE2B     $PERTMETEMDIR                                         " >> $local_script
     echo "fi                                                                         " >> $local_script
 
     echo "  rm -fr FILE*                                                             " >> $local_script
