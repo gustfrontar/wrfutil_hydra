@@ -3144,7 +3144,7 @@ arw_postproc () {
 
   INPUT_ROOT_NAME=tmpin
   OUTPUT_ROOT_NAME=tmpout
-  rm -fr $WORKDIR/namelist.ARWpost
+  #rm -f $WORKDIR/namelist.ARWpost
 
   cp $TMPDIR/NAMELIST/namelist.ARWpost.template $WORKDIR/namelist.ARWpost
   edit_namelist_arwpost $WORKDIR/namelist.ARWpost $CDATE $CDATE $ARWPOST_FREC
@@ -3241,7 +3241,7 @@ arw_postproc_forecast () {
   local TMPDATE=$IDATE
   while [ $TMPDATE -le $EDATE  ] ; do
    local input_file=`wrfout_file_name $TMPDATE $my_domain `
-   echo "rm ./namelist.ARWpost                                                                                  " >> ${WORKDIR}/tmp.sh
+   #echo "rm ./namelist.ARWpost                                                                                  " >> ${WORKDIR}/tmp.sh
    echo "cp ${TMPDIR}/NAMELIST/namelist.ARWpost.template ./namelist.ARWpost                                     " >> ${WORKDIR}/tmp.sh
    echo "edit_namelist_arwpost ${WORKDIR}/\${MEM}/namelist.ARWpost $TMPDATE $TMPDATE $ARWPOST_FREC              " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${GUESDIR}/\${MEM}/${input_file} ./${INPUT_ROOT_NAME}                                           " >> ${WORKDIR}/tmp.sh
@@ -3915,12 +3915,12 @@ while [ $M -le $ENDMEMBER ] ; do
  fi
  
  if [ $ITER -ne 1 -a $USE_ANALYSIS_IC -ne 1 ] ; then
-  grep  "Update_bc completed successfully" ${WORKDIR}/daupdatebc${MEM}.log > /dev/null  2>&1 
+  grep  "Update_bc completed successfully" ${WORKDIR}/${MEM}/daupdatebc${MEM}.log > /dev/null  2>&1 
   if [ $? -ne 0 ] ; then
    echo "[Error]: WRF da update bc for ensemble member $MEM"
    echo "====================================="
    echo "SHOWING LAST PART OF dapudatebc${MEM}.log     "
-   tail ${WORKDIR}/daupdatebc${MEM}.log
+   tail ${WORKDIR}/${MEM}/daupdatebc${MEM}.log
    cycle_error=1
   fi
  fi
