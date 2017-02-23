@@ -710,6 +710,7 @@ if [ $SYSTEM -eq 1 ]; then
   while [ $mem -le $ENDMEMBER ] ; do
     mem=`ens_member $mem`
     echo "cat ./WRF${mem}/rsl.error.* > ./wrf${mem}.log                 " >> $SCRIPT
+    echo "mv  ./WRF${mem}/daupdatebc${mem}.log   ./                     " >> $SCRIPT
     mem=`expr ${mem} + 1`
   done
  fi
@@ -3915,12 +3916,12 @@ while [ $M -le $ENDMEMBER ] ; do
  fi
  
  if [ $ITER -ne 1 -a $USE_ANALYSIS_IC -ne 1 ] ; then
-  grep  "Update_bc completed successfully" ${WORKDIR}/${MEM}/daupdatebc${MEM}.log > /dev/null  2>&1 
+  grep  "Update_bc completed successfully" ${WORKDIR}/daupdatebc${MEM}.log > /dev/null  2>&1 
   if [ $? -ne 0 ] ; then
    echo "[Error]: WRF da update bc for ensemble member $MEM"
    echo "====================================="
    echo "SHOWING LAST PART OF dapudatebc${MEM}.log     "
-   tail ${WORKDIR}/${MEM}/daupdatebc${MEM}.log
+   tail ${WORKDIR}/daupdatebc${MEM}.log
    cycle_error=1
   fi
  fi
