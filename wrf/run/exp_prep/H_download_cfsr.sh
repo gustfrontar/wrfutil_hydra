@@ -2,10 +2,10 @@
 
 #DOWNLOAD HI RESOLUTION CFSR ANALYSIS
 
-ITIME=$1   #Start Time (yyyymmddhhMMss)
-ETIME=$2   #End Time
-INT=$3     #Frequency
-DESTDIR=$4
+ITIME=20091116000000   #Start Time (yyyymmddhhMMss)
+ETIME=20091118000000   #End Time
+INT=21600     #Frequency
+DESTDIR=/home/jruiz/DATA/GRIB/CFSR/HIRES/GLOBAL/
 
 source ../util.sh
 
@@ -20,8 +20,7 @@ DAY=`echo $CTIME | cut -c7-8`
 TIME=`echo $CTIME | cut -c9-10`
 
 mkdir -p  $DESTDIR
-
-curl http://nomads.ncdc.noaa.gov/modeldata/cmd_pgbh/$YEAR/${YEAR}${MONTH}/${YEAR}${MONTH}${DAY}/pgbh00.gdas.${YEAR}${MONTH}${DAY}${TIME}.grb2 -o $DESTDIR/pgbh00.gdas.${YEAR}${MONTH}${DAY}${TIME}.grb2
+curl https://nomads.ncdc.noaa.gov/modeldata/cmd_pgbh/$YEAR/${YEAR}${MONTH}/${YEAR}${MONTH}${DAY}/pgbh00.gdas.${YEAR}${MONTH}${DAY}${TIME}.grb2 -o $DESTDIR/pgbh00.gdas.${YEAR}${MONTH}${DAY}${TIME}.grb2
 
 
 CTIME=`date_edit2  $CTIME $INT `

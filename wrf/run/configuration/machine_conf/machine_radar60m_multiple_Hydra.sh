@@ -11,8 +11,8 @@ MAX_BACKGROUND_JOBS=128
 LD_LIBRARY_PATH_ADD="/home/jruiz/mpich_intel/lib/:/opt/intel/lib/intel64"
 PATH_ADD="/home/jruiz/mpich_intel/bin/"
 
-TOTAL_NODES_FORECAST=4
-TOTAL_NODES_LETKF=4
+TOTAL_NODES_FORECAST=8
+TOTAL_NODES_LETKF=6
 
 #These options control job split (in case of big jobs)
 #Job split is performed authomaticaly if the number of ensemble members is
