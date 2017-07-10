@@ -111,7 +111,7 @@ echo " >>"
 
 #PERTURB MET_EM FILES USING RANDOM BALANCED OR RANDOM SMOOTHED PERTURBATIONS (run in PPS)
 
-perturb_met_em_from_grib
+perturb_met_em_from_grib_noqueue
 
 
 echo " >>"                                                           

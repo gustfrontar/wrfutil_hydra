@@ -68,7 +68,7 @@ EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION}                # name of experiment
 
 ### initial date setting
 IDATE=20091117160000
-EDATE=20091117161000     #20091117230000
+EDATE=20091117170000     #20091117230000
 
 #### DATA
 OBSDIR=${HOMEDIR}/DATA/OBS/$OBS/                                                          # Folder where conventional observations are.

@@ -36,7 +36,7 @@ USE common_wrf
  REAL(r_size) :: w1,w2 !Interpolation weigths
 
 !-----------------------------------------------------------------------------
-! GET PERTURBATION AMPLITUDE (thes parameters should go to a namelist)
+! GET PERTURBATION AMPLITUDE (these parameters should go to a namelist)
 !-----------------------------------------------------------------------------
 
   CALL GETARG ( 1, input_par )

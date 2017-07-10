@@ -18,6 +18,7 @@ MODULE COMMON_RADAR_TOOLS
 
   REAL(r_size), PARAMETER :: minz = 0.01d0 !Minimum radar power.
 
+  !Binary format input/output
   TYPE RADAR
   INTEGER :: na,nr,ne,nv3d
   INTEGER :: radar_type  !Code to identify the radar and the procedures
@@ -51,9 +52,9 @@ MODULE COMMON_RADAR_TOOLS
   INTEGER  :: iv3d_vr , iv3d_ref , iv3d_prh , iv3d_vrwidth , iv3d_snr 
   REAL(r_size)        :: total_attenuation_factor
   REAL(r_size), ALLOCATABLE :: distance_to_radar(:,:)
-
  
   END TYPE 
+ 
 
 CONTAINS
 !-----------------------------------------------------------------------
@@ -244,6 +245,7 @@ SUBROUTINE radar_set_common( input_radar , input_file , endian )
 
   RETURN
 END SUBROUTINE radar_set_common
+
 
 !-----------------------------------------------------------------------
 ! Write a radar file
