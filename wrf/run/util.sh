@@ -710,6 +710,7 @@ if [ $SYSTEM -eq 1 ]; then
   while [ $mem -le $ENDMEMBER ] ; do
     mem=`ens_member $mem`
     echo "cat ./WRF${mem}/rsl.error.* > ./wrf${mem}.log                 " >> $SCRIPT
+    echo "mv  ./WRF${mem}/daupdatebc${mem}.log   ./                     " >> $SCRIPT
     mem=`expr ${mem} + 1`
   done
  fi
@@ -3413,7 +3414,7 @@ arw_postproc () {
 
   INPUT_ROOT_NAME=tmpin
   OUTPUT_ROOT_NAME=tmpout
-  rm -fr $WORKDIR/namelist.ARWpost
+  #rm -f $WORKDIR/namelist.ARWpost
 
   cp $TMPDIR/NAMELIST/namelist.ARWpost.template $WORKDIR/namelist.ARWpost
   edit_namelist_arwpost $WORKDIR/namelist.ARWpost $CDATE $CDATE $ARWPOST_FREC
@@ -3595,7 +3596,7 @@ arw_postproc_forecast () {
   local TMPDATE=$IDATE
   while [ $TMPDATE -le $EDATE  ] ; do
    local input_file=`wrfout_file_name $TMPDATE $my_domain `
-   echo "rm ./namelist.ARWpost                                                                                  " >> ${WORKDIR}/tmp.sh
+   #echo "rm ./namelist.ARWpost                                                                                  " >> ${WORKDIR}/tmp.sh
    echo "cp ${TMPDIR}/NAMELIST/namelist.ARWpost.template ./namelist.ARWpost                                     " >> ${WORKDIR}/tmp.sh
    echo "edit_namelist_arwpost ${WORKDIR}/\${MEM}/namelist.ARWpost $TMPDATE $TMPDATE $ARWPOST_FREC              " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${GUESDIR}/\${MEM}/${input_file} ./${INPUT_ROOT_NAME}                                           " >> ${WORKDIR}/tmp.sh
