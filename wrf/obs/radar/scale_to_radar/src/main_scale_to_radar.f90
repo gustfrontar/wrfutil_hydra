@@ -1,15 +1,17 @@
-PROGRAM WRF_TO_RADAR
+PROGRAM SCALE_TO_RADAR
 !=======================================================================
 !
-! [PURPOSE:] Main program of WRF_TO_RADAR
-! This program interpolates WRF model data to a radar grid.
+! [PURPOSE:] Main program of SCALE_TO_RADAR
+! This program interpolates SCALE model data to a radar grid.
 ! The output is reflectivity factor and doppler wind.
+! IO is performed in CFRADIAL format.
 !
 ! [HISTORY:]
 !   02/19/2014 Juan Ruiz created
 !   03/17/2016 Juan Ruiz modified the code to add multiple radars and 
 !                        and model files. A namelist file to control the
 !                        interpolation process was also added.
+!   10/07/2017 Juan Ruiz Adapted to SCALE model.
 
 ! TODO LIST:
 ! -Incorporate a C-band observation operator.
@@ -19,8 +21,8 @@ PROGRAM WRF_TO_RADAR
 !=======================================================================
 
 USE common
-USE common_wrf
-USE common_wrf_to_radar
+USE common_scale
+USE common_scale_to_radar
 USE common_radar_tools
 
 
@@ -30,19 +32,14 @@ TYPE(RADAR) :: test_radar
 
 !------------------------------------------------------------------
 
-call get_namelist_vars
+!call get_namelist_vars
 
 CALL radar_set_common( test_radar ,'input.nc')
 CALL radar_georeference( test_radar )
 
-!IF ( .NOT. fake_radar )THEN   
-!  WRITE(6,*)'Interpolationg model data to a real radar location and geometry'
-!  CALL interp_to_real_radar
-!ELSE
-!  WRITE(6,*)'Interpolating model data to a fake radar location and geometry'
-!  CALL interp_to_fake_radar
-!ENDIF
+WRITE(6,*)'Interpolationg model data to a real radar location and geometry'
+CALL interp_to_real_radar
 
 
-END PROGRAM WRF_TO_RADAR
+END PROGRAM SCALE_TO_RADAR
 
