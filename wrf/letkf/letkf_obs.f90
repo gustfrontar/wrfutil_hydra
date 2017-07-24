@@ -371,18 +371,23 @@ ENDIF
 IF( nobs + nobsradar .GT. 0)THEN
 !$OMP PARALLEL DO SCHEDULE(DYNAMIC) PRIVATE(n,i)
  DO n=1,nobs+nobsradar
+
+
     IF( ANY( tmphdxf(n,:) == undef ) )THEN
       tmpdep(n)=undef
+      CYCLE
+    ELSE 
+      tmpdep(n) = 0.0d0
+      DO i=1,nbv
+        tmpdep(n) = tmpdep(n) + tmphdxf(n,i)
+      END DO
+      tmpdep(n) = tmpdep(n) / REAL(nbv,r_size)
+      DO i=1,nbv
+        tmphdxf(n,i) = tmphdxf(n,i) - tmpdep(n) ! Hdx
+      END DO
+      tmpdep(n) = tmpdat(n) - tmpdep(n) ! y-Hx
     ENDIF
-    tmpdep(n) = 0.0d0
-    DO i=1,nbv
-      tmpdep(n) = tmpdep(n) + tmphdxf(n,i)
-    END DO
-    tmpdep(n) = tmpdep(n) / REAL(nbv,r_size)
-    DO i=1,nbv
-      tmphdxf(n,i) = tmphdxf(n,i) - tmpdep(n) ! Hdx
-    END DO
-    tmpdep(n) = tmpdat(n) - tmpdep(n) ! y-Hx
+
     IF(tmpelm(n) == id_tcmip_obs) THEN
 !!! (1) gross_error set for tcmip_obs
       IF(ABS(tmpdep(n)) > gross_error_tycmip) THEN !gross error  
@@ -392,6 +397,10 @@ IF( nobs + nobsradar .GT. 0)THEN
       IF(ABS(tmpdep(n)) > gross_error_tycll) THEN
         tmpdep(n)=undef
       END IF
+    ELSE IF(tmpelm(n) == id_reflectivity_obs )THEN
+      IF(ABS(tmpdep(n)) > gross_error*tmperr(n) .AND. .NOT. force_norain_assimilation )THEN
+        tmpdep(n)=undef
+      ENDIF
     ELSE   
       IF(ABS(tmpdep(n)) > gross_error*tmperr(n)) THEN !gross error
         tmpdep(n)=undef
@@ -431,7 +440,7 @@ CALL monit_dep(nobs+nobsradar,tmpelm,tmpdep,tmpsprd)
     tmpradar(nn) = tmpradar(n)
   END DO
   nobs = nn !WARNING: now obs is the total number of observations. Including radar
-            !observation 
+            !observation but without rejected observations.
   WRITE(6,'(I10,A,I3.3)') nobs,' OBSERVATIONS TO BE ASSIMILATED '
 !
 ! SORT
@@ -603,7 +612,7 @@ REAL(r_size), INTENT(INOUT) :: hdxf(nobs,nmember),id(nobs),value(nobs),error(nob
 INTEGER :: iobs , i
 REAL(r_size) :: rainratio 
 !We will check if we shall use reflectivity or pseudo rh observations.
-INTEGER :: ir , irh , irf , ius , imiss , iatt , ilt , izeroref
+INTEGER :: ir , irh , irf , ius , imiss , iatt , ilt , izeroref , iref
 
 !minref=10.d0**(minrefdbz/10.0d0)
 
@@ -614,12 +623,15 @@ ilt=0
 imiss=0
 izeroref=0
 iatt=0
+iref=0
 
   DO iobs=1,nobs
 
    IF( id(iobs) /= id_reflectivity_obs  )CYCLE
+     iref=iref+1
      !First check that there are no missing observations.
      IF( ANY( hdxf(iobs,:) == undef ) )THEN
+       hdxf(iobs,:)=undef 
        imiss=imiss+1
        CYCLE
      ENDIF
@@ -644,24 +656,19 @@ iatt=0
 
      rainratio=rainratio/REAL(nmember,r_size)
 
-     IF( rainratio .GE. rainratio_threshold )THEN
-       IF( value(iobs) .GT. minrefdbz )THEN
+     IF( rainratio .GE. rainratio_threshold .AND. value(iobs) .GT. minrefdbz )THEN
          ir=ir+1
-       ELSE
-         izeroref=izeroref+1
-       ENDIF
-     ELSE
-       IF( value(iobs) .GT. minrefdbz )THEN
-         hdxf(iobs,:)=undef
+     ENDIF
+     IF( rainratio .LT. rainratio_threshold .AND. value(iobs) .GT. minrefdbz )THEN
          ilt=ilt+1
-       ELSE
-         IF( rainratio .EQ. 0.0d0 )THEN
-           hdxf(iobs,:)=undef
-           ius=ius+1
-         ELSE
-           izeroref=izeroref+1
-         ENDIF
-       ENDIF
+         hdxf(iobs,:)=undef  !Observation rejected due to low rain threshold.
+     ENDIF
+     IF( value(iobs) == minrefdbz .AND. rainratio == 0.0d0 )THEN
+         ius=ius+1           !Observation rejected because it is useless
+         hdxf(iobs,:)=undef
+     ENDIF
+     IF( value(iobs) == minrefdbz .AND. rainratio .GT. 0.0d0 )THEN
+         izeroref = izeroref + 1
      ENDIF
 
 
@@ -674,7 +681,7 @@ WRITE(6,*)'MISSING OBS         = ',imiss
 WRITE(6,*)'USELESS OBS         = ',ius
 WRITE(6,*)'LOW RAIN THRESHOLD  = ',ilt
 WRITE(6,*)'ZERO REFLECTIVITY   = ',izeroref
-WRITE(6,*)'TOTAL OBS           = ',nobs
+WRITE(6,*)'TOTAL OBS           = ',iref
 WRITE(6,*)'========================================='
 
 

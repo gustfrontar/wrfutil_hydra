@@ -165,6 +165,21 @@ date_floor () {
         echo $DATEFLOOR
 }
 
+#Get the absolute value of input.
+abs_val() {
+
+local value=$1
+
+  if [ $value -lt 0 ] ; then
+     result=`expr 0 - $value `
+  else
+     result=$value
+  fi
+
+  echo $result
+
+}
+
 
 add_zeros() {
 

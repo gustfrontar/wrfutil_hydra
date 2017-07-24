@@ -151,7 +151,6 @@ subroutine ncio_read_1d_r8(ncid, varname, dim1, t, var)
   integer, intent(in) :: dim1, t
   real(r_size), intent(out) :: var(dim1)
   integer :: varid
-
   call ncio_check(nf90_inq_varid(ncid, varname, varid))
   call ncio_check(nf90_get_var(ncid, varid, var,   &
                                start = (/ 1, t /), &
@@ -186,7 +185,7 @@ subroutine ncio_read_3d_r8(ncid, varname, dim1, dim2, dim3, t, var)
 
   call ncio_check(nf90_inq_varid(ncid, varname, varid))
   call ncio_check(nf90_get_var(ncid, varid, var,         &
-                               start = (/ 1, 1, 1, t /), &
+                               start = (/ 1, 1, 1 , t /), &
                                count = (/ dim1, dim2, dim3, 1 /)))
 end subroutine ncio_read_3d_r8
 !-----------------------------------------------------------------------
@@ -297,7 +296,6 @@ subroutine ncio_write_3d_r8(ncid, varname, dim1, dim2, dim3, t, var)
   integer :: varid
 
   call ncio_check(nf90_inq_varid(ncid, varname, varid))
-
   call ncio_check(nf90_put_var(ncid, varid, var,         &
                                start = (/ 1, 1, 1, t /), &
                                count = (/ dim1, dim2, dim3, 1 /)))

@@ -281,7 +281,7 @@ SUBROUTINE calc_ref_rv(qv,qc,qr,qci,qs,qg,u,v,w,t,p,az,elev,ref,vr)
      zs = zs / ( pip * kr2 * ( nos ** 0.75  ) * ( roi ** 2 ) )
     ELSE
     !WARNING: This formulation has to be checked the paper says that 
-     !ros instead of roi should be used in thes expresion, but that 
+     !ros instead of roi should be used in this expresion, but that 
      !leads to unrealistic jumps in the model derived reflectivity.
      zs = cf * ( ( ro * qs ) ** 1.75 )
      zs = zs / ( pip * ( nos ** 0.75 ) * ( roi ** 1.75 ) )
@@ -581,9 +581,10 @@ SUBROUTINE phys2ijkz(z_full,ri,rj,rlev,rk)
   !
   ! find rk
   !
-  DO k=ks+1,nlev
+  DO k=2,nlev
     IF(zlev(k) > rlev) EXIT ! assuming ascending order of zlev
   END DO
+
   ak = (rlev - zlev(k-1)) / (zlev(k) - zlev(k-1))
   rk = REAL(k-1,r_size) + ak
 
@@ -609,9 +610,10 @@ SUBROUTINE phys2ij(rlon,rlat,rig,rjg)
 !
 ! rlon,rlat -> ri,rj
 !
-  call MPRJ_lonlat2xy(rlon*pi/180.0_r_size,rlat*pi/180.0_r_size,rig,rjg)
-  rig = (rig - CXG(1)) / DX + 1.0d0 
-  rjg = (rjg - CYG(1)) / DY + 1.0d0 
+  call MPRJ_lonlat2xy(rlon*deg2rad,rlat*deg2rad,rig,rjg)
+ 
+  rig = (rig - CXG(IHALO)) / DX + 1.0d0 
+  rjg = (rjg - CYG(JHALO)) / DY + 1.0d0 
 
   RETURN
 END SUBROUTINE phys2ij

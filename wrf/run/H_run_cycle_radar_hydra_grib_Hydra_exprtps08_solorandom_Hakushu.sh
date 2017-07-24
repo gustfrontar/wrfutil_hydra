@@ -21,8 +21,8 @@ CDIR=`pwd`
 CONFIGURATION=exprtps08_solorandom_60m_radar_grib_Hakushu #Define a experiment configuration
 MCONFIGURATION=machine_radar60m_Hakushu             #Define a machine configuration (number of nodes, etc)
 
-RESTART=0
-RESTARTDATE=20140122191000
+RESTART=1
+RESTARTDATE=20091117163000
 RESTARTITER=10
 
 

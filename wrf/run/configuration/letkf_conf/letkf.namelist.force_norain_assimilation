@@ -1,0 +1,31 @@
+&general
+  nslots=@NSLOTS@ 
+  nbslot=@NBSLOT@ 
+  nbv=@NBV@
+/
+&localization
+  sigma_obs  =@SIGMA_OBS@
+  sigma_obsv =@SIGMA_OBSV@
+  sigma_obsz =@SIGMA_OBSZ@
+  sigma_obst =@SIGMA_OBST@
+/
+ 
+&observations
+  threshold_dz =1000.0d0
+  gross_error  =@GROSS_ERROR@     
+  force_norain_assimilation = .true.    
+/
+
+&parameter_estimation
+/
+&inflation
+  cov_infl_mul      = @COV_INFL_MUL@ 
+  sp_infl_add       = @SP_INFL_ADD@ 
+  relax_alpha_spread= @RELAX_ALPHA_SPREAD@
+  relax_alpha       = @RELAX_ALPHA@
+  min_infl_mul      = 1.0d0
+/
+&radar_da      
+/
+
+

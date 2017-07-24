@@ -39,7 +39,7 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
   IMPLICIT NONE
   TYPE(RADAR), INTENT(INOUT) :: input_radar
   REAL(r_size),INTENT(IN)    :: v3d(nlev,nlonh,nlath,nv3d)
-  REAL(r_size),INTENT(IN)    :: v2d(nlev,nlonh,nlath,nv2d)
+  REAL(r_size),INTENT(IN)    :: v2d(nlonh,nlath,nv2d)
   INTEGER              :: ia , ir , ie , i , j , k
   REAL(r_size)         :: ri , rj , rk , rlev
   REAL(r_size)         :: tmp_z ,  tmp
@@ -55,11 +55,13 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
   REAL(r_size)         :: tmpref,tmperr(1)
   INTEGER              :: INTERPOLATION_TECHNIQUE
 
+  REAL(r_size)         :: test_lon , test_lat
+
   INTERPOLATION_TECHNIQUE=1 
 
   minrefdb=10.0*log10(min_ref)
 
-  ALLOCATE( input_radar%radarv3d_model(input_radar%na,input_radar%nr,input_radar%nv3d) )
+  ALLOCATE( input_radar%radarv3d_model(input_radar%nr,input_radar%nt,input_radar%nv3d) )
   input_radar%radarv3d_model=undef
 
   !Begin with the interpolation. 
@@ -89,6 +91,12 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
 
         CALL  phys2ij(input_radar%lon(ia,ir),input_radar%lat(ia,ir),ri,rj)
         CALL  phys2ijkz(v3d(:,:,:,iv3d_hgt),ri,rj,input_radar%z(ia,ir),rk)
+ 
+        !For debug observation location.
+        !call itpl_2d(v2d(:,:,iv2d_lon),ri,rj,test_lon)
+        !call itpl_2d(v2d(:,:,iv2d_lat),ri,rj,test_lat)
+        !WRITE(*,*)input_radar%lon(ia,ir),input_radar%lat(ia,ir),test_lon-360.0d0,test_lat
+        !STOP
 
         if( rk /= undef )THEN
    
@@ -106,13 +114,10 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
            CALL itpl_3d(v3d(:,:,:,iv3d_qs),rk,ri,rj,qs)
            CALL itpl_3d(v3d(:,:,:,iv3d_qg),rk,ri,rj,qg)
  
-
- 
             !Compute reflectivity at the beam center.
            CALL calc_ref_rv(qv,qc,qr,qi,qs,qg,u,v,w,t,p,            &
                input_radar%azimuth(ia),input_radar%elevation(ia)    &
                 ,ref,rv)
-
    
            !ADD ERRORS TO THE OBSERVATIONS
            IF( ADD_OBS_ERROR )THEN
@@ -134,12 +139,13 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
           refdb=10.0d0*log10(ref)
 
           IF( ref .GT. min_ref )THEN
-              input_radar%radarv3d_model(ia,ir,input_radar%iv3d_ref)=refdb !refdb
+              input_radar%radarv3d_model(ir,ia,input_radar%iv3d_ref)=refdb !refdb
           ELSE
-              input_radar%radarv3d_model(ia,ir,input_radar%iv3d_ref)=minrefdb
+              input_radar%radarv3d_model(ir,ia,input_radar%iv3d_ref)=minrefdb
           ENDIF
 
-          input_radar%radarv3d_model(ia,ir,input_radar%iv3d_rv)=rv    !Radial wind
+          input_radar%radarv3d_model(ir,ia,input_radar%iv3d_rv)=rv    !Radial wind
+
 
         ENDIF  !Domain check
 
@@ -172,8 +178,11 @@ implicit none
 integer       :: im , iradar
 integer       :: iyyyy,imm,idd,ihh,imn
 real(r_size)  :: ss
+logical       :: model_split_output
 
   !Get grid properties.
+  write(*,*)"Getting model info"
+  current_model_prefix=model_file_prefix
   WRITE(current_model_prefix(5:8),'(I4.4)')1
   CALL set_common_scale( current_model_prefix , topo_file_prefix )
 
@@ -188,6 +197,7 @@ real(r_size)  :: ss
 !We will process the first n_times as requested from namelist.
 DO im=1,n_times
 
+   write(*,*)"Reading model data"
    if( .not. model_split_output ) then
  
      CALL read_history(current_model_prefix,gues3d,gues2d,im)
@@ -199,11 +209,14 @@ DO im=1,n_times
 
    endif
 
+   write(*,*)"Reading radar data"
    DO iradar=1,n_radar
 
     current_radar_file = radar_file 
-    WRITE(current_radar_file(7:10),'(I4.4)')iradar
-    WRITE(current_radar_file(12:15),'(I4.4)')im
+    WRITE(current_radar_file(6:8),'(I3.3)')iradar
+    WRITE(current_radar_file(10:13),'(I4.4)')im
+
+    write(*,*)"Reading file ",current_radar_file
 
     CALL radar_set_common( RADAR_1 , current_radar_file  )
 
@@ -220,7 +233,9 @@ DO im=1,n_times
      CALL radar_georeference( RADAR_1 )
 
      CALL model_to_radar( RADAR_1 , gues3d , gues2d )
-   
+
+    
+     write(*,*)"Writing output data"
      CALL radar_write_model( RADAR_1 , current_radar_file )
 
   ENDDO ![Endo over radars]

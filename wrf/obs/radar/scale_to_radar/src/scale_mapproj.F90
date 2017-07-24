@@ -275,7 +275,7 @@ contains
     real(r_size), intent(out) :: y
     !---------------------------------------------------------------------------
 
-    select case(MPRJ_type)
+            select case(MPRJ_type)
     case('NONE')
        call MPRJ_None_lonlat2xy( lon, lat, x, y )
     case('LC')

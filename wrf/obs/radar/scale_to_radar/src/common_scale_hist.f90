@@ -122,7 +122,9 @@ SUBROUTINE set_common_scale(file_prefix , topo_file_prefix )
   filename = trim( file_prefix ) // filesuffix
 
   !GET THE DIMENSIONS FROM THE NETCDF FILE AND NAMELIST
+  write(*,*)filename
   call ncio_open(TRIM( filename ),NF90_NOWRITE,ncid)
+
 
   call ncio_get_dim(ncid, 'x' , nlons )
   call ncio_get_dim(ncid, 'y' , nlats )
@@ -171,7 +173,6 @@ SUBROUTINE set_common_scale(file_prefix , topo_file_prefix )
   ENDDO
   dz = dz / REAL( nlev - 1 , r_size ) 
 
-
   call ncio_get_dim(ncid,'FXG', nlong2 )
   allocate( FXG(nlong2) )
   call ncio_read(ncid, trim('FXG'),nlong2, 1, FXG )
@@ -187,17 +188,18 @@ SUBROUTINE set_common_scale(file_prefix , topo_file_prefix )
   !Initialize projection routines.
   CALL MPRJ_setup( GRID_DOMAIN_CENTER_X, GRID_DOMAIN_CENTER_Y )
 
-
-  call ncio_get_dim(ncid,'CZ', nlev2 )  !Number of levels + 2*KHALO
-  call ncio_read(ncid, trim('CZ'),nlev2, 1, CZ )
+  call ncio_get_dim(ncid,'CZ',nlev2)  !Number of levels + 2*KHALO
+  if( allocated(CZ) )deallocate(CZ)
+  allocate(CZ(nlev2))
+  call ncio_read(ncid,trim('CZ'),nlev2,1,CZ )
   KHALO=( nlev2-nlev ) / 2.0d0 
 
   call ncio_get_dim(ncid,'CX', tmpint )  !Number of longitudes + 2*IHALO
-  IHALO=( nlons-tmpint ) / 2.0d0
+  IHALO=( tmpint-nlons ) / 2.0d0
 
   call ncio_get_dim(ncid,'CY', tmpint )  !Number of longitudes + 2*JHALO
-  JHALO=( nlats-tmpint ) / 2.0d0
- 
+  JHALO=( tmpint-nlats ) / 2.0d0
+
   call ncio_close(ncid) 
 
     !
@@ -216,7 +218,7 @@ SUBROUTINE set_common_scale(file_prefix , topo_file_prefix )
     v3d_name(iv3d_w)    = 'W'
     v3d_name(iv3d_t)    = 'T'
     v3d_name(iv3d_hgt)  = 'height'
-    v3d_name(iv3d_p)    = 'P'
+    v3d_name(iv3d_p)    = 'PRES'
     !V2D
     v2d_name(iv2d_lon)  = 'lon'
     v2d_name(iv2d_lat)  = 'lat'
@@ -231,6 +233,7 @@ SUBROUTINE set_common_scale(file_prefix , topo_file_prefix )
     from_file_3d(iv3d_u)    =  .true.
     from_file_3d(iv3d_v)    =  .true.
     from_file_3d(iv3d_w)    =  .true.
+    from_file_3d(iv3d_t)    =  .true.
     from_file_3d(iv3d_hgt)  =  .true.
     from_file_3d(iv3d_p)    =  .true.
 
@@ -241,7 +244,7 @@ SUBROUTINE set_common_scale(file_prefix , topo_file_prefix )
     !Read the topography.
  
     allocate( topo( nlonh , nlath ) )
-
+    write(*,*)"Reading the topography"
     CALL read_topo(topo_file_prefix,topo)
 
 
@@ -262,11 +265,13 @@ SUBROUTINE read_history_subdomain(filename,v3dg,v2dg,rtime)
   REAL(r_size),INTENT(INOUT) :: v3dg(nlev,nlonh,nlath,nv3d)
   REAL(r_size),INTENT(INOUT) :: v2dg(nlonh,nlath,nv2d)
 
+  REAL(r_size),ALLOCATABLE :: v3dstmp(:,:,:)
+
   REAL(r_size),ALLOCATABLE :: v3ds(:,:,:,:)
   REAL(r_size),ALLOCATABLE :: v2ds(:,:,:)
   REAL(r_size),ALLOCATABLE :: cxs(:),cys(:)
   integer :: iv3d,iv2d,ncid,istart,iend,jstart,jend
-  integer :: ii,jj
+  integer :: ii,jj,i,j,k
   real(r_size) :: dummy = 0.0d0
 
   !Read data from a subdomain file.
@@ -281,22 +286,24 @@ SUBROUTINE read_history_subdomain(filename,v3dg,v2dg,rtime)
 
      call ncio_read_1d_r8(ncid, trim('x'),nlons, 1, cxs )
      call ncio_read_1d_r8(ncid, trim('y'),nlats, 1, cys )
-     call ncio_close(ncid)
+     !call ncio_close(ncid)
 
      allocate( v3ds(nlev,nlons,nlats,nv3d) , v2ds(nlons,nlats,nv2d) )
+     allocate( v3dstmp(nlons,nlats,nlev)  )
 
 
      do iv3d = 1, nv3d
       if( from_file_3d( iv3d ) ) then
         write(6,'(1x,A,A15)') '*** Read 3D var: ', trim(v3d_name(iv3d))
-        call ncio_read_3d_r8(ncid, trim(v3d_name(iv3d)), nlev, nlons, nlats, rtime, v3ds(:,:,:,iv3d) )
+        call ncio_read_3d_r8(ncid, trim(v3d_name(iv3d)), nlons, nlats, nlev, rtime, v3dstmp )
+        forall (i=1:nlons, j=1:nlats, k=1:nlev) v3ds(k,i,j,iv3d) = v3dstmp(i,j,k) ! use FORALL to change order of dimensions
       endif
      end do
 
      do iv2d = 1, nv2d
       if( from_file_2d( iv2d ) )then
        write(6,'(1x,A,A15)') '*** Read 2D var: ', trim(v2d_name(iv2d))
-       call ncio_read_2d_r8(ncid, trim(v2d_name(iv2d)), nlons, nlats, rtime, v2ds(:,:,iv2d))
+       call ncio_read_2d_r8(ncid, trim(v2d_name(iv2d)), nlons , nlats , rtime, v2ds(:,:,iv2d) )
       endif
      end do
 
@@ -383,9 +390,12 @@ SUBROUTINE read_topo(filenameprefix,topo)
 
      write (filesuffix(4:9),'(I6.6)') isub-1
 
-     write(*,*)"Reading ",trim( filenameprefix ) // filesuffix
+     filename=trim( filenameprefix ) // filesuffix
 
-     call ncio_open( trim( filenameprefix ) // filesuffix ,NF90_NOWRITE,ncid)
+     write(*,*)"Reading ",filename
+
+     call ncio_open(filename,NF90_NOWRITE,ncid)
+
      call ncio_get_dim(ncid, 'x' , nlons )
      call ncio_get_dim(ncid, 'y' , nlats )
  
@@ -393,11 +403,11 @@ SUBROUTINE read_topo(filenameprefix,topo)
 
      call ncio_read_1d_r8(ncid, trim('x'),nlons, 1, cxs )
      call ncio_read_1d_r8(ncid, trim('y'),nlats, 1, cys )
-     call ncio_close(ncid)
+     !call ncio_close(ncid)
      allocate( topos(nlons,nlats) )
       
-     call ncio_open(trim(filename),NF90_NOWRITE,ncid)
-     call ncio_read_2d_r8(ncid,'topography', nlons, nlats, 1, topos )
+     !call ncio_open(trim(filename),NF90_NOWRITE,ncid)
+     call ncio_read_2d_r8(ncid,'TOPO', nlons, nlats, 1, topos )
      call ncio_close(ncid)
 
      !Get the subdomain location with respect to the global domain.

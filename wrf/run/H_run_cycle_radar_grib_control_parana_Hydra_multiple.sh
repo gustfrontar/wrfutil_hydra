@@ -21,8 +21,8 @@ CDIR=`pwd`
 CONFIGURATION=control_parana_60m_radar_grib_Hydra       #Define a experiment configuration
 MCONFIGURATION=machine_radar60m_multiple_Hydra          #Define a machine configuration (number of nodes, etc)
 
-RESTART=0
-RESTARTDATE=20100111180500
+RESTART=1
+RESTARTDATE=20091117175500
 RESTARTITER=10
 
 MYHOST=`hostname`
@@ -83,7 +83,6 @@ edit_multiplecycle $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh
 
 #Run multiple cycles with only one QSUB
 sub_and_wait $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh  
-
 
 #Move experiment data to OUTPUTDIR
 mv $TMPDIR/output/* $OUTPUTDIR

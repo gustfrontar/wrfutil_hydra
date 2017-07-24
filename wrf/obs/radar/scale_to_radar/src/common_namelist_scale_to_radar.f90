@@ -26,7 +26,6 @@ MODULE common_namelist
   LOGICAL   :: compute_attenuation =.false. !If attenuation will be simulated or not when converting from model to radar.
   INTEGER   :: n_radar =1 !Number of radars.
   INTEGER   :: n_times =1 !Number of times that will be processed.
-  LOGICAL   :: model_split_output = .false.  !Wether the times are stored in individual files or in the same model output file.
   LOGICAL   :: use_wt                  !If terminal velocity will be used in radial velocity computations.
 
 
@@ -65,8 +64,7 @@ INTEGER :: ierr
 
 
 NAMELIST / GENERAL / add_obs_error , reflectivity_error , radialwind_error ,              &
-                     use_wt , n_radar , n_times , method_ref_calc , compute_attenuation , &
-                     model_split_output
+                     use_wt , n_radar , n_times , method_ref_calc 
  
 
 
@@ -95,6 +93,13 @@ OPEN(54,FILE=s2rnamelist)
 READ(54,NML=GENERAL,IOSTAT=IERR)
 IF(IERR /=0)THEN
 WRITE(*,*)"Warning!! Error during namelist reading at GENERAL section"
+WRITE(*,*)"Using default values"
+ENDIF
+REWIND(54)
+
+READ(54,NML=PARAM_MAPPROJ,IOSTAT=IERR)
+IF(IERR /=0)THEN
+WRITE(*,*)"Warning!! Error during namelist reading at PARAM_MAPPROJ section"
 WRITE(*,*)"Using default values"
 ENDIF
 REWIND(54)

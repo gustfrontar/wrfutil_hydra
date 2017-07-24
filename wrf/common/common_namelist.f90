@@ -55,6 +55,7 @@ MODULE common_namelist
   REAL(r_size) :: rainratio_threshold = 0.3d0 !Percentaje of ensemble members with reflectivity greather than 0.
   REAL(r_size) :: minrefdbz=0.0d0             !Reflectivity values below this threshold won't be assimilated.
   REAL(r_size) :: pseudo_rh_error=0.1         !Obserational error for pseudo RH observations.
+  LOGICAL      :: force_norain_assimilation = .false. 
 
   !PARAMETER ESTIMATION
   LOGICAL :: estpar = .false. 
@@ -121,7 +122,7 @@ NAMELIST / LOCALIZATION / sigma_obs , sigma_obsv  , sigma_obsz , sigma_obst ,  &
  & var_localp_uv , var_localp_t , var_localp_tv , var_localp_moist , var_localp_ps , var_localp_ref , var_localp_dop ,         &
    var_localp_co  
 NAMELIST / OBSERVATIONS / threshold_dz , gross_error , gross_error_tycll , gross_error_tycmip , &
-&  undef_obs , rainratio_threshold , minrefdbz , pseudo_rh_error  
+&  undef_obs , rainratio_threshold , minrefdbz , pseudo_rh_error , force_norain_assimilation  
 NAMELIST / PARAMETER_ESTIMATION / estpar , smooth_par_update_flag , update_parameter_2d , update_parameter_0d , &
  & parameter_localization_type_0d , parameter_localization_type_2d , param_sprd_init , transpar ,  &
  & addinfpar , parameter_inflation_type , parameter_fixinflation , additive_inflation_factor , &

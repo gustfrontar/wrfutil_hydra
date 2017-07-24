@@ -32,10 +32,7 @@ TYPE(RADAR) :: test_radar
 
 !------------------------------------------------------------------
 
-!call get_namelist_vars
-
-CALL radar_set_common( test_radar ,'input.nc')
-CALL radar_georeference( test_radar )
+call get_namelist_vars
 
 WRITE(6,*)'Interpolationg model data to a real radar location and geometry'
 CALL interp_to_real_radar
