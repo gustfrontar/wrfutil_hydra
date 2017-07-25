@@ -21,9 +21,8 @@ ENDDATE=20100111150000
 
 NAMELIST_SCALE2RADAR="$TMPDIR/s2r.namelist"
 
-frec=300                           #Window length in seconds.
+frec=300                           #Observation frequency in seconds.
 
-#Scale 2 radar parameters
 add_obs_error=".FALSE."        
 reflectivity_error="2.5d0"
 radialwind_error="1.0d0"   
@@ -33,7 +32,7 @@ n_radar="1"                       #Number of radars
 n_times="1"                       
 model_split_output=".false."
 method_ref_calc=2
-input_type=2                      #1-restart files , 2-history files
+input_type=1                      #1-restart files, 2-history files
 
 #Grid parameters 
 MPRJ_basepoint_lon="296.02D0"
@@ -81,14 +80,14 @@ do
 cd $TMPDIR
 
 #Delete links from previous round
-rm -fr $TMPDIR/topo* $TMPDIR/model* $TMPDIR/radar*
+rm -fr $TMPDIR/topo* $TMPDIR/hist* $TMPDIR/radar*
 
 ln -sf $MODELTOPOPATH/topo*.nc .
 
-for ifile in $( ls $MODELDATAPATH/$cdate/fcst/mean/history* ) ; do
+for ifile in $( ls $MODELDATAPATH/$cdate/fcst/mean/init* ) ; do
 
   myfile=$(basename $ifile)
-  sufix=`echo $myfile | cut -c9-20`
+  sufix=`echo $myfile | cut -c21-31`
   ln -sf $ifile ./model${itime}.${sufix}
 
 done
@@ -99,6 +98,7 @@ for ifile in $( ls $RADARDATAPATH/cfrad* ) ; do
 
 
   myfile=$(basename $ifile)
+  #cfrad.20100111_062345.000_to_20100111_062721.999_ANG120_v39_SUR.nc_dealiased
 
   filedate1=`echo $myfile | cut -c7-14`
   filedate2=`echo $myfile | cut -c16-21`

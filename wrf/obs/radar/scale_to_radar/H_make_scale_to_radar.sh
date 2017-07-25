@@ -27,7 +27,7 @@ $F90 $OMP $F90OPT -c common_namelist_scale_to_radar.f90
 $F90 $OMP $F90OPT -c scale_const.f90
 $F90 $OMP $F90OPT -c scale_mapproj.F90
 $F90 $OMP $F90OPT $INC_NETCDF -c common_ncio.f90
-$F90 $OMP $F90OPT $INC_NETCDF -c common_scale_hist.f90
+$F90 $OMP $F90OPT $INC_NETCDF -c common_scale.f90
 $F90 $OMP $F90OPT $INC_NETCDF -c common_obs_scale.f90
 $F90 $OMP $F90OPT $INC_NETCDF -c common_radar_tools_cfradial.f90
 $F90 $OMP $F90OPT $INC_NETCDF -c common_scale_to_radar.f90

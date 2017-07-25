@@ -23,7 +23,7 @@ MODULE common_scale_to_radar
   real(r_size),allocatable :: gues3d(:,:,:,:)
   real(r_size),allocatable :: gues2d(:,:,:)
   
-  CHARACTER*100  :: model_file_prefix = 'histTTTT'  !Model input file. T slots are for different times (or ensemble members)
+  CHARACTER*100  :: model_file_prefix = 'modelTTTT'  !Model input file. T slots are for different times (or ensemble members)
   CHARACTER*100  :: radar_file = 'radarRRR_TTTT.nc' !Radar data input in cfradial format
   CHARACTER*100  :: topo_file_prefix = 'topo'       !Model topography input file prefix.
   CHARACTER*100  :: current_model_prefix  , current_radar_file                  
@@ -183,11 +183,18 @@ logical       :: model_split_output
   !Get grid properties.
   write(*,*)"Getting model info"
   current_model_prefix=model_file_prefix
-  WRITE(current_model_prefix(5:8),'(I4.4)')1
-  CALL set_common_scale( current_model_prefix , topo_file_prefix )
+  WRITE(current_model_prefix(6:9),'(I4.4)')1
+  CALL set_common_scale( current_model_prefix , topo_file_prefix , input_type )
 
   if( ntime .gt. 1 )then
     model_split_output = .false.
+    !Check is the number of requested times is equal to the number 
+    !of times inside the file.
+    if( ntime /= n_times)then 
+      n_times=min( ntime , n_times)
+      write(*,*)"Warning! number of times in file is different from n_times."  
+      write(*,*)"Reseting n_times to: ",n_times
+    endif
   else
     model_split_output = .true.
   endif
@@ -200,12 +207,12 @@ DO im=1,n_times
    write(*,*)"Reading model data"
    if( .not. model_split_output ) then
  
-     CALL read_history(current_model_prefix,gues3d,gues2d,im)
+     CALL read_file(current_model_prefix,gues3d,gues2d,im,input_type)
 
    else
 
-     WRITE(current_model_prefix(5:8),'(I4.4)')im
-     CALL read_history(current_model_prefix,gues3d,gues2d,1)
+     WRITE(current_model_prefix(6:9),'(I4.4)')im
+     CALL read_file(current_model_prefix,gues3d,gues2d,1,input_type)
 
    endif
 
@@ -240,7 +247,7 @@ DO im=1,n_times
 
   ENDDO ![Endo over radars]
   
- ENDDO ![Endo over model files]
+ ENDDO ![Endo over model times]
 
 END SUBROUTINE interp_to_real_radar
 

@@ -26,8 +26,10 @@ MODULE common_scale
 ! General parameters
 !-----------------------------------------------------------------------
 
-  INTEGER,PARAMETER :: nv3d=12    ! 
+  INTEGER,PARAMETER :: nv3d=17    ! 
   INTEGER,PARAMETER :: nv2d=2     ! 
+ 
+  !History variables
   INTEGER,PARAMETER :: iv3d_q=1
   INTEGER,PARAMETER :: iv3d_qc=2
   INTEGER,PARAMETER :: iv3d_qr=3
@@ -40,6 +42,12 @@ MODULE common_scale
   INTEGER,PARAMETER :: iv3d_t=10
   INTEGER,PARAMETER :: iv3d_p=11
   INTEGER,PARAMETER :: iv3d_hgt=12
+  !Restart variables
+  INTEGER,PARAMETER :: iv3d_rho=13
+  INTEGER,PARAMETER :: iv3d_rhou=14
+  INTEGER,PARAMETER :: iv3d_rhov=15
+  INTEGER,PARAMETER :: iv3d_rhow=16
+  INTEGER,PARAMETER :: iv3d_rhot=17
 
   INTEGER,PARAMETER :: iv2d_lon=1
   INTEGER,PARAMETER :: iv2d_lat=2
@@ -51,9 +59,6 @@ MODULE common_scale
   INTEGER,SAVE :: nlath ! # grids in J-direction with halo [global domain]
   INTEGER,SAVE :: ntime ! # of times in file.
 
-  INTEGER,SAVE :: nlong2
-  INTEGER,SAVE :: nlatg2
-  INTEGER,SAVE :: nlev2 !Number of levs + 2*KHALO
 !  INTEGER,SAVE :: nij0
 !  INTEGER,SAVE :: nlevall
 !  INTEGER,SAVE :: nlevalld
@@ -75,21 +80,22 @@ MODULE common_scale
   REAL(r_size) , allocatable :: CXG(:) , CYG(:) !Global domain x and y position
   REAL(r_size) , allocatable :: FXG(:) , FYG(:) !Global grid face possition.
   REAL(r_size) , allocatable :: CZ(:),CX(:),CY(:) !Location of vertical levels + halo.
+  REAL(r_size) , allocatable :: FZ(:)             !Vertical grid face
   REAL(r_size) , allocatable :: levels(:)
 
   REAL(r_size) :: GRID_DOMAIN_CENTER_X , GRID_DOMAIN_CENTER_Y
 
-  INTEGER :: KHALO , IHALO , JHALO
-  INTEGER :: NSUB , TMPINT
+  INTEGER :: NSUB 
 
 CONTAINS
 
 !-----------------------------------------------------------------------
-SUBROUTINE set_common_scale(file_prefix , topo_file_prefix )
+SUBROUTINE set_common_scale(file_prefix , topo_file_prefix , file_type )
 
   IMPLICIT NONE
   character(len=*), intent(in)    :: file_prefix , topo_file_prefix
   character(len=100)              :: filename
+  integer ,intent(in)             :: file_type
   integer                         :: ncid , ierr
   integer                         :: ii , jj , kk , isub
   integer                         :: nlons , nlats  
@@ -125,27 +131,22 @@ SUBROUTINE set_common_scale(file_prefix , topo_file_prefix )
   write(*,*)filename
   call ncio_open(TRIM( filename ),NF90_NOWRITE,ncid)
 
-
-  call ncio_get_dim(ncid, 'x' , nlons )
-  call ncio_get_dim(ncid, 'y' , nlats )
   call ncio_get_dim(ncid, 'z' , nlev )
-  call ncio_get_dim(ncid, 'time', ntime )
+
+
+  if( file_type == 2 )then !History file
+   call ncio_get_dim(ncid, 'time', ntime )
+  else
+   ntime=1
+  endif
 
   call ncio_get_dim(ncid,'CXG', nlonh )
   call ncio_get_dim(ncid,'CYG', nlath )
 
-  !PRC_NUM_X = NINT( REAL(nlonh,r_size) / REAL(nlons,r_size) )
-  !PRC_NUM_Y = NINT( REAL(nlath,r_size) / REAL(nlats,r_size) )
-
-  !  nsub= PRC_NUM_X * PRC_NUM_Y
 
     write(*,*)"--------------------------------------------------------------------"
     write(*,*)" NSUB =",nsub
     write(*,*)"--------------------------------------------------------------------"
-
-    !nij0 = nlon * nlat
-    !nlevall  = nlev * nv3d  + nv2d
-    !ngpv  = nij0 * nlevall
 
   if( allocated(cxg) )deallocate(cxg)
   if( allocated(cyg) )deallocate(cyg)
@@ -159,10 +160,7 @@ SUBROUTINE set_common_scale(file_prefix , topo_file_prefix )
   dx=cxg(2)-cxg(1)
   dy=cyg(2)-cyg(1)
 
-  !write(*,*)nlon,nlat,nlev
-
   if(allocated(levels) )deallocate(levels)
-
   allocate( levels(nlev) )
   call ncio_read_1d_r8(ncid, trim('z'),nlev,1,levels)
 
@@ -173,32 +171,29 @@ SUBROUTINE set_common_scale(file_prefix , topo_file_prefix )
   ENDDO
   dz = dz / REAL( nlev - 1 , r_size ) 
 
-  call ncio_get_dim(ncid,'FXG', nlong2 )
-  allocate( FXG(nlong2) )
-  call ncio_read(ncid, trim('FXG'),nlong2, 1, FXG )
+  if( allocated(FXG) )deallocate(FXG)
+  allocate( FXG(nlonh+1) )
+  call ncio_read(ncid,trim('FXG'),nlonh+1,1,FXG )
 
-  call ncio_get_dim(ncid,'FYG', nlatg2 )
   if( allocated(FYG) )deallocate(FYG)
-  allocate( FYG(nlatg2) )
-  call ncio_read(ncid, trim('FYG'),nlatg2, 1, FYG )
+  allocate( FYG(nlath+1) )
+  call ncio_read(ncid, trim('FYG'),nlath+1,1,FYG)
 
-  GRID_DOMAIN_CENTER_X = 0.5d0 * ( FXG(0) + FXG(nlong2) )
-  GRID_DOMAIN_CENTER_Y = 0.5d0 * ( FYG(0) + FYG(nlatg2) )
+  GRID_DOMAIN_CENTER_X = 0.5d0 * ( FXG(0) + FXG(nlonh+1) )
+  GRID_DOMAIN_CENTER_Y = 0.5d0 * ( FYG(0) + FYG(nlath+1) )
 
   !Initialize projection routines.
   CALL MPRJ_setup( GRID_DOMAIN_CENTER_X, GRID_DOMAIN_CENTER_Y )
 
-  call ncio_get_dim(ncid,'CZ',nlev2)  !Number of levels + 2*KHALO
   if( allocated(CZ) )deallocate(CZ)
-  allocate(CZ(nlev2))
-  call ncio_read(ncid,trim('CZ'),nlev2,1,CZ )
-  KHALO=( nlev2-nlev ) / 2.0d0 
+  allocate(CZ(nlev+2*KHALO))
+  call ncio_read(ncid,trim('CZ'),nlev+2*KHALO,1,CZ )
 
-  call ncio_get_dim(ncid,'CX', tmpint )  !Number of longitudes + 2*IHALO
-  IHALO=( tmpint-nlons ) / 2.0d0
+  if( allocated(FZ) )deallocate(FZ)
+  allocate(FZ(nlev+2*KHALO+1))
+  call ncio_read(ncid,trim('FZ'),nlev+2*KHALO+1,1,FZ )
 
-  call ncio_get_dim(ncid,'CY', tmpint )  !Number of longitudes + 2*JHALO
-  JHALO=( tmpint-nlats ) / 2.0d0
+
 
   call ncio_close(ncid) 
 
@@ -219,11 +214,36 @@ SUBROUTINE set_common_scale(file_prefix , topo_file_prefix )
     v3d_name(iv3d_t)    = 'T'
     v3d_name(iv3d_hgt)  = 'height'
     v3d_name(iv3d_p)    = 'PRES'
+    !Restart additional V3D 
+    v3d_name(iv3d_rho)  = 'DENS'
+    v3d_name(iv3d_rhou) = 'MOMX'
+    v3d_name(iv3d_rhov) = 'MOMY'
+    v3d_name(iv3d_rhow) = 'MOMZ'
+    v3d_name(iv3d_rhot) = 'RHOT'
+
     !V2D
     v2d_name(iv2d_lon)  = 'lon'
     v2d_name(iv2d_lat)  = 'lat'
     !
-    ! state variables (in 'history' files, for LETKF)
+   from_file_3d=.false.
+   from_file_2d=.false.
+
+   !Which variables will be read from the input file.
+
+   if( file_type == 1 )then  !Restart file
+    from_file_3d(iv3d_q)    =  .true.
+    from_file_3d(iv3d_qc)   =  .true.
+    from_file_3d(iv3d_qr)   =  .true.
+    from_file_3d(iv3d_qi)   =  .true.
+    from_file_3d(iv3d_qs)   =  .true.
+    from_file_3d(iv3d_qg)   =  .true.
+    from_file_3d(iv3d_rho)  =  .true.
+    from_file_3d(iv3d_rhou) =  .true.
+    from_file_3d(iv3d_rhov) =  .true.
+    from_file_3d(iv3d_rhow) =  .true.
+    from_file_3d(iv3d_rhot) =  .true.
+
+   elseif( file_type == 2 )then  !History file
     from_file_3d(iv3d_q)    =  .true.
     from_file_3d(iv3d_qc)   =  .true.
     from_file_3d(iv3d_qr)   =  .true.
@@ -239,14 +259,13 @@ SUBROUTINE set_common_scale(file_prefix , topo_file_prefix )
 
     from_file_2d(iv2d_lon)  = .true.
     from_file_2d(iv2d_lat)  = .true.
+   endif
 
-
-    !Read the topography.
+   !Read the topography.
  
-    allocate( topo( nlonh , nlath ) )
-    write(*,*)"Reading the topography"
-    CALL read_topo(topo_file_prefix,topo)
-
+   allocate( topo( nlonh , nlath ) )
+   write(*,*)"Reading the topography"
+   CALL read_topo(topo_file_prefix,topo)
 
 
   RETURN
@@ -257,10 +276,11 @@ END SUBROUTINE set_common_scale
 !!-----------------------------------------------------------------------
 !-----------------------------------------------------------------------
 
-SUBROUTINE read_history_subdomain(filename,v3dg,v2dg,rtime)
+SUBROUTINE read_file_subdomain(filename,v3dg,v2dg,rtime,file_type)
   IMPLICIT NONE
   INTEGER     ,INTENT(IN) :: rtime !Read time.
   INTEGER                 :: nlons , nlats
+  INTEGER     ,INTENT(IN) :: file_type
   CHARACTER(*),INTENT(IN) :: filename
   REAL(r_size),INTENT(INOUT) :: v3dg(nlev,nlonh,nlath,nv3d)
   REAL(r_size),INTENT(INOUT) :: v2dg(nlonh,nlath,nv2d)
@@ -291,12 +311,16 @@ SUBROUTINE read_history_subdomain(filename,v3dg,v2dg,rtime)
      allocate( v3ds(nlev,nlons,nlats,nv3d) , v2ds(nlons,nlats,nv2d) )
      allocate( v3dstmp(nlons,nlats,nlev)  )
 
-
+     !The order in 3DVar variables is different between history files and restart files
      do iv3d = 1, nv3d
       if( from_file_3d( iv3d ) ) then
-        write(6,'(1x,A,A15)') '*** Read 3D var: ', trim(v3d_name(iv3d))
+       write(6,'(1x,A,A15)') '*** Read 3D var: ', trim(v3d_name(iv3d))
+       if( file_type == 1 )then      !Restart file
+        call ncio_read_3d_r8(ncid, trim(v3d_name(iv3d)), nlev,nlons,nlats,rtime,v3ds(:,:,:,iv3d) )
+       elseif( file_type == 2 )then  !history file
         call ncio_read_3d_r8(ncid, trim(v3d_name(iv3d)), nlons, nlats, nlev, rtime, v3dstmp )
         forall (i=1:nlons, j=1:nlats, k=1:nlev) v3ds(k,i,j,iv3d) = v3dstmp(i,j,k) ! use FORALL to change order of dimensions
+       endif
       endif
      end do
 
@@ -337,15 +361,16 @@ SUBROUTINE read_history_subdomain(filename,v3dg,v2dg,rtime)
   
 
   RETURN
-END SUBROUTINE read_history_subdomain
+END SUBROUTINE read_file_subdomain
 
 
 
-SUBROUTINE read_history(filenameprefix,v3dg,v2dg,rtime)
+SUBROUTINE read_file(filenameprefix,v3dg,v2dg,rtime,file_type)
 
   IMPLICIT NONE
   CHARACTER(*),INTENT(IN) :: filenameprefix
   INTEGER     ,INTENT(IN) :: rtime          !Time to be read (history files may contain several times)
+  INTEGER     ,INTENT(IN) :: file_type
   REAL(r_size),INTENT(OUT) :: v3dg(nlev,nlonh,nlath,nv3d)
   REAL(r_size),INTENT(OUT) :: v2dg(nlonh,nlath,nv2d)
   REAL(r_size) :: dummy
@@ -362,11 +387,16 @@ SUBROUTINE read_history(filenameprefix,v3dg,v2dg,rtime)
 
      write(*,*)"Reading ",trim( filenameprefix ) // filesuffix
 
-     call read_history_subdomain( trim( filenameprefix ) // filesuffix , v3dg , v2dg , rtime )
+     call read_file_subdomain( trim( filenameprefix ) // filesuffix , v3dg , v2dg , rtime , file_type )
 
   ENDDO
 
-END SUBROUTINE read_history
+  if( file_type == 1 )then !This is a restart file. We need to compute additional fields.
+    CALL state_trans(v3dg)
+  endif
+
+
+END SUBROUTINE read_file
 
 
 SUBROUTINE read_topo(filenameprefix,topo)
@@ -438,5 +468,89 @@ SUBROUTINE read_topo(filenameprefix,topo)
 
 END SUBROUTINE read_topo
 
+SUBROUTINE state_trans(v3dg)
+
+
+  IMPLICIT NONE
+
+  REAL(r_size),INTENT(INOUT) :: v3dg(nlev,nlonh,nlath,nv3d)
+  REAL(r_size) :: rho,pres,temp
+  real(r_size) :: qdry,CVtot,Rtot,CPovCV
+  integer :: i,j,k,iv3d
+
+
+!!$OMP PARALLEL DO PRIVATE(i,j,k,iv3d,qdry,CVtot,Rtot,CPovCV,rho,pres,temp)
+!!COLLAPSE(2)
+  do j = 1, nlath
+    do i = 1, nlonh
+      do k = 1, nlev
+       qdry  = 1.0d0
+       CVtot = 0.0d0
+       do iv3d = iv3d_q, iv3d_qg ! loop over all moisture variables
+         qdry  = qdry - v3dg(k,i,j,iv3d)
+       enddo
+         CVtot = v3dg(k,i,j,iv3d_q)*CONST_CVvap + v3dg(k,i,j,iv3d_qr)*CONST_CL + v3dg(k,i,j,iv3d_qc)*CONST_CL +  &
+                 v3dg(k,i,j,iv3d_qi)*CONST_CI   + v3dg(k,i,j,iv3d_qg)*CONST_CI + v3dg(k,i,j,iv3d_qs)*CONST_CI +  &
+                 qdry * CONST_CVdry
+
+         Rtot  = CONST_Rdry  * qdry + CONST_Rvap * v3dg(k,i,j,iv3d_q)
+         CPovCV = ( CVtot + Rtot ) / CVtot
+
+       rho = v3dg(k,i,j,iv3d_rho)
+       pres = CONST_PRE00 * ( v3dg(k,i,j,iv3d_rhot) * Rtot / CONST_PRE00 )**CPovCV
+       temp = pres / ( rho * Rtot )
+
+       v3dg(k,i,j,iv3d_u) = v3dg(k,i,j,iv3d_rhou) / rho !!!!!! inaccurate! do not consider staggered grid !!!!!!
+       v3dg(k,i,j,iv3d_v) = v3dg(k,i,j,iv3d_rhov) / rho !!!!!!
+       v3dg(k,i,j,iv3d_w) = v3dg(k,i,j,iv3d_rhow) / rho !!!!!!
+       v3dg(k,i,j,iv3d_t) = temp
+       v3dg(k,i,j,iv3d_p) = pres
+
+      enddo
+    enddo
+  enddo
+!!$OMP END PARALLEL DO
+
+  !Compute height above means sea level
+  CALL scale_calc_z( topo , v3dg(:,:,:,iv3d_hgt) )
+
+  RETURN
+
+END SUBROUTINE state_trans
+
+!-------------------------------------------------------------------------------
+! Calculate 3D height coordinate given the topography height (on original grids)
+!-------------------------------------------------------------------------------
+! [INPUT]
+!   topo(nlonh,nlath)   : topography height 
+! [OUTPUT]
+!   z(nlev,nlonh,nlath) : 3D height coordinate 
+!-------------------------------------------------------------------------------
+subroutine scale_calc_z(topo, z)
+!  !use scale_grid, only: &
+!     GRID_CZ, &
+!     GRID_FZ
+!  use scale_grid_index, only: &
+!     KHALO, KS, KE
+  implicit none
+
+  real(r_size), intent(in) :: topo(nlonh,nlath)
+  real(r_size), intent(out) :: z(nlev,nlonh,nlath)
+  real(r_size) :: ztop
+  integer :: i, j, k
+
+  ztop = FZ(nlev+KHALO) - FZ(KHALO)
+!!$OMP PARALLEL DO PRIVATE(j,i,k) COLLAPSE(2)
+  do j = 1, nlath
+    do i = 1, nlonh
+      do k = 1, nlev
+        z(k, i, j) = (ztop - topo(i,j)) / ztop * CZ(k+KHALO) + topo(i,j)
+      end do
+    enddo
+  enddo
+!!$OMP END PARALLEL DO
+
+  return
+end subroutine scale_calc_z
 
 END MODULE common_scale

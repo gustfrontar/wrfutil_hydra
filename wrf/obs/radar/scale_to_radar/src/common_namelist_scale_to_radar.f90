@@ -27,7 +27,7 @@ MODULE common_namelist
   INTEGER   :: n_radar =1 !Number of radars.
   INTEGER   :: n_times =1 !Number of times that will be processed.
   LOGICAL   :: use_wt                  !If terminal velocity will be used in radial velocity computations.
-
+  INTEGER   :: input_type=1  !1-restart files, 2-history files.
 
   !Projection parameters
   character(len=4), public :: MPRJ_type = 'NONE' !< map projection type
@@ -48,6 +48,10 @@ MODULE common_namelist
   real(r_size), public :: MPRJ_basepoint_lon = 135.221d0 ! position of base point
   real(r_size), public :: MPRJ_basepoint_lat =  34.653d0 ! position of base point
 
+  !Index parameters
+  INTEGER  , public :: IHALO = 2 , JHALO = 2 , KHALO = 2
+
+
   !Define the type of forward operator.
   CHARACTER(100) :: s2rnamelist='s2r.namelist'
 
@@ -64,8 +68,7 @@ INTEGER :: ierr
 
 
 NAMELIST / GENERAL / add_obs_error , reflectivity_error , radialwind_error ,              &
-                     use_wt , n_radar , n_times , method_ref_calc 
- 
+                     use_wt , n_radar , n_times , method_ref_calc , input_type  
 
 
 !Scale requires projection parameters
@@ -81,6 +84,11 @@ NAMELIST / PARAM_MAPPROJ / &
        MPRJ_PS_lat,        &
        MPRJ_M_lat,         &
        MPRJ_EC_lat
+
+NAMELIST / PARAM_INDEX /   &
+       IHALO ,             &
+       JHALO ,             &
+       KHALO 
 
 
 INQUIRE(FILE=s2rnamelist,EXIST=file_exist)
@@ -103,6 +111,14 @@ WRITE(*,*)"Warning!! Error during namelist reading at PARAM_MAPPROJ section"
 WRITE(*,*)"Using default values"
 ENDIF
 REWIND(54)
+
+READ(54,NML=PARAM_INDEX,IOSTAT=IERR)
+IF(IERR /=0)THEN
+WRITE(*,*)"Warning!! Error during namelist reading at PARAM_MAPPROJ section"
+WRITE(*,*)"Using default values"
+ENDIF
+REWIND(54)
+
 
 END SUBROUTINE get_namelist_vars
 
