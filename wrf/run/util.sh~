@@ -165,6 +165,21 @@ date_floor () {
         echo $DATEFLOOR
 }
 
+#Get the absolute value of input.
+abs_val() {
+
+local value=$1
+
+  if [ $value -lt 0 ] ; then
+     result=`expr 0 - $value `
+  else
+     result=$value
+  fi
+
+  echo $result
+
+}
+
 
 add_zeros() {
 
@@ -710,6 +725,7 @@ if [ $SYSTEM -eq 1 ]; then
   while [ $mem -le $ENDMEMBER ] ; do
     mem=`ens_member $mem`
     echo "cat ./WRF${mem}/rsl.error.* > ./wrf${mem}.log                 " >> $SCRIPT
+    echo "mv  ./WRF${mem}/daupdatebc${mem}.log   ./                     " >> $SCRIPT
     mem=`expr ${mem} + 1`
   done
  fi
@@ -1115,7 +1131,15 @@ fi
 
 #COPY JOB SCRIPT
 
-cp $CDIR/H_run_multiple_cycles.sh                       $TMPDIR/SCRIPTS/
+if [ $FORECAST -eq 1 ] ; then
+
+  cp $CDIR/H_run_multiple_forecasts.sh                       $TMPDIR/SCRIPTS/
+
+else
+
+  cp $CDIR/H_run_multiple_cycles.sh                       $TMPDIR/SCRIPTS/
+
+fi
 
 #Save the current configuration files in the output directory.
 mkdir -p $TMPDIR/configuration/
@@ -1131,6 +1155,27 @@ else
 fi
 
 cp $CDIR/configuration/machine_conf/${MCONFIGURATION}.sh   $TMPDIR/configuration/machine_configuration.sh  #Save machine conf.
+
+#Additional files to copy for forecast.
+
+if [ $FORECAST -eq 1 ] ; then
+
+   #Create directory to store analysis
+   mkdir -p $TMPDIR/input/anal/
+
+   #Copy the list of dates used to generate balanced perturbations in the analysis cycle.
+   cp    $ANALYSIS_SOURCE/initial_random_dates $TMPDIR/NAMELIST/
+   INPUT_PERT_DATES_FROM_FILE=1
+
+   CDATE=$IDATE
+
+   #Copy the LETKF-WRF initial conditions
+   while [ $CDATE -le $EDATE  ] ; do
+      cp -r $ANALYSIS_SOURCE/anal/$CDATE $TMPDIR/input/anal/
+      CDATE=` date_edit2 $CDATE $WINDOW `
+   done   
+
+fi
 
 }
 
@@ -2293,7 +2338,7 @@ generate_run_letkf_script_torque () {
       #CREATE THE FILES WHERE THE GUES AND ANAL ENSEMBLE MEANS WILL BE STORED.
       echo "cp gs${NBSLOT}${MEM} gues${MM}                                                                    " >> $local_script
       echo "cp gs${NBSLOT}${MEM} anal${MM}                                                                    " >> $local_script
-      echo "generate_machinefile $TMPEDIR/LETKF/ \$PBS_NODEFILE 1 $TOTAL_PROC_LETKF                           " >> $local_script
+      echo "generate_machinefile $TMPDIR/LETKF/ \$PBS_NODEFILE 1 $TOTAL_PROC_LETKF                            " >> $local_script
       echo "time $MPIBIN -np ${TOTAL_PROC_LETKF} -f $TMPDIR/LETKF/machinefile.1 $TMPDIR/LETKF/run_letkf.sh    " >> $local_script
 
       echo "rm -f ${TMPDIR}/LETKF/*.dat   "  >> $local_script
@@ -2404,7 +2449,7 @@ fi
   while [ ${CDATEL} -le ${WEDATE}  ] ; do    
    it=`slot_number $it `
  
-  OBSFILE=$RADAROBSDIR/radar${itradar}_${CDATEL}.dat
+   OBSFILE=$RADAROBSDIR/radar${itradar}_${CDATEL}.dat
 
   if [ -e $OBSFILE ] ; then
    cp -f $OBSFILE $TMPDIR/OBS/rad${it}${itradar}.dat
@@ -3109,7 +3154,7 @@ edit_namelist_pertmetem $TMPDIR/ENSINPUT/pertmetem.namelist.template
 
 #GENERATE THE SCRIPT TO GET PERTURBED MET_EM FILE FOR THE CURRENT TIME.                     
 echo "#!/bin/bash                                                               "  > $local_script            
-echo "set -x                                                                    " >> $local_script
+echo "#set -x                                                                    " >> $local_script
 #This script perturbs met_em files.
 #To avoid perturbing again the same met_em file for the same ensemble member
 #First the script checks wether the perturbed met_em file exists and if it do not
@@ -3413,7 +3458,7 @@ arw_postproc () {
 
   INPUT_ROOT_NAME=tmpin
   OUTPUT_ROOT_NAME=tmpout
-  rm -fr $WORKDIR/namelist.ARWpost
+  #rm -f $WORKDIR/namelist.ARWpost
 
   cp $TMPDIR/NAMELIST/namelist.ARWpost.template $WORKDIR/namelist.ARWpost
   edit_namelist_arwpost $WORKDIR/namelist.ARWpost $CDATE $CDATE $ARWPOST_FREC
@@ -3547,6 +3592,100 @@ arw_postproc_noqueue () {
 }
 
 
+upp_postproc_noqueue () {
+
+
+if [  $ENABLE_UPP -eq 1 ];then
+
+# FOR THE ANALYSIS CASE
+  local CDATE=$ADATE                     #INITIAL DATE
+  local WORKDIR=$TMPDIR/ENSINPUT/        #Temporary work directory
+  local ANALDIR=$OUTPUTDIR/anal/$CDATE/
+  local GUESDIR=$OUTPUTDIR/gues/$CDATE/
+
+  local INIMEMBER=1
+  local ENDMEMBER=$MEANMEMBER
+                                         
+  UPP_FREC=$WINDOW_FREC
+
+  #cp $TMPDIR/NAMELIST/namelist.ARWpost.template $WORKDIR/namelist.ARWpost
+  #edit_namelist_arwpost $WORKDIR/namelist.ARWpost $CDATE $CDATE $ARWPOST_FREC
+
+  local CDATEWRF=`date_in_wrf_format $CDATE `
+
+
+  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH " >  ${WORKDIR}/tmp.sh
+  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
+  if [ $SYSTEM -eq  1 ] ; then
+     echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
+  fi
+  echo "MEM=\$1                                                       " >> ${WORKDIR}/tmp.sh
+  echo "mkdir -p ${WORKDIR}/\${MEM}                                   " >> ${WORKDIR}/tmp.sh
+  echo "cd ${WORKDIR}/\${MEM}                                         " >> ${WORKDIR}/tmp.sh
+  echo "DATADIR=${ANALDIR}                                            " >> ${WORKDIR}/tmp.sh
+  echo "PREFIX=anal                                                   " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf \${DATADIR}/\${PREFIX}\${MEM} ./tmpin                  " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf \${DATADIR}/slev\${MEM}.grib  ./tmpout.dat             " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf $TMPDIR/UPP/* .                                        " >> ${WORKDIR}/tmp.sh
+  #Create UPP namelist.
+  echo "cat > itag <<EOF                                              " >> ${WORKDIR}/tmp.sh
+  echo "tmpin                                                         " >> ${WORKDIR}/tmp.sh
+  echo "netcdf                                                        " >> ${WORKDIR}/tmp.sh
+  echo "$CDATEWRF                                                     " >> ${WORKDIR}/tmp.sh
+  echo "$NCAR                                                         " >> ${WORKDIR}/tmp.sh
+  echo "EOF                                                           " >> ${WORKDIR}/tmp.sh
+  echo "./UPP.exe     > \${DATADIR}/uppd01_\${MEM}.log                " >> ${WORKDIR}/tmp.sh
+
+  echo "DATADIR=${GUESDIR}                                            " >> ${WORKDIR}/tmp.sh
+  echo "PREFIX=gues                                                   " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf \${DATADIR}/\${PREFIX}\${MEM} ./tmpin                  " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf \${DATADIR}/slev\${MEM}.grib  ./tmpout.dat             " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf $TMPDIR/UPP/* .                                        " >> ${WORKDIR}/tmp.sh
+  #Create UPP namelist.
+  echo "cat > itag <<EOF                                              " >> ${WORKDIR}/tmp.sh
+  echo "tmpin                                                         " >> ${WORKDIR}/tmp.sh
+  echo "netcdf                                                        " >> ${WORKDIR}/tmp.sh
+  echo "$CDATEWRF                                                     " >> ${WORKDIR}/tmp.sh
+  echo "$NCAR                                                         " >> ${WORKDIR}/tmp.sh
+  echo "EOF                                                           " >> ${WORKDIR}/tmp.sh
+  echo "UPP.exe                 > \${DATADIR}/uppd01_\${MEM}.log      " >> ${WORKDIR}/tmp.sh
+
+
+
+  chmod 766 ${WORKDIR}/tmp.sh
+
+ #Get the list of nodes.
+ NNODES=1
+ while read mynode  ; do
+    NODELIST[$NNODES]=$mynode
+    NNODES=`expr $NNODES + 1`
+ done  <  $PBS_NODEFILE
+ NNODES=`expr $NNODES - 1`
+
+
+ M=$INIMEMBER
+ while [ $M -le $ENDMEMBER ] ; do
+  MYNODE=1
+  while [ $MYNODE -le $NNODES -a $M -le $ENDMEMBER ] ; do
+    MEM=`ens_member $M `
+
+    sleep 0.3
+   
+    ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh  2>&1 " & 
+    
+    M=`expr $M + 1`
+    MYNODE=`expr $MYNODE + 1`
+
+  done 
+
+  time wait
+
+ done
+
+fi
+
+}
+
 
 
 arw_postproc_forecast () {
@@ -3595,7 +3734,7 @@ arw_postproc_forecast () {
   local TMPDATE=$IDATE
   while [ $TMPDATE -le $EDATE  ] ; do
    local input_file=`wrfout_file_name $TMPDATE $my_domain `
-   echo "rm ./namelist.ARWpost                                                                                  " >> ${WORKDIR}/tmp.sh
+   #echo "rm ./namelist.ARWpost                                                                                  " >> ${WORKDIR}/tmp.sh
    echo "cp ${TMPDIR}/NAMELIST/namelist.ARWpost.template ./namelist.ARWpost                                     " >> ${WORKDIR}/tmp.sh
    echo "edit_namelist_arwpost ${WORKDIR}/\${MEM}/namelist.ARWpost $TMPDATE $TMPDATE $ARWPOST_FREC              " >> ${WORKDIR}/tmp.sh
    echo "ln -sf ${GUESDIR}/\${MEM}/${input_file} ./${INPUT_ROOT_NAME}                                           " >> ${WORKDIR}/tmp.sh
@@ -4423,6 +4562,7 @@ if [ $RESTART -eq 0 ] ; then
 
   fi
 
+  #Generate random date file
   if [  ! -e  $OUTPUTDIR/initial_random_dates ] ; then
     local M=1
     while [ $M -le $MEMBER ] ; do

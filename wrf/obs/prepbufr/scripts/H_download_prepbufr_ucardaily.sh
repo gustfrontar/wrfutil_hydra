@@ -10,9 +10,9 @@ export http_proxy=""
 #export http_proxy="proxy.fcen.uba.ar:8080"
 
 # Initial time
-IDATE=20070101000000
+IDATE=20160518000000
 # Final time
-EDATE=20070102000000
+EDATE=20160610000000
 # Frequency
 DF=86400   #file frequency in seconds
 

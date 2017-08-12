@@ -32,6 +32,7 @@ MODULE common
   REAL(r_sngl),PARAMETER :: undefs=9.99e33
   REAL(r_size),PARAMETER :: deg2rad=3.1415926535d0/180d0
   REAL(r_size),PARAMETER :: rad2deg=180d0/3.1415926535d0
+  REAL(r_size),PARAMETER :: clight=299792458.0d0 !Speed of light
 CONTAINS
 !-----------------------------------------------------------------------
 ! Mean

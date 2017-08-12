@@ -5,12 +5,15 @@
 # DATA SOURCE
 #
 DATASRC=2 # 1:NOAA/NOMADS , 2:UCAR/DSS
-export http_proxy="proxy.fcen.uba.ar:8080"
+
+export http_proxy=""
+#export http_proxy="proxy.fcen.uba.ar:8080"
 
 # Initial time
-IDATE=20100801000000
+IDATE=20070101000000
 # Final time
-EDATE=20101101000000
+EDATE=20070108000000
+
 # Frequency
 DF=21600   #file frequency in seconds
 
@@ -26,9 +29,9 @@ fi
 EMAIL=$1
 PASSWD=$2
 
-OBSNAME=PREPBUFRSA
+OBSNAME=PREPBUFREUROPE
 
-OBSDIR=$HOME/share/OBS/$OBSNAME/prepbufr
+OBSDIR=$HOME/share/DATA/OBS/$OBSNAME/prepbufr
 
 source $HOME/share/LETKF_WRF/wrf/run/util.sh #Load time functions.
 
@@ -67,6 +70,7 @@ do
 echo " >>>"
 echo " >>> DOWNLOADING $CDATE "
 echo " >>>"
+
 #
 # GET NCEP PREPBUFR
 #

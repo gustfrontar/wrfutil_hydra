@@ -15,7 +15,6 @@ MODULE common_obs_wrf
   IMPLICIT NONE
   PUBLIC
 
-  REAL(r_size) :: minref  !=10.0d0**( minrefdbz / 10.0d0)
   REAL(r_size) , ALLOCATABLE :: radar_lon(:),radar_lat(:),radar_z(:),radar_mindbz(:)
 
 
@@ -132,34 +131,35 @@ INTEGER, INTENT(OUT) :: iobs_out
 
 END SUBROUTINE get_iobs
 
-SUBROUTINE get_method_refcalc( lambda , method_ref_calc )
-REAL(r_size),INTENT(IN)  :: lambda 
-INTEGER     ,INTENT(OUT) :: method_ref_calc
+!SUBROUTINE get_method_refcalc( lambda , method_ref_calc )
+!REAL(r_size),INTENT(IN)  :: lambda 
+!INTEGER     ,INTENT(OUT) :: method_ref_calc
+!
+!
+!     !Check radar band (radar band is in cm and is stored in typ.
+!     IF( lambda > 3.75 .AND. lambda <= 7.5 )THEN
+!       write(6,*)"[Error]: Cband reflectivity calculation is not coded yet"
+!       method_ref_calc=-9
+!     ELSEIF( lambda > 7.5 .AND. lambda <= 15)THEN
+!       method_ref_calc=2
+!     ELSEIF( lambda > 2.5 .AND. lambda >= 3.75)THEN
+!       method_ref_calc=3
+!     ELSE
+!       write(6,*)"[Error]: Not recognized radar wave-length"
+!       method_ref_calc=-9
+!     ENDIF
 
-
-     !Check radar band (radar band is in cm and is stored in typ.
-     IF( lambda > 3.75 .AND. lambda <= 7.5 )THEN
-       write(6,*)"[Error]: Cband reflectivity calculation is not coded yet"
-       method_ref_calc=-9
-     ELSEIF( lambda > 7.5 .AND. lambda <= 15)THEN
-       method_ref_calc=2
-     ELSEIF( lambda > 2.5 .AND. lambda >= 3.75)THEN
-       method_ref_calc=3
-     ELSE
-       write(6,*)"[Error]: Not recognized radar wave-length"
-       method_ref_calc=-9
-     ENDIF
-
-END SUBROUTINE get_method_refcalc
+!END SUBROUTINE get_method_refcalc
 
 !-----------------------------------------------------------------------
 ! Transformation from model variables to an observation
 !-----------------------------------------------------------------------
-SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
+SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,method_ref_calc,v3d,v2d,yobs)
   IMPLICIT NONE
   REAL(r_size),INTENT(IN) :: elm , olon , olat
   REAL(r_size),INTENT(IN) :: ri,rj,rk
   REAL(r_size),INTENT(IN) :: raz,rel    !For radial velocity computation.
+  INTEGER     ,INTENT(IN) :: method_ref_calc
   REAL(r_size),INTENT(IN) :: v3d(nlon,nlat,nlev,nv3d)
   REAL(r_size),INTENT(IN) :: v2d(nlon,nlat,nv2d)
   REAL(r_size),INTENT(OUT) :: yobs
@@ -172,10 +172,9 @@ SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
   INTEGER :: i,j,k
   INTEGER :: is,ie,js,je,ks,ke,ityp
   REAL(r_size) :: qvr,qcr,qrr,qcir,qsr,qgr,ur,vr,wr,tr,pr,rhr
-  REAL(r_size) :: dist , dlon , dlat , az , elev , ref , radialv , minref
+  REAL(r_size) :: dist , dlon , dlat , az , elev , ref , radialv 
   REAL(r_size) :: ti 
   REAL(r_size) :: att_coef !Attenuation factor.
-  INTEGER      :: method_ref_calc
 
 
   ie = CEILING( ri )
@@ -279,7 +278,7 @@ SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
 
      !Get the right reflectivity computation method based on radar
      !wavelength.
-     CALL get_method_refcalc(typ , method_ref_calc )
+     !CALL get_method_refcalc(typ , method_ref_calc )
 
      CALL calc_ref_vr(qvr,qcr,qrr,qcir,qsr,qgr,ur,vr,wr,tr,pr,raz,rel,method_ref_calc,ref,radialv,att_coef)
 
@@ -521,7 +520,7 @@ SUBROUTINE calc_ref_vr(qv,qc,qr,qci,qs,qg,u,v,w,t,p,az,elev,method,ref,vr,k)
   ref = ref / ( pip * ( nor ** 0.75 ) * ( ror ** 1.75 ) )
   !ref= 2.04d4 *( ( ro * qt * 1.0d3 ) ** 1.75 ) !Original Sun and Crook expresion.
   ELSE
-  ref=minref
+  ref=min_ref
   ENDIF
 
   !Radial wind
@@ -588,7 +587,7 @@ SUBROUTINE calc_ref_vr(qv,qc,qr,qci,qs,qg,u,v,w,t,p,az,elev,method,ref,vr,k)
 
     !Compute reflectivity weigthed terminal velocity.
     !Lin et al 1983.
-    IF( ref > minref )THEN
+    IF( ref > min_ref )THEN
     !There are hidrometeors, compute their terminal velocity.
     !Change units to be consistent with Lin et al 1983 and
     !to obtain wt in m/s
@@ -715,7 +714,7 @@ SUBROUTINE calc_ref_vr(qv,qc,qr,qci,qs,qg,u,v,w,t,p,az,elev,method,ref,vr,k)
   !Lin et al 1983. (The distribution parameters are 
   !consistent with the work of Jung et al 2007)
 
-  IF( ref > minref )THEN
+  IF( ref > min_ref )THEN
     !There are hidrometeors, compute their terminal velocity.
     !Units according to Lin et al 1983.
     nor=8.0d-2      ![cm^-4]

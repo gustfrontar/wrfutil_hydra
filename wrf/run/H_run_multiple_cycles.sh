@@ -147,7 +147,9 @@ echo " >>"
 echo " >> DOING POST PROCESSING"
 echo " >>"
 
-arw_postproc 
+arw_postproc_noqueue   #ARWPOST
+
+upp_postproc_noqueue   #UPP
 
 echo " >>"
 echo " >> CHECKING CYCLE"

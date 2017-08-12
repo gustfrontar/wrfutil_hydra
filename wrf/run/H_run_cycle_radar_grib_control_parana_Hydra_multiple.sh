@@ -22,7 +22,7 @@ CONFIGURATION=control_parana_60m_radar_grib_Hydra       #Define a experiment con
 MCONFIGURATION=machine_radar60m_multiple_Hydra          #Define a machine configuration (number of nodes, etc)
 
 RESTART=1
-RESTARTDATE=20091117182000
+RESTARTDATE=20091117201000
 RESTARTITER=10
 
 MYHOST=`hostname`

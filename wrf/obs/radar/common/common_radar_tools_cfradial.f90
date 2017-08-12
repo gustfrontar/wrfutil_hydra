@@ -46,7 +46,7 @@ MODULE COMMON_RADAR_TOOLS
   REAL(r_size), ALLOCATABLE :: i(:,:) , j(:,:) , k(:,:)
   REAL(r_size)  :: lon0 , lat0   !Radara location
   REAL(r_size)  :: z0            !Radar height
-  REAL(r_size)  :: frequency
+  REAL(r_size)  :: frequency , lambda
   REAL(r_size), ALLOCATABLE :: sounding_t(:)
   REAL(r_size), ALLOCATABLE :: sounding_q(:)
   REAL(r_size), ALLOCATABLE :: sounding_z(:)
@@ -102,6 +102,8 @@ SUBROUTINE radar_set_common( myradar , myfile  )
   CALL check_io(NF90_INQ_VARID(ncid,'frequency',varid))
   CALL check_io(NF90_GET_VAR(ncid,varid,myradar%frequency))
 
+  myradar%lambda=100*clight*2*pi/myradar%frequency  !Assuming frequency is in seconds and lambda is in cm.
+
   !Get volume dimensions
   CALL check_io(NF90_INQ_DIMID(ncid,'range',dimid))
   CALL check_io(NF90_INQUIRE_DIMENSION(ncid,dimid,dummychar,myradar%nr))
@@ -130,6 +132,8 @@ SUBROUTINE radar_set_common( myradar , myfile  )
   WRITE(6,'(a)') ' -------------------------------------------'
   WRITE(6,'(a, 3f12.3)') '  location     :', myradar%lon0, myradar%lat0 , myradar%z0
   WRITE(6,'(a, 3i)') '      grid size    :', myradar%na ,  myradar%nr , myradar%ne
+  WRITE(6,*)' frequency: ', myradar%frequency
+  WRITE(6,*)' lambda:    ', myradar%lambda
 
   CALL check_io(NF90_CLOSE(ncid))
  

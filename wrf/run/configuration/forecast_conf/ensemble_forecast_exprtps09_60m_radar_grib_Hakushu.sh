@@ -86,7 +86,7 @@ GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/                                       
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
 SCALE_FACTOR="0.05"         #Perturbation scale factor.
 RANDOM_SCALE_FACTOR="0.5"   #Random perturbation scale factor.
-PERTURB_BOUNDARY=1          #Wheter boundary perturbations are going to be perturbed.
+PERTURB_BOUNDARY=1          #Wheter boundary conditions are going to be perturbed.
 PERTURB_BOUNDARY_TYPE=1     #DUMMY
 PERTURB_ATMOSPHERE=".true."   #Wether atmospheric conditions will be perturbed (boundary and first cycle)
 PERTURB_SST=".true."          #Wether SST will be perturbed.

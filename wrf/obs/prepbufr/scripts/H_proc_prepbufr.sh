@@ -3,15 +3,17 @@
 # Runing on LINUX
 
 SYSTEM=1 #We need this for some bash functions.
-# Initial time
-IDATE=20070101000000
-# Final time
-EDATE=20070102000000
 
-MINLON=340
-MAXLON=50
-MINLAT=30
-MAXLAT=80
+
+# Initial time
+IDATE=20160518000000
+# Final time
+EDATE=20160610000000
+
+MINLON=300
+MAXLON=80
+MINLAT=10
+MAXLAT=85
 
 OBSNAME=PREPBUFREUROPE
 
@@ -79,27 +81,27 @@ touch t-3bis.dat
 
 #T-3 relative time.
 AUXDATE=`date_edit2 $CDATE -10800 `
-cat t-3bis.dat fort.87 > $OBSDIR/OBS${AUXDATE}.dat
+cat t-3bis.dat fort.87 > $OBSDIR/obs_${AUXDATE}.dat
 
 #T-2 relative time
 AUXDATE=`date_edit2 $CDATE -7200 `
-mv fort.88 $OBSDIR/OBS${AUXDATE}.dat
+mv fort.88 $OBSDIR/obs_${AUXDATE}.dat
 
 #T-1 relative time
 AUXDATE=`date_edit2 $CDATE -3600 `
-mv fort.89 $OBSDIR/OBS${AUXDATE}.dat
+mv fort.89 $OBSDIR/obs_${AUXDATE}.dat
 
 #T0 relative time
 AUXDATE=`date_edit2 $CDATE 0 `
-mv fort.90 $OBSDIR/OBS${AUXDATE}.dat
+mv fort.90 $OBSDIR/obs_${AUXDATE}.dat
 
 #T+1 relative time
 AUXDATE=`date_edit2 $CDATE 3600 `
-mv fort.91 $OBSDIR/OBS${AUXDATE}.dat
+mv fort.91 $OBSDIR/obs_${AUXDATE}.dat
 
 #T+2 relative time
 AUXDATE=`date_edit2 $CDATE 7200 `
-mv fort.92 $OBSDIR/OBS${AUXDATE}.dat
+mv fort.92 $OBSDIR/obs_${AUXDATE}.dat
 
 #T+3 relative time (store it to merge it with t-3 of the next bufr file)
 mv fort.93 t-3bis.dat

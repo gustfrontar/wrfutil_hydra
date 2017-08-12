@@ -20,7 +20,7 @@ MODULE common_namelist
   REAL(r_size)       :: REFLECTIVITY_ERROR=1.0d0 !Standard deviation of reflectivity error in DBZ
   REAL(r_size)       :: RADIALWIND_ERROR=0.5d0   !Standard deviation of radialwind error in m/s
   INTEGER            :: METHOD_REF_CALC=2        !Method used for reflectivity computaton.
-  REAL(r_size)       :: min_ref = 1.0d0          !Minimum reflectivity value (in dBz)
+  REAL(r_size)       :: min_ref = 1.0d0          !Minimum reflectivity value (in Power units)
 
   !--------------------------------------------FAKE RADAR PARAMETERS
   LOGICAL   :: compute_attenuation =.false. !If attenuation will be simulated or not when converting from model to radar.

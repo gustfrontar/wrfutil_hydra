@@ -1,9 +1,8 @@
 #!/bin/bash
-
 #CONVIERTE A UNA REGION MAS PEQUENIA
 
-ITIME=20160912000000
-ETIME=20160915180000
+ITIME=20091101000000
+ETIME=20091130180000
 INT=21600
 PARALLEL=1
 export OMP_NUM_THREADS=1
@@ -12,16 +11,15 @@ REGNAME="SA"
 LATRANGE="-90:20"
 LONRANGE="200:360"
 
-#REGNAME="JAPAN"
-#LATRANGE="25:50"
-#LONRANGE="120:150"
+WGRIB2=wgrib2
 
+GRIBDIR=$HOME/share/DATA/GRIB/
 
 source ../util.sh
 
-ORIGINALDIR=$HOME/datos/DATA/GRIB/FNL/HIRES/GLOBAL/
+ORIGINALDIR=$GRIBDIR/FNL/HIRES/GLOBAL/
 
-DESTDIR=$HOME/datos/DATA/GRIB/FNL/HIRES/$REGNAME
+DESTDIR=$GRIBDIR/FNL/HIRES/$REGNAME
 
 mkdir -p $DESTDIR
 
@@ -32,6 +30,7 @@ do
  cparallel=1
  while [ $cparallel -le $PARALLEL -a $CTIME -le $ETIME  ]
  do 
+
   echo "Voy a convertir el CFSR correspondiente a la fecha: $CTIME"
   FECHA=`echo $CTIME | cut -c1-8`
   ANIO=`echo $CTIME | cut -c1-4`
@@ -39,13 +38,14 @@ do
   DIA=`echo $CTIME | cut -c7-8`
   HORA=`echo $CTIME | cut -c9-10`
 
-  wgrib2 $ORIGINALDIR/fnl_${ANIO}${MES}${DIA}_${HORA}_00.grib2 -set_grib_type jpeg -match ":(UGRD|VGRD|TMP|HGT|RH|PRES|SOILW|TSOIL|PRMSL|LAND|ICEC|WEASD):" -small_grib $LONRANGE $LATRANGE $DESTDIR/${ANIO}${MES}${DIA}${HORA}0000.grb  > ./tmp.log  &
-
+  $WGRIB2 $ORIGINALDIR/fnl_${ANIO}${MES}${DIA}_${HORA}_00.grib2 -set_grib_type jpeg -match ":(UGRD|VGRD|TMP|HGT|RH|PRES|SOILW|TSOIL|PRMSL|LAND|ICEC|WEASD):" -small_grib $LONRANGE $LATRANGE $DESTDIR/${ANIO}${MES}${DIA}${HORA}0000.grb  > ./tmp.log  &
 
   CTIME=`date_edit2 $CTIME $INT`
   cparallel=`expr $cparallel + 1 `
-#echo $CTIME
+
   done
+
   time wait
+
 done
 
