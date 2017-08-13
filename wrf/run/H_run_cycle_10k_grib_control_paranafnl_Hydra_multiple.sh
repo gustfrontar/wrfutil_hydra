@@ -58,17 +58,26 @@ safe_init_outputdir $OUTPUTDIR
 #Start of the section that will be output to my log.
 #{
 
-safe_init_tmpdir $TMPDIR
+#if [ ! -e $TMPDIR  ] ; then
+##Create TMPDIR
+  safe_init_tmpdir $TMPDIR
+
+  echo '>>>'                                           
+  echo ">>> COPYING DATA TO WORK DIRECTORY "          
+  echo '>>>'  
+                                     
+  copy_data
+
+  copy_data_multiplecycles
+
+#else 
+##Use existing TMPDIR but regenerate the main qsub script.
+
+#  cp $CDIR/H_run_multiple_forecasts.sh                       $TMPDIR/SCRIPTS/
+
+#fi
 
 save_configuration $CDIR/$MYSCRIPT
-
-echo '>>>'                                           
-echo ">>> COPYING DATA TO WORK DIRECTORY "          
-echo '>>>'  
-                                     
-copy_data
-
-copy_data_multiplecycles
 
 #Generating the domain requires acces to GEOG database.
 echo '>>>'                                           
