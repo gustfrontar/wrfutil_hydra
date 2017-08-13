@@ -89,12 +89,12 @@ cs=`echo $CDATE | cut -c13-14`
   tar -xvf prepbufr.${cy}${cm}${cd}.nr.tar
   rm -fr prepbufr.${cy}${cm}${cd}.nr.tar
 
-  mv ${cy}${cm}${cd}.wo40/prepbufr.gdas.${cy}${cm}${cd}.t00.nr ${cy}${cm}${cd}00.prepbufr.nr
-  mv ${cy}${cm}${cd}.wo40/prepbufr.gdas.${cy}${cm}${cd}.t06.nr ${cy}${cm}${cd}06.prepbufr.nr
-  mv ${cy}${cm}${cd}.wo40/prepbufr.gdas.${cy}${cm}${cd}.t12.nr ${cy}${cm}${cd}12.prepbufr.nr
-  mv ${cy}${cm}${cd}.wo40/prepbufr.gdas.${cy}${cm}${cd}.t18.nr ${cy}${cm}${cd}18.prepbufr.nr
+  mv ${cy}${cm}${cd}.nr/prepbufr.gdas.${cy}${cm}${cd}.t00z.nr ${cy}${cm}${cd}00.prepbufr.nr
+  mv ${cy}${cm}${cd}.nr/prepbufr.gdas.${cy}${cm}${cd}.t06z.nr ${cy}${cm}${cd}06.prepbufr.nr
+  mv ${cy}${cm}${cd}.nr/prepbufr.gdas.${cy}${cm}${cd}.t12z.nr ${cy}${cm}${cd}12.prepbufr.nr
+  mv ${cy}${cm}${cd}.nr/prepbufr.gdas.${cy}${cm}${cd}.t18z.nr ${cy}${cm}${cd}18.prepbufr.nr
 
-  #rm -fr ${cy}${cm}${cd}.nr
+  rm -fr ${cy}${cm}${cd}.nr
 
 echo $CDATE $DF
 CDATE=`date_edit2 $CDATE $DF `

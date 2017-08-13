@@ -3569,7 +3569,7 @@ arw_postproc_noqueue () {
 
 # FOR THE ANALYSIS CASE
   local CDATE=$ADATE                     #INITIAL DATE
-  local WORKDIR=$TMPDIR/ENSINPUT/        #Temporary work directory
+  local WORKDIR=$TMPDIR/POSTPROC/        #Temporary work directory
   local ANALDIR=$OUTPUTDIR/anal/$CDATE/
   local GUESDIR=$OUTPUTDIR/gues/$CDATE/
 
@@ -3633,7 +3633,7 @@ arw_postproc_noqueue () {
 
     sleep 0.3
    
-    ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh  2>&1 " & 
+    ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM} 2>&1 " & 
     
     M=`expr $M + 1`
     MYNODE=`expr $MYNODE + 1`
@@ -3758,12 +3758,12 @@ if [  $ENABLE_UPP -eq 1 ];then
   echo "ln -sf $TMPDIR/UPP/* .                                        " >> ${WORKDIR}/tmp.sh
   echo "ln -sf wrf_cntrl.parm   ./fort.14                             " >> ${WORKDIR}/tmp.sh
   #Create UPP namelist.
-  echo "cat > itag <<EOF                                              " >> ${WORKDIR}/tmp.sh
-  echo "tmpin                                                         " >> ${WORKDIR}/tmp.sh
-  echo "netcdf                                                        " >> ${WORKDIR}/tmp.sh
-  echo "$CDATEWRF                                                     " >> ${WORKDIR}/tmp.sh
-  echo "$NCAR                                                         " >> ${WORKDIR}/tmp.sh
-  echo "EOF                                                           " >> ${WORKDIR}/tmp.sh
+#  echo "cat > itag <<EOF                                              " >> ${WORKDIR}/tmp.sh
+  echo "echo \"tmpin > itag \"                                        " >> ${WORKDIR}/tmp.sh
+  echo "echo \"netcdf > itag \"                                       " >> ${WORKDIR}/tmp.sh
+  echo "echo \"$CDATEWRF > itag \"                                    " >> ${WORKDIR}/tmp.sh
+  echo "echo \"NCAR > itag \"                                         " >> ${WORKDIR}/tmp.sh
+#  echo "EOF                                                           " >> ${WORKDIR}/tmp.sh
   echo "./unipost.exe > \${DATADIR}/uppd01_\${MEM}.log                " >> ${WORKDIR}/tmp.sh
 
   echo "DATADIR=${GUESDIR}                                            " >> ${WORKDIR}/tmp.sh
@@ -3773,12 +3773,12 @@ if [  $ENABLE_UPP -eq 1 ];then
   echo "ln -sf $TMPDIR/UPP/* .                                        " >> ${WORKDIR}/tmp.sh
   echo "ln -sf wrf_cntrl.parm   ./fort.14                             " >> ${WORKDIR}/tmp.sh
   #Create UPP namelist.
-  echo "cat > itag <<EOF                                              " >> ${WORKDIR}/tmp.sh
-  echo "tmpin                                                         " >> ${WORKDIR}/tmp.sh
-  echo "netcdf                                                        " >> ${WORKDIR}/tmp.sh
-  echo "$CDATEWRF                                                     " >> ${WORKDIR}/tmp.sh
-  echo "$NCAR                                                         " >> ${WORKDIR}/tmp.sh
-  echo "EOF                                                           " >> ${WORKDIR}/tmp.sh
+#  echo "cat > itag <<EOF                                              " >> ${WORKDIR}/tmp.sh
+  echo "echo \"tmpin > itag \"                                        " >> ${WORKDIR}/tmp.sh
+  echo "echo \"netcdf > itag \"                                       " >> ${WORKDIR}/tmp.sh
+  echo "echo \"$CDATEWRF > itag \"                                    " >> ${WORKDIR}/tmp.sh
+  echo "echo \"NCAR > itag \"                                         " >> ${WORKDIR}/tmp.sh
+#  echo "EOF                                                           " >> ${WORKDIR}/tmp.sh
   echo "unipost.exe             > \${DATADIR}/uppd01_\${MEM}.log      " >> ${WORKDIR}/tmp.sh
 
 
@@ -3802,7 +3802,7 @@ if [  $ENABLE_UPP -eq 1 ];then
 
     sleep 0.3
    
-    ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh  2>&1 " & 
+    ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM} 2>&1 " & 
     
     M=`expr $M + 1`
     MYNODE=`expr $MYNODE + 1`
@@ -3856,7 +3856,7 @@ if [ $ENABLE_UPP -eq 1 ] ; then
       local TMPDATEWRF=`date_in_wrf_format $TMPDATE `
       
       while [ $TMPDATE -le $EDATE  ] ; do
-        local input_file=`wrfout_file_name $TMPDATE $my_domain `
+           local input_file=`wrfout_file_name $TMPDATE $my_domain `
            echo "DATADIR=${GUESDIR}                                                                   " >> ${WORKDIR}/tmp.sh
            echo "PREFIX=gues                                                                          " >> ${WORKDIR}/tmp.sh
            echo "ln -sf ${GUESDIR}/\${MEM}/${input_file} ./tmpin                                      " >> ${WORKDIR}/tmp.sh
@@ -3864,12 +3864,12 @@ if [ $ENABLE_UPP -eq 1 ] ; then
            echo "ln -sf $TMPDIR/UPP/* .                                                               " >> ${WORKDIR}/tmp.sh
            echo "ln -sf wrf_cntrl.parm   ./fort.14                                                    " >> ${WORKDIR}/tmp.sh
            #Create UPP namelist.
-           echo "cat > itag <<EOF                                                                     " >> ${WORKDIR}/tmp.sh
-           echo "tmpin                                                                                " >> ${WORKDIR}/tmp.sh
-           echo "netcdf                                                                               " >> ${WORKDIR}/tmp.sh
-           echo "$CDATEWRF                                                                            " >> ${WORKDIR}/tmp.sh
-           echo "$NCAR                                                                                " >> ${WORKDIR}/tmp.sh
-           echo "EOF                                                                                  " >> ${WORKDIR}/tmp.sh
+           #  echo "cat > itag <<EOF                                                                  " >> ${WORKDIR}/tmp.sh
+           echo "echo \"tmpin > itag \"                                                               " >> ${WORKDIR}/tmp.sh
+           echo "echo \"netcdf > itag \"                                                              " >> ${WORKDIR}/tmp.sh
+           echo "echo \"$CDATEWRF > itag \"                                                           " >> ${WORKDIR}/tmp.sh
+           echo "echo \"NCAR > itag \"                                                                " >> ${WORKDIR}/tmp.sh
+	   #  echo "EOF                                                                               " >> ${WORKDIR}/tmp.sh
            echo "unipost.exe             > \${GUESDIR}/uppd01_\${MEM}.log                             " >> ${WORKDIR}/tmp.sh
 
            TMPDATE=`date_edit2 $TMPDATE $WINDOW_FREC `
@@ -3897,7 +3897,7 @@ if [ $ENABLE_UPP -eq 1 ] ; then
 
      sleep 0.3
 
-     ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh  2>&1 " &
+     ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM}  2>&1 " &
 
      M=`expr $M + 1`
      MYNODE=`expr $MYNODE + 1`
@@ -3913,8 +3913,6 @@ if [ $ENABLE_UPP -eq 1 ] ; then
 fi
 
 }
-
-
 
 
 #Get arw post file of global analysis.
