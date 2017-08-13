@@ -839,6 +839,7 @@ mkdir -p $DIRNAME/SCRIPTS
 
 mkdir -p $DIRNAME/verification
 mkdir -p $DIRNAME/WRF
+mkdir -p $DIRNAME/UPP
 mkdir -p $DIRNAME/add_pert
 mkdir -p $DIRNAME/OBS
 mkdir -p $DIRNAME/ENSINPUT
@@ -846,6 +847,7 @@ mkdir -p $DIRNAME/met_em
 mkdir -p $DIRNAME/pert_met_em
 mkdir -p $DIRNAME/SPAWN
 mkdir -p $DIRNAME/NAMELIST
+mkdir -p $DIRNAME/POSTPROC
 #Aditional executables for forecast jobs.
 #if [ $FORECAST -eq 1 ] ; then
 mkdir -p $DIRNAME/WPS
@@ -1092,6 +1094,59 @@ rm -fr $TMPDIR/WPS/namelist*
  if [ $RUN_CHEM -eq 1 ] ; then
     cp $CHEM_DATA/* $TMPDIR/WRF/
  fi
+
+#FOR UNIFIED POST PROCESSING
+if [ $ENABLE_UPP -eq 1  ]; then
+
+ cp ${WRFMODEL}/run/ETAMPNEW_DATA ${TMPDIR}/UPP/nam_micro_lookup.dat
+ cp ${WRFMODEL}/run/ETAMPNEW_DATA.expanded_rain ${TMPDIR}/UPP/hires_micro_lookup.dat
+
+  CRTMDIR=${UPP}/src/lib/crtm2/src/fix
+  cp $CRTMDIR/EmisCoeff/Big_Endian/EmisCoeff.bin                 ${TMPDIR}/UPP/
+  cp $CRTMDIR/AerosolCoeff/Big_Endian/AerosolCoeff.bin           ${TMPDIR}/UPP/
+  cp $CRTMDIR/CloudCoeff/Big_Endian/CloudCoeff.bin               ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/imgr_g11.SpcCoeff.bin          ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/imgr_g11.TauCoeff.bin     ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/imgr_g12.SpcCoeff.bin          ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/imgr_g12.TauCoeff.bin     ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/imgr_g13.SpcCoeff.bin          ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/imgr_g13.TauCoeff.bin     ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/imgr_g15.SpcCoeff.bin          ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/imgr_g15.TauCoeff.bin     ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/imgr_mt1r.SpcCoeff.bin         ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/imgr_mt1r.TauCoeff.bin    ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/imgr_mt2.SpcCoeff.bin          ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/imgr_mt2.TauCoeff.bin     ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/imgr_insat3d.SpcCoeff.bin      ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/imgr_insat3d.TauCoeff.bin ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/amsre_aqua.SpcCoeff.bin        ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/amsre_aqua.TauCoeff.bin   ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/tmi_trmm.SpcCoeff.bin          ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/tmi_trmm.TauCoeff.bin     ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/ssmi_f13.SpcCoeff.bin          ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/ssmi_f13.TauCoeff.bin     ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/ssmi_f14.SpcCoeff.bin          ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/ssmi_f14.TauCoeff.bin     ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/ssmi_f15.SpcCoeff.bin          ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/ssmi_f15.TauCoeff.bin     ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/ssmis_f16.SpcCoeff.bin         ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/ssmis_f16.TauCoeff.bin    ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/ssmis_f17.SpcCoeff.bin         ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/ssmis_f17.TauCoeff.bin    ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/ssmis_f18.SpcCoeff.bin         ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/ssmis_f18.TauCoeff.bin    ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/ssmis_f19.SpcCoeff.bin         ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/ssmis_f19.TauCoeff.bin    ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/ssmis_f20.SpcCoeff.bin         ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/ssmis_f20.TauCoeff.bin    ${TMPDIR}/UPP/ 
+  cp $CRTMDIR/SpcCoeff/Big_Endian/seviri_m10.SpcCoeff.bin        ${TMPDIR}/UPP/
+  cp $CRTMDIR/TauCoeff/ODPS/Big_Endian/seviri_m10.TauCoeff.bin   ${TMPDIR}/UPP/
+  cp $CRTMDIR/SpcCoeff/Big_Endian/v.seviri_m10.SpcCoeff.bin      ${TMPDIR}/UPP/
+
+  cp $NAMELISTUPP   ${TMPDIR}/UPP/
+
+fi
+
 
 
 }
@@ -2841,6 +2896,232 @@ ssh $PPSSERVER " $local_script > $METEMDIR/get_met_em.log  2>&1 "
 }
 
 
+get_met_em_from_grib_noqueue () {
+
+#This function generates the unperturbed met_em files from grib data.
+#It can generate a met_em file for an arbitrary time by time interpolationg met_em files
+
+local EXEC=$TMPDIR/add_pert/time_interp_metem.exe
+
+if [ ! -n "$MEMBER_BDY" ] ; then
+   MEMBER_BDY=1
+   echo "[Warning]: Number of boundary conditions ensemble members not set. Assuming NENS_BDY=1"
+fi
+
+if [ $RUN_ONLY_MEAN -eq 1 ] ; then
+   local INIMEMBER=$MEANMEMBER  #Run only the last member.
+   local ENDMEMBER=$MEANMEMBER
+   local INIMEMBER_BDY=$MEANMEMBER_BDY
+   local ENDMEMBER_BYD=$MEANMEMBER_BDY
+else
+   local INIMEMBER=1
+   local ENDMEMBER=$MEMBER
+   local INIMEMBER_BDY=1
+   if [ $MEMBER_BDY -ge $MEMBER  ];then
+      local ENDMEMBER_BDY=$MEMBER
+   else
+      local ENDMEMBER_BDY=$MEMBER_BDY
+   fi
+fi
+
+
+if [ ! -n "$USE_ANALYSIS_BC" ] ; then
+   USE_ANALYSIS_BC=1
+   echo "[Warning]: USE_ANALYSIS_BC is not set will asume 1 and use global analaysis as BC data."
+fi
+
+if [ $USE_ANALYSIS_BC -eq 1 ] ; then
+   local GRIBDIR=$GRIBDIR/
+   echo " Using global analysis as Boundary conditions "
+fi
+if [ $USE_ANALYSIS_BC -eq 0 ] ; then
+   local GRIBDIR=$GRIBDIR/$CDATE/
+   echo " Using global forecast as Boundary conditions "
+fi
+
+if [ ! -e $GRIBDIR ] ; then
+   echo "[Error]: Can not find BC data in $GRIBDIR "
+   exit
+fi
+
+#CHECK IF WE HAVE geo_em.d?? IF NOT CREATE THEM.
+        
+if [ ! -e $TMPDIR/domain/geo_em.d01.nc ] ; then
+   get_domain
+fi
+
+
+#FIRST STEP: GENERATE MET_EMS FROM THE NENS_BDY BOUNDARY CONDITIONS ENSEMBLE MEMBERS.
+
+METEMDIR=$TMPDIR/met_em/
+
+cd $METEMDIR
+
+local local_script=$METEMDIR/get_met_em_from_grib.sh
+
+#GENERATE THE SCRIPT TO GET UNPERTURBED MET_EM FILE FOR THE CURRENT TIME.
+echo "#!/bin/bash                                                                 "  > $local_script            
+echo "set -x                                                                      " >> $local_script
+echo "source $TMPDIR/SCRIPTS/util.sh                                              " >> $local_script
+echo "ulimit -s unlimited                                                         " >> $local_script
+echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:$LD_LIBRARY_PATH                " >> $local_script
+echo "export PATH=$LD_PATH_ADD:$PATH                                              " >> $local_script
+echo "ENS=\$1                                                                     " >> $local_script
+echo "mkdir -p $METEMDIR/\$ENS                                                    " >> $local_script
+echo "cd $METEMDIR/\$ENS                                                          " >> $local_script
+
+#################################################
+#   CYCLE TO CREATE THE UNPERTURBED MET_EM
+#################################################
+#TODO: This function will be much more efficient if time interpolation is performed for the 
+#intermediate file format and not with the met_em format.
+
+ echo "CDATE=$CDATE                                                               " >> $local_script
+ echo "MAX_DOM=$MAX_DOM                                                           " >> $local_script
+ echo "while [  \$CDATE -le $FDATE ] ; do                                         " >> $local_script
+ echo "CFILE=\`met_em_file_name \$CDATE 01 \`                                     " >> $local_script
+ echo "CDATE1=\`date_floor \$CDATE  $BOUNDARY_DATA_FREQ \`                        " >> $local_script 
+ echo "CDATE2=\`date_edit2 \$CDATE1 $BOUNDARY_DATA_FREQ \`                        " >> $local_script
+
+ echo "TMPFILE1=\`met_em_file_name \$CDATE1 01 \`                                 " >> $local_script
+ echo "TMPFILE2=\`met_em_file_name \$CDATE2 01 \`                                 " >> $local_script
+# echo "if [  ! -e  \$CFILE ] ; then                                              " >> $local_script  #If CFILE is present we can go to the next time.
+    #IF perturbed met_ems are not present generate them                            
+    echo "if [  ! -e  \$TMPFILE1 ] ; then                                          " >> $local_script                                                              
+    echo "   ln -sf  $TMPDIR/WPS/*             ./                                  " >> $local_script
+    echo "   ln -sf  $TMPDIR/domain/*.nc       ./                                  " >> $local_script
+    echo "   rm ./namelist.wps                                                     " >> $local_script
+    echo "   cp $TMPDIR/NAMELIST/namelist.wps.template ./namelist.wps              " >> $local_script
+    echo "   edit_namelist_wps ./namelist.wps \$CDATE1 \$CDATE1 $BOUNDARY_DATA_FREQ   " >> $local_script
+    echo "   ./link_grib.csh $GRIBDIR/\${ENS}/\${CDATE1}.grb                       " >> $local_script
+    echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$GRIBTABLE  ./Vtable    " >> $local_script
+    echo "   ./ungrib.exe > ./ungrib.log                                           " >> $local_script
+    echo "   ./metgrid.exe > ./metgrid.log                                         " >> $local_script
+    echo "fi                                                                       " >> $local_script
+
+    echo "if [ ! -e  \$TMPFILE2 ] ; then                                           " >> $local_script
+    echo "   ln -sf  $TMPDIR/WPS/*                     ./                          " >> $local_script
+    echo "   ln -sf  $TMPDIR/domain/*.nc               ./                          " >> $local_script
+    echo "   rm ./namelist.wps                                                     " >> $local_script
+    echo "   cp $TMPDIR/NAMELIST/namelist.wps.template ./namelist.wps              " >> $local_script
+    echo "   edit_namelist_wps ./namelist.wps \$CDATE2 \$CDATE2 $BOUNDARY_DATA_FREQ   " >> $local_script
+    echo "   ./link_grib.csh $GRIBDIR/\${ENS}/\${CDATE2}.grb                       " >> $local_script
+    echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$GRIBTABLE  ./Vtable    " >> $local_script
+    echo "   ./ungrib.exe > ./ungrib.log                                           " >> $local_script
+    echo "   ./metgrid.exe > ./metgrid.log                                         " >> $local_script
+    echo "fi                                                                       " >> $local_script
+    echo "rm $METEMDIR/FILE*                                                       " >> $local_script
+    #Copy the unperturbed met_em file (this one will be modified).
+
+local my_domain=1
+
+while [ $my_domain -le $MAX_DOM ] ; do
+ if [ $my_domain -lt 10 ] ; then 
+    my_domain=0$my_domain
+ fi
+    echo "CFILE=\`met_em_file_name \$CDATE $my_domain\`                            " >> $local_script
+    echo "if [  ! -e  \$CFILE ] ; then                                             " >> $local_script  #If CFILE is present we can go to the next time.
+    echo "TMPFILE1=\`met_em_file_name \$CDATE1 $my_domain \`                       " >> $local_script
+    echo "TMPFILE2=\`met_em_file_name \$CDATE2 $my_domain \`                       " >> $local_script
+
+    echo "   cp \$TMPFILE1  \$CFILE                                                " >> $local_script
+    echo "   ln -sf \$CFILE ./ctrl_met_em.nc                                       " >> $local_script
+    echo "   ln -sf \$TMPFILE1 ./input_file1.nc                                    " >> $local_script
+    echo "   ln -sf \$TMPFILE2 ./input_file2.nc                                    " >> $local_script
+    echo "   chmod 766 ./ctrl_met_em.nc                                            " >> $local_script
+    echo "   CDATEWRF=\`date_in_wrf_format \$CDATE \`                              " >> $local_script
+    # ctrl_met_em.nc = time_int [ input_file1.nc , input_file2.nc ] 
+    echo "   $EXEC \$CDATEWRF                                                      " >> $local_script
+    echo "fi                                                                       " >> $local_script  #End if over CFILE existance
+
+    my_domain=`expr $my_domain + 1 `
+done
+
+    echo "    CDATE=\`date_edit2 \$CDATE $METEM_DATA_FREQ \`                       " >> $local_script
+    echo "done                                                                     " >> $local_script  #End do for time loop
+
+
+ #Get the list of nodes.
+ NNODES=1
+ while read mynode  ; do
+    NODELIST[$NNODES]=$mynode
+    NNODES=`expr $NNODES + 1`
+ done  <  $PBS_NODEFILE
+ NNODES=`expr $NNODES - 1`
+
+
+ M=$INIMEMBER_BDY
+ while [ $M -le $ENDMEMBER_BDY ] ; do
+  MYNODE=1
+  while [ $MYNODE -le $NNODES -a $M -le $ENDMEMBER_BDY ] ; do
+    MEM=`ens_member $M `
+
+    sleep 0.3
+   
+    ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh  2>&1 " & 
+    
+    M=`expr $M + 1`
+    MYNODE=`expr $MYNODE + 1`
+
+  done 
+
+  time wait
+
+ done
+
+#SO FAR WE HAVE INTERPOLATED BDY CONDITIONS FILES TO THE REQUIRED TIME AND FOR EACH BDY ENSEMBLE MEMBER. 
+#IF THE BDY ENSEMBLE SIZE IS SMALLER THAN THE REQUIRED ENSEMBLE SIZE THEN WE NEED TO MAP THE BDY ENSEMBLE TO THE NESTED 
+#ENSEMBLE SIZE. WE DO THIS BY REPEATING SOME ENSEMBLE MEMBERS.
+#NOTE THAT IF SOME ENSEMBLE MEMBERS ARE REPEATED, THEN OTHER PERTURBATION METHODS NEEDS TO BE IMPLEMENTED IN ORDER TO GENERATE DIFFERENCES AMONG THE DUPLICATED MEMBERS.
+if [ $RUN_ONLY_MEAN -eq  1  ];then
+
+    #In this case we rename the output
+    MEMB=`ens_member $MEANMEMBER_BDY `
+    MEMM=`ens_member $MEANMEMBER `
+    mv $METEMDIR/$MEMB $METEMDIR/$MEMM
+
+else
+
+   if [  $ENDMEMBER_BDY -lt $ENDMEMBER  ] ; then
+   #We need to map the BDY ensemble to the NESTED ensemble.
+
+      local $INIMEMBER=`expr $ENDMEMBER_BDY + 1`
+   
+      MEM=$INIMEMBER     
+      while [ $MEM -le $ENDMEMBER  ] ;  do
+        BDY_MEM=1
+        while [ $BDY_MEM -le $ENDMEMBER_BDY -a $MEM -le $ENDMEMBER ] ; do
+          MEMB=`ens_member $BDY_MEM `
+          MEMM=`ens_member $MEM `
+          mkdir -p $METEMDIR/$MEMM
+          TMPDATE=$CDATE
+          while [  $TMPDATE -le $FDATE ] ; do 
+            local my_domain=1 
+            while [ $my_domain -le $MAX_DOM ] ; do
+              if [ $my_domain -lt 10 ] ; then 
+                my_domain=0$my_domain
+              fi 
+              CFILE=`met_em_file_name $TMPDATE $my_domain`
+              cp $METEMDIR/$MEMB/$CFILE $METEMDIR/$MEMM/
+              CDATE=`date_edit2 $CDATE $METEM_DATA_FREQ `
+            done 
+          done 
+
+
+          BDY_MEM=`expr $BDY_MEM + 1 `
+          MEM=`expr $MEM + 1 `
+         done
+      done
+
+
+   fi
+
+fi
+
+}
+
+
+
 perturb_met_em_from_grib () {
 
 local EXEC=$TMPDIR/add_pert/compute_pert_metem.exe
@@ -2918,11 +3199,11 @@ echo "cd \$WORKDIR                                                              
 
 #Insert scale factors within ths running script, but take into account the meanmember that should not
 #be perturbed.
-echo "AMP_FACTOR=$AMP_FACTOR                                                " >> $local_script
-echo "RANDOM_AMP_FACTOR=$RANDOM_AMP_FACTOR                                  " >> $local_script
+echo "AMP_FACTOR=$AMP_FACTOR                                                    " >> $local_script
+echo "RANDOM_AMP_FACTOR=$RANDOM_AMP_FACTOR                                      " >> $local_script
 echo "if [ \$MEM -eq $MEANMEMBER  ] ; then                                      " >> $local_script
-echo "   AMP_FACTOR=0.0                                                       " >> $local_script
-echo "   RANDOM_AMP_FACTOR=0.0                                                " >> $local_script
+echo "   AMP_FACTOR=0.0                                                         " >> $local_script
+echo "   RANDOM_AMP_FACTOR=0.0                                                  " >> $local_script
 echo "fi                                                                        " >> $local_script
 
 #################################################
@@ -2935,24 +3216,24 @@ while [ $THEDATE -le $FDATE  ] ; do
 
    if [ $perturb_met_em -eq 1 ] ; then
 
-   echo "CFILE=\`met_em_file_name $THEDATE 01 \`                                  " >> $local_script
-   echo "MAX_DOM=$MAX_DOM                                                         " >> $local_script
+   echo "CFILE=\`met_em_file_name $THEDATE 01 \`                                " >> $local_script
+   echo "MAX_DOM=$MAX_DOM                                                       " >> $local_script
    #We have the initial random dates, we have to compute the random date corresponding to the current
    #time. So we compute the difference between the current date and the initial date.
-   echo "LDATE=\`date_floor $THEDATE $BOUNDARY_DATA_PERTURBATION_FREQ \`             " >> $local_script
-   echo "l_time_diff=\`date_diff \$LDATE $PERTREFDATE \`                             " >> $local_script
-   echo "u_time_diff=\`expr \$l_time_diff + $BOUNDARY_DATA_PERTURBATION_FREQ \`      " >> $local_script
+   echo "LDATE=\`date_floor $THEDATE $BOUNDARY_DATA_PERTURBATION_FREQ \`        " >> $local_script
+   echo "l_time_diff=\`date_diff \$LDATE $PERTREFDATE \`                        " >> $local_script
+   echo "u_time_diff=\`expr \$l_time_diff + $BOUNDARY_DATA_PERTURBATION_FREQ \` " >> $local_script
 
-   echo "if [ ! -e \$WORKDIR/\$CFILE ];then                                       " >> $local_script
-   echo "cp $METEMDIR/\$CFILE \$WORKDIR                                           " >> $local_script
+   echo "if [ ! -e \$WORKDIR/\$CFILE ];then                                     " >> $local_script
+   echo "cp $METEMDIR/\$CFILE \$WORKDIR                                         " >> $local_script
 
    #Original data will be perturbed only at the initial cycle or if the Perturb_boundary option is enabled.
     echo " Boundary data is going to be perturbed"
     #Get the dates that we will use to create the perturbation and link the corresponding met_em files
-    echo "DATEP1A=\`date_edit2 \$DATEP1 \$l_time_diff \`                              " >> $local_script
-    echo "DATEP2A=\`date_edit2 \$DATEP2 \$l_time_diff \`                              " >> $local_script
-    echo "   TMPFILE1A=\`met_em_file_name \$DATEP1A ?? \`                           " >> $local_script
-    echo "   TMPFILE2A=\`met_em_file_name \$DATEP2A ?? \`                           " >> $local_script
+    echo "DATEP1A=\`date_edit2 \$DATEP1 \$l_time_diff \`                        " >> $local_script
+    echo "DATEP2A=\`date_edit2 \$DATEP2 \$l_time_diff \`                        " >> $local_script
+    echo "   TMPFILE1A=\`met_em_file_name \$DATEP1A ?? \`                       " >> $local_script
+    echo "   TMPFILE2A=\`met_em_file_name \$DATEP2A ?? \`                       " >> $local_script
 
     #IF perturbed met_ems are not present generate them                            
     echo "if [ ! -e  $PERTMETEMDIR/\$TMPFILE1A ] ; then                              " >> $local_script
@@ -3289,7 +3570,7 @@ while [ $THEDATE -le $FDATE  ] ; do
       echo "   ln -sf $PERTMETEMDIR/\$TMPFILE2B ./input_fileb2.nc                      " >> $local_script
 
       echo "CFILE=\`met_em_file_name $THEDATE $my_domain \`                            " >> $local_script
-      echo "   cp $METEMDIR/\$CFILE ./                                                 " >> $local_script
+      echo "   ln -sf $METEMDIR/\$CFILE ./                                             " >> $local_script
       echo "   chmod 766 ./ctrl_met_em.nc                                              " >> $local_script
       echo "   ln -sf ./\$CFILE ./ctrl_met_em.nc                                       " >> $local_script  
       #Get the time dinstance in seconds between the current time and LDATE
@@ -3591,103 +3872,6 @@ arw_postproc_noqueue () {
 
 }
 
-
-upp_postproc_noqueue () {
-
-
-if [  $ENABLE_UPP -eq 1 ];then
-
-# FOR THE ANALYSIS CASE
-  local CDATE=$ADATE                     #INITIAL DATE
-  local WORKDIR=$TMPDIR/ENSINPUT/        #Temporary work directory
-  local ANALDIR=$OUTPUTDIR/anal/$CDATE/
-  local GUESDIR=$OUTPUTDIR/gues/$CDATE/
-
-  local INIMEMBER=1
-  local ENDMEMBER=$MEANMEMBER
-                                         
-  UPP_FREC=$WINDOW_FREC
-
-  #cp $TMPDIR/NAMELIST/namelist.ARWpost.template $WORKDIR/namelist.ARWpost
-  #edit_namelist_arwpost $WORKDIR/namelist.ARWpost $CDATE $CDATE $ARWPOST_FREC
-
-  local CDATEWRF=`date_in_wrf_format $CDATE `
-
-
-  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH " >  ${WORKDIR}/tmp.sh
-  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
-  if [ $SYSTEM -eq  1 ] ; then
-     echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
-  fi
-  echo "MEM=\$1                                                       " >> ${WORKDIR}/tmp.sh
-  echo "mkdir -p ${WORKDIR}/\${MEM}                                   " >> ${WORKDIR}/tmp.sh
-  echo "cd ${WORKDIR}/\${MEM}                                         " >> ${WORKDIR}/tmp.sh
-  echo "DATADIR=${ANALDIR}                                            " >> ${WORKDIR}/tmp.sh
-  echo "PREFIX=anal                                                   " >> ${WORKDIR}/tmp.sh
-  echo "ln -sf \${DATADIR}/\${PREFIX}\${MEM} ./tmpin                  " >> ${WORKDIR}/tmp.sh
-  echo "ln -sf \${DATADIR}/slev\${MEM}.grib  ./tmpout.dat             " >> ${WORKDIR}/tmp.sh
-  echo "ln -sf $TMPDIR/UPP/* .                                        " >> ${WORKDIR}/tmp.sh
-  #Create UPP namelist.
-  echo "cat > itag <<EOF                                              " >> ${WORKDIR}/tmp.sh
-  echo "tmpin                                                         " >> ${WORKDIR}/tmp.sh
-  echo "netcdf                                                        " >> ${WORKDIR}/tmp.sh
-  echo "$CDATEWRF                                                     " >> ${WORKDIR}/tmp.sh
-  echo "$NCAR                                                         " >> ${WORKDIR}/tmp.sh
-  echo "EOF                                                           " >> ${WORKDIR}/tmp.sh
-  echo "./UPP.exe     > \${DATADIR}/uppd01_\${MEM}.log                " >> ${WORKDIR}/tmp.sh
-
-  echo "DATADIR=${GUESDIR}                                            " >> ${WORKDIR}/tmp.sh
-  echo "PREFIX=gues                                                   " >> ${WORKDIR}/tmp.sh
-  echo "ln -sf \${DATADIR}/\${PREFIX}\${MEM} ./tmpin                  " >> ${WORKDIR}/tmp.sh
-  echo "ln -sf \${DATADIR}/slev\${MEM}.grib  ./tmpout.dat             " >> ${WORKDIR}/tmp.sh
-  echo "ln -sf $TMPDIR/UPP/* .                                        " >> ${WORKDIR}/tmp.sh
-  #Create UPP namelist.
-  echo "cat > itag <<EOF                                              " >> ${WORKDIR}/tmp.sh
-  echo "tmpin                                                         " >> ${WORKDIR}/tmp.sh
-  echo "netcdf                                                        " >> ${WORKDIR}/tmp.sh
-  echo "$CDATEWRF                                                     " >> ${WORKDIR}/tmp.sh
-  echo "$NCAR                                                         " >> ${WORKDIR}/tmp.sh
-  echo "EOF                                                           " >> ${WORKDIR}/tmp.sh
-  echo "UPP.exe                 > \${DATADIR}/uppd01_\${MEM}.log      " >> ${WORKDIR}/tmp.sh
-
-
-
-  chmod 766 ${WORKDIR}/tmp.sh
-
- #Get the list of nodes.
- NNODES=1
- while read mynode  ; do
-    NODELIST[$NNODES]=$mynode
-    NNODES=`expr $NNODES + 1`
- done  <  $PBS_NODEFILE
- NNODES=`expr $NNODES - 1`
-
-
- M=$INIMEMBER
- while [ $M -le $ENDMEMBER ] ; do
-  MYNODE=1
-  while [ $MYNODE -le $NNODES -a $M -le $ENDMEMBER ] ; do
-    MEM=`ens_member $M `
-
-    sleep 0.3
-   
-    ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh  2>&1 " & 
-    
-    M=`expr $M + 1`
-    MYNODE=`expr $MYNODE + 1`
-
-  done 
-
-  time wait
-
- done
-
-fi
-
-}
-
-
-
 arw_postproc_forecast () {
 
 # FOR THE FORECAST CASE
@@ -3697,7 +3881,7 @@ arw_postproc_forecast () {
 #For the forecast case.
   local IDATE=$CDATE                   #INITIAL DATE
   local EDATE=$FDATE                   #FINAL DATE
-  local WORKDIR=$TMPDIR/ENSINPUT/      #Temporary work directory
+  local WORKDIR=$TMPDIR/POSTPROC/      #Temporary work directory
   local GUESDIR=$RESULTDIRG
 
   if [ $RUN_ONLY_MEAN -eq 1 ] ; then
@@ -3766,6 +3950,197 @@ arw_postproc_forecast () {
 
 
 }
+
+
+
+upp_postproc_noqueue () {
+
+
+if [  $ENABLE_UPP -eq 1 ];then
+
+# FOR THE ANALYSIS CASE
+  local CDATE=$ADATE                     #THE CURRENT DATE
+  local WORKDIR=$TMPDIR/POSTPROC/        #Temporary work directory
+  local ANALDIR=$OUTPUTDIR/anal/$CDATE/
+  local GUESDIR=$OUTPUTDIR/gues/$CDATE/
+
+  local INIMEMBER=1
+  local ENDMEMBER=$MEANMEMBER
+                                         
+  local CDATEWRF=`date_in_wrf_format $CDATE `
+
+  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH " >  ${WORKDIR}/tmp.sh
+  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
+  if [ $SYSTEM -eq  1 ] ; then
+     echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
+  fi
+  echo "MEM=\$1                                                       " >> ${WORKDIR}/tmp.sh
+  echo "mkdir -p ${WORKDIR}/\${MEM}                                   " >> ${WORKDIR}/tmp.sh
+  echo "cd ${WORKDIR}/\${MEM}                                         " >> ${WORKDIR}/tmp.sh
+  echo "DATADIR=${ANALDIR}                                            " >> ${WORKDIR}/tmp.sh
+  echo "PREFIX=anal                                                   " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf \${DATADIR}/\${PREFIX}\${MEM} ./tmpin                  " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf \${DATADIR}/slev\${MEM}.grib  ./WRFPRS00.tm00          " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf $TMPDIR/UPP/* .                                        " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf wrf_cntrl.parm   ./fort.14                             " >> ${WORKDIR}/tmp.sh
+  #Create UPP namelist.
+  echo "cat > itag <<EOF                                              " >> ${WORKDIR}/tmp.sh
+  echo "tmpin                                                         " >> ${WORKDIR}/tmp.sh
+  echo "netcdf                                                        " >> ${WORKDIR}/tmp.sh
+  echo "$CDATEWRF                                                     " >> ${WORKDIR}/tmp.sh
+  echo "$NCAR                                                         " >> ${WORKDIR}/tmp.sh
+  echo "EOF                                                           " >> ${WORKDIR}/tmp.sh
+  echo "./unipost.exe > \${DATADIR}/uppd01_\${MEM}.log                " >> ${WORKDIR}/tmp.sh
+
+  echo "DATADIR=${GUESDIR}                                            " >> ${WORKDIR}/tmp.sh
+  echo "PREFIX=gues                                                   " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf \${DATADIR}/\${PREFIX}\${MEM} ./tmpin                  " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf \${DATADIR}/slev\${MEM}.grib  ./WRFPRS00.tm00          " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf $TMPDIR/UPP/* .                                        " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf wrf_cntrl.parm   ./fort.14                             " >> ${WORKDIR}/tmp.sh
+  #Create UPP namelist.
+  echo "cat > itag <<EOF                                              " >> ${WORKDIR}/tmp.sh
+  echo "tmpin                                                         " >> ${WORKDIR}/tmp.sh
+  echo "netcdf                                                        " >> ${WORKDIR}/tmp.sh
+  echo "$CDATEWRF                                                     " >> ${WORKDIR}/tmp.sh
+  echo "$NCAR                                                         " >> ${WORKDIR}/tmp.sh
+  echo "EOF                                                           " >> ${WORKDIR}/tmp.sh
+  echo "unipost.exe             > \${DATADIR}/uppd01_\${MEM}.log      " >> ${WORKDIR}/tmp.sh
+
+
+
+  chmod 766 ${WORKDIR}/tmp.sh
+
+ #Get the list of nodes.
+ NNODES=1
+ while read mynode  ; do
+    NODELIST[$NNODES]=$mynode
+    NNODES=`expr $NNODES + 1`
+ done  <  $PBS_NODEFILE
+ NNODES=`expr $NNODES - 1`
+
+
+ M=$INIMEMBER
+ while [ $M -le $ENDMEMBER ] ; do
+  MYNODE=1
+  while [ $MYNODE -le $NNODES -a $M -le $ENDMEMBER ] ; do
+    MEM=`ens_member $M `
+
+    sleep 0.3
+   
+    ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh  2>&1 " & 
+    
+    M=`expr $M + 1`
+    MYNODE=`expr $MYNODE + 1`
+
+  done 
+
+  time wait
+
+ done
+
+fi
+
+}
+
+upp_postproc_forecast_noqueue () {
+
+if [ $ENABLE_UPP -eq 1 ] ; then
+
+# FOR THE FORECAST CASE
+  UPP_FREC=$WINDOW_FREC
+  local IDATE=$CDATE                   #INITIAL DATE
+  local EDATE=$FDATE                   #FINAL DATE
+  local WORKDIR=$TMPDIR/POSTPROC/      #Temporary work directory
+  local GUESDIR=$RESULTDIRG
+
+  if [ $RUN_ONLY_MEAN -eq 1 ] ; then
+     local INIMEMBER=$MEANMEMBER  #Run only the last member.
+     local ENDMEMBER=$MEANMEMBER
+  else
+     local INIMEMBER=1
+     local ENDMEMBER=$MEMBER
+  fi
+
+  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH " >  ${WORKDIR}/tmp.sh
+  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
+  echo "source $TMPDIR/SCRIPTS/util.sh                                " >> ${WORKDIR}/tmp.sh
+  if [ $SYSTEM -eq  1 ] ; then
+     echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
+  fi
+  echo "MEM=\$1                                                       " >> ${WORKDIR}/tmp.sh
+  echo "mkdir -p ${WORKDIR}/\${MEM}                                   " >> ${WORKDIR}/tmp.sh
+  echo "cd ${WORKDIR}/\${MEM}                                         " >> ${WORKDIR}/tmp.sh
+
+  local my_domain=1
+     while [ $my_domain -le $MAX_DOM ] ; do
+      if [ $my_domain -lt 10 ] ; then 
+         my_domain=0$my_domain
+      fi
+
+      local TMPDATE=$IDATE
+      local TMPDATEWRF=`date_in_wrf_format $TMPDATE `
+      
+      while [ $TMPDATE -le $EDATE  ] ; do
+        local input_file=`wrfout_file_name $TMPDATE $my_domain `
+           echo "DATADIR=${GUESDIR}                                                                   " >> ${WORKDIR}/tmp.sh
+           echo "PREFIX=gues                                                                          " >> ${WORKDIR}/tmp.sh
+           echo "ln -sf ${GUESDIR}/\${MEM}/${input_file} ./tmpin                                      " >> ${WORKDIR}/tmp.sh
+           echo "ln -sf ${GUESDIR}/slevd${my_domain}_${TMPDATE}_\${MEM}.grib ./WRFPRS00.tm00          " >> ${WORKDIR}/tmp.sh
+           echo "ln -sf $TMPDIR/UPP/* .                                                               " >> ${WORKDIR}/tmp.sh
+           echo "ln -sf wrf_cntrl.parm   ./fort.14                                                    " >> ${WORKDIR}/tmp.sh
+           #Create UPP namelist.
+           echo "cat > itag <<EOF                                                                     " >> ${WORKDIR}/tmp.sh
+           echo "tmpin                                                                                " >> ${WORKDIR}/tmp.sh
+           echo "netcdf                                                                               " >> ${WORKDIR}/tmp.sh
+           echo "$CDATEWRF                                                                            " >> ${WORKDIR}/tmp.sh
+           echo "$NCAR                                                                                " >> ${WORKDIR}/tmp.sh
+           echo "EOF                                                                                  " >> ${WORKDIR}/tmp.sh
+           echo "unipost.exe             > \${GUESDIR}/uppd01_\${MEM}.log                             " >> ${WORKDIR}/tmp.sh
+
+           TMPDATE=`date_edit2 $TMPDATE $WINDOW_FREC `
+       done
+
+       my_domain=`expr $my_domain + 1 `
+     done
+
+  chmod 766 ${WORKDIR}/tmp.sh
+
+  #Get the list of nodes.
+  NNODES=1
+  while read mynode  ; do
+     NODELIST[$NNODES]=$mynode
+     NNODES=`expr $NNODES + 1`
+  done  <  $PBS_NODEFILE
+  NNODES=`expr $NNODES - 1`
+
+
+  M=$INIMEMBER
+  while [ $M -le $ENDMEMBER ] ; do
+   MYNODE=1
+   while [ $MYNODE -le $NNODES -a $M -le $ENDMEMBER ] ; do
+     MEM=`ens_member $M `
+
+     sleep 0.3
+
+     ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh  2>&1 " &
+
+     M=`expr $M + 1`
+     MYNODE=`expr $MYNODE + 1`
+
+   done
+
+   time wait
+
+  done
+
+
+
+fi
+
+}
+
+
 
 
 #Get arw post file of global analysis.
