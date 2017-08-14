@@ -156,7 +156,6 @@ echo " >>"
 
 check_postproc
 
-
 CDATE=$ADATE
 ITER=`expr $ITER + 1`
 RESTART=0    #TURN RESTART FLAG TO 0 IN CASE IT WAS GREATHER THAN 0.

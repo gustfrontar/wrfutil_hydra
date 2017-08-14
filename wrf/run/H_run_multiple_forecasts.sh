@@ -106,7 +106,7 @@ echo " >>"
 
 #RUN MODEL PRE-PROCESSING FROM GLOBAL ANALYSIS OR FORECASTS (run in PPS)
 
-get_met_em_from_grib
+get_met_em_from_grib_noqueue
 
 echo " >>"                                                           
 echo " >> GENERATING PERTURBATIONS"                                  

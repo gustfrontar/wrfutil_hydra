@@ -843,8 +843,6 @@ mkdir -p $DIRNAME/UPP
 mkdir -p $DIRNAME/add_pert
 mkdir -p $DIRNAME/OBS
 mkdir -p $DIRNAME/BOUNDARY
-mkdir -p $DIRNAME/met_em
-mkdir -p $DIRNAME/pert_met_em
 mkdir -p $DIRNAME/SPAWN
 mkdir -p $DIRNAME/NAMELIST
 mkdir -p $DIRNAME/POSTPROC
@@ -854,9 +852,6 @@ mkdir -p $DIRNAME/WPS
 #mkdir -p $DIRNAME/wrf_to_wps
 #fi
 
-#DEFINE SOME VARIABLES
-#METEMDIR=$DIRNAME/met_em/
-#?ERTMETEMDIR=$DIRNAME/pert_met_em/
 
 #-------------------------------------------------------------------------------
 }
@@ -1100,6 +1095,8 @@ if [ $ENABLE_UPP -eq 1  ]; then
 
  cp ${WRFMODEL}/run/ETAMPNEW_DATA ${TMPDIR}/UPP/nam_micro_lookup.dat
  cp ${WRFMODEL}/run/ETAMPNEW_DATA.expanded_rain ${TMPDIR}/UPP/hires_micro_lookup.dat
+  
+ cp ${UPP}/bin/unipost.exe                                       ${TMPDIR}/UPP/
 
   CRTMDIR=${UPP}/src/lib/crtm2/src/fix
   cp $CRTMDIR/EmisCoeff/Big_Endian/EmisCoeff.bin                 ${TMPDIR}/UPP/
@@ -1161,11 +1158,13 @@ mkdir -p $TMPDIR/PERTGRIB
 cp -r $GRIBDIR/*     $TMPDIR/GRIB/
 cp -r $PERTGRIBDIR/* $TMPDIR/PERTGRIB/
 
-#COPY OBS
+#COPY OBS 
+#TODO copiar solo el rango de fechas del experimento.
+
 if [ ! -z "$OBS" ] ; then
    echo "Copying $OBSDIR"
    mkdir -p $TMPDIR/OBS/
-   cp -r $OBSDIR/*/*.dat     $TMPDIR/OBS/
+   cp $OBSDIR/obs_*.dat       $TMPDIR/OBS/  
 fi
 
 if [ ! -z "$RADAROBS" ] ; then
@@ -2369,7 +2368,6 @@ generate_run_letkf_script_torque () {
 
       TOTAL_PROC_LETKF=`expr $TOTAL_NODES_LETKF \* $PROC_PER_NODE `
       rm -fr $TMPDIR/LETKF/*.dat #Remove observations.
-      mv ${TMPDIR}/OBS/*     $TMPDIR/LETKF/
       if [ $USE_ADAPTIVE_INFLATION -eq 1 ] ; then
         cp ${INFLATION_FILE}  $TMPDIR/LETKF/   
       fi
@@ -2429,47 +2427,6 @@ get_conventional_observations () {
 
 local ADATES=`echo $ADATE | cut -c1-10`  #Short version of analysis date (YYYYMMDDHH)
 
-
-if [ -e $OBSDIR/obs$ADATES/ ] ; then # OLD FORMAT
-
-  if [ -e $OBSDIR/obs$ADATES/t-3.dat  ] ; then
-   cp $OBSDIR/obs$ADATES/t-3.dat $TMPDIR/OBS/obs01.dat
-  else
-   touch $TMPDIR/OBS/obs01.dat
-  fi
-  if [ -e $OBSDIR/obs$ADATES/t-2.dat  ] ; then
-   cp $OBSDIR/obs$ADATES/t-2.dat $TMPDIR/OBS/obs02.dat
-  else
-   touch $TMPDIR/OBS/obs02.dat
-  fi
-  if [ -e $OBSDIR/obs$ADATES/t-1.dat  ] ; then
-   cp $OBSDIR/obs$ADATES/t-1.dat $TMPDIR/OBS/obs03.dat
-  else
-   touch $TMPDIR/OBS/obs03.dat
-  fi
-  if [ -e $OBSDIR/obs$ADATES/t.dat  ] ; then
-   cp $OBSDIR/obs$ADATES/t.dat $TMPDIR/OBS/obs04.dat
-  else
-   touch $TMPDIR/OBS/obs04.dat
-  fi
-  if [ -e $OBSDIR/obs$ADATES/t+1.dat  ] ; then
-   cp $OBSDIR/obs$ADATES/t+1.dat $TMPDIR/OBS/obs05.dat
-  else
-   touch $TMPDIR/OBS/obs05.dat
-  fi
-  if [ -e $OBSDIR/obs$ADATES/t+2.dat  ] ; then
-   cp $OBSDIR/obs$ADATES/t+2.dat $TMPDIR/OBS/obs06.dat
-  else
-   touch $TMPDIR/OBS/obs06.dat
-  fi
-  if [ -e $OBSDIR/obs$ADATES/t+3.dat  ] ; then
-   cp $OBSDIR/obs$ADATES/t+3.dat $TMPDIR/OBS/obs07.dat
-  else
-   touch $TMPDIR/OBS/obs07.dat
-  fi
-
-else # May be new format 
-
  local CDATEL=$WSDATE
 
  local it=1
@@ -2483,8 +2440,6 @@ else # May be new format
    it=`expr ${it} + 1 `
    CDATEL=`date_edit2 ${CDATEL} ${WINDOW_FREC}`
  done
-
-fi
 
 }
 
@@ -2519,37 +2474,6 @@ itradar=`expr ${itradar} + 1`
 done
 
 }
-
-get_radar_observations_oldformat () {
-
- local CDATEL=$WSDATE
-
- local itradar=1
-
- while [ $itradar -le $NRADARS  ] ; do
- if [ $itradar -lt 10 ] ; then
-   itradar=0$itradar
- fi
-
-  local it=1
-  while [ ${CDATEL} -le ${WEDATE}  ] ; do 
-   it=`slot_number $it `
-   datefile=`echo $CDATEL | cut -c1-12`
-
-  OBSFILE=$RADAROBSDIR/${datefile}/rad0${itradar}.dat
-  if [ -e $OBSFILE ] ; then
-   cp -f $OBSFILE $TMPDIR/OBS/rad${it}${itradar}.dat
-  fi
-
-  it=`expr ${it} + 1 `
-  CDATEL=`date_edit2 $CDATEL $WINDOW_FREC `
- done
-
- itradar=`expr ${itradar} + 1`
- done
-
-}
-
 
 
 
@@ -3345,6 +3269,9 @@ upp_postproc_noqueue () {
 
 if [  $ENABLE_UPP -eq 1 ];then
 
+  local MODEL=NCAR
+  local FORMAT=netcdf
+
 # FOR THE ANALYSIS CASE
   local CDATE=$ADATE                     #THE CURRENT DATE
   local WORKDIR=$TMPDIR/POSTPROC/        #Temporary work directory
@@ -3367,31 +3294,31 @@ if [  $ENABLE_UPP -eq 1 ];then
   echo "DATADIR=${ANALDIR}                                            " >> ${WORKDIR}/tmp.sh
   echo "PREFIX=anal                                                   " >> ${WORKDIR}/tmp.sh
   echo "ln -sf \${DATADIR}/\${PREFIX}\${MEM} ./tmpin                  " >> ${WORKDIR}/tmp.sh
-  echo "ln -sf \${DATADIR}/slev\${MEM}.grib  ./WRFPRS00.tm00          " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf \${DATADIR}/slev\${MEM}.grib  ./WRFPRS.GrbF00          " >> ${WORKDIR}/tmp.sh
   echo "ln -sf $TMPDIR/UPP/* .                                        " >> ${WORKDIR}/tmp.sh
   echo "ln -sf wrf_cntrl.parm   ./fort.14                             " >> ${WORKDIR}/tmp.sh
   #Create UPP namelist.
-#  echo "cat > itag <<EOF                                              " >> ${WORKDIR}/tmp.sh
-  echo "echo \"tmpin > itag \"                                        " >> ${WORKDIR}/tmp.sh
-  echo "echo \"netcdf > itag \"                                       " >> ${WORKDIR}/tmp.sh
-  echo "echo \"$CDATEWRF > itag \"                                    " >> ${WORKDIR}/tmp.sh
-  echo "echo \"NCAR > itag \"                                         " >> ${WORKDIR}/tmp.sh
-#  echo "EOF                                                           " >> ${WORKDIR}/tmp.sh
+#  echo "cat > itag <<EOF                                             " >> ${WORKDIR}/tmp.sh
+  echo "echo \"tmpin     \" > itag                                    " >> ${WORKDIR}/tmp.sh
+  echo "echo \"$FORMAT   \" >> itag                                   " >> ${WORKDIR}/tmp.sh
+  echo "echo \"$CDATEWRF \" >> itag                                   " >> ${WORKDIR}/tmp.sh
+  echo "echo \"$MODEL    \" >> itag                                   " >> ${WORKDIR}/tmp.sh
+#  echo "EOF                                                          " >> ${WORKDIR}/tmp.sh
   echo "./unipost.exe > \${DATADIR}/uppd01_\${MEM}.log                " >> ${WORKDIR}/tmp.sh
 
   echo "DATADIR=${GUESDIR}                                            " >> ${WORKDIR}/tmp.sh
   echo "PREFIX=gues                                                   " >> ${WORKDIR}/tmp.sh
   echo "ln -sf \${DATADIR}/\${PREFIX}\${MEM} ./tmpin                  " >> ${WORKDIR}/tmp.sh
-  echo "ln -sf \${DATADIR}/slev\${MEM}.grib  ./WRFPRS00.tm00          " >> ${WORKDIR}/tmp.sh
+  echo "ln -sf \${DATADIR}/slev\${MEM}.grib  ./WRFPRS.GrbF00          " >> ${WORKDIR}/tmp.sh
   echo "ln -sf $TMPDIR/UPP/* .                                        " >> ${WORKDIR}/tmp.sh
   echo "ln -sf wrf_cntrl.parm   ./fort.14                             " >> ${WORKDIR}/tmp.sh
   #Create UPP namelist.
-#  echo "cat > itag <<EOF                                              " >> ${WORKDIR}/tmp.sh
-  echo "echo \"tmpin > itag \"                                        " >> ${WORKDIR}/tmp.sh
-  echo "echo \"netcdf > itag \"                                       " >> ${WORKDIR}/tmp.sh
-  echo "echo \"$CDATEWRF > itag \"                                    " >> ${WORKDIR}/tmp.sh
-  echo "echo \"NCAR > itag \"                                         " >> ${WORKDIR}/tmp.sh
-#  echo "EOF                                                           " >> ${WORKDIR}/tmp.sh
+#  echo "cat > itag <<EOF                                             " >> ${WORKDIR}/tmp.sh
+  echo "echo \"tmpin     \" > itag                                    " >> ${WORKDIR}/tmp.sh
+  echo "echo \"$FORMAT   \" >> itag                                   " >> ${WORKDIR}/tmp.sh
+  echo "echo \"$CDATEWRF \" >> itag                                   " >> ${WORKDIR}/tmp.sh
+  echo "echo \"$MODEL    \" >> itag                                   " >> ${WORKDIR}/tmp.sh
+#  echo "EOF                                                          " >> ${WORKDIR}/tmp.sh
   echo "unipost.exe             > \${DATADIR}/uppd01_\${MEM}.log      " >> ${WORKDIR}/tmp.sh
 
 
@@ -3473,7 +3400,7 @@ if [ $ENABLE_UPP -eq 1 ] ; then
            echo "DATADIR=${GUESDIR}                                                                   " >> ${WORKDIR}/tmp.sh
            echo "PREFIX=gues                                                                          " >> ${WORKDIR}/tmp.sh
            echo "ln -sf ${GUESDIR}/\${MEM}/${input_file} ./tmpin                                      " >> ${WORKDIR}/tmp.sh
-           echo "ln -sf ${GUESDIR}/slevd${my_domain}_${TMPDATE}_\${MEM}.grib ./WRFPRS00.tm00          " >> ${WORKDIR}/tmp.sh
+           echo "ln -sf ${GUESDIR}/slevd${my_domain}_${TMPDATE}_\${MEM}.grib ./WRFPRS.GrbF00          " >> ${WORKDIR}/tmp.sh
            echo "ln -sf $TMPDIR/UPP/* .                                                               " >> ${WORKDIR}/tmp.sh
            echo "ln -sf wrf_cntrl.parm   ./fort.14                                                    " >> ${WORKDIR}/tmp.sh
            #Create UPP namelist.

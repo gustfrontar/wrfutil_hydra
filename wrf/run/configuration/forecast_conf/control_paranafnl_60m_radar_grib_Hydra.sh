@@ -70,8 +70,8 @@ EXP=FORECAST_${DOMAINCONF}_${CONFIGURATION}                # name of experiment
 
 
 ### initial date setting
-IDATE=20091117193000
-EDATE=20091117193000     #20091117230000
+IDATE=20091117200000
+EDATE=20091117200000     #20091117230000
 
 #### DATA
 OBSDIR=${HOMEDIR}/DATA/OBS/$OBS/                                                          # NOT USED IN THE FORECAST
