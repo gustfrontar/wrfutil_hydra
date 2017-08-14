@@ -27,9 +27,9 @@ MM=$MEMBER                      #Variable for iteration limits.
 MEANMEMBER=`expr $MEMBER + 1 `  #This is the member ID corresponding to the ensemble mean.
 
 WINDOW=10800        #Assimilation frequency. (seconds)
-WINDOW_START=10800  #Window start (seconds from forecast initialization)     
+WINDOW_START=3600   #Window start (seconds from forecast initialization)     
 WINDOW_END=10800    #Window end   (seconds from forecast initialization)
-WINDOW_FREC=10800   #Output frequency within window (seconds) should be the same as the maximum observation frequency.
+WINDOW_FREC=3600    #Output frequency within window (seconds) should be the same as the maximum observation frequency.
 ASSIMILATION_FREC=10800 #Assimilation frequency  (seconds)
 NSLOTS=`expr $WINDOW_END \/ $WINDOW_FREC - $WINDOW_START \/ $WINDOW_FREC  + 1 `        #Number of time slots. 
 NBSLOT=`expr $ASSIMILATION_FREC \/ $WINDOW_FREC - $WINDOW_START \/ $WINDOW_FREC + 1 `  #Time slot corresponding to the analysis.
@@ -63,13 +63,13 @@ INTERP_METHOD=1
 ENABLE_UPP=1           #1 - generate grib sigma files (for da downscalling) , 0 - do not generate grib sigma files.
 
 ### LETKF setting
-OBS=""                                                     # Name of conventional observations folder.
+OBS="PREPBUFRSA"                                           # Name of conventional observations folder.
 RADAROBS=""                                                # Name of radar observation folder.
 EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION}                # name of experiment
 
 ### initial date setting
 IDATE=20091117000000
-EDATE=20091118000000     #20091117230000
+EDATE=20091117030000     #20091117230000
 
 #### DATA
 OBSDIR=${HOMEDIR}/DATA/OBS/$OBS/                                                          # Folder where conventional observations are.
@@ -79,6 +79,9 @@ TMPDIR=${HOME}/TMP/$EXP/                                                        
 OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                    # Where results will be stored.
 GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/SA/                                                # Folder where bdy and initial grib files are located.
 GRIBTABLE="Vtable.GFS"                                                                    # Bdy and init data source Vtable name.
+MEMBER_BDY=1                                                                              # Total number of boundary conditions ensemble members.
+MEANMEMBER_BDY=1                                                                          # Boundary conditions ensemble member corresponding to the ensemble mean.
+
 PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                    # Folder where data for perturbing bdy are located.
 PERTGRIBTABLE="Vtable.CFSR2_web"                                                          # Bdy perturbation source vtable name.
 GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/                                                 # Folder where WPS GEOG dataset is located.

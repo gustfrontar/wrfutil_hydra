@@ -103,7 +103,7 @@ echo " >>"
 
 #RUN MODEL PRE-PROCESSING FROM GLOBAL ANALYSIS OR FORECASTS (run in PPS)
 
-get_met_em_from_grib
+get_met_em_from_grib_noqueue
 
 echo " >>"                                                           
 echo " >> GENERATING PERTURBATIONS"                                  
@@ -112,7 +112,6 @@ echo " >>"
 #PERTURB MET_EM FILES USING RANDOM BALANCED OR RANDOM SMOOTHED PERTURBATIONS (run in PPS)
 
 perturb_met_em_from_grib_noqueue
-
 
 echo " >>"                                                           
 echo " >> ENSEMBLE FORECASTS AND LETKF"
