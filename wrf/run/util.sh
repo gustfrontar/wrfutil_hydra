@@ -763,8 +763,17 @@ sed -i 's/@@MYHOST@@/'${MYHOST}'/g'                  $SCRIPT
 sed -i 's/@@PID@@/'${PID}'/g'                        $SCRIPT
 sed -i 's/@@MYSCRIPT@@/'${MYSCRIPT}'/g'              $SCRIPT
 
+sed -i 's/@@OUTPUTDIR@@/'${OUTPUTDIR}'/g'            $SCRIPT
+sed -i 's/@@TMPDIR@@/'${TMPDIR}'/g'                  $SCRIPT
+
+sed -i 's/@@GROUP@@/'${GROUP}'/g'                    $SCRIPT
+sed -i 's/@@ELAPSE@@/'${ELAPSE}'/g'                  $SCRIPT
+sed -i 's/@@QUEUE@@/'${QUEUE}'/g'                    $SCRIPT
 
 }
+
+
+
 
 safe_rm_tmpdir () {
 #-------------------------------------------------------------------------------
@@ -1003,9 +1012,11 @@ local NODEFILE=$2   #Current nodefile for this job
 local max_jobs=$3   #Maximum simultaneous runs in this job
 local ppm=$4        #Procs per member
 
-CONT=1
-JOB=1
-while read a ; do
+if [ $SYSTEM -eq 1  ]; then  #TORQUE CLUSTER
+
+  CONT=1
+  JOB=1
+  while read a ; do
    #Compute ensemble member prefix
    if [ $JOB -gt $max_jobs ] ; then
       echo "[Warning]: Maximum simultaneous job limit reached, some nodes will be unused"
@@ -1024,7 +1035,29 @@ while read a ; do
     JOB=`expr $JOB + 1 `
    fi
 
-done  <  $NODEFILE
+  done  <  $NODEFILE
+
+fi
+
+if [ $SYSTEM -eq 0  ] ; then #K COMPUTER
+
+ NODE=0
+ JOB=1
+
+  while [ $JOB -le $max_jobs ] ; do
+
+   MNODE=1
+   rm -fr $TMPDIRL/machinefile.${JOB}
+   while [ $MNODE -le $NODES_PER_MEMBER ]; do
+    echo "( $NODE ) " >> $TMPDIRL/machinefile.${JOB}
+    MNODE=`expr $MNODE + 1 `
+    NODE=`expr $NODE + 1 `
+   done
+   JOB=`expr $JOB + 1 `
+
+  done
+
+fi
 
 }
 
@@ -1282,9 +1315,11 @@ rest=`expr $GUESFT % $BOUNDARY_DATA_FREQ `
 }
 
 
-get_qeue_k () {
+get_queue () {
 
 local INPUT_NODE=$1
+
+if [ $SYSTEM -eq 0  ] ; then
 
 #Total nodes can be set in the configuration file (TOTAL_NODES_FORECAST / TOTAL_NODES_LETKF )or can be estimated here according to the number of ensemble members
 #and procs per nodes.
@@ -1294,6 +1329,8 @@ local INPUT_NODE=$1
    if [ $INPUT_NODE -lt 364 ] ; then
       local QEUE="small" 
    fi
+
+fi
 
 echo $QEUE
 
@@ -1318,150 +1355,6 @@ fi
 cp $CDIR/configuration/machine_conf/${MCONFIGURATION}.sh  $DESTDIR/machine_configuration.sh  #Save machine conf.
 cp -r $CDIR/configuration/domain_conf/$DOMAINCONF         $DESTDIR  #Save domain conf.
 cp -r $MYSCRIPT                                           $DESTDIR  #Save main script.
-
-}
-
-run_ensemble_forecast () {
-
-#=====================================================================
-# This function submits and waits for the ensemble forecast jobs.
-# If one or more jobs fails then the jobs are re-done up to max_redo 
-# times.
-# If the number of ensemble members is larger than the maximum number
-# of members per job (MAX_MEMBER_PER_JOB) then the job is splitted into
-# several smaller jobs.
-# Split jobs are submitted to the queue. There are a maximum of 
-# MAX_SUBMITT_JOB simultaneous submissions.
-#=====================================================================
-
-if [ $MEMBER -gt $MAX_MEMBER_PER_JOB -a $RUN_ONLY_MEAN -eq 0 ] ; then
-   echo " Authomathic ensemble job split will take place"
-fi
-
-max_redo=3   #Maximum number of retries.
-my_redo=0    
-
-while [ $my_redo -le $max_redo ] ; do 
-
- echo "This is attemp number $my_redo to run the ensemble forecast"
-
- #Prepare and submit the jobs
-
- if [ $RUN_ONLY_MEAN -eq 1 ] ; then
-  INIMEMBER=$MEANMEMBER
-  ENDMEMBER=$MEANMEMBER
- else
-  INIMEMBER=1
-  ENDMEMBER=$MEMBER
- fi
- 
-
-    
-
- #echo $INIMEMBER $ENDMEMBER $MEANMEMBER
-
-
- IM=$INIMEMBER
- my_job=1
- while [ $IM -le $ENDMEMBER ] ; do #[While over ensemble members]
-  submitted_jobs=0
-  local WORKDIR=$TMPDIR/run/${my_job}/
-
-  while [ $submitted_jobs -le $MAX_SUBMITT_JOB -a $IM -le $ENDMEMBER ] ; do
-   #Define the ensemble range for this job.
-   EM=`expr $IM + $MAX_MEMBER_PER_JOB - 1 `
-    if [ $EM -gt $ENDMEMBER ] ; then
-      EM=$ENDMEMBER
-    fi
-    tmp_mem=$IM
-    my_test=0
-    while [ $tmp_mem -le $EM ] ; do
-      tmp_mem=`ens_member $tmp_mem`
-      grep "SUCCESS COMPLETE WRF" ${WORKDIR}/wrf${tmp_mem}.log > /dev/null 2>&1
-      tmp_test=$?
-      if [ $tmp_test -ne 0 ]; then
-        my_test=1
-      fi
-      tmp_mem=`expr $tmp_mem + 1 `
-    done
-   if [ $my_test -ne 0 ] ; then
-      #echo "$my_test" 
-      #In the first execution of the loop all jobs are run
-      #In the following only the jobs that failed are executed.
-      run_forecast_script=rf_scr.sh
-
-      echo "Submiting job $my_job that will run ensemble members from $IM to $EM " 
-      if [ $SYSTEM -eq 0 ] ; then
-	generate_run_forecast_script_k $run_forecast_script $WORKDIR $IM $EM
-      fi
-      if [ $SYSTEM -eq 1 ] ; then 
-        generate_run_forecast_script_torque $run_forecast_script $WORKDIR $IM $EM
-      fi
-      sub_and_wait $WORKDIR/$run_forecast_script & 
-
-      submitted_jobs=`expr $submitted_jobs + 1 `
-   fi
-
-   my_job=`expr $my_job + 1 `
-   IM=`expr $EM + 1 `
-  done
-  time wait
- done #[End while over ensemble members]
-
- #Check how the jobs finished
-
- error_check=0
-
- if [ $RUN_ONLY_MEAN -eq 1 ] ; then
-  INIMEMBER=$MEANMEMBER
-  ENDMEMBER=$MEANMEMBER
- else
-  INIMEMBER=1
-  ENDMEMBER=$MEMBER
- fi
-
- IM=$INIMEMBER
- my_job=1
- while [ $IM -le $ENDMEMBER ] ; do #[While over ensemble members]
-   EM=`expr $IM + $MAX_MEMBER_PER_JOB - 1 `
-    if [ $EM -gt $ENDMEMBER ] ; then
-      EM=$ENDMEMBER
-    fi
-   #INIMEMBER=`ens_member $INIMEMBER `
-   #ENDMEMBER=`ens_member $ENDMEMBER `
-   WORKDIR=$TMPDIR/run/${my_job}/
-   
-   check_forecast $WORKDIR $IM $EM
-   if [ -e $WORKDIR/REDO ] ; then
-     error_check=1
-     echo "[Warnning]: Job $my_job corresponding to ens member from $IM to $EM failed"
-   fi
-
-   IM=`expr $EM + 1 `
-   my_job=`expr $my_job + 1 `
- done #[End while over ensemble members]
-
- #Take action according to forecast error check
-
- if [ $error_check -eq 0 ] ; then
-    my_redo=`expr $max_redo + 1 ` #Break the cycle we are done!
- else
-   my_redo=`expr $my_redo + 1 `   #At least one job fail: redo!
-   if [ $my_redo -gt $max_redo ] ; then
-     #We cannot continue with the cycle
-     echo "[Error] : Forecast job fails more than $max_redo times "
-     echo "CYCLE ABNORMAL END -> ABORT EXECUTION "
-     exit 1
-   fi
- fi
-
-
-done
-
-#Move the forecast to its final destination.
-
-move_forecast_data
-
 
 }
 
@@ -1562,7 +1455,7 @@ while [ $my_redo -le $max_redo  ] ; do
 	move_forecast_data
 
 
-	}
+}
 
 
 move_forecast_data(){
@@ -1627,73 +1520,6 @@ move_forecast_data(){
 
 }
 
-run_letkf () {
-
-#=====================================================================
-# This function submits and waits the letkf module.
-# If the job fails then the job is redo up to a maximum redo
-# times.
-#=====================================================================
-
- #Prepare and submit the jobs
-
- run_letkf_script=$TMPDIR/SCRIPTS/rda_scr.sh
-
- if [ $SYSTEM -eq 0 ] ; then
-    generate_run_letkf_script_k $run_letkf_script
- fi
- if [ $SYSTEM -eq 1 ] ; then
-    generate_run_letkf_script_torque $run_letkf_script
- fi
-
- echo "Submiting LETKF-DA job " 
- 
- sub_and_wait $run_letkf_script 
-
-
- #In torque systems move the data from the temporal directory to the final destinantion.
- if [ $SYSTEM -eq 1 ] ; then
- #COPY DATA TO THE FINAL DESTINATION DIR.
-   M=1
-   while [ $M -le $MEMBER ] ; do
-     MEM=`ens_member $M`
-     mv $TMPDIR/LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRA}/anal${MEM}
-     M=`expr $M + 1 `
-   done
-   MEM=`ens_member ${MEANMEMBER}`
-   mv ${TMPDIR}/LETKF/gues${MEM}            ${RESULTDIRG}/
-   mv ${TMPDIR}/LETKF/anal${MEM}            ${RESULTDIRA}/
-   mv ${TMPDIR}/LETKF/NOUT*                 ${RESULTDIRA}/
-
-   if [ $USE_ADAPTIVE_INFLATION -eq 1 ] ; then
-     mv $TMPDIR/LETKF/infl_mul.grd          ${RESULTDIRA}/
-   fi
-
- fi
-
- #Check how the jobs finished
- local error_check=0
- local MMS=`ens_member $MEANMEMBER`
- if [ ! -e ${RESULTDIRA}/anal$MMS ] ; then
-   echo "[Error]: Cannot find analysis ensemble mean."
-   error_check=1
- fi
- grep  "PARTIAL OBSERVATIONAL DEPARTURE" ${RESULTDIRA}/NOUT-000 > null
- if [ $? -ne 0  ] ; then
-  echo "[Error]: LETKF do not finish properly."
-  tail ${RESULTDIRA}/NOUT-000
-  error_check=1
- fi
-
- if [ $error_check -ne 0 ] ; then
-     echo "[Warning] : Letkf-DA attemp $my_redo fails." 
-     echo "CYCLE ABNORMAL END -> ABORT EXECUTION "
-     exit 1
- fi
-
-
-}
-
 
 run_letkf_noqueue () {
 
@@ -1701,6 +1527,12 @@ run_letkf_noqueue () {
 # This function runs letkf but assuming not queue is necessary.
 # Usually this function will be used in a multiple cycle job.
 #=====================================================================
+
+ #Link the observations
+
+ rm $TMPDIR/LETKF/obs*.dat
+
+ get_observations $TMPDIR/LETKF
 
  #Prepare and run the jobs
 
@@ -1752,260 +1584,6 @@ run_letkf_noqueue () {
 
 }
 
-
-generate_run_forecast_script_k () {
-   local local_script=$1   #Name of local script
-   local WORKDIR=$2        #Work directory where scripts will be generated(optional)
-   local INIMEMBER=$3         #Initialensemble member to be run in this job (optional)
-   local ENDMEMBER=$4         #End ensemble member to be run in this job.    (optional)
-
-   #echo "Scripts for ensemble members $INIMEMBER to $ENDMEMBER "
-   #echo "will be generated in $WORKDIR "
-   
-      #Default ensemble range is the full ensemble
-      if [ ! -n "$INIMEMBER" ] ; then
-       INIMEMBER=1
-      fi
-      if [ ! -n "$ENDMEMBER" ] ; then
-       ENDMEMBER=$MEMBER
-      fi
-      if [ $RUN_ONLY_MEAN -eq 1 ] ; then
-       INIMEMBER=$MEANMEMBER
-       ENDMEMBER=$MEANMEMBER
-      fi
-      #Default workdir is TMPDIR/SCRIPTS
-      if [ ! -n "$WORKDIR"  ] ; then
-       WORKDIR=$TMPDIR/run/1/
-      fi
-
-      local_script=$WORKDIR/$local_script 
-
-      mkdir -p $WORKDIR
-
-
-   #CREATE THE SCRIPT TO BE SUBMITED TO K COMPUTER
-   # CREATE NAMELIST FOR REAL AND WRF
-   rm -fr $WORKDIR/namelist.input*
-
-   cp $TMPDIR/NAMELIST/namelist.input.template $WORKDIR/namelist.input.real
-   cp $TMPDIR/NAMELIST/namelist.input.template $WORKDIR/namelist.input.wrf
-
-   edit_namelist_input $WORKDIR/namelist.input.real $CDATE $FDATE $WINDOW_FREC $BOUNDARY_DATA_FREQ  #For real
-   edit_namelist_input $WORKDIR/namelist.input.wrf  $CDATE $FDATE   $WINDOW_FREC $BOUNDARY_DATA_FREQ  #For wrf
-
-   cp $WORKDIR/namelist.input.real $WORKDIR/namelist.input.wrf $RESULTDIRG
-
-   # CREATE AUXILIARY RUNNING SCRIPTS
-   edit_wrf_post $WORKDIR/WRF_POST.sh
-   edit_wrf_pre  $WORKDIR/WRF_PRE.sh
-   edit_wrf_real $WORKDIR/WRF_REAL.sh
-   edit_wrf_wrf  $WORKDIR/WRF_WRF.sh
-
-      
-      if [ ! -n "$ELAPSE_FORECAST" ] ; then
-       ELAPSE_FORECAST=$ELAPSE
-      fi
-      if [ ! -n "$TOTAL_PROC_FORECAST" ] ; then
-       TOTAL_PROC_FORECAST=$TOTAL_NODES
-      fi
-      if [ ! -n "$TOTAL_NODES_FORECAST" ] ; then
-       TOTAL_NODES_FORECAST=$TOTAL_NODES
-      fi
-      if [ ! -n "$USE_ANALYSIS_IC" ] ; then
-       USE_ANALYSIS_IC=0
-       echo "[Warning]: USE_ANALYSIS_IC is not set will asume 0 and use LETKF analysis as IC data."
-      fi
-
-      local do_wrf_pre=0
-      if [ $USE_ANALYSIS_IC -eq 0 -a $FORECAST -eq 1 ] ; then
-        do_wrf_pre=1
-      fi
-      if [ $USE_ANALYSIS_IC -eq 0 -a $ANALYSIS -eq 1 ] ; then
-        if [ $ITER -gt 1 ] ; then
-          do_wrf_pre=1
-        fi
-      fi
-
-      
-      MAX_SIMULTANEOUS_JOBS=`expr $TOTAL_NODES_FORECAST \/ $NODES_PER_MEMBER `
-      if [ $MAX_SIMULTANEOUS_JOBS -gt $MAX_BACKGROUND_JOBS  ] ; then
-         echo "[Error]: The number of requested nodes is too many!"
-         echo "We can't use them all to run the ensemble"
-         echo "Please revise configuration accordingly"
-         echo "MAX_SIMULTANEOUS_JOBS=$MAX_SIMULTANEOUS_JOBS"
-         echo "MAX_BACKGROUND_JOBS=$MAX_BACKGROUND_JOBS"
-         exit 1
-       fi
-       local TMPVAL=`expr $MAX_SIMULTANEOUS_JOBS \* $NODES_PER_MEMBER`
-       if [ $TMPVAL -lt $TOTAL_NODES_FORECAST ] ; then
-         echo "[Error]: Some nodes will be unused"
-         exit 1
-       fi
-
-      #GENERATE VCOORD FILES
-      generate_vcode $WORKDIR/ $INIMEMBER $ENDMEMBER
-
-
-      local QEUE=`get_qeue_k $TOTAL_NODES_FORECAST `
-
-      #Prepare the script for bulk job.
-      echo "#!/bin/bash    "                                     > $local_script
-      echo "#PJM --rsc-list \"node=${TOTAL_NODES_FORECAST}\"     ">> $local_script
-      echo "#PJM --rsc-list \"rscgrp=${QEUE}\"                   ">> $local_script
-      echo "#PJM --rsc-list \"elapse=${ELAPSE_FORECAST}\"        ">> $local_script
-      echo "#PJM --mpi \"proc=${TOTAL_NODES_FORECAST}   \"       ">> $local_script
-      echo "#PJM --mpi assign-online-node                        ">> $local_script
-      echo "#PJM --stg-transfiles all                            ">> $local_script
-      echo "#PJM -S                                              ">> $local_script
-      #PROGRAMS AND SCRIPTS
-      echo "#PJM --stgin \"$RUNTIMELIBS/*            ./lib/      \" ">> $local_script
-      echo "#PJM --stgin \"${WORKDIR}/*              ./SCRIPTS/  \" ">> $local_script
- 
-      #Generate staging list.
-      #UPLOAD BOUNDARY CONDITIONS
-      M=$INIMEMBER
-      while [ $M -le $ENDMEMBER ] ; do
-       MEM=`ens_member $M`
-       echo "#PJM --stgin \"$TMPDIR/BOUNDARY/INPUT/${MEM}/*  ./WRF$MEM/ \"   ">> $local_script
-       M=`expr $M + 1 `
-      done
-      #UPLOAD INITIAL CONDITIONS
-      if [ $ANALYSIS -eq 1 ] ; then
-         local local_dir="$OUTPUTDIR/anal/${CDATE}/"
-      fi
-      if [ $FORECAST -eq 1 ] ; then 
-         local local_dir="$ANALYSIS_SOURCE/anal/${CDATE}/"
-      fi
-
-      if [ $ITER -gt 1 -o $FORECAST -eq 1 ] ; then
-        if [ $USE_ANALYSIS_IC -eq 0 ] ; then
-        M=$INIMEMBER
-        while [ $M -le $ENDMEMBER ] ; do
-         MEM=`ens_member $M`
-         echo "#PJM --stgin \"${local_dir}/anal$MEM  ./WRF$MEM/anal \" ">> $local_script
-         M=`expr $M + 1 `
-        done
-       fi
-      fi
-     #COPY WRF MODEL AND DUMMY_MPI
-      echo "#PJM --stgin \"${TMPDIR}/WRF/*                ./WRF/ \" ">> $local_script
-      echo "#PJM --stgin \"${TMPDIR}/SPAWN/dummy-mpi      ./WRF/ \" ">> $local_script
-     #STAGEOUT FORECASTS
-    if [ $ANALYSIS -eq 1 ] ; then
-     echo "#PJM --stgout   \"./LETKF/*   ${TMPDIR}/CURRENT_LETKF/       \" ">> $local_script
-    fi
-    if [ $FORECAST -eq 1 ] ; then
-      M=$INIMEMBER
-      while [ $M -le $ENDMEMBER ] ; do
-        MEM=`ens_member $M`
-        echo "#PJM --stgout   \"./WRF$MEM/wrfout* ${RESULTDIRG}/${MEM}/  \" ">> $local_script
-        M=`expr $M + 1 `
-      done
-    fi
-      M=$INIMEMBER
-      while [ $M -le $ENDMEMBER ] ; do
-        MEM=`ens_member $M`
-        echo "#PJM --stgout   \"./WRF$MEM/*.log      ${RESULTDIRG}/        \" ">> $local_script
-        echo "#PJM --stgout   \"./WRF$MEM/*.log      ${WORKDIR}/        \" ">> $local_script
-        M=`expr $M + 1 `
-      done
-
-      #Remove the file that will be used to check the end of the job.
-       
-      echo "BASEDIR=\`pwd\`                           ">> $local_script
-      echo ". /work/system/Env_base                   ">> $local_script
-      echo "if [ -d "./lib" ] ; then                  ">> $local_script
-      echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\${BASEDIR}/lib:/opt/local/globus/lib:/opt/FJSVpxtof/sparc64fx/lib64:/opt/FJSVtclang/GM-1.2.0-15/lib64">> $local_script
-      echo "fi                                        ">> $local_script
-      echo "mkdir ./LETKF                             ">> $local_script
-
-     M=$INIMEMBER
-     while [  $M -le $ENDMEMBER ] ; do
-       MEM=`ens_member $M ` 
-       echo "ln -sf \${BASEDIR}/WRF/* \${BASEDIR}/WRF${MEM}/ " >> $local_script
-       echo "cp \${BASEDIR}/SCRIPTS/namelist.input.real  \${BASEDIR}/WRF${MEM}/namelist.input " >> $local_script
-       M=`expr $M + 1 `
-     done
-
-     
-     #SCRIPT
-     echo "export PARALLEL=${PROC_PER_NODE}        " >> $local_script
-     echo "export OMP_NUM_THREADS=${PROC_PER_NODE} " >> $local_script
-  
-     M=$INIMEMBER
-     while [  $M -le $ENDMEMBER ] ; do
-      JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
-      MEM=`ens_member $M `
-         echo "$MPIBIN -np ${NODES_PER_MEMBER} --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_REAL.sh \${BASEDIR}/WRF${MEM}/ &  " >> $local_script
-         JOB=`expr $JOB + 1 `
-         M=`expr $M + 1 `
-      done
-      echo "time wait " >> $local_script
-     done
-
-    if [ $FORECAST -eq 1 -a $INTERPANA -eq 1  ] ; then
-    #Only for ensemble forecast and for the case in which the LETKF analysis grid an the forecast grids are different.
-     M=$INIMEMBER
-     while [  $M -le $ENDMEMBER ] ; do
-      JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
-      MEM=`ens_member $M `
-         echo "$MPIBIN -np ${NODES_PER_MEMBER} --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_INTERPANA.sh \${BASEDIR}/WRF${MEM}/ &  " >> $local_script
-         JOB=`expr $JOB + 1 `
-         M=`expr $M + 1 `
-      done
-      echo "time wait " >> $local_script
-     done
-    fi
- 
-   if [ $do_wrf_pre -eq 1 ] ; then #Update lateral and lower boundary conditions.
-     M=$INIMEMBER
-     while [  $M -le $ENDMEMBER ];do
-      JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ];do
-      MEM=`ens_member $M `
-         echo "$MPIBIN -np 1 --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_PRE.sh \${BASEDIR}/WRF${MEM} ${MEM} &  " >> $local_script
-         JOB=`expr $JOB + 1 `
-         M=`expr $M + 1 `
-      done
-      echo "time wait " >> $local_script
-     done      
-   fi
-        
-     M=$INIMEMBER
-     while [  $M -le $ENDMEMBER ];do
-       MEM=`ens_member $M `
-       echo "cp \${BASEDIR}/SCRIPTS/namelist.input.wrf  \${BASEDIR}/WRF${MEM}/namelist.input " >> $local_script
-       M=`expr $M + 1 `
-     done
- 
-     M=$INIMEMBER
-     while [  $M -le $ENDMEMBER ] ; do
-      JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
-      MEM=`ens_member $M `
-         echo "$MPIBIN -np ${NODES_PER_MEMBER} --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_WRF.sh \${BASEDIR}/WRF${MEM} &  " >> $local_script
-         JOB=`expr $JOB + 1 `
-         M=`expr $M + 1 `
-      done
-      echo "time wait " >> $local_script
-     done 
-
-     M=$INIMEMBER
-     while [  $M -le $ENDMEMBER ] ; do
-      JOB=1
-      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
-      MEM=`ens_member $M `
-
-         echo "$MPIBIN -np 1 --vcoordfile ./SCRIPTS/vcoord_${JOB} ./SCRIPTS/WRF_POST.sh \${BASEDIR}/WRF${MEM} $MEM &  " >> $local_script
-         JOB=`expr $JOB + 1 `
-         M=`expr $M + 1 `
-      done
-      echo "time wait " >> $local_script
-     done 
-
-}
 
 generate_run_forecast_script_torque () {
 
@@ -2131,13 +1709,27 @@ generate_run_forecast_script_torque () {
        fi
       fi
 
+      #Generate machine files.
+      if [ $SYSTEM -eq 1 ] ; then
+       echo "generate_machinefile $WORKDIR \$PBS_NODEFILE $MAX_SIMULTANEOUS_JOBS $PROC_PER_MEMBER "    >> $local_script
+      fi
+      if [ $SYSTEM -eq 0 ] ; then
+       echo "generate_machinefile $WORKDIR null $MAX_SIMULTANEOUS_JOBS $NODES_PER_MEMBER "    >> $local_script
+      fi
+
+
 
       #Prepare the script 
       echo "#!/bin/bash    "                                              >  $local_script
-      echo "#PBS -l nodes=$TOTAL_NODES_FORECAST:ppn=$PROC_PER_NODE   "    >> $local_script
-      echo "#PBS -S /bin/bash                                        "    >> $local_script
+#      echo "#PBS -l nodes=$TOTAL_NODES_FORECAST:ppn=$PROC_PER_NODE   "    >> $local_script
+#      echo "#PBS -S /bin/bash                                        "    >> $local_script
       echo "source $TMPDIR/SCRIPTS/util.sh                           "    >> $local_script
-      echo "generate_machinefile $WORKDIR \$PBS_NODEFILE $MAX_SIMULTANEOUS_JOBS $PROC_PER_MEMBER "    >> $local_script
+#      if [ $SYSTEM -eq 1 ] ; then 
+#       echo "generate_machinefile $WORKDIR \$PBS_NODEFILE $MAX_SIMULTANEOUS_JOBS $PROC_PER_MEMBER "    >> $local_script
+#      fi
+#      if [ $SYSTEM -eq 0 ] ; then
+#       echo "generate_machinefile $WORKDIR null $MAX_SIMULTANEOUS_JOBS $NODES_PER_MEMBER "    >> $local_script
+#      fi
       echo "cd $WORKDIR                                              "    >> $local_script  
       echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH                  "    >> $local_script
  
@@ -2154,7 +1746,12 @@ generate_run_forecast_script_torque () {
       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
          echo "sleep 0.3"    >> $local_script
-         echo "$MPIBIN -np ${PROC_PER_MEMBER} -f $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_REAL.sh $WORKDIR/WRF${MEM}/ > $WORKDIR/WRF${MEM}/real.log &  " >> $local_script
+         if [ $SYSTEM -eq 1 ] ; then
+           echo "$MPIBIN -np ${PROC_PER_MEMBER} -f $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_REAL.sh $WORKDIR/WRF${MEM}/ > $WORKDIR/WRF${MEM}/real.log & " >> $local_script
+         fi
+         if [  $SYSTEM -eq 0 ] ; then
+           echo "$MPIBIN -np ${NODE_PER_MEMBER} --vcoordfile $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_REAL.sh $WORKDIR/WRF${MEM}/ > $WORKDIR/WRF${MEM}/real.log & " >> $local_script
+         fi 
          JOB=`expr $JOB + 1 `
          M=`expr $M + 1 `
       done
@@ -2175,20 +1772,18 @@ generate_run_forecast_script_torque () {
       done      
      fi
         
-     #M=$INIMEMBER
-     #while [  $M -le $ENDMEMBER ];do
-     #  MEM=`ens_member $M `
-     #  echo "cp ${WORKDIR}/namelist.input  ${WORKDIR}/WRF${MEM}/namelist.input " >> $local_script
-     #  M=`expr $M + 1 `
-     #done
- 
      M=$INIMEMBER
      while [  $M -le $ENDMEMBER ] ; do
       JOB=1
       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
          echo "sleep 0.3 "  >> $local_script
-         echo "$MPIBIN -np ${PROC_PER_MEMBER} -f ${WORKDIR}/machinefile.${JOB} ${WORKDIR}/WRF_WRF.sh ${WORKDIR}/WRF${MEM} > ${WORKDIR}/WRF${MEM}/wrf.log &  " >> $local_script
+         if [ $SYSTEM -eq 1 ] ; then
+          echo "$MPIBIN -np ${PROC_PER_MEMBER} -f ${WORKDIR}/machinefile.${JOB} ${WORKDIR}/WRF_WRF.sh ${WORKDIR}/WRF${MEM} > ${WORKDIR}/WRF${MEM}/wrf.log &  " >> $local_script
+         fi
+         if [ $SYSTEM -eq 0 ] ; then
+          echo "$MPIBIN -np ${NODE_PER_MEMBER} --vcoordfile $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_WRF.sh $WORKDIR/WRF${MEM} > $WORKDIR/WRF${MEM}/wrf.log & " >> $local_script
+         fi
          JOB=`expr $JOB + 1 `
          M=`expr $M + 1 `
       done
@@ -2197,145 +1792,12 @@ generate_run_forecast_script_torque () {
 
      #All file tranfers will be processed sequentially to avoid NFS errors. 
      echo "${WORKDIR}/WRF_POST.sh ${WORKDIR} $INIMEMBER $ENDMEMBER  " >> $local_script
-     #M=$INIMEMBER
-     #while [  $M -le $ENDMEMBER ] ; do
-     # JOB=1
-     # while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $JOB -le $ENDMEMBER ] ; do
-     # MEM=`ens_member $M `
-     #    echo "${WORKDIR}/WRF_POST.sh ${WORKDIR}/WRF${MEM} $MEM && mv ${WORKDIR}/WRF$MEM/*.7log ${WORKDIR}/ &  " >> $local_script
-     #    JOB=`expr $JOB + 1 `
-     #    M=`expr $M + 1 `
-     # done
-     # echo "time wait " >> $local_script
-     #done 
-
-
-#     if [ $FORECAST -eq 1 ] ; then
-#      M=$INIMEMBER
-#      while [ $M -le $ENDMEMBER ] ; do
-#        MEM=`ens_member $M`
-#        echo "mv  ${WORKDIR}/WRF$MEM/wrfout* ${RESULTDIRG}/${MEM}/            " >> $local_script
-#        M=`expr $M + 1 `
-#      done
-#     fi
-
-#     M=$INIMEMBERe
-#     while [ $M -le $ENDMEMBER ] ; do
-#       MEM=`ens_member $M`
-#       echo "mv ${WORKDIR}/WRF$MEM/*.log      ${RESULTDIRG}/                  " >> $local_script
-#       M=`expr $M + 1 `
-#     done
-
-#     if [ $ANALYSIS -eq 1 ] ; then
-#      M=$INIMEMBER
-#      while [ $M -le $ENDMEMBER ] ; do
-#       MEM=`ens_member $M `
-#       echo "cp ${TMPDIR}/LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRG}/gues${MEM}  " >> $local_script
-#       M=`expr $M + 1 `
-#      done
-
-#      MEM=`ens_member $MM `
-#      MEMEAN=`ens_member $MEANMEMBER `
-#      echo "cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} $TMPDIR/LETKF/gs${NBSLOT}${MEMEAN}  " >> $local_script
-#      echo "cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} ${RESULTDIRG}/gues${MEMEAN}         " >> $local_script
-#      echo "ln -sf ${RESULTDIRG}/gues${MEMEAN} $TMPDIR/LETKF/gues${MEMEAN}         " >> $local_script
-#     fi
 
 
 }
-
-generate_run_letkf_script_k () {
-#CREATE THE SCRIPT TO BE SUBMITED TO K COMPUTER
-      local_script=$1
-
-      # CREATE NAMELIST FOR LETKF
-      rm -fr $TMPDIR/LETKF/letkf.namelist
- 
-      cp $TMPDIR/NAMELIST/letkf.namelist.template $TMPDIR/LETKF/letkf.namelist
-      edit_namelist_letkf $TMPDIR/LETKF/letkf.namelist
-      cp $TMPDIR/LETKF/letkf.namelist $RESULTDIRA
-
-      if [ ! -n "$ELAPSE_LETKF" ] ; then
-       ELAPSE_LETKF=$ELAPSE
-      fi
-      if [ ! -n "$TOTAL_NODES_LETKF" ] ; then
-       TOTAL_NODES_LETKF=$TOTAL_NODES
-      fi
-      if [ ! -n "$USE_ADAPTIVE_INFLATION" ] ; then
-       USE_ADAPTIVE_INFLATION=0
-      fi
-      if [ $USE_ADAPTIVE_INFLATION -eq 1 ] ; then
-       if [ $ITER -gt 4 ] ; then
-         inflation_date=`date_edit2 $ADATE -86400 `
-         INFLATION_FILE=$OUTPUTDIR/anal/${inflation_date}/infl_mul.grd 
-       else
-         inflation_date=`echo $CDATE | cut -c9-14 `
-         INFLATION_FILE=$INPUTDIR/initial_inf/${inflation_date}/infl_mul.grd
-       fi
-      fi
-
-
-      TOTAL_PROC_LETKF=`expr $TOTAL_NODES_LETKF \* $PROC_PER_NODE `
-
-      local QEUE=`get_qeue_k $TOTAL_NODES_LETKF `
-
-      #Prepare the script for bulk job.
-      echo "#!/bin/bash    "                                     > $local_script
-      echo "#PJM --rsc-list \"node=${TOTAL_NODES_LETKF}\"        ">> $local_script
-      echo "#PJM --rsc-list \"rscgrp=${QEUE}\"                   ">> $local_script
-      echo "#PJM --rsc-list \"elapse=${ELAPSE_LETKF}\"           ">> $local_script
-      echo "#PJM --mpi \"proc=${TOTAL_PROC_LETKF}      \"        ">> $local_script
-      #echo "#PJM --mpi \"shape=${TOTAL_NODES}       \"           ">> $local_script
-      echo "#PJM --mpi assign-online-node                        ">> $local_script
-      echo "#PJM --stg-transfiles all                            ">> $local_script
-      echo "#PJM -S                                              ">> $local_script
-      #PROGRAMS AND SCRIPTS
-      echo "#PJM --stgin \"$RUNTIMELIBS/*            ./lib/      \" ">> $local_script
-      echo "#PJM --stgin \"${TMPDIR}/LETKF/*         ./LETKF/    \" ">> $local_script
-      echo "#PJM --stgin \"${TMPDIR}/OBS/*           ./LETKF/    \" ">> $local_script
-      echo "#PJM --stgin \"${TMPDIR}/SCRIPTS/*       ./SCRIPTS/  \" ">> $local_script
-      #UPLOAD FIRST GUES (ONLY IF ITERATION IS GREATHER THAN ONE)
-      echo "#PJM --stgin \"${TMPDIR}/CURRENT_LETKF/*  ./LETKF/   \" ">> $local_script
-
-      if [ $USE_ADAPTIVE_INFLATION -eq 1 ] ; then
-        echo "#PJM --stgin \"${INFLATION_FILE}        ./LETKF/   \" ">> $local_script
-      fi
-
-      #STAGEOUT ANALYSIS AND AND LOGS
-      M=1
-      while [ $M -le $MEANMEMBER ] ; do
-        MEM=`ens_member $M`
-        echo "#PJM --stgout   \"./LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRA}/anal${MEM} \" ">> $local_script #Analysis ensemble members and mean
-        M=`expr $M + 1 `
-      done
-      echo "#PJM --stgout   \"./LETKF/gues${MEANMEMBER}     ${RESULTDIRG}/           \" ">> $local_script #Mean of the gues ensemble 
-      echo "#PJM --stgout   \"./LETKF/NOUT*                 ${RESULTDIRA}/           \" ">> $local_script 
-
-      if [ $USE_ADAPTIVE_INFLATION -eq 1 ] ; then
-        echo "#PJM --stgout \"./LETKF/infl_mul.grd          ${RESULTDIRA}/           \" ">> $local_script
-      fi
-
-    
-      #Remove the file that will be used to test the end of the Job.
-      #EXECUTION SECTION
-      echo "BASEDIR=\`pwd\`                           ">> $local_script
-      echo ". /work/system/Env_base                   ">> $local_script
-      echo "if [ -d "./lib" ] ; then                  ">> $local_script
-      echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\${BASEDIR}/lib:/opt/local/globus/lib:/opt/FJSVpxtof/sparc64fx/lib64:/opt/FJSVtclang/GM-1.2.0-15/lib64">> $local_script
-      echo "fi                                      ">> $local_script
-
-      echo "export PARALLEL=1        " >> $local_script
-      echo "export OMP_NUM_THREADS=1 " >> $local_script
-  
-      echo "cd ./LETKF/                                               " >> $local_script
-      echo "time $MPIBIN --of-proc std-file ./letkf.exe               " >> $local_script
-      echo "echo \"CICLE NORMAL END \"                                " >> $local_script    
-
-}
-
 
 generate_run_letkf_script_torque () {
-#CREATE THE SCRIPT TO BE SUBMITED TO K COMPUTER
+
       local_script=$1
 
       # CREATE NAMELIST FOR LETKF
@@ -2368,6 +1830,8 @@ generate_run_letkf_script_torque () {
 
       TOTAL_PROC_LETKF=`expr $TOTAL_NODES_LETKF \* $PROC_PER_NODE `
       rm -fr $TMPDIR/LETKF/*.dat #Remove observations.
+      ln -sf $TMPDIR/OBS/obs??.dat $TMPDIR/LETKF/
+
       if [ $USE_ADAPTIVE_INFLATION -eq 1 ] ; then
         cp ${INFLATION_FILE}  $TMPDIR/LETKF/   
       fi
@@ -2391,9 +1855,14 @@ generate_run_letkf_script_torque () {
       #CREATE THE FILES WHERE THE GUES AND ANAL ENSEMBLE MEANS WILL BE STORED.
       echo "cp gs${NBSLOT}${MEM} gues${MM}                                                                    " >> $local_script
       echo "cp gs${NBSLOT}${MEM} anal${MM}                                                                    " >> $local_script
-      echo "generate_machinefile $TMPDIR/LETKF/ \$PBS_NODEFILE 1 $TOTAL_PROC_LETKF                            " >> $local_script
-      echo "time $MPIBIN -np ${TOTAL_PROC_LETKF} -f $TMPDIR/LETKF/machinefile.1 $TMPDIR/LETKF/run_letkf.sh    " >> $local_script
-
+      if [ $SYSTEM -eq 1 ] ; then
+       echo "generate_machinefile $TMPDIR/LETKF/ \$PBS_NODEFILE 1 $TOTAL_PROC_LETKF                            " >> $local_script
+       echo "time $MPIBIN -np ${TOTAL_PROC_LETKF} -f $TMPDIR/LETKF/machinefile.1 $TMPDIR/LETKF/run_letkf.sh    " >> $local_script
+      fi
+      if [ $SYSTEM -eq 1 ] ; then
+       echo "generate_machinefile $TMPDIR/LETKF/ null 1 $TOTAL_PROC_LETKF                                      " >> $local_script
+       echo "time $MPIBIN -np ${TOTAL_NODE_LETKF} --vcoordfile $TMPDIR/LETKF/machinefile.1 $TMPDIR/LETKF/run_letkf.sh  " >> $local_script
+      fi
       echo "rm -f ${TMPDIR}/LETKF/*.dat   "  >> $local_script
 
       
@@ -2404,12 +1873,14 @@ get_observations() {
 #Go trough all possible observation types (incorporated into this system)
 #and link them to the corresponding folder.
 
+local DESTDIR=$1
+
 if [ ! -n "$OBS" ] ; then
   echo "[Warning]: OBS not set we will continue without conventional obs"
 
 else
  
-  get_conventional_observations
+  get_conventional_observations $DESTDIR
 
 fi
 
@@ -2417,7 +1888,7 @@ if [ ! -n "$RADAROBS" ] ; then
   echo "[Warning]: RADAROBS not set we will continue without radar obs"
 else
 
-  get_radar_observations
+  get_radar_observations $DESTDIR
 
 fi
 
@@ -2425,7 +1896,7 @@ fi
 
 get_conventional_observations () {
 
-local ADATES=`echo $ADATE | cut -c1-10`  #Short version of analysis date (YYYYMMDDHH)
+ local DESTDIR=$1
 
  local CDATEL=$WSDATE
 
@@ -2434,8 +1905,10 @@ local ADATES=`echo $ADATE | cut -c1-10`  #Short version of analysis date (YYYYMM
    it=`slot_number $it `
    OBSFILE=$OBSDIR/obs_${CDATEL}.dat
    echo $OBSFILE
+   echo cp -f $OBSFILE $DESTDIR/obs${it}.dat
    if [ -e $OBSFILE ] ; then
-    cp -f $OBSFILE $TMPDIR/OBS/obs${it}.dat
+    cp -f $OBSFILE $DESTDIR/obs${it}.dat
+    cp -f $OBSFILE $DESTDIR/obs${it}.dat
    fi
    it=`expr ${it} + 1 `
    CDATEL=`date_edit2 ${CDATEL} ${WINDOW_FREC}`
@@ -2445,6 +1918,8 @@ local ADATES=`echo $ADATE | cut -c1-10`  #Short version of analysis date (YYYYMM
 
 
 get_radar_observations () {
+
+local DESTDIR=$1
 
 local CDATEL=$WSDATE
 
@@ -2462,7 +1937,7 @@ fi
    OBSFILE=$RADAROBSDIR/radar${itradar}_${CDATEL}.dat
 
   if [ -e $OBSFILE ] ; then
-   cp -f $OBSFILE $TMPDIR/OBS/rad${it}${itradar}.dat
+   cp -f $OBSFILE $DESTDIR/rad${it}${itradar}.dat
    echo $OBSFILE
   fi
 

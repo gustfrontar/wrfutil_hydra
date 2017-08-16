@@ -1,5 +1,15 @@
-#PBS -l nodes=@@NODES@@:ppn=@@PPN@@
-#PBS -S /bin/bash
+#!/bin/sh
+#PJM -g @@GROUP@@
+#PJM -s
+#PJM --rsc-list "node=@@NNODES@@"
+#PJM --rsc-list "elapse=@@ELAPSE@@"
+#PJM --rsc-list "rscgrp=@@QUEUE@@"
+#PJM --rsc-list "node-quota=29G"
+#PJM --mpi "proc=@@NODES@@"
+#PJM --mpi assign-online-node
+#PJM --stg-transfiles all
+#PJM --stgin "@@TMPDIR@@ ./"
+#PJM --stgout "./output @@OUTPUTDIR@@ " 
 
 #=======================================================================
 # This script runs multiple data assimilation cycles.
@@ -12,7 +22,7 @@
 # Modify below according to your environment
 #-----------------------------------------------------------------------
 #Get root dir
-CDIR=`pwd`
+TMPDIR=`pwd`
 
 CONFIGURATION=@@CONFIGURATION@@
 
