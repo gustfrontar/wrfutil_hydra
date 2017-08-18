@@ -48,7 +48,7 @@ MODULE common_obs_wrf
   INTEGER, PARAMETER :: id_co_obs = 5002
 
  
-  REAL(r_size) :: minref !=10.0d0**( minrefdbz / 10.0d0)
+  REAL(r_size) :: min_ref=10**(minrefdbz)/10;
 
   !INTEGER, PARAMETER :: type_sband_radar = 1 
   !INTEGER, PARAMETER :: type_xband_radar = 2
@@ -69,11 +69,11 @@ logical , intent(out) :: output
   output=.true.
   SELECT CASE ( obstype_in )
     CASE(  id_u_obs , id_v_obs , id_t_obs , id_q_obs , id_rh_obs , id_tv_obs ,      &
+           id_ps_obs , id_us_obs , id_vs_obs , id_ts_obs , id_qs_obs , id_rhs_obs , &
            id_pwv_obs, id_rain_obs , id_totco_obs )
          output=.true.
-    CASE( id_reflectivity_obs , id_radialwind_obs,         &
-          id_pseudorh_obs , id_us_obs , id_vs_obs ,        & 
-          id_ts_obs , id_qs_obs , id_rhs_obs, id_ps_obs )
+    CASE( id_reflectivity_obs , id_radialwind_obs,       &
+          id_pseudorh_obs )
          output=.false.
     CASE DEFAULT
          WRITE(6,*)"[Warning]: Not recognized obs type in is_vertp ",obstype_in
@@ -134,35 +134,35 @@ INTEGER, INTENT(OUT) :: iobs_out
 
 END SUBROUTINE get_iobs
 
-SUBROUTINE get_method_refcalc( lambda , method_ref_calc )
-REAL(r_size),INTENT(IN)  :: lambda 
-INTEGER     ,INTENT(OUT) :: method_ref_calc
+!SUBROUTINE get_method_refcalc( lambda , method_ref_calc )
+!REAL(r_size),INTENT(IN)  :: lambda 
+!INTEGER     ,INTENT(OUT) :: method_ref_calc
+!
+!
+!     !Check radar band (radar band is in cm and is stored in typ.
+!     IF( lambda > 3.75 .AND. lambda <= 7.5 )THEN
+!       write(6,*)"[Error]: Cband reflectivity calculation is not coded yet"
+!       method_ref_calc=-9
+!     ELSEIF( lambda > 7.5 .AND. lambda <= 15)THEN
+!       method_ref_calc=2
+!     ELSEIF( lambda > 2.5 .AND. lambda >= 3.75)THEN
+!       method_ref_calc=3
+!     ELSE
+!       write(6,*)"[Error]: Not recognized radar wave-length"
+!       method_ref_calc=-9
+!     ENDIF
 
-
-     !Check radar band (radar band is in cm and is stored in typ.
-     IF( lambda > 3.75 .AND. lambda <= 7.5 )THEN
-       write(6,*)"[Error]: Cband reflectivity calculation is not coded yet"
-       method_ref_calc=-9
-     ELSEIF( lambda > 7.5 .AND. lambda <= 15)THEN
-       method_ref_calc=2
-     ELSEIF( lambda > 2.5 .AND. lambda >= 3.75)THEN
-       method_ref_calc=3
-     ELSE
-       write(6,*)"[Error]: Not recognized radar wave-length"
-       method_ref_calc=-9
-     ENDIF
-
-END SUBROUTINE get_method_refcalc
+!END SUBROUTINE get_method_refcalc
 
 !-----------------------------------------------------------------------
 ! Transformation from model variables to an observation
 !-----------------------------------------------------------------------
-SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
+SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,method_ref_calc,v3d,v2d,yobs)
   IMPLICIT NONE
   REAL(r_size),INTENT(IN) :: elm , olon , olat
   REAL(r_size),INTENT(IN) :: ri,rj,rk
   REAL(r_size),INTENT(IN) :: raz,rel    !For radial velocity computation.
-  INTEGER                 :: method_ref_calc
+  INTEGER     ,INTENT(IN) :: method_ref_calc
   REAL(r_size),INTENT(IN) :: v3d(nlon,nlat,nlev,nv3d)
   REAL(r_size),INTENT(IN) :: v2d(nlon,nlat,nv2d)
   REAL(r_size),INTENT(OUT) :: yobs
@@ -306,7 +306,7 @@ SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
 
      !Get the right reflectivity computation method based on radar
      !wavelength.
-     CALL get_method_refcalc(typ , method_ref_calc )
+     !CALL get_method_refcalc(typ , method_ref_calc )
 
      CALL calc_ref_vr(qvr,qcr,qrr,qcir,qsr,qgr,ur,vr,wr,tr,pr,raz,rel,method_ref_calc,ref,radialv,att_coef)
 
@@ -548,7 +548,7 @@ SUBROUTINE calc_ref_vr(qv,qc,qr,qci,qs,qg,u,v,w,t,p,az,elev,method,ref,vr,k)
   ref = ref / ( pip * ( nor ** 0.75 ) * ( ror ** 1.75 ) )
   !ref= 2.04d4 *( ( ro * qt * 1.0d3 ) ** 1.75 ) !Original Sun and Crook expresion.
   ELSE
-  ref=minref
+  ref=min_ref
   ENDIF
 
   !Radial wind
@@ -615,7 +615,7 @@ SUBROUTINE calc_ref_vr(qv,qc,qr,qci,qs,qg,u,v,w,t,p,az,elev,method,ref,vr,k)
 
     !Compute reflectivity weigthed terminal velocity.
     !Lin et al 1983.
-    IF( ref > minref )THEN
+    IF( ref > min_ref )THEN
     !There are hidrometeors, compute their terminal velocity.
     !Change units to be consistent with Lin et al 1983 and
     !to obtain wt in m/s
@@ -742,7 +742,7 @@ SUBROUTINE calc_ref_vr(qv,qc,qr,qci,qs,qg,u,v,w,t,p,az,elev,method,ref,vr,k)
   !Lin et al 1983. (The distribution parameters are 
   !consistent with the work of Jung et al 2007)
 
-  IF( ref > minref )THEN
+  IF( ref > min_ref )THEN
     !There are hidrometeors, compute their terminal velocity.
     !Units according to Lin et al 1983.
     nor=8.0d-2      ![cm^-4]
@@ -1325,15 +1325,15 @@ SUBROUTINE get_nobs(cfile,nn)
       READ(iunit,IOSTAT=ios) wk
       IF(ios /= 0) EXIT
       SELECT CASE(NINT(wk(1)))
-      CASE(id_u_obs,id_us_obs)
+      CASE(id_u_obs)
         iu = iu + 1
-      CASE(id_v_obs,id_vs_obs)
+      CASE(id_v_obs)
         iv = iv + 1
-      CASE(id_t_obs,id_ts_obs)
+      CASE(id_t_obs)
         it = it + 1
-      CASE(id_q_obs,id_qs_obs)
+      CASE(id_q_obs)
         iq = iq + 1
-      CASE(id_rh_obs,id_rhs_obs)
+      CASE(id_rh_obs)
         irh = irh + 1
       CASE(id_tv_obs)
         itv = itv + 1      

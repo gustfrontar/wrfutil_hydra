@@ -321,7 +321,7 @@ timeslots: DO islot=1,nslots
             tmpk(n) = 1.00001d0
           ELSE IF(NINT(tmpelm(n)) > 9999) THEN
             tmpk(n) = 0.0d0         
-	  ELSE
+          ELSE
            WRITE(6,*)'Z below topography'
            WRITE(6,*)tmpelm(n),tmplon(n),tmplat(n),tmplev(n),tmpi(n),tmpj(n),tmpk(n),tmpdat(n),tmperr(n)
            CYCLE
@@ -337,6 +337,16 @@ timeslots: DO islot=1,nslots
             CYCLE
           END IF
         END IF
+        IF(NINT(tmpelm(n)) == id_ts_obs .or. NINT(tmpelm(n)) == id_qs_obs .or. NINT(tmpelm(n)) == id_rhs_obs .or. &
+           NINT(tmpelm(n)) == id_us_obs .or. NINT(tmpelm(n)) == id_vs_obs ) THEN
+           CALL itpl_2d(phi0,tmpi(n),tmpj(n),dz)
+           dz = tmplev(n) - dz
+           tmpk(n) = 1.00001d0
+           IF( ABS( dz ) > 200.0 )THEN
+             WRITE(6,*)'Assimilation of surface observation fails, delta z is too high'
+           ENDIF
+        ENDIF
+ 
         !
         ! observational operator
         !

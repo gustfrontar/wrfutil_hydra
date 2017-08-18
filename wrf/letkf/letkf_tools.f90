@@ -652,6 +652,9 @@ SUBROUTINE obs_local(ij,ilev,nvar,hdxf,rdiag,rloc,dep,nobsl,logpfm,zfm)
         ielm == id_radialwind_obs .OR. ielm == id_pseudorh_obs ) THEN
         dlev = ABS( obslev(nobs_use(n)) - zfm(ij,ilev) ) !Vertical localization in Z.
         IF(dlev > dist_zeroz) CYCLE
+      ELSE IF( ( ielm == id_ts_obs .or. ielm == id_qs_obs .or. ielm == id_rhs_obs .or. &
+               ielm == id_us_obs .or. ielm == id_vs_obs ) .and. ilev > 1 )THEN
+            dlev= ABS( obslev(nobs_use(n)) - zfm(ij,ilev) ) !Vertical localization in Z.
       ELSE
         dlev = 0.0d0
       END IF

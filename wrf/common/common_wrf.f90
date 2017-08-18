@@ -20,7 +20,7 @@ MODULE common_wrf
 
   !MODULE VARIABLES (NOT READ FROM NAMELIST) 
   INTEGER, PARAMETER :: nv3d=15
-  INTEGER, PARAMETER :: nv2d=3
+  INTEGER, PARAMETER :: nv2d=5
   INTEGER, PARAMETER :: np2d=3
   INTEGER, PARAMETER :: nid_obs=10
 
@@ -51,6 +51,8 @@ MODULE common_wrf
   INTEGER,PARAMETER :: iv2d_ps=1
   INTEGER,PARAMETER :: iv2d_t2=2
   INTEGER,PARAMETER :: iv2d_q2=3
+  INTEGER,PARAMETER :: iv2d_u10=4
+  INTEGER,PARAMETER :: iv2d_v10=5
   !SPECIAL VARIABLES
   INTEGER,PARAMETER :: iv3d_tv=100
   INTEGER,PARAMETER :: iv2d_mu=200
@@ -88,8 +90,8 @@ MODULE common_wrf
   LOGICAL, PARAMETER :: OPTIONAL_VARIABLE(nv3d+nv2d+np2d)= &  !Some input variables are optional (eg. condensates)
   &(/ .false. , .false. , .true. , .false. , .false. , .false. , .true. , .true. , &
   !   U          V         W         T         P         PH      QV        QC        
-  & .true. , .true. , .true. , .true. , .true. , .true. , .true. , .false. , .true. , .true. , &
-  !   QR       QCI      QS       QG     CO_ANT  CO_BCK    CO_BBU     PS        T2M     Q2M     
+  & .true. , .true. , .true. , .true. , .true. , .true. , .true. , .false. , .true. , .true. , .true. , .true. , &
+  !   QR       QCI      QS       QG     CO_ANT  CO_BCK    CO_BBU     PS        T2M     Q2M       U10M    V10M
   & .true. , .true. , .true.  /)
   !  HFX_F    QFX_F   UST_F 
 
@@ -137,6 +139,8 @@ SUBROUTINE set_common_wrf(inputfile)
   element(nv3d+iv2d_ps)   = 'PSFC'
   element(nv3d+iv2d_t2)   = 'T2  '
   element(nv3d+iv2d_q2)   = 'Q2  '
+  element(nv3d+iv2d_u10)   = 'U10  '
+  element(nv3d+iv2d_v10)   = 'V10  '
   element(nv3d+nv2d+ip2d_hfx)   = 'HFX_FACTOR'
   element(nv3d+nv2d+ip2d_qfx)   = 'QFX_FACTOR'
   element(nv3d+nv2d+ip2d_ust)   = 'UST_FACTOR'
@@ -539,6 +543,14 @@ IF ( flag .EQ. '2d' )THEN
        varname='MU'
        auxvarname='MUB'
        readvar=.true.
+      CASE(iv2d_u10)
+       nxvar=nlon
+       nyvar=nlat-1
+       readvar=present_variable(nv3d+iv)
+      CASE(iv2d_v10)
+       nxvar=nlon-1
+       nyvar=nlat
+       readvar=present_variable(nv3d+iv)
       CASE DEFAULT
        WRITE(6,*)"2D variable not recognized, retrieve none : ",iv
        RETURN
@@ -698,6 +710,14 @@ IF ( flag .EQ. '2d' )THEN
        varname='MU'
        auxvarname='MUB'
        writevar=.true.
+      CASE(iv2d_u10)
+       nxvar=nlon
+       nyvar=nlat-1
+       writevar=present_variable(nv3d+iv)
+      CASE(iv2d_v10)
+       nxvar=nlon-1
+       nyvar=nlat
+       writevar=present_variable(nv3d+iv)
       CASE DEFAULT
        WRITE(6,*)"Variable not recognized, won't be written",iv
        RETURN
