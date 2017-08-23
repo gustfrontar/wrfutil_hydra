@@ -1,0 +1,491 @@
+MODULE common_thinning
+!=======================================================================
+!
+! [PURPOSE:] Thinning of radar data
+!
+! [HISTORY:] This version produce a superobing of the observations but
+! the data is stored in azimuth , range , elevation. Conversion to the 
+! lat , lon , z is performed by the observation operator.
+!
+!=======================================================================
+!$USE OMP_LIB
+  USE common
+  USE common_radar_tools
+  USE common_smooth2d
+
+  IMPLICIT NONE
+  PUBLIC
+
+  INTEGER,PARAMETER :: id_ref_obs=4001
+  INTEGER,PARAMETER :: id_vr_obs=4002
+
+  REAL(r_size)  :: error_ref=5.0d0     !Reflectivity error in dBz
+  REAL(r_size)  :: error_vr=1.0d0      !Doppler error in m/s
+  REAL(r_size), ALLOCATABLE :: grid_ref(:,:,:) , grid_vr(:,:,:)
+  REAL(r_size), ALLOCATABLE :: grid_attenuation(:,:,:)
+  REAL(r_size), ALLOCATABLE :: grid_el_ref(:,:,:) , grid_az_ref(:,:,:) , grid_ra_ref(:,:,:) !Lat, Lon and Z weighted by the observations.
+  REAL(r_size), ALLOCATABLE :: grid_el_vr(:,:,:) , grid_az_vr(:,:,:) , grid_ra_vr(:,:,:) !Lat, Lon and Z weighted by the observations.
+  REAL(r_size), ALLOCATABLE :: grid_w_ref(:,:,:) , grid_w_vr(:,:,:)
+  REAL(r_size)              :: tmpw
+  REAL(r_size), ALLOCATABLE :: grid_error_ref(:,:,:) , grid_error_vr(:,:,:) 
+  REAL(r_size)              :: error_ref_sclx , error_ref_sclz , error_vr_sclx , error_vr_sclz
+
+  REAL(r_size), ALLOCATABLE     :: returnedpower(:,:,:)
+  REAL(r_size) ,ALLOCATABLE     :: grid_count_ref(:,:,:),grid_count_vr(:,:,:)
+  INTEGER nobs
+
+  INTEGER  :: NLON , NLAT , NLEV
+  REAL(r_size) , ALLOCATABLE   :: lon(:,:) , lat(:,:) , z(:,:,:)
+  REAL(r_size)                 :: DX , DZ , MAXZ , MAXRANGE !In meters.
+  REAL(r_size)                 :: DLON , DLAT
+ 
+  LOGICAL :: SIMULATE_OBSERVATIONAL_ERROR  = .FALSE. !Default value is false.
+  LOGICAL :: DBZ_TO_POWER                  = .FALSE. !Whether reflectivity is in dbz or not.
+
+  LOGICAL :: DEBUG_OUTPUT=.FALSE.
+  
+CONTAINS
+!-----------------------------------------------------------------------
+! Define grid
+!-----------------------------------------------------------------------
+SUBROUTINE define_grid ( CURRENT_RADAR )
+ IMPLICIT NONE
+ TYPE(radar) :: CURRENT_RADAR
+ INTEGER     :: i,j,k
+
+   !Translate DX into an appropiate DLON and DLAT.
+   !Hopefully nobody will put a radar at the pole.
+
+   DLON=rad2deg*DX/(COS(current_radar%lat0*deg2rad)*re)
+   DLAT=rad2deg*DX/re
+
+   !Compute possible value for NLON in order to cover the maximum radar range.
+   MAXRANGE=min(MAXRANGE,current_radar%rrange(current_radar%nr)) 
+   MAXRANGE=2.0*MAXRANGE
+   NLON=CEILING( MAXRANGE / DX )
+   NLAT=NLON
+
+   NLEV=CEILING(MAXZ/DZ)
+
+   !Force grid dimensions to be odd
+   IF( MODULO( NLON , 2 )== 0)NLON=NLON+1
+   IF( MODULO( NLAT , 2 )== 0)NLAT=NLAT+1
+
+   ALLOCATE( lon(NLON,NLAT) , lat(NLON,NLAT) , z(NLON,NLAT,NLEV) )
+
+   !DEFINE LAT AND LON
+   DO i=1,NLON
+     DO j=1,NLAT
+       LON(i,j)=current_radar%lon0 + DLON*( -1.0-(NLON-1.0)/2.0 + i )
+       LAT(i,j)=current_radar%lat0 + DLAT*( -1.0-(NLAT-1.0)/2.0 + j )
+     ENDDO
+   ENDDO
+
+   !DEFINE Z
+   DO k=1,NLEV
+      Z(:,:,k)=DZ*(k-1)
+   ENDDO
+
+   WRITE(6,*)'DEFINE GRID DETAILED OUTPUT     '
+   WRITE(6,*)'NLON ',NLON
+   WRITE(6,*)'NLAT ',NLAT
+   WRITE(6,*)'NLEV ',NLEV
+   WRITE(6,*)'MAXRANGE ',MAXRANGE
+   WRITE(6,*)'STARTING LON ',LON(1,1)
+   WRITE(6,*)'STARTING LAT ',LAT(1,1)
+   WRITE(6,*)'END      LON ',LON(NLON,NLAT)
+   WRITE(6,*)'END      LAT ',LAT(NLON,NLAT)
+   WRITE(6,*)'DLAT         ',DLAT
+   WRITE(6,*)'DLON         ',DLON
+   WRITE(6,*)'DX           ',DX
+   WRITE(6,*)'DZ           ',DZ
+
+
+END SUBROUTINE define_grid
+!-----------------------------------------------------------------------
+! Main thinning routine
+!-----------------------------------------------------------------------
+SUBROUTINE radar_thinning( CURRENT_RADAR )
+
+TYPE(RADAR) :: CURRENT_RADAR 
+
+INTEGER :: ia , ir , ie
+REAL(r_size)  :: reali,realj,realk
+INTEGER :: i , j , k  , nobs , iv
+INTEGER :: ii,jj,kk,iobs,nv3d
+REAL(r_sngl) :: wk(7)
+INTEGER      :: maskh(NLON,NLAT),maskv(NLEV)
+INTEGER      :: filter_size_x , filter_size_z 
+REAL(r_size) :: tmpfield(NLON,NLAT,NLEV)
+REAL(r_size) :: stderror , amp_factor , meanerror
+REAL(r_size) :: maxrelativeerror , minrelativeerror
+INTEGER      :: count1
+
+CHARACTER(256) :: filter_type
+
+nobs=0
+nv3d=current_radar%nv3d
+
+IF ( SIMULATE_OBSERVATIONAL_ERROR )THEN
+!THIS IS AN OSSE, WE WILL ADD SOME KIND OF RANDOM NOISE TO THE THINNED OBS.
+     filter_type = 'Lanczos'
+     maskh       = 1
+     maskv       = 1
+
+    DO iv = 1,nv3d
+      IF( iv == current_radar%iv3d_ref )THEN
+       filter_size_x = NINT( ERROR_REF_SCLX / DX )
+       filter_size_z = NINT( ERROR_REF_SCLZ / DZ )
+      ENDIF
+      IF( iv == current_radar%iv3d_wind )THEN
+       filter_size_x = NINT( ERROR_VR_SCLX / DX )
+       filter_size_z = NINT( ERROR_VR_SCLZ / DZ )
+      ELSE
+       CYCLE
+      ENDIF
+
+      !FOR REF ERRORS
+      DO i=1,nlon
+        DO j=1,nlat
+          DO k=1,nlev
+             CALL com_randn(1,tmpfield(i,j,k))
+          ENDDO
+        ENDDO
+      ENDDO
+
+      DO k=1,nlev
+        DO j=1,nlat
+         CALL com_randn2(nlon,tmpfield(:,j,k),0)
+        ENDDO
+         CALL filter_2d(tmpfield(:,:,k),tmpfield(:,:,k),maskh,filter_size_x,filter_type,nlon,nlat)
+      ENDDO
+      DO i =1,nlat
+        DO j =1,nlon
+          CALL filter_2d(tmpfield(i,j,:),tmpfield(i,j,:),maskv,filter_size_z,filter_type,nlev,1)
+        ENDDO
+      ENDDO
+
+
+      IF ( iv == current_radar%iv3d_ref )THEN 
+        !In this case we will assume spatially correlated random percentual errors in returned power.
+        !In this case error_ref is the maximum relative error.
+        ALLOCATE(grid_error_ref(NLON,NLAT,NLEV))
+        maxrelativeerror=0.0d0
+        minrelativeerror=0.0d0
+         DO i=1,nlon
+          DO j=1,nlat
+           DO k=1,nlev
+             IF( tmpfield(i,j,k) .GT. maxrelativeerror )maxrelativeerror=tmpfield(i,j,k)
+             IF( tmpfield(i,j,k) .LT. minrelativeerror )minrelativeerror=tmpfield(i,j,k)
+           ENDDO
+          ENDDO
+         ENDDO
+         amp_factor= (2.0d0 * error_ref) / (maxrelativeerror-minrelativeerror) 
+         !This is not the final error yet. This is just the error relative error.
+         grid_error_ref = tmpfield * amp_factor
+        
+      ELSEIF ( iv == current_radar%iv3d_wind )THEN
+        !In this case we will assume spatially correlated random Gaussian error in radial velocity.
+        ALLOCATE(grid_error_vr(NLON,NLAT,NLEV))
+        !Compute std.
+        stderror=0.0d0
+        DO i=1,nlon
+         DO j=1,nlat
+          DO k=1,nlev
+           stderror=stderror+tmpfield(i,j,k)**2
+          ENDDO
+         ENDDO
+        ENDDO
+        stderror=stderror/REAL(NLON*NLAT*NLEV,r_size)
+        stderror=SQRT(stderror)
+        amp_factor = error_vr / stderror 
+        grid_error_vr = tmpfield * amp_factor
+      ENDIF
+
+   ENDDO 
+
+
+ENDIF
+
+   ALLOCATE(grid_ref(nlon,nlat,nlev),grid_vr(nlon,nlat,nlev))
+   ALLOCATE(grid_count_ref(nlon,nlat,nlev),grid_count_vr(nlon,nlat,nlev))
+   ALLOCATE(grid_attenuation(nlon,nlat,nlev))
+   ALLOCATE(grid_az_ref(nlon,nlat,nlev),grid_el_ref(nlon,nlat,nlev),grid_ra_ref(nlon,nlat,nlev))
+   ALLOCATE(grid_az_vr(nlon,nlat,nlev),grid_el_vr(nlon,nlat,nlev),grid_ra_vr(nlon,nlat,nlev))
+   ALLOCATE(grid_w_ref(nlon,nlat,nlev),grid_w_vr(nlon,nlat,nlev))
+
+    !We will work with reflectivity (not in dbz) if we have dbz as input then transform it
+    IF( DBZ_TO_POWER )THEN
+        WHERE( current_radar%radarv3d(:,:,:,current_radar%iv3d_ref) .NE. current_radar%missing )
+        current_radar%radarv3d(:,:,:,current_radar%iv3d_ref)=10.0d0**( current_radar%radarv3d(:,:,:,current_radar%iv3d_ref)/10.0d0 )
+        ENDWHERE
+    ENDIF
+
+    !Missing values not associated with clutter will be asigned a minimum reflectivity value. 
+    WHERE ( current_radar%radarv3d(:,:,:,current_radar%iv3d_ref) .EQ. current_radar%missing ) current_radar%radarv3d(:,:,:,current_radar%iv3d_ref)=minz
+    WHERE ( current_radar%radarv3d(:,:,:,current_radar%iv3d_ref) .LT. minz ) current_radar%radarv3d(:,:,:,current_radar%iv3d_ref)=minz
+
+    IF ( USE_QCFLAG )THEN
+    !If dealing with qced real data it will be a good idea to remove all values detected as non weather echoes in the qc algorithm.
+    !This can also be useful to deal with simulated tophographyc shading in OSSES.
+    WHERE ( current_radar%qcflag(:,:,:) .GE. 900.0d0 ) current_radar%radarv3d(:,:,:,current_radar%iv3d_ref)=current_radar%missing
+    WHERE ( current_radar%qcflag(:,:,:) .GE. 900.0d0 ) current_radar%radarv3d(:,:,:,current_radar%iv3d_wind)=current_radar%missing
+    ENDIF
+    !We need reflectivity to average wind observations. Remove wind observations where the reflectivity is missing.
+    WHERE ( current_radar%radarv3d(:,:,:,current_radar%iv3d_ref) .EQ. current_radar%missing ) current_radar%radarv3d(:,:,:,current_radar%iv3d_wind)=current_radar%missing
+
+!Loop over radar variables.
+
+
+grid_ref=0.0d0
+grid_vr =0.0d0
+grid_count_ref=0.0d0
+
+grid_attenuation=0.0d0
+grid_az_ref=0.0d0
+grid_el_ref=0.0d0
+grid_ra_ref=0.0d0
+grid_w_ref =0.0d0
+grid_az_vr =0.0d0
+grid_el_vr =0.0d0
+grid_ra_vr =0.0d0
+grid_w_vr  =0.0d0
+
+!AVERAGE DATA AND INCLUDE OBSERVATIONA ERROR.
+    !We will compute the i,j,k for each radar grid point and box average the data.
+
+ 
+    !WRITE(*,*)current_radar%radarv3d(10,10,10,1) , current_radar%attenuation(10,10,10) , current_radar%qcflag(10,10,10)
+
+
+    DO ia=1,current_radar%na
+     DO ir=1,current_radar%nr
+      DO ie=1,current_radar%ne
+
+
+        !Get i,j,k very simple approahc since we are assuming a regular lat/lon/z grid.
+        CALL lll2ijk(current_radar%lon(ia,ir,ie),current_radar%lat(ia,ir,ie),current_radar%z(ia,ir,ie),reali,realj,realk)
+
+        !Skip data outside the model domain.
+        IF( reali < 1 .OR. reali > nlon .OR. realj < 1 .OR. realj > nlat .OR. realk < 1 .OR. realk > nlev )CYCLE
+
+         i=ANINT(reali)
+         j=ANINT(realj)
+         k=ANINT(realk)
+
+         IF ( current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_ref) .GE. minz .AND. current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_ref) .NE. current_radar%missing)THEN !PROCESS REFLECITIVITY
+
+            grid_ref(i,j,k)=grid_ref(i,j,k)+current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_ref)
+            grid_count_ref(i,j,k)=grid_count_ref(i,j,k)+1.0d0
+            grid_w_ref(i,j,k)=grid_ref(i,j,k)
+            tmpw=current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_ref)
+
+            !Compute averaged attenuation.
+            IF ( USE_ATTENUATION )THEN
+             grid_attenuation(i,j,k)=grid_attenuation(i,j,k)+current_radar%attenuation(ia,ir,ie)
+            ENDIF
+
+            !IF( current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_ref) .GT. 1.0d0 )THEN
+            !  tmpw=current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_ref)
+            !ELSE
+            !  tmpw=1.0d0
+            !ENDIF
+
+            grid_az_ref(i,j,k)=grid_az_ref(i,j,k)+current_radar%azimuth(ia)*tmpw
+            grid_el_ref(i,j,k)=grid_el_ref(i,j,k)+current_radar%elevation(ie)*tmpw
+            grid_ra_ref(i,j,k)=grid_ra_ref(i,j,k)+current_radar%rrange(ir)*tmpw
+
+            !CONSIDER THE WIND (ONLY IF REF IS GREATER THAN minz) 
+            IF( current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_wind) .NE. current_radar%missing )THEN !PROCESS WIND
+
+            !Wind will be averaged using an average weighted by returned power.
+            !(this should reduce noise). 
+            
+            grid_vr(i,j,k)=grid_vr(i,j,k)+current_radar%radarv3d(ia,ir,ie,current_radar%iv3d_wind)*tmpw
+            grid_az_vr(i,j,k)=grid_az_vr(i,j,k)+current_radar%azimuth(ia)*tmpw
+            grid_el_vr(i,j,k)=grid_el_vr(i,j,k)+current_radar%elevation(ie)*tmpw
+            grid_ra_vr(i,j,k)=grid_ra_vr(i,j,k)+current_radar%rrange(ir)*tmpw
+            grid_w_vr(i,j,k)=grid_w_vr(i,j,k)+tmpw
+
+            ENDIF
+
+
+     
+         ENDIF 
+
+      ENDDO
+     ENDDO
+    ENDDO
+
+
+    !Average data and write observation file (FOR LETKF)
+    DO ii=1,nlon
+     DO jj=1,nlat
+      DO kk=1,nlev
+ 
+           IF( grid_w_ref(ii,jj,kk) .GT. 0.0 )THEN  !Process reflectivity
+              grid_ref(ii,jj,kk) = grid_ref(ii,jj,kk) / grid_count_ref(ii,jj,kk)
+
+              IF(  SIMULATE_OBSERVATIONAL_ERROR .AND. grid_ref(ii,jj,kk) .GT. minz )THEN
+                  grid_error_ref(ii,jj,kk)=grid_error_ref(ii,jj,kk) * grid_ref(ii,jj,kk)
+                  grid_ref(ii,jj,kk) = grid_ref(ii,jj,kk) + grid_error_ref(ii,jj,kk)
+                  IF( grid_ref(ii,jj,kk) .LT. minz )THEN
+                    grid_ref(ii,jj,kk) = minz
+                  ENDIF  
+              ENDIF
+
+               grid_az_ref(ii,jj,kk)=grid_az_ref(ii,jj,kk) / ( grid_w_ref(ii,jj,kk) )
+               grid_el_ref(ii,jj,kk)=grid_el_ref(ii,jj,kk) / ( grid_w_ref(ii,jj,kk) )
+               grid_ra_ref(ii,jj,kk)=grid_ra_ref(ii,jj,kk) / ( grid_w_ref(ii,jj,kk) )
+
+             IF( USE_ATTENUATION )THEN
+             !Use attenuation information.
+             !If the beam is strongly attenuated we increse reflectivity by 1e3.
+             grid_attenuation(ii,jj,kk)=grid_attenuation(ii,jj,kk)/grid_count_ref(ii,jj,kk)
+              IF( grid_attenuation(ii,jj,kk) <= ATTENUATION_THRESHOLD )THEN
+               grid_count_ref(ii,jj,kk)=0.0d0 !We will ignore this point.
+              ENDIF
+             ENDIF
+
+           ENDIF
+
+           IF( grid_w_vr(ii,jj,kk) .GT. 0.0d0 )THEN
+ 
+              grid_vr(ii,jj,kk) = grid_vr(ii,jj,kk) / grid_w_vr(ii,jj,kk)
+
+              IF(  SIMULATE_OBSERVATIONAL_ERROR )THEN
+                 grid_vr(ii,jj,kk)=grid_vr(ii,jj,kk)+grid_error_vr(ii,jj,kk)
+              ENDIF
+
+              IF( grid_w_vr(ii,jj,kk) .GT. 0.0)THEN
+              grid_az_vr(ii,jj,kk)=grid_az_vr(ii,jj,kk) / ( grid_w_vr(ii,jj,kk) )
+              grid_el_vr(ii,jj,kk)=grid_el_vr(ii,jj,kk) / ( grid_w_vr(ii,jj,kk) )
+              grid_ra_vr(ii,jj,kk)=grid_ra_vr(ii,jj,kk) / ( grid_w_vr(ii,jj,kk) )
+              ENDIF
+
+           ENDIF
+
+      ENDDO
+     ENDDO
+    ENDDO
+
+    !COMPUTE REFLECTIIVITY ERROR VARIANCE in DBZ
+    IF( SIMULATE_OBSERVATIONAL_ERROR )THEN
+    stderror=0.0d0
+    meanerror=0.0d0
+    count1=0
+    DO ii=1,nlon
+     DO jj=1,nlat
+      DO kk=1,nlev
+       IF( grid_count_ref(ii,jj,kk) .GT. 0.0d0 )THEN
+         !Compute error in dbz.
+         stderror = stderror + ( 10.0d0*log10( grid_ref(ii,jj,kk) ) - 10.0d0*log10( grid_ref(ii,jj,kk) - grid_error_ref(ii,jj,kk) ) )**2
+         meanerror= meanerror + 10.0d0*log10( grid_ref(ii,jj,kk) ) - 10.0d0*log10( grid_ref(ii,jj,kk) - grid_error_ref(ii,jj,kk) )
+         count1=count1+1
+       ENDIF 
+      ENDDO
+     ENDDO
+    ENDDO
+    meanerror = meanerror / count1 
+    error_ref = SQRT(stderror / count1 - meanerror**2 )
+    ENDIF
+
+   !WRITE THE DATA
+   !WRITE FILE HEADER.
+   OPEN(UNIT=99,FILE='radarobs.dat',STATUS='unknown',FORM='unformatted')
+   !Introduce a small header with the radar possition and two values that might be useful.
+   write(99)REAL(current_radar%lon0,r_sngl)
+   write(99)REAL(current_radar%lat0,r_sngl)
+   write(99)REAL(current_radar%z0,r_sngl)
+
+    nobs=0
+    DO ii=1,nlon
+     DO jj=1,nlat
+      DO kk=1,nlev
+
+       !correspond to the location where the stronger echoes are located.
+          IF( grid_w_ref(ii,jj,kk) .GT. 0.0d0 )THEN
+           wk(1)=REAL(id_ref_obs,r_sngl)
+           wk(6)=REAL(error_ref,r_sngl)
+           wk(2)=REAL(grid_az_ref(ii,jj,kk),r_sngl)
+           wk(3)=REAL(grid_el_ref(ii,jj,kk),r_sngl)
+           wk(4)=REAL(grid_ra_ref(ii,jj,kk),r_sngl)
+           wk(5)=REAL(grid_ref(ii,jj,kk),r_sngl)
+           wk(7)=REAL(current_radar%radar_type,r_sngl)
+           WRITE(99)wk
+           nobs = nobs + 1
+          ENDIF
+          IF( grid_w_vr(ii,jj,kk) .GT. 0.0d0 )THEN
+           wk(1)=REAL(id_vr_obs,r_sngl)
+           wk(6)=REAL(error_vr,r_sngl)
+           wk(2)=REAL(grid_az_vr(ii,jj,kk),r_sngl)
+           wk(3)=REAL(grid_el_vr(ii,jj,kk),r_sngl)
+           wk(4)=REAL(grid_ra_vr(ii,jj,kk),r_sngl)
+           wk(5)=REAL(grid_vr(ii,jj,kk),r_sngl)
+           wk(7)=REAL(current_radar%radar_type,r_sngl)
+           WRITE(99)wk
+           nobs=nobs +1
+          ENDIF
+      ENDDO
+     ENDDO
+    ENDDO
+
+!WRITE GRIDDED DATA (FOR DEBUG)
+!Write gridded file (for debug but also might be usefull for model verification)
+ IF(DEBUG_OUTPUT)THEN
+   open(UNIT=101,FILE='thinned_ref.grd',STATUS='unknown',FORM='unformatted')
+   DO kk=1,nlev
+      WRITE(101)REAL(grid_ref(:,:,kk),r_sngl)
+   ENDDO
+   CLOSE(101)
+   open(UNIT=101,FILE='thinned_vr.grd',STATUS='unknown',FORM='unformatted')
+   DO kk=1,nlev
+      WRITE(101)REAL(grid_vr(:,:,kk),r_sngl)
+   ENDDO
+   IF( SIMULATE_OBSERVATIONAL_ERROR )THEN
+   CLOSE(101)
+   open(UNIT=101,FILE='error_ref.grd',STATUS='unknown',FORM='unformatted')
+   DO kk=1,nlev
+      WRITE(101)REAL(grid_error_ref(:,:,kk),r_sngl)
+   ENDDO
+   CLOSE(101)
+   open(UNIT=101,FILE='thinned_ref.grd',STATUS='unknown',FORM='unformatted')
+   DO kk=1,nlev
+      WRITE(101)REAL(grid_vr(:,:,kk),r_sngl)
+   ENDDO
+   CLOSE(101)
+   ENDIF
+
+ ENDIF
+
+
+WRITE(*,*)'A TOTAL NUMBER OF ', nobs , ' HAS BEEN WRITTEN TO THE OBSERVATION FILE'
+
+    !TODO: OBSERVATION ERROR CAN BE DEFINED AS AN INCREASING FUNCTION OF RANGE.
+    !TO TAKE INTO ACCOUNT ATTENUATION AS WELL AS BEAM BROADENING.
+
+RETURN
+END SUBROUTINE radar_thinning
+!-----------------------------------------------------------------------
+! Horizontal coordinate conversion
+!-----------------------------------------------------------------------
+SUBROUTINE lll2ijk(rlon,rlat,rlev,ri,rj,rk)
+  IMPLICIT NONE
+  REAL(r_size),INTENT(IN) :: rlon
+  REAL(r_size),INTENT(IN) :: rlat
+  REAL(r_size),INTENT(IN) :: rlev
+  REAL(r_size),INTENT(OUT) :: ri
+  REAL(r_size),INTENT(OUT) :: rj
+  REAL(r_size),INTENT(OUT) :: rk
+
+    ri=(rlon-LON(1,1))/DLON + 1.0d0
+    rj=(rlat-LAT(1,1))/DLAT + 1.0d0    
+    rk=(rlev-Z(1,1,1))/DZ   + 1.0d0
+  
+
+  RETURN
+END SUBROUTINE lll2ijk
+
+
+
+END MODULE common_thinning

@@ -53,8 +53,6 @@ MODULE common_namelist
   REAL(r_size) :: gross_error_tycmip=60.0d2   ! Pa
   REAL(r_size) :: undef_obs=9.99d9            ! Missing obs code
   REAL(r_size) :: rainratio_threshold = 0.3d0 !Percentaje of ensemble members with reflectivity greather than 0.
-  REAL(r_size) :: minrefdbz=0.0d0             !Reflectivity values below this threshold won't be assimilated.
-  REAL(r_size) :: pseudo_rh_error=0.1         !Obserational error for pseudo RH observations.
   LOGICAL      :: force_norain_assimilation = .false. 
 
   !PARAMETER ESTIMATION
@@ -91,6 +89,9 @@ MODULE common_namelist
   INTEGER            :: interpolation_technique=1
   INTEGER            :: nradar = 1               !Number of assimilated radars
   LOGICAL            :: use_wt=.true.            !Use or not terminal velocity in the computation of VR
+  LOGICAL            :: use_pseudorh=.false.     !Enable pseudo RH observations.
+  REAL(r_size)       :: minrefdbz=0.0d0          !Reflectivity values below this threshold won't be assimilated.
+  REAL(r_size)       :: pseudorh_error=0.1       !Obserational error for pseudo RH observations.
 
   !OBSGRID SECTION
   REAL(r_size)       :: regrid_res=1.0d0         !Horizontal resolution of obsgrid grid (degree)
@@ -122,13 +123,13 @@ NAMELIST / LOCALIZATION / sigma_obs , sigma_obsv  , sigma_obsz , sigma_obst ,  &
  & var_localp_uv , var_localp_t , var_localp_tv , var_localp_moist , var_localp_ps , var_localp_ref , var_localp_dop ,         &
    var_localp_co  
 NAMELIST / OBSERVATIONS / threshold_dz , gross_error , gross_error_tycll , gross_error_tycmip , &
-&  undef_obs , rainratio_threshold , minrefdbz , pseudo_rh_error , force_norain_assimilation  
+&  undef_obs , force_norain_assimilation  
 NAMELIST / PARAMETER_ESTIMATION / estpar , smooth_par_update_flag , update_parameter_2d , update_parameter_0d , &
  & parameter_localization_type_0d , parameter_localization_type_2d , param_sprd_init , transpar ,  &
  & addinfpar , parameter_inflation_type , parameter_fixinflation , additive_inflation_factor , &
  & param_default_value , param_min_value , param_max_value 
 NAMELIST / INFLATION / cov_infl_mul , sp_infl_add , relax_alpha_spread , relax_alpha ,min_infl_mul
-NAMELIST / RADAR_DA  / interpolation_technique ,  nradar , use_wt
+NAMELIST / RADAR_DA  / interpolation_technique ,  nradar , use_wt , use_pseudorh , pseudorh_error , minrefdbz , rainratio_threshold
 NAMELIST / OBSGRID / nbv , narea , vlon1 , vlon2 , vlat1 , vlat2 , compute_stat, filter_input , regrid_output, regrid_res ,  &
                      regrid_vert_res
 

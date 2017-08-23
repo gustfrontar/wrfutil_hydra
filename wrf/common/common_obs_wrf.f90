@@ -170,7 +170,7 @@ SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
   REAL(r_size) :: rh(nlon,nlat,nlev)
   REAL(r_size) :: sh(nlon,nlat,nlev)
   REAL(r_size) :: tv(nlon,nlat,nlev)    
-  REAL(r_size) :: tg,qg,pg
+  REAL(r_size) :: tg,qg,pg,dz
   REAL(r_size) :: dummy(3)
   INTEGER :: i,j,k
   INTEGER :: is,ie,js,je,ks,ke,ityp
@@ -215,7 +215,9 @@ SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
     CALL itpl_2d(v2d(:,:,iv2d_t2),ri,rj,tg)
     CALL itpl_2d(v2d(:,:,iv2d_q2),ri,rj,qg)
     CALL itpl_2d(v2d(:,:,iv2d_ps),ri,rj,yobs)
-    CALL prsadj(yobs,rk,tg,qg)
+    !write(6,*)'Before press adjustment ',rk,yobs
+    CALL prsadj(yobs,rk,tg,qg) !Recall that for Surface Pressure rk is equal to topo - station height
+    !write(6,*)'After press adjustment ',rk,yobs
   CASE( id_us_obs ) ! U10
     !Grid can be rotated
     ti=ri+0.5d0
@@ -237,7 +239,7 @@ SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
   CASE( id_rhs_obs ) 
     CALL itpl_2d(v2d(:,:,iv2d_t2),ri,rj,tg)
     CALL itpl_2d(v2d(:,:,iv2d_q2),ri,rj,qg)
-    CALL itpl_2d(v2d(:,:,iv2d_q2),ri,rj,pg)
+    CALL itpl_2d(v2d(:,:,iv2d_ps),ri,rj,pg)
     CALL calc_rh(tg,qg,pg,yobs)
   CASE( id_qs_obs )
     CALL itpl_2d(v2d(:,:,iv2d_q2),ri,rj,yobs)
@@ -314,6 +316,31 @@ SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
          yobs=ref
      ELSEIF( NINT(elm) .EQ. id_radialwind_obs)THEN
          yobs=radialv
+     ENDIF
+
+     IF( use_pseudorh .and. id_reflectivity_obs .and. yobs == minref )THEN
+
+       DO k=ks,ke
+         DO j=js,je
+           IF(ie <= nlon ) THEN
+             CALL calc_rh(v3d(is,j,k,iv3d_t),v3d(is,j,k,iv3d_qv),&
+               & v3d(is,j,k,iv3d_p),rh(is,j,k))
+             CALL calc_rh(v3d(ie,j,k,iv3d_t),v3d(ie,j,k,iv3d_qv),&
+               & v3d(ie,j,k,iv3d_p),rh(ie,j,k))
+            ELSE
+             CALL calc_rh(v3d(is,j,k,iv3d_t),v3d(is,j,k,iv3d_qv),&
+               & v3d(is,j,k,iv3d_p),rh(is,j,k))
+             CALL calc_rh(v3d( 1,j,k,iv3d_t),v3d( 1,j,k,iv3d_qv),&
+               & v3d( 1,j,k,iv3d_p),rh( 1,j,k))
+           END IF
+         END DO
+       END DO
+       CALL itpl_3d(rh,ri,rj,rk,yobs)
+
+       !Set yobs as a large negative value + rh
+
+       yobs= -1000.0d0 + yobs
+
      ENDIF
 
   END SELECT
@@ -879,6 +906,7 @@ SUBROUTINE prsadj(p,dz,t,q)
     tv = t * (1.0d0 + 0.608d0 * q)
     p = p * ((-gamma*dz+tv)/tv)**(gg/(gamma*rd)) !tv is at original level
 !    p = p * (tv/(tv+gamma*dz))**(gg/(gamma*rd)) !tv is at target level
+
   END IF
 
   RETURN

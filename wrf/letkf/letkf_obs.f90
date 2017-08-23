@@ -411,8 +411,10 @@ IF( nobs + nobsradar .GT. 0)THEN
       IF(ABS(tmpdep(n)) > gross_error*tmperr(n) .AND. .NOT. force_norain_assimilation )THEN
         tmpdep(n)=undef
       ENDIF
-    ELSE   
+    ELSE  
+       !write(6,*)'Observation ',tmpelm(n),tmpdat(n),tmpdat(n)-tmpdep(n),tmpdep(n),tmplat(n),tmplon(n),tmplev(n)
       IF(ABS(tmpdep(n)) > gross_error*tmperr(n)) THEN !gross error
+        write(6,*)'Observation rejected',tmpelm(n),tmpdep(n),tmplat(n),tmplon(n)
         tmpdep(n)=undef
       END IF
     END IF
@@ -622,7 +624,7 @@ REAL(r_size), INTENT(INOUT) :: hdxf(nobs,nmember),id(nobs),value(nobs),error(nob
 INTEGER :: iobs , i
 REAL(r_size) :: rainratio 
 !We will check if we shall use reflectivity or pseudo rh observations.
-INTEGER :: ir , irh , irf , ius , imiss , iatt , ilt , izeroref , iref
+INTEGER :: ir , irh , irf , ius , imiss , iatt , ilt , izeroref , iref , iprh
 
 !minref=10.d0**(minrefdbz/10.0d0)
 
@@ -634,6 +636,7 @@ imiss=0
 izeroref=0
 iatt=0
 iref=0
+iprh=0
 
   DO iobs=1,nobs
 
@@ -659,8 +662,8 @@ iref=0
         IF( hdxf(iobs,i) .GT. minref)THEN
            hdxf(iobs,i)=10*log10(hdxf(iobs,i)) 
            rainratio=rainratio+1.0d0
-        ELSE
-           hdxf(iobs,i)=minrefdbz
+        !ELSE
+        !   hdxf(iobs,i)=minrefdbz
         ENDIF
      ENDDO
 
@@ -668,10 +671,30 @@ iref=0
 
      IF( rainratio .GE. rainratio_threshold .AND. value(iobs) .GT. minrefdbz )THEN
          ir=ir+1
+         DO i=1,nmember  !Convert all pseudo rh values to minimum reflectivity.
+           IF( hdxf(iobs,i) .LE. minref )THEN
+             hdxf(iobs,i)=minrefdbz
+           ENDIF
+         ENDDO
      ENDIF
      IF( rainratio .LT. rainratio_threshold .AND. value(iobs) .GT. minrefdbz )THEN
-         ilt=ilt+1
-         hdxf(iobs,:)=undef  !Observation rejected due to low rain threshold.
+         IF( use_pseudorh )THEN
+            !This will be a pseudo rh observation
+            iprh=iprh+1
+            DO i=1,nmember  
+              IF( hdxf(iobs,i) .LE. minref )THEN
+                hdxf(iobs,i)=hdxf(iobs,i)+1000.0d0 !Restore the rh value.
+              ELSE
+                hdxf(iobs,i)=1.0d0 !If the member has reflectivity assume 100% rh.
+              ENDIF
+            ENDDO
+            value(iobs)=1.0d0 
+            id(iobs)=id_pseudorh_obs 
+            error(iobs)=pseudorh_error
+         ELSE
+            ilt=ilt+1
+            hdxf(iobs,:)=undef  !Observation rejected due to low rain threshold.
+         ENDIF
      ENDIF
      IF( value(iobs) == minrefdbz .AND. rainratio == 0.0d0 )THEN
          ius=ius+1           !Observation rejected because it is useless
@@ -679,6 +702,11 @@ iref=0
      ENDIF
      IF( value(iobs) == minrefdbz .AND. rainratio .GT. 0.0d0 )THEN
          izeroref = izeroref + 1
+         DO i=1,nmember  !Convert all pseudo rh values to minimum reflectivity.
+           IF( hdxf(iobs,i) .LE. minref )THEN
+             hdxf(iobs,i)=minrefdbz
+           ENDIF
+         ENDDO
      ENDIF
 
 
@@ -691,6 +719,7 @@ WRITE(6,*)'MISSING OBS         = ',imiss
 WRITE(6,*)'USELESS OBS         = ',ius
 WRITE(6,*)'LOW RAIN THRESHOLD  = ',ilt
 WRITE(6,*)'ZERO REFLECTIVITY   = ',izeroref
+WRITE(6,*)'PSEUDO RH OBS       = ',iprh
 WRITE(6,*)'TOTAL OBS           = ',iref
 WRITE(6,*)'========================================='
 
@@ -707,6 +736,7 @@ SUBROUTINE monit_mean(file,depout)
   REAL(r_size) :: v2d(nlon,nlat,nv2d)
   REAL(r_size) :: z3d(nlon,nlat,nlev)
   REAL(r_size) :: elem
+  INTEGER      :: ielem
   REAL(r_size) :: bias_u,bias_v,bias_t,bias_ps,bias_q,bias_rh,bias_ref,bias_vr
   REAL(r_size) :: rmse_u,rmse_v,rmse_t,rmse_ps,rmse_q,rmse_rh,rmse_ref,rmse_vr
   REAL(r_size) :: hdxf,dep,rk
@@ -745,6 +775,7 @@ SUBROUTINE monit_mean(file,depout)
   z3d=v3d(:,:,:,iv3d_ph)/gg
 
   DO n=1,nobs
+    ielem=NINT(obselm(n))
 
     IF( obsradar(n) .GT. 0.0d0) THEN
       !This is a radar observation
@@ -755,47 +786,49 @@ SUBROUTINE monit_mean(file,depout)
 
     IF(CEILING(rk) > nlev - 1 ) CYCLE
     IF(obslot(n) .NE. nbslot)CYCLE     !Only observations corresponding to the analysis time will be usred for background mean verification.
-    IF(CEILING(rk) < 2 .AND. NINT(obselm(n)) /= id_ps_obs) THEN
-      IF(NINT(obselm(n)) == id_u_obs .OR. NINT(obselm(n)) == id_v_obs) THEN
+    IF( CEILING(rk) < 2 .and. ielem /= id_ps_obs )THEN
+      IF( ielem == id_us_obs .or. ielem == id_vs_obs .or. ielem == id_ts_obs .or. ielem == id_qs_obs .or. ielem == id_rhs_obs .or. &
+          ielem == id_u_obs  .or. ielem == id_v_obs )THEN
         rk = 1.00001d0
       ELSE
-        CYCLE
-      END IF
-    END IF
-    IF(NINT(obselm(n)) == id_ps_obs) THEN
+        cycle
+      ENDIF
+    ENDIF
+
+    IF( ielem == id_ps_obs) THEN
       CALL itpl_2d(phi0,obsi(n),obsj(n),rk)
       rk = obslev(n) - rk
     END IF
     CALL Trans_XtoY(obselm(n),obstyp(n),obslon(n),obslat(n),obsi(n),obsj(n),rk,obsaz(n),obsel(n),v3d,v2d,hdxf)
 
-!Transform reflectivity to dBz scale.
-if( NINT(obselm(n)) == id_reflectivity_obs )then
-   !obs(n)=10*log10(obs(n))
-   hdxf=10*log10(hdxf)
-   if( obsdat(n) <= minrefdbz )then 
+    !Transform reflectivity to dBz scale.
+    if( ielem == id_reflectivity_obs )then
+     !obs(n)=10*log10(obs(n))
+     hdxf=10*log10(hdxf)
+     if( obsdat(n) <= minrefdbz )then 
       obsdat(n)=minrefdbz 
-   endif
-   if( hdxf <= minrefdbz )then
-       hdxf=minrefdbz
-   endif
-endif
+     endif
+     if( hdxf <= minrefdbz )then
+      hdxf=minrefdbz
+     endif
+    endif
 
     dep = obsdat(n) - hdxf
     depout(n) = dep
-    SELECT CASE(NINT(obselm(n)))
-    CASE(id_u_obs)
+    SELECT CASE(ielem)
+    CASE(id_u_obs,id_us_obs)
       rmse_u = rmse_u + dep**2
       bias_u = bias_u + dep
       iu = iu + 1
-    CASE(id_v_obs)
+    CASE(id_v_obs,id_vs_obs)
       rmse_v = rmse_v + dep**2
       bias_v = bias_v + dep
       iv = iv + 1
-    CASE(id_t_obs)
+    CASE(id_t_obs,id_ts_obs)
       rmse_t = rmse_t + dep**2
       bias_t = bias_t + dep
       it = it + 1
-    CASE(id_q_obs)
+    CASE(id_q_obs,id_qs_obs)
       rmse_q = rmse_q + dep**2
       bias_q = bias_q + dep
       iq = iq + 1
@@ -803,7 +836,7 @@ endif
       rmse_ps = rmse_ps + dep**2
       bias_ps = bias_ps + dep
       ips = ips + 1
-    CASE(id_rh_obs)
+    CASE(id_rh_obs,id_rhs_obs)
       rmse_rh = rmse_rh + dep**2
       bias_rh = bias_rh + dep
       irh = irh + 1

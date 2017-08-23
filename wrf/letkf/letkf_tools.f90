@@ -640,9 +640,11 @@ SUBROUTINE obs_local(ij,ilev,nvar,hdxf,rdiag,rloc,dep,nobsl,logpfm,zfm)
       !
       ielm=NINT(obselm(nobs_use(n)))
       IF( ielm >= id_tclon_obs) THEN !TC track obs
-        dlev = 0.0d0	
-      ELSE IF( ielm == id_ps_obs .AND. ilev > 1) THEN
-        dlev = ABS(LOG(obsdat(nobs_use(n))) - logpfm(ij,ilev))
+        dlev = 0.0d0
+      !ELSE IF( ielm == id_ps_obs .AND. ilev > 1) THEN
+      ELSE IF( ielm == id_ps_obs ) THEN
+      !  dlev = ABS(LOG(obsdat(nobs_use(n))) - logpfm(ij,ilev))
+        dlev = ABS(LOG( logpfm(ij,1) ) ) !Vertical localization in P assuming observation is at the lowest model level.
         IF(dlev > dist_zerov) CYCLE
       ELSE IF( ielm == id_u_obs .OR. ielm == id_v_obs .OR. ielm == id_t_obs .OR. ielm == id_q_obs & 
       .OR. ielm == id_tv_obs .OR. ielm == id_rh_obs .OR. ielm==id_co_obs .OR. ielm==id_totco_obs ) THEN
@@ -653,8 +655,9 @@ SUBROUTINE obs_local(ij,ilev,nvar,hdxf,rdiag,rloc,dep,nobsl,logpfm,zfm)
         dlev = ABS( obslev(nobs_use(n)) - zfm(ij,ilev) ) !Vertical localization in Z.
         IF(dlev > dist_zeroz) CYCLE
       ELSE IF( ( ielm == id_ts_obs .or. ielm == id_qs_obs .or. ielm == id_rhs_obs .or. &
-               ielm == id_us_obs .or. ielm == id_vs_obs ) .and. ilev > 1 )THEN
-            dlev= ABS( obslev(nobs_use(n)) - zfm(ij,ilev) ) !Vertical localization in Z.
+               ielm == id_us_obs .or. ielm == id_vs_obs ) )THEN
+        dlev= ABS( zfm(ij,1) - zfm(ij,ilev) ) !Vertical localization in Z assuming observation is at the lowest model level.
+        if( dlev > dist_zeroz ) CYCLE   
       ELSE
         dlev = 0.0d0
       END IF
@@ -669,6 +672,10 @@ SUBROUTINE obs_local(ij,ilev,nvar,hdxf,rdiag,rloc,dep,nobsl,logpfm,zfm)
       CASE(id_reflectivity_obs,id_radialwind_obs,id_pseudorh_obs)
         sigmah=sigma_obs
         sigmav=sigma_obsz
+      CASE(id_ts_obs,id_qs_obs,id_rhs_obs,     &
+           id_us_obs,id_vs_obs )
+        sigmah=sigma_obs
+        sigmav=sigma_obsz     
       END SELECT
 
       

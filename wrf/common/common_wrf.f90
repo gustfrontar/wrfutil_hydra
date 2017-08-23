@@ -544,12 +544,12 @@ IF ( flag .EQ. '2d' )THEN
        auxvarname='MUB'
        readvar=.true.
       CASE(iv2d_u10)
-       nxvar=nlon
+       nxvar=nlon-1
        nyvar=nlat-1
        readvar=present_variable(nv3d+iv)
       CASE(iv2d_v10)
        nxvar=nlon-1
-       nyvar=nlat
+       nyvar=nlat-1
        readvar=present_variable(nv3d+iv)
       CASE DEFAULT
        WRITE(6,*)"2D variable not recognized, retrieve none : ",iv
@@ -711,12 +711,12 @@ IF ( flag .EQ. '2d' )THEN
        auxvarname='MUB'
        writevar=.true.
       CASE(iv2d_u10)
-       nxvar=nlon
+       nxvar=nlon-1
        nyvar=nlat-1
        writevar=present_variable(nv3d+iv)
       CASE(iv2d_v10)
        nxvar=nlon-1
-       nyvar=nlat
+       nyvar=nlat-1
        writevar=present_variable(nv3d+iv)
       CASE DEFAULT
        WRITE(6,*)"Variable not recognized, won't be written",iv

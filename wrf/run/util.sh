@@ -1673,7 +1673,7 @@ run_forecast_sub () {
       JOB=1
       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
-         echo "sleep 0.3"    >> $local_script
+         sleep 0.3
          if [ $SYSTEM -eq 1 ] ; then
            $MPIBIN -np ${PROC_PER_MEMBER} -f $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_REAL.sh $WORKDIR/WRF${MEM}/ > $WORKDIR/WRF${MEM}/real.log & 
          fi
