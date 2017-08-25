@@ -18,7 +18,7 @@
 TMPDIR=`pwd`
 
 #CONFIGURATION
-CONFIGURATION=control_paranafnl10k_60m_prepbufr_grib_K    #Define a experiment configuration
+CONFIGURATION=control_paranafnl10k_60m_prepbufrandsurface_grib_K    #Define a experiment configuration
 MCONFIGURATION=machine_radar60m_multiple_K             #Define a machine configuration (number of nodes, etc)
 
 RESTART=0
