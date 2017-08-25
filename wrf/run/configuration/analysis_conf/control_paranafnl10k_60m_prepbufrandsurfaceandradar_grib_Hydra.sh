@@ -64,7 +64,7 @@ ENABLE_UPP=1           #1 - generate grib sigma files (for da downscalling) , 0 
 
 ### LETKF setting
 OBS="PREPBUFR_AND_SURFACE"                                 # Name of conventional observations folder.
-RADAROBS="OBS_REAL_PARANA_20091117_SO15KM_NEWQC"           # Name of radar observation folder.
+RADAROBS="LETKF_SO15KM_V3"                                 # Name of radar observation folder.
 EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION}                # name of experiment
 
 ### initial date setting

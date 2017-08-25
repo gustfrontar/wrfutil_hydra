@@ -617,7 +617,7 @@ echo "MEM=\$2                                                             " >> $
 echo "echo \$WORKDIR                                                      " >> $SCRIPT
 echo "cd \$WORKDIR                                                        " >> $SCRIPT
 if [ $SYSTEM -eq 0 ] ; then
-echo "../WRF/dummy-mpi                                                    " >> $SCRIPT
+echo "../SPAWN/dummy-mpi                                                  " >> $SCRIPT
 fi
 if [ $SYSTEM -eq 1 ] ; then
 echo "ulimit -s unlimited                                                 " >> $SCRIPT
@@ -642,101 +642,6 @@ chmod 766 $SCRIPT
 
 }
 
-edit_wrf_post () {
-
-local SCRIPT=$1
-local DOMAIN=01 #Currently this function does not support multiple domains.
-
-
-#Insert DUMMY MPI CALL
-if [ $SYSTEM -eq 0  ] ; then
-
- echo "#!/bin/bash                                                  " > $SCRIPT
- echo "WORKDIR=\$1                                                  " >> $SCRIPT
- echo "MEM=\$2                                                      " >> $SCRIPT
- echo "cd \$WORKDIR                                                 " >> $SCRIPT
- echo "../WRF/dummy-mpi                                             " >> $SCRIPT
- echo "cat ./rsl.error.* > ./wrf\${MEM}.log                         " >> $SCRIPT
- # --- RENAME OUTPUT FOR ANALYSIS
-  if [ $ANALYSIS -eq 1 ] ; then
-    local CDATEL=$WSDATE
-    local LOCAL_OUTFREC=$WINDOW_FREC
-    local it=1
-    while [ ${CDATEL} -le ${WEDATE} ] ; do
-     local itm=$it
-
-     if [ ${it} -lt 10 ]
-     then
-      itm="0${itm}"
-     fi
-
-     local_file=` wrfout_file_name $CDATEL $DOMAIN`
-     if [ $SYSTEM -eq 0 ] ; then
-       echo "mv $local_file ../LETKF/gs${itm}\${MEM}                      " >> $SCRIPT
-     fi
-     if [ $SYSTEM -eq 1 ] ; then
-       echo "mv $local_file $TMPDIR/LETKF/gs${itm}\${MEM}                 " >> $SCRIPT
-     fi
-
-     CDATEL=`date_edit2 $CDATEL $LOCAL_OUTFREC `
-     it=`expr ${it} + 1`
-    done
-  fi
-fi
-
-if [ $SYSTEM -eq 1 ]; then
-
-  echo "#!/bin/bash                                                  " > $SCRIPT
-  echo "WORKDIR=\$1                                                  " >> $SCRIPT
-  echo "INIMEMBER=\$2                                                " >> $SCRIPT
-  echo "ENDMEMBER=\$3                                                " >> $SCRIPT
-  echo "cd \$WORKDIR                                                 " >> $SCRIPT
-  echo "ulimit -s unlimited                                          " >> $SCRIPT
-
-  # --- RENAME OUTPUT FOR ANALYSIS
-  if [ $ANALYSIS -eq 1 ] ; then
-   local LOCAL_OUTFREC=$WINDOW_FREC
-   local mem=$INIMEMBER
-   while [ $mem -le $ENDMEMBER ] ; do
-    mem=`ens_member $mem`
-    local CDATEL=$WSDATE
-    local it=1
-    while [ ${CDATEL} -le ${WEDATE} ] ; do
-     it=`add_zeros $it 2 `
-
-     local_file=` wrfout_file_name $CDATEL $DOMAIN`
-     echo "mv ./WRF${mem}/$local_file $TMPDIR/LETKF/gs${it}${mem}     " >> $SCRIPT
-
-     CDATEL=`date_edit2 $CDATEL $LOCAL_OUTFREC `
-     it=`expr ${it} + 1`
-  
-    done
-   echo "cat ./WRF${mem}/rsl.error.* > ./wrf${mem}.log                 " >> $SCRIPT
-   echo "mv  ./WRF${mem}/daupdatebc${mem}.log   ./                     " >> $SCRIPT
-   echo "rm ./WRF${mem}/wrfout*                                        " >> $SCRIPT 
-   mem=`expr ${mem} + 1`
-
-  done
- fi 
-
- if [ $FORECAST -eq 1 ] ; then
-  local LOCAL_OUTFREC=$WINDOW_FREC
-  local mem=$INIMEMBER
-  while [ $mem -le $ENDMEMBER ] ; do
-    mem=`ens_member $mem`
-    echo "cat ./WRF${mem}/rsl.error.* > ./wrf${mem}.log                 " >> $SCRIPT
-    echo "mv  ./WRF${mem}/daupdatebc${mem}.log   ./                     " >> $SCRIPT
-    mem=`expr ${mem} + 1`
-  done
- fi
-
-
-fi
-
-chmod 766 $SCRIPT
-
-
-}
 
 #-------------------------------------------------------------------------------
 # Edit multiple cycle script.
@@ -963,46 +868,6 @@ set_my_log () {
 
 }
 
-generate_vcode () {
-#Generate vcode files.
-
-local TMPDIRL="$1"               #Temporary directory
-
-
-NODE=0
-JOB=1
-
-if [ $RUN_ONLY_MEAN -ne 1 ] ; then
-
- while [ $JOB -le $MAX_SIMULTANEOUS_JOBS ] ; do
-
- MNODE=1
-  vcoord_file=$TMPDIRL/vcoord_${JOB}
-  rm -fr $vcoord_file
-  while [ $MNODE -le $NODES_PER_MEMBER ]; do
-   echo "( $NODE ) " >> $vcoord_file
-   MNODE=`expr $MNODE + 1 `
-   NODE=`expr $NODE + 1 `
-  done
-  JOB=`expr $JOB + 1 `
-
- done
-
-else
-
-  JOB=1
-  MNODE=1
-  vcoord_file=$TMPDIRL/vcoord_${JOB}
-  rm -fr $vcoord_file
-  while [ $MNODE -le $NODES_PER_MEMBER ]; do
-   echo "( $NODE ) " >> $vcoord_file
-   MNODE=`expr $MNODE + 1 `
-   NODE=`expr $NODE + 1 `
-  done
-
-fi
-
-}
 
 generate_machinefile () {
 #Generate machiene files (torque).
@@ -1058,6 +923,52 @@ if [ $SYSTEM -eq 0  ] ; then #K COMPUTER
   done
 
 fi
+
+}
+
+get_node_list() {
+
+ #NODELIST is an array containing the name of each avialable node
+ #repeated the number of cores available in this node.
+
+ if [  $SYSTEM -eq 1 ] ; then
+
+  #Get the list of nodes.
+  NNODES=1
+  while read mynode  ; do
+    NODELIST[$NNODES]=$mynode
+    NNODES=`expr $NNODES + 1`
+  done  <  $PBS_NODEFILE
+  NNODES=`expr $NNODES - 1`
+
+ fi
+
+ if [ $SYSTEM -eq 0 ] ; then
+
+  #Generate a list of nodes. This list will count several time each node
+  #Each node will appera $PROC_PER_NODE times in the list. 
+  NNODES=1
+  local CNODES=1
+  local CPROC=1
+
+  while [ $CPROC -le $PROC_PER_NODE ] ; do
+    while [ $CNODE -le $TOTAL_NODES_FORECAST ] ; do
+
+      NODELIST[$NNODES]=$CNODE
+
+      CNODE=`expr $CNODE + 1 `
+
+      NNODES=`expr $NNODES + 1 `
+
+    done
+
+    CPROC=`expr $CPROC + 1 `
+
+  done
+
+  NNODES=`expr $NNODES - 1 `
+
+ fi 
 
 }
 
@@ -1216,16 +1127,24 @@ if [ $RESTART -eq 1 ] ; then
  cp    $OUTPUTDIR/initial_random_dates $TMPDIR/output/
 fi
 
-#COPY JOB SCRIPT
+#COPY JOB SCRIPT ACCORDING TO JOB TYPE AND SYSTEM TYPE
 
 if [ $FORECAST -eq 1 ] ; then
 
+ if [ $SYSTEM -eq 1 ] ; then
   cp $CDIR/H_run_multiple_forecasts.sh                       $TMPDIR/SCRIPTS/
+ fi
+ if [ $SYSTEM -eq 0 ] ; then
+  cp $CDIR/K_run_multiple_forecasts.sh                       $TMPDIR/SCRIPTS/
+ fi
 
 else
-
+ if [ $SYSTEM -eq 1 ] ; then
   cp $CDIR/H_run_multiple_cycles.sh                       $TMPDIR/SCRIPTS/
-
+ fi
+ if [ $SYSTEM -eq 0 ] ; then
+  cp $CDIR/K_run_multiple_cycles.sh                       $TMPDIR/SCRIPTS/ 
+ fi
 fi
 
 #Save the current configuration files in the output directory.
@@ -1426,7 +1345,7 @@ while [ $my_redo -le $max_redo  ] ; do
 
 	 IM=$INIMEMBER
 	 EM=$ENDMEMBER
-	 my_job=1
+	 uy_job=1
 	   
 	   check_forecast $WORKDIR $IM $EM
 	   if [ -e $WORKDIR/REDO ] ; then
@@ -1455,7 +1374,6 @@ while [ $my_redo -le $max_redo  ] ; do
 
 	move_forecast_data
 
-
 }
 
 
@@ -1473,7 +1391,7 @@ move_forecast_data(){
 
 
  IM=$INIMEMBER
- my_job=1
+
  while [ $IM -le $ENDMEMBER ] ; do #[While over ensemble members]
    EM=`expr $IM + $MAX_MEMBER_PER_JOB - 1 `
     if [ $EM -gt $ENDMEMBER ] ; then
@@ -1483,41 +1401,49 @@ move_forecast_data(){
    WORKDIR=$TMPDIR/run/*/
 
    if [ $FORECAST -eq 1 ] ; then
-    M=$IM
+      M=$IM
       while [ $M -le $EM ] ; do
         MEM=`ens_member $M`
         mkdir -p ${RESULTDIRG}/${MEM}/
+        cat ${WORKDIR}/WRF${mem}/rsl.error.* > ${RESULTDIRG}/wrf${mem}.log       
+        mv  ${WORKDIR}/WRF${mem}/daupdatebc${mem}.log   ${RESULTDIRG}/
         mv  ${WORKDIR}/WRF$MEM/wrfout* ${RESULTDIRG}/${MEM}/   
         M=`expr $M + 1 `
       done
    fi
-   
 
    mv ${WORKDIR}/*.log      ${RESULTDIRG}/
 
    if [ $ANALYSIS -eq 1 ] ; then
+
+    local LOCAL_OUTFREC=$WINDOW_FREC
+
     M=$IM
     while [ $M -le $EM ] ; do
+
      MEM=`ens_member $M `
-     #mkdir -p ${RESULTDIRG}/gues${MEM}
+
+     local CDATEL=$WSDATE
+     local it=1
+     while [ ${CDATEL} -le ${WEDATE} ] ; do
+       it=`add_zeros $it 2 `
+       local_file=` wrfout_file_name $CDATEL $DOMAIN`
+       mv ${WORKDIR}/WRF${mem}/$local_file $TMPDIR/LETKF/gs${it}${mem}    
+       CDATEL=`date_edit2 $CDATEL $LOCAL_OUTFREC ` 
+       it=`expr ${it} + 1`
+     done
+  
+     cat ${WORKDIR}/WRF${mem}/rsl.error.* > ${RESULTDIRG}/wrf${mem}.log 
+     mv  ${WORKDIR}/WRF${mem}/daupdatebc${mem}.log   ${RESULTDIRG}/
+     rm  ${WORKDIR}/WRF${mem}/wrfout*              
+     
      cp ${TMPDIR}/LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRG}/gues${MEM} 
      M=`expr $M + 1 `
     done
    fi
 
    IM=`expr $EM + 1 `
-   my_job=`expr $my_job + 1 `
  done #[End while over ensemble members and jobs]
-
-
- #if [ $ANALYSIS -eq 1 ] ; then
- # MEM=`ens_member $MM `
- # MEMEAN=`ens_member $MEANMEMBER `
- # cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} $TMPDIR/LETKF/gs${NBSLOT}${MEMEAN}  
- # cp $TMPDIR/LETKF/gs${NBSLOT}${MEM} ${RESULTDIRG}/gues${MEMEAN}         
- # ln -sf ${RESULTDIRG}/gues${MEMEAN} $TMPDIR/LETKF/gues${MEMEAN}         
- #fi
-
 
 }
 
@@ -1561,7 +1487,6 @@ run_forecast_sub () {
    #cp $WORKDIR/namelist.input $WORKDIR/namelist.input $RESULTDIRG
 
    # CREATE AUXILIARY RUNNING SCRIPTS
-   edit_wrf_post $WORKDIR/WRF_POST.sh
    edit_wrf_pre  $WORKDIR/WRF_PRE.sh
    edit_wrf_real $WORKDIR/WRF_REAL.sh
    edit_wrf_wrf  $WORKDIR/WRF_WRF.sh
@@ -1692,9 +1617,16 @@ run_forecast_sub () {
        JOB=1
        while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ];do
        MEM=`ens_member $M `
-          $WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM} & 
-          JOB=`expr $JOB + 1 `
-          M=`expr $M + 1 `
+         sleep 0.3
+         if [ $SYSTEM -eq 1 ] ; then
+           $MPIBIN -np ${PROC_PER_MEMBER} -f $WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM} &
+         fi
+         if [  $SYSTEM -eq 0 ] ; then
+           $MPIBIN -np ${NODE_PER_MEMBER} --vcoordfile $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM}  &
+         fi
+         #$WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM} & 
+         JOB=`expr $JOB + 1 `
+         M=`expr $M + 1 `
        done
        time wait
       done      
@@ -1717,9 +1649,6 @@ run_forecast_sub () {
       done
       time wait 
      done 
-
-     #All file tranfers will be processed sequentially to avoid NFS errors. 
-     ${WORKDIR}/WRF_POST.sh ${WORKDIR} $INIMEMBER $ENDMEMBER  
 
 
 }
@@ -2048,6 +1977,9 @@ echo "export PATH=$LD_PATH_ADD:$PATH                                            
 echo "MEM=\$1                                                                     " >> $local_script
 echo "mkdir -p $METEMDIR/\${MEM}/WORK                                             " >> $local_script
 echo "cd $METEMDIR/\${MEM}/WORK                                                   " >> $local_script
+if [ $SYSTEM -eq 0 ] ; then
+  echo "$TMPDIR/SPAWN/dummy-mpi                                                   " >> $local_script
+fi
 
 #################################################
 #   CYCLE TO CREATE THE UNPERTURBED MET_EM
@@ -2121,14 +2053,6 @@ done
 
  chmod 766 $local_script
 
- #Get the list of nodes.
- NNODES=1
- while read mynode  ; do
-    NODELIST[$NNODES]=$mynode
-    NNODES=`expr $NNODES + 1`
- done  <  $PBS_NODEFILE
- NNODES=`expr $NNODES - 1`
-
 
  M=$INIMEMBER_BDY
  while [ $M -le $ENDMEMBER_BDY ] ; do
@@ -2137,8 +2061,20 @@ done
     MEM=`ens_member $M `
 
     sleep 0.3
+    
+    if [ $SYSTEM -eq 1 ] ; then
    
-    ssh ${NODELIST[$MYNODE]} "${WORKDIR}/$local_script $MEM  2>&1 " & 
+      ssh ${NODELIST[$MYNODE]} "${WORKDIR}/$local_script $MEM  2>&1 " & 
+
+    fi
+
+    if [ $SYSTEM -eq 0 ] ; then
+
+      echo ${NODELIST[$MYNODE]} > ./${WORKDIR}/tmp_machine_file
+
+      $MPIBIN -np 1 -vcoordfile ./${WORKDIR}/tmp_machine_file ${WORKDIR}/$local_script $MEM  2>&1 &
+
+    fi
     
     M=`expr $M + 1`
     MYNODE=`expr $MYNODE + 1`
@@ -2153,6 +2089,7 @@ done
 #IF THE BDY ENSEMBLE SIZE IS SMALLER THAN THE REQUIRED ENSEMBLE SIZE THEN WE NEED TO MAP THE BDY ENSEMBLE TO THE NESTED 
 #ENSEMBLE SIZE. WE DO THIS BY REPEATING SOME ENSEMBLE MEMBERS.
 #NOTE THAT IF SOME ENSEMBLE MEMBERS ARE REPEATED, THEN OTHER PERTURBATION METHODS NEEDS TO BE IMPLEMENTED IN ORDER TO GENERATE DIFFERENCES AMONG THE DUPLICATED MEMBERS.
+
 if [ $RUN_ONLY_MEAN -eq  1  ];then
 
     #In this case we rename the output
@@ -2292,6 +2229,12 @@ echo "if [ \$MEM -eq $MEANMEMBER  ] ; then                                      
 echo "   AMP_FACTOR=0.0                                                       " >> $local_script
 echo "   RANDOM_AMP_FACTOR=0.0                                                " >> $local_script
 echo "fi                                                                        " >> $local_script
+
+if [ $SYSTEM -eq 0 ] ; then
+  #Dummy call to mpi init and mpi finalize
+  echo "$TMPDIR/SPAWN/dummy-mpi                                             " >> $local_script
+
+fi
 
 #################################################
 #   CYCLE TO CREATE THE PERTURBATIONS
@@ -2437,14 +2380,6 @@ done
 #We are done!
 chmod 766 $local_script
 
- #Get the list of nodes.
- NNODES=1
- while read mynode  ; do
-    NODELIST[$NNODES]=$mynode
-    NNODES=`expr $NNODES + 1`
- done  <  $PBS_NODEFILE
- NNODES=`expr $NNODES - 1`
-
 
 M=$INIMEMBER
 while [ $M -le $ENDMEMBER ] ; do
@@ -2456,9 +2391,20 @@ while [ $M -le $ENDMEMBER ] ; do
     DATE2=${INI_RANDOM_DATE2[$M]}
    
     sleep 0.3
+
+      if [ $SYSTEM -eq 1 ] ; then
    
-    ssh ${NODELIST[$MYNODE]} "$local_script $MEM $DATE1 $DATE2 > $PERTMETEMDIR/perturb_met_em${MEM}.log 2>&1 " & 
-    
+        ssh ${NODELIST[$MYNODE]} "$local_script $MEM $DATE1 $DATE2 > $PERTMETEMDIR/perturb_met_em${MEM}.log 2>&1 " & 
+   
+      fi
+      if [ $SYSTEM -eq 1 ] ; then
+
+        echo ${NODELIST[$MYNODE]} > ./tmp_machinefile 
+        
+        mpiexec -np 1 -vcoordfile ./tmp_machinefile $local_script $MEM $DATE1 $DATE2 > $PERTMETEMDIR/perturb_met_em${MEM}.log 2>&1 &
+
+      fi  
+  
     M=`expr $M + 1`
     MYNODE=`expr $MYNODE + 1`
 
@@ -2470,86 +2416,6 @@ done
 
 }
 
-
-wrf_to_met_em () {
-#This function transforms WRF output into met_em files
-#This function should be run after running perturb_met_em
-local local_script=$1
-
-if [  $INTERPANA -eq 1 ] ; then
-
-if [ $RUN_ONLY_MEAN -eq 1 ] ; then
-   local INIMEMBER=$MEANMEMBER  #Run only the last member.
-   local ENDMEMBER=$MEANMEMBER
-else
-   local INIMEMBER=1
-   local ENDMEMBER=$MEMBER
-fi
-
-
-#We only perform this operation if interpana is 1.
-#This means that the input analysis grid is different from the forecast grid 
-#Usually the forecast grid has a larger resolution.
-
-echo ">>> [Warning]: This function works only if analysis files are in mercator or lat-lon grids"
-local EXEC=$TMPDIR/wrf_to_wps/wrf_to_wps.exe
-local APATH=$ANALYSIS_SOURCE/anal/$CDATE/
-
-echo "#!/bin/bash                                                               "  > $local_script
-echo "set -x                                                                    " >> $local_script
-#This script perturbs met_em files.
-#To avoid perturbing again the same met_em file for the same ensemble member
-#First the script checks wether the perturbed met_em file exists and if it do not
-#exist the script creates the file.
-echo "MEM=\$1                      #Ensemble member                             " >> $local_script
-echo "MAX_DOM=$MAX_DOM                                                          " >> $local_script
-echo "WORKDIR=$TMPDIR/ENSINPUT/\$MEM/wrf_to_wps #Temporary work directory       " >> $local_script
-echo "EXEC=$EXEC                   #Executable                                  " >> $local_script
-echo "source $TMPDIR/SCRIPTS/util.sh                                            " >> $local_script
-echo "ulimit -s unlimited                                                       " >> $local_script
-echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH             " >> $local_script
-echo "export PATH=$LD_PATH_ADD:$PATH                                            " >> $local_script
-echo "mkdir -p \$WORKDIR                                                        " >> $local_script
-echo "cd \$WORKDIR                                                              " >> $local_script
-
-#################################################
-#  FROM LETKF_ANALYSIS TO UNGRIB BINARY FORMAT
-#################################################
-echo "AFILE=\$APATH/anal${MEM}                                                 " >> $local_script
-echo "ln -fs \$AFILE ./input.nc                                                " >> $local_script
-echo "$EXEC                                                                    " >> $local_script
-echo "ungrib_file=ungrib_file_name $CDATE DATA                                 " >> $local_script
-echo "ln -fs ./output.grd \$ungrib_file                                        " >> $local_script
-#################################################
-#  FROM UNGRIB BINARY FORMAT TO MET_EM
-#################################################
-echo "ln -fs \$TMPDIR/WPS/* ./                                                 " >> $local_script
-echo "rm ./namelist.wps                                                        " >> $local_script
-echo "cp namelist.wps.template namelist.wps                                    " >> $local_script
-echo "edit_namelist_wps ./namelist.wps $CDATE $CDATE $BOUNDARY_DATA_FREQ       " >> $local_script
-echo "$MPIBIN -np 1 ./metgrid.exe                                              " >> $local_script
-echo "metgrid_file=met_em_file_name $CDATE 01                                  " >> $local_script
-echo "mv \$metgrid_file ../\${metgrid_file}.anal                               " >> $local_script
-
-chmod 766 $local_script
-
-M=$INIMEMBER
-while [ $M -le $ENDMEMBER ] ; do
-
-  RUNNING=0
-  while [ $RUNNING -le $MAX_RUNNING -a $M -le $ENDMEMBER ] ; do
-    MEM=`ens_member $M`
-    #Do not perturb the ensemble mean run.
-    ssh $PPSSERVER " $local_script $MEM  > $TMPDIR/wrf_to_wps/wrf_to_wps{MEM}.log  2>&1 " &
-    RUNNING=`expr $RUNNING + 1 `
-    M=`expr $M + 1 `
-  done
-  time wait
-done
-
-fi
-
-}
 
 arw_postproc_noqueue () {
 
@@ -2577,6 +2443,10 @@ arw_postproc_noqueue () {
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
   fi
+  if [ $SYSTEM -eq  0 ] ; then
+     echo " $TMPDIR/SPAWN/dummy-mpi                                   " >> ${WORKDIR}/tmp.sh
+  fi
+
   echo "MEM=\$1                                                       " >> ${WORKDIR}/tmp.sh
   echo "mkdir -p ${WORKDIR}/\${MEM}                                   " >> ${WORKDIR}/tmp.sh
   echo "cd ${WORKDIR}/\${MEM}                                         " >> ${WORKDIR}/tmp.sh
@@ -2603,14 +2473,6 @@ arw_postproc_noqueue () {
 
   chmod 766 ${WORKDIR}/tmp.sh
 
- #Get the list of nodes.
- NNODES=1
- while read mynode  ; do
-    NODELIST[$NNODES]=$mynode
-    NNODES=`expr $NNODES + 1`
- done  <  $PBS_NODEFILE
- NNODES=`expr $NNODES - 1`
-
 
  M=$INIMEMBER
  while [ $M -le $ENDMEMBER ] ; do
@@ -2619,8 +2481,20 @@ arw_postproc_noqueue () {
     MEM=`ens_member $M `
 
     sleep 0.3
-   
-    ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM} 2>&1 " & 
+#    ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM} 2>&1 " & 
+
+      if [ $SYSTEM -eq 1 ] ; then
+
+        ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM} 2>&1  " &
+
+      fi
+      if [ $SYSTEM -eq 1 ] ; then
+
+        echo ${NODELIST[$MYNODE]} > ./tmp_machinefile
+
+        mpiexec -np 1 -vcoordfile ./tmp_machinefile ${WORKDIR}/tmp.sh ${MEM} 2>&1  &
+
+      fi
     
     M=`expr $M + 1`
     MYNODE=`expr $MYNODE + 1`
@@ -2660,6 +2534,9 @@ arw_postproc_forecast_noqueue () {
   echo "source $TMPDIR/SCRIPTS/util.sh                                " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
+  fi
+  if [ $SYSTEM -eq 0  ] ; then
+     echo "$TMPDIR/SPAWN/dummy-mpi                                    " >> ${WORKDIR}/tmp.sh
   fi
   echo "MEM=\$1                                                       " >> ${WORKDIR}/tmp.sh
   echo "mkdir -p ${WORKDIR}/\${MEM}                                   " >> ${WORKDIR}/tmp.sh
@@ -2702,7 +2579,20 @@ arw_postproc_forecast_noqueue () {
     RUNNING=0
     while [ $RUNNING -le $MAX_RUNNING -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M`
-      ssh $PPSSERVER " ${WORKDIR}/tmp.sh $MEM  " &
+
+        if [ $SYSTEM -eq 1 ] ; then
+
+          ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM} 2>&1  " &
+
+        fi
+        if [ $SYSTEM -eq 1 ] ; then
+
+          echo ${NODELIST[$MYNODE]} > ./tmp_machinefile
+ 
+          mpiexec -np 1 -vcoordfile ./tmp_machinefile ${WORKDIR}/tmp.sh ${MEM} 2>&1  &
+
+        fi
+
       RUNNING=`expr $RUNNING + 1 `
       M=`expr $M + 1 `
     done
@@ -2737,6 +2627,9 @@ if [  $ENABLE_UPP -eq 1 ];then
   echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
+  fi
+  if [ $SYSTEM -eq 0 ] ; then
+     echo "$TMPDIR/SPAWN/dummy-mpi                                    " >> ${WORKDIR}/tmp.sh
   fi
   echo "MEM=\$1                                                       " >> ${WORKDIR}/tmp.sh
   echo "mkdir -p ${WORKDIR}/\${MEM}                                   " >> ${WORKDIR}/tmp.sh
@@ -2775,14 +2668,6 @@ if [  $ENABLE_UPP -eq 1 ];then
 
   chmod 766 ${WORKDIR}/tmp.sh
 
- #Get the list of nodes.
- NNODES=1
- while read mynode  ; do
-    NODELIST[$NNODES]=$mynode
-    NNODES=`expr $NNODES + 1`
- done  <  $PBS_NODEFILE
- NNODES=`expr $NNODES - 1`
-
 
  M=$INIMEMBER
  while [ $M -le $ENDMEMBER ] ; do
@@ -2791,8 +2676,19 @@ if [  $ENABLE_UPP -eq 1 ];then
     MEM=`ens_member $M `
 
     sleep 0.3
-   
-    ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM} 2>&1 " & 
+
+    if [ $SYSTEM -eq 1 ] ; then
+
+     ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM} 2>&1  " &
+
+    fi
+    if [ $SYSTEM -eq 1 ] ; then
+
+     echo ${NODELIST[$MYNODE]} > ./tmp_machinefile
+
+     mpiexec -np 1 -vcoordfile ./tmp_machinefile ${WORKDIR}/tmp.sh ${MEM} 2>&1  &
+
+    fi
     
     M=`expr $M + 1`
     MYNODE=`expr $MYNODE + 1`
@@ -2870,14 +2766,6 @@ if [ $ENABLE_UPP -eq 1 ] ; then
 
   chmod 766 ${WORKDIR}/tmp.sh
 
-  #Get the list of nodes.
-  NNODES=1
-  while read mynode  ; do
-     NODELIST[$NNODES]=$mynode
-     NNODES=`expr $NNODES + 1`
-  done  <  $PBS_NODEFILE
-  NNODES=`expr $NNODES - 1`
-
 
   M=$INIMEMBER
   while [ $M -le $ENDMEMBER ] ; do
@@ -2887,7 +2775,20 @@ if [ $ENABLE_UPP -eq 1 ] ; then
 
      sleep 0.3
 
-     ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM}  2>&1 " &
+     if [ $SYSTEM -eq 1 ] ; then
+
+      ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM} 2>&1  " &
+
+     fi
+     if [ $SYSTEM -eq 1 ] ; then
+
+      echo ${NODELIST[$MYNODE]} > ./tmp_machinefile
+
+      mpiexec -np 1 -vcoordfile ./tmp_machinefile ${WORKDIR}/tmp.sh ${MEM} 2>&1  &
+
+     fi
+
+     #ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM}  2>&1 " &
 
      M=`expr $M + 1`
      MYNODE=`expr $MYNODE + 1`

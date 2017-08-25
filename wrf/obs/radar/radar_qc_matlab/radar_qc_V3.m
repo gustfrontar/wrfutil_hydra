@@ -53,7 +53,7 @@ error_dv = 2;       %Doppler velocity error in m/s
 id_ref_obs = 4001;  %Reflectivity id number
 id_dv_obs = 4002;   %Doppler velocity id number
 radar_type = 10;    %Radar wavelength
-super_obbing_minn=10;  %Minimum number of data points in each super obbing grid box
+super_obbing_minn=2;  %Minimum number of data points in each super obbing grid box
 super_obbing_dv_minrange=(3/2)*dx; %Doppler observations closser than this range will be ignored (recommended value (3/2)*dx)
                                    %3/2 * dx subestimation of maximum wind speeds should be less than 3%
 sowindowl=60;  %Length of the superobbing window.

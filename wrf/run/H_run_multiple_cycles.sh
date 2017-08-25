@@ -59,6 +59,11 @@ echo ">>>> My machine is $MCONFIGURATION            "
 echo ">>>> I' am $CDIR/$MYSCRIPT                    "
 echo ">>>> My LETKFNAMELIST is $LETKFNAMELIST       " 
 
+echo '>>>'                                           
+echo ">>> GET THE AVAILABLE NODES"          
+echo '>>>'
+
+get_node_list
 
 echo '>>>'                                           
 echo ">>> SET METEM DATA FREQ "          

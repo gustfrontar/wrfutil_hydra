@@ -318,7 +318,7 @@ SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
          yobs=radialv
      ENDIF
 
-     IF( use_pseudorh .and. id_reflectivity_obs .and. yobs == minref )THEN
+     IF( use_pseudorh .and. NINT(elm) == id_reflectivity_obs .and. yobs == minref )THEN
 
        DO k=ks,ke
          DO j=js,je

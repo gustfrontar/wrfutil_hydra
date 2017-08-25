@@ -43,7 +43,7 @@ trws=0.2
 low_wind_tr=1.5;     %Winds below this threshold will be eliminated.
 
 %Superobbing
-dx = 15000;         %Increments for cartesian grid (m)
+dx = 15000;          %Increments for cartesian grid (m)
 dz = 500;           %Vertical increments for cartesian grid (m)
 maxz = 18e3;        %Maximum height for the observations
 maxrange=240e3;     
@@ -53,7 +53,7 @@ error_dv = 2;       %Doppler velocity error in m/s
 id_ref_obs = 4001;  %Reflectivity id number
 id_dv_obs = 4002;   %Doppler velocity id number
 radar_type = 10;    %Radar wavelength
-super_obbing_minn=100;  %Minimum number of data points in each super obbing grid box
+super_obbing_minn=2;  %Minimum number of data points in each super obbing grid box
 super_obbing_dv_minrange=(3/2)*dx; %Doppler observations closser than this range will be ignored (recommended value (3/2)*dx)
                                    %3/2 * dx subestimation of maximum wind speeds should be less than 3%
 sowindowl=900;  %Length of the superobbing window.
@@ -299,6 +299,12 @@ for ifile=1:size(filelist,1)
     %Generate cartesian grid
     [cart] = define_cartesian_grid_v2(radar, dx, dz, maxz , maxrange ) ;
 
+    nx=size(cart.z,1);
+    ny=size(cart.z,2);
+    nz=size(cart.z,3);
+
+    disp( ['The size of the super obbing domain is nx=' num2str(nx) ' ny=' num2str(ny) ' nz=' num2str(nz) ] );
+
     %Obtain date and time and add them to the radar structure 
     date_rad_ini_str = radar.time_coverage_start([1:4  6:7 9:10 12:13 15:16 18:19]);
     date_rad_ini_num = datenum( date_rad_ini_str , 'yyyymmddHHMMSS');
@@ -364,15 +370,27 @@ for ifile=1:size(filelist,1)
 
          cont = false ;
          %Lets keep the same so bin and get a new radar data file.
-      else
-         %If the radar volume starts after the end of the current so bin, then initilize a new bin.
 
-         %We need to start a new so bin and write the previous one.
+      else
+
+         %We need to start a new superobbing window and write the previous one.
          display(['Writing data corresponding to superobbing slot centered at:' datestr( round( (date_so_mean_num + refdate)*86400)/86400 , 'yyyy-mm-dd-HH:MM:SS') ])
          fileout = [SODIR '/radar01_' datestr( round( (date_so_mean_num + refdate)*86400)/86400 ,'yyyymmddHHMMSS') ];
 
+         gridrad.grid_dv( gridrad.grid_count_dv < super_obbing_minn )=0.0;
+         gridrad.grid_count_dv( gridrad.grid_count_dv < super_obbing_minn )=0.0;
+         gridrad.grid_ref( gridrad.grid_count_ref < super_obbing_minn )=0.0;
+         gridrad.grid_count_ref( gridrad.grid_count_ref < super_obbing_minn )=0.0;
+
+         %Remove super obbing observations which are close to the radar. Because azimuth chagens too much 
+         %within this ranges.
+         %TODO esto se puede solucionar haciendo un local VAD fit y estimando el Vr que se deberia medir
+         %en el azimuth medio y la elevacion media de acuerdo con un ajuste de los datos que caen dentro del volumen.
+         gridrad.grid_count_dv( gridrad.grid_ra_dv < super_obbing_dv_minrange )=0.0;
+         gridrad.grid_dv( gridrad.grid_ra_dv < super_obbing_dv_minrange )=0.0;
+
          %Write the current so bin.
-         write_so( radar , gridrad , fileout , true );
+         write_so( radar , gridrad , fileout , true ); 
 
          %Define the next so bin.
          date_so_mean_num=date_so_mean_num + sowindowl/86400;
@@ -383,8 +401,7 @@ for ifile=1:size(filelist,1)
 
          %Esta funcion solo llena de ceros la estructura gridrad
          gridrad=initialize_gridrad_fun(cart);
-
-
+ 
       end
 
     end
