@@ -17,9 +17,9 @@ program covariance_matrix
   character(100) :: bssfile  = 'bssprd_xXXXyXXXzXXX.grd' !Bootstrap spread
   character(100) :: bsmfile  = 'bsmean_xXXXyXXXzXXX.grd' !Bootstrap mean
   character(100) :: hstfile  = 'histgr_xXXXyXXXzXXX.grd' !Histogram.
-  character(100) :: covindexfile =      'covariance_index.grd'
-  character(100) :: corrindexfile =     'correlation_index.grd'
-  character(100) :: corrdistindexfile = 'correlationdist_index.grd'  
+  !character(100) :: covindexfile =      'covariance_index.grd'
+  !character(100) :: corrindexfile =     'correlation_index.grd'
+  character(100) :: tmpfilename 
   character(100) :: ctl_file = 'input.ctl'
 
   real(r_sngl) ,ALLOCATABLE :: ensemble(:,:,:,:) !nlon,nlat,nfields,nens
@@ -29,8 +29,14 @@ program covariance_matrix
 
   !Covariance between and observation at a certain location and the 
   !state vector. 
+  real(r_sngl) ,ALLOCATABLE :: var1(:,:,:) , var2(:,:,:) , mean_cond(:,:,:)
   real(r_sngl) ,ALLOCATABLE :: covar(:,:,:)        !nlon,nlat,nfields
   real(r_sngl) ,ALLOCATABLE :: localcov(:,:,:)     !nlon,nlat,nfields
+
+  real(r_sngl) ,ALLOCATABLE :: cov_profile(:,:,:) , corr_profile(:,:,:) 
+  integer      ,ALLOCATABLE ::  num_profile(:,:,:)
+
+
   !Obs impact how much impact an observation located at a certain location
   !will have on the state vector.
   real(r_sngl) ,ALLOCATABLE :: obsimpact(:,:,:)         !nlon,nlat,nfields
@@ -42,16 +48,24 @@ program covariance_matrix
   real(r_sngl) ,ALLOCATABLE :: correlation_index(:,:,:)     !Correlation strength index
   real(r_sngl) ,ALLOCATABLE :: correlationdist_index(:,:,:) !Correlation and distance index
   integer*2    ,ALLOCATABLE :: histogram(:,:,:,:)           !Histogram data.
+  real(r_sngl) ,ALLOCATABLE :: varmin(:,:,:) , varmax(:,:,:) 
   real(r_sngl) :: cov , covmean , covsprd
 
 
-  LOGICAL , ALLOCATABLE :: undefmask(:,:,:) , totalundefmask(:,:,:)
+  LOGICAL , ALLOCATABLE :: undefmask(:,:,:) , totalundefmask(:,:,:) , local_undefmask(:,:,:)
 
   integer :: i, j , ii , jj , kk  , is , ilev
  
   real(r_size) ri(1) , rj(1)
 
   integer :: iunit, iolen, irec , ip , gridi , gridj , gridk
+
+  integer :: cond_i , var1_i , var2_i 
+  integer :: cond_si , var1_si , var2_si 
+  integer :: cond_ei , var1_ei , var2_ei
+  integer :: local_nzc , local_nz1 , local_nz2
+
+  integer :: reclength
 
 !-------------------------------------------------------------------------------
 
@@ -138,19 +152,47 @@ ENDDO
 !PDF Moments computation
 
 IF( computemoments )THEN
-!Compute moments of the PDF at every grid point
-ALLOCATE( moments(ctl%nlon,ctl%nlat,ctl%nfields,max_moments) )
-CALL compute_moments(ensemble,ctl%nlon,ctl%nlat,ctl%nfields,nbv,max_moments,moments,totalundefmask,ctl%undefbin)
-DEALLOCATE( moments )
+   !Compute moments of the PDF at every grid point
+   ALLOCATE( moments(ctl%nlon,ctl%nlat,ctl%nfields,max_moments) )
+   CALL compute_moments(ensemble,ctl%nlon,ctl%nlat,ctl%nfields,nbv,max_moments,moments,totalundefmask,ctl%undefbin)
+   DEALLOCATE( moments )
 ENDIF
 
 IF( computehistogram )THEN
-!Compute histograms
-WRITE(*,*)ctl%nlon,ctl%nlat,ctl%nfields,max_histogram
-ALLOCATE( histogram(ctl%nlon,ctl%nlat,ctl%nfields,max_histogram) )
-CALL compute_histogram(ensemble,ctl%nlon,ctl%nlat,ctl%nfields,nbv,max_histogram,histogram,totalundefmask,ctl%undefbin)
-DEALLOCATE( histogram )
+   !Compute histograms
+   WRITE(*,*)ctl%nlon,ctl%nlat,ctl%nfields,max_histogram
+   ALLOCATE( histogram(ctl%nlon,ctl%nlat,ctl%nfields,max_histogram) )
+   ALLOCATE( varmin(ctl%nlon,ctl%nlat,ctl%nfields) , varmax(ctl%nlon,ctl%nlat,ctl%nfields) )
+   CALL compute_histogram(ensemble,ctl%nlon,ctl%nlat,ctl%nfields,nbv,max_histogram,totalundefmask,        &
+                          ctl%undefbin,varmin,varmax,histogram)
+
+  INQUIRE(IOLENGTH=reclength) reclength
+  reclength = ctl%nlon * ctl%nlat !* reclength
+
+  iunit=55
+  tmpfilename='histogram.grd'
+  !OPEN(iunit,FILE=histogram_out,FORM='unformatted',ACCESS='direct',RECL=reclength,CONVERT=outputendian)
+  OPEN(iunit,FILE=tmpfilename,FORM='unformatted',ACCESS='sequential',CONVERT=outputendian)
+
+  !irec=1
+  DO ii=1,ctl%nfields
+   DO jj=1,max_histogram
+    WRITE(iunit)histogram(:,:,ii,jj)
+   ENDDO
+  ENDDO
+
+  CLOSE(iunit)
+ 
+  tmpfilename='minvar.grd'
+  CALL write_grd(tmpfilename,ctl%nlon,ctl%nlat,ctl%nfields,varmin,totalundefmask,ctl%undefbin)
+  tmpfilename='maxvar.grd'
+  CALL write_grd(tmpfilename,ctl%nlon,ctl%nlat,ctl%nfields,varmax,totalundefmask,ctl%undefbin)
+
+  DEALLOCATE( histogram , varmin , varmax )
+
 ENDIF
+
+
 
 !Covariance computation
 !Loop over points.
@@ -268,17 +310,81 @@ ENDDO ![End do over points]
 ENDIF ![Endif over compuation of covariance]
 
 IF( computeindex )THEN
-  ALLOCATE( covariance_index(ctl%nlon,ctl%nlat,ctl%nfields) , correlation_index(ctl%nlon,ctl%nlat,ctl%nfields) &
-          , correlationdist_index(ctl%nlon,ctl%nlat,ctl%nfields) )
+ DO ii=1,NBASE_VARS !Loop over base vars
+  DO jj=1,NCOV_VARS !Loop over cov vars
 
-  CALL covariance_strenght(ensemble,covariance_index,correlation_index,correlationdist_index &
-                           ,ctl%nlon,ctl%nlat,ctl%nfields,nbv,delta,undefmask,ctl%undefbin)
+    CALL get_var_startend( ctl , TRIM(BASE_VARS(ii)) ,var1_si,var1_ei,var1_i)
+    CALL get_var_startend( ctl , TRIM(COV_VARS(ii)) ,var1_si,var1_ei,var1_i)
 
-  CALL write_grd(covindexfile,ctl%nlon,ctl%nlat,ctl%nfields,covariance_index,totalundefmask,ctl%undefbin)
-  CALL write_grd(corrindexfile,ctl%nlon,ctl%nlat,ctl%nfields,correlation_index,totalundefmask,ctl%undefbin)
-  CALL write_grd(corrdistindexfile,ctl%nlon,ctl%nlat,ctl%nfields,correlationdist_index,totalundefmask,ctl%undefbin)
+    CALL get_var_startend( ctl , TRIM('QHYD') ,cond_si,cond_ei,cond_i)
 
-  DEALLOCATE( covariance_index , correlation_index , correlationdist_index)
+    local_nz1=ctl%varlev( var1_i )
+    local_nz2=ctl%varlev( var2_i )
+    local_nzc=ctl%varlev( cond_i )
+
+    IF( ( local_nz1 /= local_nz2 ) .OR. ( local_nz1 /= local_nzc ) )THEN
+      WRITE(*,*)"Error: BASE variable and COV variable must have the same number of vertical levels"
+      STOP
+    ENDIF
+
+    
+    ALLOCATE( mean_cond( ctl%nlon , ctl%nlat , local_nz1 ) )
+    IF( cond_i /= 0 )THEN
+      CALL compute_moments(ensemble(:,:,cond_si:cond_ei,:),ctl%nlon,ctl%nlat,local_nz1,nbv,1,mean_cond, & 
+                           totalundefmask(:,:,cond_si:cond_ei),ctl%undefbin)
+    ELSE
+      mean_cond=0.0e0  
+      WRITE(*,*)"Warning: Could not find condesate variable. ALl points will be considered as no rain points"
+    ENDIF
+
+    ALLOCATE( covariance_index(ctl%nlon,ctl%nlat,local_nz1) , correlation_index(ctl%nlon,ctl%nlat,local_nz1) &
+          , correlationdist_index(ctl%nlon,ctl%nlat,local_nz1) )
+
+    ALLOCATE( local_undefmask( ctl%nlon , ctl%nlat , local_nz1)  )
+ 
+    ALLOCATE( cov_profile(delta,local_nz1,2) , corr_profile(delta,local_nz1,2) , num_profile(delta,local_nz1,2) )
+
+    local_undefmask=totalundefmask(:,:,var1_si:var1_ei)
+    where( .not. totalundefmask(:,:,var2_si:var2_ei) )
+       local_undefmask=.false.
+    endwhere
+
+    CALL covariance_strenght(ensemble(:,:,var1_si:var1_ei,:),ensemble(:,:,var2_si:var2_ei,:),mean_cond,covariance_index,  &
+                             correlation_index,correlationdist_index,cov_profile,corr_profile,num_profile,ctl%nlon,       &
+                             ctl%nlat,local_nz1,nbv,delta,skip,local_undefmask,ctl%undefbin)
+
+    tmpfilename='covindex_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.grd'
+
+    CALL write_grd(tmpfilename,ctl%nlon,ctl%nlat,ctl%nfields,covariance_index,totalundefmask,ctl%undefbin)
+
+    tmpfilename='corrindex_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.grd'
+
+    CALL write_grd(tmpfilename,ctl%nlon,ctl%nlat,ctl%nfields,correlation_index,totalundefmask,ctl%undefbin)
+
+    tmpfilename='corrdistindex_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.grd'
+
+    CALL write_grd(tmpfilename,ctl%nlon,ctl%nlat,ctl%nfields,correlationdist_index,totalundefmask,ctl%undefbin)
+
+    tmpfilename='cov_profile_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.txt'
+
+    CALL write_profile(tmpfilename,cov_profile,delta,local_nz1,2)
+
+    tmpfilename='corr_profile_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.txt'
+
+    CALL write_profile(tmpfilename,corr_profile,delta,local_nz1,2)
+
+    tmpfilename='num_profile_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.txt'
+
+    CALL write_profile(tmpfilename,REAL(num_profile,r_sngl),delta,local_nz1,2)
+
+    DEALLOCATE( cov_profile , corr_profile , num_profile )
+
+    DEALLOCATE( local_undefmask )
+
+    DEALLOCATE( covariance_index , correlation_index , correlationdist_index)
+
+  ENDDO !End loop over cov vars
+ ENDDO  !End loop over base vars
 ENDIF ![Endif over computatio of the covariance and correlation index]
 
 end program covariance_matrix

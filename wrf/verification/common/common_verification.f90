@@ -263,4 +263,41 @@ ENDDO
 
 END SUBROUTINE get_var_index
 
+SUBROUTINE get_var_startend(myctl,varname,sindex,eindex,varindex)
+!Get the initial and final index corresponding to a variable.
+
+IMPLICIT NONE
+TYPE(ctl_info),INTENT(IN) :: myctl
+CHARACTER(*),INTENT(IN)   :: varname
+INTEGER,INTENT(OUT)       :: sindex , eindex , varindex
+INTEGER                   :: i , myindex
+
+sindex=0
+eindex=0
+varindex=0
+
+myindex=0
+
+DO i=1,myctl%nvar
+
+  IF(  myctl%varname(i) == varname )THEN
+
+     varindex=i
+
+     sindex=myindex + 1
+  
+     eindex=myindex + myctl%varlev(i)
+
+     exit
+
+  ELSE
+
+     myindex=myindex + myctl%varlev(i)
+
+  ENDIF
+
+ENDDO
+
+END SUBROUTINE get_var_startend
+
 END MODULE common_verification
