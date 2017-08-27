@@ -1,5 +1,8 @@
+#!/bin/bash -l
 #PBS -l nodes=1:ppn=40
 #PBS -S /bin/bash
+
+module load intel
 
 #To compute some components of the ensemble covariance matrix.
 BINPATH=/data9/jruiz/LETKF_WRF/wrf/verification/covmatrix/
@@ -16,8 +19,8 @@ ENDDATE=20130713051100
 
 INCREMENT=60   #Time resolution in seconds.
 
-MAX_RUNNING=40        #Number of threads
-MEMBER=1000           #Ensemble size
+MAX_RUNNING=20        #Number of threads
+MEMBER=10             #Ensemble size
 BOOTSTRAP=.false.
 BOOTSTRAP_SAMPLES=100
 SKIPX=1
@@ -33,10 +36,10 @@ NBINS=50
 NBASE_VARS=4
 NCOV_VARS=4
 COMPUTEINDEX=.true.
-BASE_VARS='QHYD','U','V','T'
-COV_VARS='QHYD','U','V','T'
-TMPDIR=/data9/jruiz/TMP/covariance_matrix_1000m_gues_histogram_nosmooht/                      #Temporary work directory.
-CTL_PATH=/data9/jruiz/EXPERIMENTS/OsakaPAR_1km_control1000m_smallrandompert/ctl/analgp.ctl    #Ensemble data ctl file.
+DELTA=40
+BASE_VARS='qhydro','u','v','tk'
+COV_VARS='qhydro','u','v','tk'
+TMPDIR=/data9/jruiz/TMP/$EXPERIMENT/                      #Temporary work directory.
 
 ulimit -s unlimited
 export OMP_STACKSIZE=500M
@@ -66,6 +69,7 @@ echo "smoothdx=$SMOOTHDX                                                  " >> $
 echo "computemoments=$COMPUTEMOMENTS                                      " >> $my_namelist
 echo "computehistogram=$COMPUTEHISTOGRAM                                  " >> $my_namelist
 echo "computeindex=$COMPUTEINDEX                                          " >> $my_namelist
+echo "delta=$DELTA                                                        " >> $my_namelist
 echo "nbase_vars=$NBASE_VARS                                              " >> $my_namelist
 echo "ncov_vars=$NCOV_VARS                                                " >> $my_namelist
 echo "base_vars=$BASE_VARS                                                " >> $my_namelist
@@ -81,9 +85,9 @@ export KMP_NUM_THREADS=$MAX_RUNNING
 
 CDATE=$INIDATE
 
- while [ $CDATE -le $EDATE  ] ; do
+ while [ $CDATE -le $ENDDATE  ] ; do
 
-   cp  $DATA_PATH/$EXPERIMENT/ctl/${TYPE}.ctl  ./input.ctl
+   cp  $DATAPATH/$EXPERIMENT/ctl/${TYPE}.ctl  ./input.ctl
 
    rm $TMPDIR/fcst?????.grd  
 
@@ -94,31 +98,35 @@ CDATE=$INIDATE
     MEM=`add_zeros $M 5`
     MEM2=`add_zeros $M 4`
   
-    ln -sf $DATA_PATH/$EXPERIMENT/$CDATE/$TYPE/${MEM2}.grd ./fcst${MEM}.grd
+    ln -sf $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/${MEM2}.grd ./fcst${MEM}.grd
 
     M=`expr $M + 1 `
 
    done
 
+
    time ./covariance_matrix.exe > cov.log
 
-   mv covindex*.grd       $DATA_PATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv corrindex*.grd      $DATA_PATH/$EXPERIMENT/$CDATE/$TYPE/   
-   mv corrdistindex*.grd  $DATA_PATH/$EXPERIMENT/$CDATE/$TYPE/
 
-   mv cov_profile*.txt    $DATA_PATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv corr_profile*.txt   $DATA_PATH/$EXPERIMENT/$CDATE/$TYPE/ 
-   mv num_profile*.txt    $DATA_PATH/$EXPERIMENT/$CDATE/$TYPE/
+   exit
 
-   mv covmat_x???y???z???.grd $DATA_PATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv bssprd_x???y???z???.grd $DATA_PATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv impact_x???y???z???.grd $DATA_PATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv bsmean_x???y???z???.grd $DATA_PATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv histgr_x???y???z???.grd $DATA_PATH/$EXPERIMENT/$CDATE/$TYPE/
+   mv covindex*.grd       $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
+   mv corrindex*.grd      $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/   
+   mv corrdistindex*.grd  $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
 
-   mv histogram.grd           $DATA_PATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv minvar.grd              $DATA_PATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv maxvar.grd              $DATA_PATH/$EXPERIMENT/$CDATE/$TYPE/
+   mv cov_profile*.txt    $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
+   mv corr_profile*.txt   $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/ 
+   mv num_profile*.txt    $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
+
+   mv covmat_x???y???z???.grd $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
+   mv bssprd_x???y???z???.grd $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
+   mv impact_x???y???z???.grd $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
+   mv bsmean_x???y???z???.grd $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
+   mv histgr_x???y???z???.grd $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
+
+   mv histogram.grd           $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
+   mv minvar.grd              $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
+   mv maxvar.grd              $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
 
    CDATE=`date_edit2 $CDATE $INCREMENT `
 

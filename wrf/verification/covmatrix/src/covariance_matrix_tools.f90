@@ -408,7 +408,7 @@ var2_m(:,:,:,2)=sqrt(var2_m(:,:,:,2)) !Get standard deviation.
 !$OMP reduction(+:cov_profile,corr_profile,num_profile)
 
 DO ii=1,nx
- WRITE(*,*)ii
+ !WRITE(*,*)ii
  DO jj=1,ny
   DO kk=1,nz
    IF( undefmask(ii,jj,kk) )THEN
@@ -423,6 +423,10 @@ DO ii=1,nx
     if( jmax > ny)jmax=ny
 
     pensemble=var1_ens(ii,jj,kk,:)
+   DO iii=1,nbv
+    WRITE(*,*)pensemble(iii)
+   ENDDO
+    STOP
 
     tmp_cov_profile=0.0e0
     tmp_corr_profile=0.0e0
@@ -442,6 +446,8 @@ DO ii=1,nx
         tmpcorr=tmpcov/( var1_m(ii,jj,kk,2) * var2_m(iii,jjj,kk,2) ) 
 
         current_index=FLOOR( tmpdist / delta ) + 1
+
+        !WRITE(*,*)tmpcorr
  
         IF( current_index >= delta) current_index=delta
 

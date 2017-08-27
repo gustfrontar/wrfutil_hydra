@@ -1,0 +1,5 @@
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	290m23.244s
+user	9326m9.683s
+sys	2m48.079s

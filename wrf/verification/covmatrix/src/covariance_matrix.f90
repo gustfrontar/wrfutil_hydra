@@ -310,33 +310,34 @@ ENDDO ![End do over points]
 ENDIF ![Endif over compuation of covariance]
 
 IF( computeindex )THEN
+
+ !Get the mean condensate.
+ CALL get_var_startend( ctl , TRIM('qhydro') ,cond_si,cond_ei,cond_i)
+ local_nzc=ctl%varlev( cond_i )
+ ALLOCATE( mean_cond( ctl%nlon , ctl%nlat , local_nzc ) )
+ IF( cond_i /= 0 )THEN
+   CALL compute_moments(ensemble(:,:,cond_si:cond_ei,:),ctl%nlon,ctl%nlat,local_nz1,nbv,1,mean_cond, &
+                           totalundefmask(:,:,cond_si:cond_ei),ctl%undefbin)
+ ELSE
+   mean_cond=0.0e0
+   WRITE(*,*)"Warning: Could not find condesate variable. ALl points will be considered as no rain points"
+ ENDIF
+
  DO ii=1,NBASE_VARS !Loop over base vars
   DO jj=1,NCOV_VARS !Loop over cov vars
 
     CALL get_var_startend( ctl , TRIM(BASE_VARS(ii)) ,var1_si,var1_ei,var1_i)
-    CALL get_var_startend( ctl , TRIM(COV_VARS(ii)) ,var1_si,var1_ei,var1_i)
-
-    CALL get_var_startend( ctl , TRIM('QHYD') ,cond_si,cond_ei,cond_i)
+    CALL get_var_startend( ctl , TRIM(COV_VARS(ii)) ,var2_si,var2_ei,var2_i)
 
     local_nz1=ctl%varlev( var1_i )
     local_nz2=ctl%varlev( var2_i )
-    local_nzc=ctl%varlev( cond_i )
 
     IF( ( local_nz1 /= local_nz2 ) .OR. ( local_nz1 /= local_nzc ) )THEN
       WRITE(*,*)"Error: BASE variable and COV variable must have the same number of vertical levels"
+      WRITE(*,*)TRIM(BASE_VARS(ii)),TRIM(COV_VARS(ii)),local_nz1,local_nz2,var1_i,var2_i
       STOP
     ENDIF
-
     
-    ALLOCATE( mean_cond( ctl%nlon , ctl%nlat , local_nz1 ) )
-    IF( cond_i /= 0 )THEN
-      CALL compute_moments(ensemble(:,:,cond_si:cond_ei,:),ctl%nlon,ctl%nlat,local_nz1,nbv,1,mean_cond, & 
-                           totalundefmask(:,:,cond_si:cond_ei),ctl%undefbin)
-    ELSE
-      mean_cond=0.0e0  
-      WRITE(*,*)"Warning: Could not find condesate variable. ALl points will be considered as no rain points"
-    ENDIF
-
     ALLOCATE( covariance_index(ctl%nlon,ctl%nlat,local_nz1) , correlation_index(ctl%nlon,ctl%nlat,local_nz1) &
           , correlationdist_index(ctl%nlon,ctl%nlat,local_nz1) )
 
@@ -355,15 +356,15 @@ IF( computeindex )THEN
 
     tmpfilename='covindex_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.grd'
 
-    CALL write_grd(tmpfilename,ctl%nlon,ctl%nlat,ctl%nfields,covariance_index,totalundefmask,ctl%undefbin)
+    CALL write_grd(tmpfilename,ctl%nlon,ctl%nlat,local_nz1,covariance_index,totalundefmask,ctl%undefbin)
 
     tmpfilename='corrindex_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.grd'
 
-    CALL write_grd(tmpfilename,ctl%nlon,ctl%nlat,ctl%nfields,correlation_index,totalundefmask,ctl%undefbin)
+    CALL write_grd(tmpfilename,ctl%nlon,ctl%nlat,local_nz1,correlation_index,totalundefmask,ctl%undefbin)
 
     tmpfilename='corrdistindex_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.grd'
 
-    CALL write_grd(tmpfilename,ctl%nlon,ctl%nlat,ctl%nfields,correlationdist_index,totalundefmask,ctl%undefbin)
+    CALL write_grd(tmpfilename,ctl%nlon,ctl%nlat,local_nz1,correlationdist_index,totalundefmask,ctl%undefbin)
 
     tmpfilename='cov_profile_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.txt'
 

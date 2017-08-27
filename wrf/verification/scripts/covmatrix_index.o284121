@@ -1,0 +1,3511 @@
+--[ hostinfo v0.55-2 ]----------------------------------------
+Hostname:            h02
+Current As Of:       07/07/16 06:25:41
+Distribution:        SUSE Linux Enterprise Server 11 
+Service Pack:        3
+Kernel Version:      3.0.101-0.21-default
+Architecture:        x86_64
+IPv4 Address:        192.168.100.22  eth0    (00:1e:67:58:99:b1)
+IPv4 Address:        None            eth1    (00:1e:67:58:99:b2)
+Total/Free Memory:   516938/23238 MB
+Hard Disk:           /dev/sda 298 GB
+User Logged In:      uid=1002(jruiz) gid=100(users) on not a tty
+---------------------------------------------------------------
+
+ Undef value for this file is  -9.9899997E+33
+ This is a Lambert conformal grid
+ End of file
+ ====================================================
+  The total number of individual variables is =           17
+  Total number of matrices in each file is =          725
+ ====================================================
+ MINLON =    134.531933588220     
+ MINLAT =    34.0135084380836     
+ MAXLON =    136.514066411780     
+ MAXLAT =    35.6286094290461     
+ NLON =            180
+ NLAT =            180
+ Reading file 
+ fcst00001.grd                                                                  
+                      
+ Reading file 
+ fcst00002.grd                                                                  
+                      
+ Reading file 
+ fcst00003.grd                                                                  
+                      
+ Reading file 
+ fcst00004.grd                                                                  
+                      
+ Reading file 
+ fcst00005.grd                                                                  
+                      
+ Reading file 
+ fcst00006.grd                                                                  
+                      
+ Reading file 
+ fcst00007.grd                                                                  
+                      
+ Reading file 
+ fcst00008.grd                                                                  
+                      
+ Reading file 
+ fcst00009.grd                                                                  
+                      
+ Reading file 
+ fcst00010.grd                                                                  
+                      
+ Reading file 
+ fcst00011.grd                                                                  
+                      
+ Reading file 
+ fcst00012.grd                                                                  
+                      
+ Reading file 
+ fcst00013.grd                                                                  
+                      
+ Reading file 
+ fcst00014.grd                                                                  
+                      
+ Reading file 
+ fcst00015.grd                                                                  
+                      
+ Reading file 
+ fcst00016.grd                                                                  
+                      
+ Reading file 
+ fcst00017.grd                                                                  
+                      
+ Reading file 
+ fcst00018.grd                                                                  
+                      
+ Reading file 
+ fcst00019.grd                                                                  
+                      
+ Reading file 
+ fcst00020.grd                                                                  
+                      
+ Reading file 
+ fcst00021.grd                                                                  
+                      
+ Reading file 
+ fcst00022.grd                                                                  
+                      
+ Reading file 
+ fcst00023.grd                                                                  
+                      
+ Reading file 
+ fcst00024.grd                                                                  
+                      
+ Reading file 
+ fcst00025.grd                                                                  
+                      
+ Reading file 
+ fcst00026.grd                                                                  
+                      
+ Reading file 
+ fcst00027.grd                                                                  
+                      
+ Reading file 
+ fcst00028.grd                                                                  
+                      
+ Reading file 
+ fcst00029.grd                                                                  
+                      
+ Reading file 
+ fcst00030.grd                                                                  
+                      
+ Reading file 
+ fcst00031.grd                                                                  
+                      
+ Reading file 
+ fcst00032.grd                                                                  
+                      
+ Reading file 
+ fcst00033.grd                                                                  
+                      
+ Reading file 
+ fcst00034.grd                                                                  
+                      
+ Reading file 
+ fcst00035.grd                                                                  
+                      
+ Reading file 
+ fcst00036.grd                                                                  
+                      
+ Reading file 
+ fcst00037.grd                                                                  
+                      
+ Reading file 
+ fcst00038.grd                                                                  
+                      
+ Reading file 
+ fcst00039.grd                                                                  
+                      
+ Reading file 
+ fcst00040.grd                                                                  
+                      
+ Reading file 
+ fcst00041.grd                                                                  
+                      
+ Reading file 
+ fcst00042.grd                                                                  
+                      
+ Reading file 
+ fcst00043.grd                                                                  
+                      
+ Reading file 
+ fcst00044.grd                                                                  
+                      
+ Reading file 
+ fcst00045.grd                                                                  
+                      
+ Reading file 
+ fcst00046.grd                                                                  
+                      
+ Reading file 
+ fcst00047.grd                                                                  
+                      
+ Reading file 
+ fcst00048.grd                                                                  
+                      
+ Reading file 
+ fcst00049.grd                                                                  
+                      
+ Reading file 
+ fcst00050.grd                                                                  
+                      
+ Reading file 
+ fcst00051.grd                                                                  
+                      
+ Reading file 
+ fcst00052.grd                                                                  
+                      
+ Reading file 
+ fcst00053.grd                                                                  
+                      
+ Reading file 
+ fcst00054.grd                                                                  
+                      
+ Reading file 
+ fcst00055.grd                                                                  
+                      
+ Reading file 
+ fcst00056.grd                                                                  
+                      
+ Reading file 
+ fcst00057.grd                                                                  
+                      
+ Reading file 
+ fcst00058.grd                                                                  
+                      
+ Reading file 
+ fcst00059.grd                                                                  
+                      
+ Reading file 
+ fcst00060.grd                                                                  
+                      
+ Reading file 
+ fcst00061.grd                                                                  
+                      
+ Reading file 
+ fcst00062.grd                                                                  
+                      
+ Reading file 
+ fcst00063.grd                                                                  
+                      
+ Reading file 
+ fcst00064.grd                                                                  
+                      
+ Reading file 
+ fcst00065.grd                                                                  
+                      
+ Reading file 
+ fcst00066.grd                                                                  
+                      
+ Reading file 
+ fcst00067.grd                                                                  
+                      
+ Reading file 
+ fcst00068.grd                                                                  
+                      
+ Reading file 
+ fcst00069.grd                                                                  
+                      
+ Reading file 
+ fcst00070.grd                                                                  
+                      
+ Reading file 
+ fcst00071.grd                                                                  
+                      
+ Reading file 
+ fcst00072.grd                                                                  
+                      
+ Reading file 
+ fcst00073.grd                                                                  
+                      
+ Reading file 
+ fcst00074.grd                                                                  
+                      
+ Reading file 
+ fcst00075.grd                                                                  
+                      
+ Reading file 
+ fcst00076.grd                                                                  
+                      
+ Reading file 
+ fcst00077.grd                                                                  
+                      
+ Reading file 
+ fcst00078.grd                                                                  
+                      
+ Reading file 
+ fcst00079.grd                                                                  
+                      
+ Reading file 
+ fcst00080.grd                                                                  
+                      
+ Reading file 
+ fcst00081.grd                                                                  
+                      
+ Reading file 
+ fcst00082.grd                                                                  
+                      
+ Reading file 
+ fcst00083.grd                                                                  
+                      
+ Reading file 
+ fcst00084.grd                                                                  
+                      
+ Reading file 
+ fcst00085.grd                                                                  
+                      
+ Reading file 
+ fcst00086.grd                                                                  
+                      
+ Reading file 
+ fcst00087.grd                                                                  
+                      
+ Reading file 
+ fcst00088.grd                                                                  
+                      
+ Reading file 
+ fcst00089.grd                                                                  
+                      
+ Reading file 
+ fcst00090.grd                                                                  
+                      
+ Reading file 
+ fcst00091.grd                                                                  
+                      
+ Reading file 
+ fcst00092.grd                                                                  
+                      
+ Reading file 
+ fcst00093.grd                                                                  
+                      
+ Reading file 
+ fcst00094.grd                                                                  
+                      
+ Reading file 
+ fcst00095.grd                                                                  
+                      
+ Reading file 
+ fcst00096.grd                                                                  
+                      
+ Reading file 
+ fcst00097.grd                                                                  
+                      
+ Reading file 
+ fcst00098.grd                                                                  
+                      
+ Reading file 
+ fcst00099.grd                                                                  
+                      
+ Reading file 
+ fcst00100.grd                                                                  
+                      
+ Reading file 
+ fcst00101.grd                                                                  
+                      
+ Reading file 
+ fcst00102.grd                                                                  
+                      
+ Reading file 
+ fcst00103.grd                                                                  
+                      
+ Reading file 
+ fcst00104.grd                                                                  
+                      
+ Reading file 
+ fcst00105.grd                                                                  
+                      
+ Reading file 
+ fcst00106.grd                                                                  
+                      
+ Reading file 
+ fcst00107.grd                                                                  
+                      
+ Reading file 
+ fcst00108.grd                                                                  
+                      
+ Reading file 
+ fcst00109.grd                                                                  
+                      
+ Reading file 
+ fcst00110.grd                                                                  
+                      
+ Reading file 
+ fcst00111.grd                                                                  
+                      
+ Reading file 
+ fcst00112.grd                                                                  
+                      
+ Reading file 
+ fcst00113.grd                                                                  
+                      
+ Reading file 
+ fcst00114.grd                                                                  
+                      
+ Reading file 
+ fcst00115.grd                                                                  
+                      
+ Reading file 
+ fcst00116.grd                                                                  
+                      
+ Reading file 
+ fcst00117.grd                                                                  
+                      
+ Reading file 
+ fcst00118.grd                                                                  
+                      
+ Reading file 
+ fcst00119.grd                                                                  
+                      
+ Reading file 
+ fcst00120.grd                                                                  
+                      
+ Reading file 
+ fcst00121.grd                                                                  
+                      
+ Reading file 
+ fcst00122.grd                                                                  
+                      
+ Reading file 
+ fcst00123.grd                                                                  
+                      
+ Reading file 
+ fcst00124.grd                                                                  
+                      
+ Reading file 
+ fcst00125.grd                                                                  
+                      
+ Reading file 
+ fcst00126.grd                                                                  
+                      
+ Reading file 
+ fcst00127.grd                                                                  
+                      
+ Reading file 
+ fcst00128.grd                                                                  
+                      
+ Reading file 
+ fcst00129.grd                                                                  
+                      
+ Reading file 
+ fcst00130.grd                                                                  
+                      
+ Reading file 
+ fcst00131.grd                                                                  
+                      
+ Reading file 
+ fcst00132.grd                                                                  
+                      
+ Reading file 
+ fcst00133.grd                                                                  
+                      
+ Reading file 
+ fcst00134.grd                                                                  
+                      
+ Reading file 
+ fcst00135.grd                                                                  
+                      
+ Reading file 
+ fcst00136.grd                                                                  
+                      
+ Reading file 
+ fcst00137.grd                                                                  
+                      
+ Reading file 
+ fcst00138.grd                                                                  
+                      
+ Reading file 
+ fcst00139.grd                                                                  
+                      
+ Reading file 
+ fcst00140.grd                                                                  
+                      
+ Reading file 
+ fcst00141.grd                                                                  
+                      
+ Reading file 
+ fcst00142.grd                                                                  
+                      
+ Reading file 
+ fcst00143.grd                                                                  
+                      
+ Reading file 
+ fcst00144.grd                                                                  
+                      
+ Reading file 
+ fcst00145.grd                                                                  
+                      
+ Reading file 
+ fcst00146.grd                                                                  
+                      
+ Reading file 
+ fcst00147.grd                                                                  
+                      
+ Reading file 
+ fcst00148.grd                                                                  
+                      
+ Reading file 
+ fcst00149.grd                                                                  
+                      
+ Reading file 
+ fcst00150.grd                                                                  
+                      
+ Reading file 
+ fcst00151.grd                                                                  
+                      
+ Reading file 
+ fcst00152.grd                                                                  
+                      
+ Reading file 
+ fcst00153.grd                                                                  
+                      
+ Reading file 
+ fcst00154.grd                                                                  
+                      
+ Reading file 
+ fcst00155.grd                                                                  
+                      
+ Reading file 
+ fcst00156.grd                                                                  
+                      
+ Reading file 
+ fcst00157.grd                                                                  
+                      
+ Reading file 
+ fcst00158.grd                                                                  
+                      
+ Reading file 
+ fcst00159.grd                                                                  
+                      
+ Reading file 
+ fcst00160.grd                                                                  
+                      
+ Reading file 
+ fcst00161.grd                                                                  
+                      
+ Reading file 
+ fcst00162.grd                                                                  
+                      
+ Reading file 
+ fcst00163.grd                                                                  
+                      
+ Reading file 
+ fcst00164.grd                                                                  
+                      
+ Reading file 
+ fcst00165.grd                                                                  
+                      
+ Reading file 
+ fcst00166.grd                                                                  
+                      
+ Reading file 
+ fcst00167.grd                                                                  
+                      
+ Reading file 
+ fcst00168.grd                                                                  
+                      
+ Reading file 
+ fcst00169.grd                                                                  
+                      
+ Reading file 
+ fcst00170.grd                                                                  
+                      
+ Reading file 
+ fcst00171.grd                                                                  
+                      
+ Reading file 
+ fcst00172.grd                                                                  
+                      
+ Reading file 
+ fcst00173.grd                                                                  
+                      
+ Reading file 
+ fcst00174.grd                                                                  
+                      
+ Reading file 
+ fcst00175.grd                                                                  
+                      
+ Reading file 
+ fcst00176.grd                                                                  
+                      
+ Reading file 
+ fcst00177.grd                                                                  
+                      
+ Reading file 
+ fcst00178.grd                                                                  
+                      
+ Reading file 
+ fcst00179.grd                                                                  
+                      
+ Reading file 
+ fcst00180.grd                                                                  
+                      
+ Reading file 
+ fcst00181.grd                                                                  
+                      
+ Reading file 
+ fcst00182.grd                                                                  
+                      
+ Reading file 
+ fcst00183.grd                                                                  
+                      
+ Reading file 
+ fcst00184.grd                                                                  
+                      
+ Reading file 
+ fcst00185.grd                                                                  
+                      
+ Reading file 
+ fcst00186.grd                                                                  
+                      
+ Reading file 
+ fcst00187.grd                                                                  
+                      
+ Reading file 
+ fcst00188.grd                                                                  
+                      
+ Reading file 
+ fcst00189.grd                                                                  
+                      
+ Reading file 
+ fcst00190.grd                                                                  
+                      
+ Reading file 
+ fcst00191.grd                                                                  
+                      
+ Reading file 
+ fcst00192.grd                                                                  
+                      
+ Reading file 
+ fcst00193.grd                                                                  
+                      
+ Reading file 
+ fcst00194.grd                                                                  
+                      
+ Reading file 
+ fcst00195.grd                                                                  
+                      
+ Reading file 
+ fcst00196.grd                                                                  
+                      
+ Reading file 
+ fcst00197.grd                                                                  
+                      
+ Reading file 
+ fcst00198.grd                                                                  
+                      
+ Reading file 
+ fcst00199.grd                                                                  
+                      
+ Reading file 
+ fcst00200.grd                                                                  
+                      
+ Reading file 
+ fcst00201.grd                                                                  
+                      
+ Reading file 
+ fcst00202.grd                                                                  
+                      
+ Reading file 
+ fcst00203.grd                                                                  
+                      
+ Reading file 
+ fcst00204.grd                                                                  
+                      
+ Reading file 
+ fcst00205.grd                                                                  
+                      
+ Reading file 
+ fcst00206.grd                                                                  
+                      
+ Reading file 
+ fcst00207.grd                                                                  
+                      
+ Reading file 
+ fcst00208.grd                                                                  
+                      
+ Reading file 
+ fcst00209.grd                                                                  
+                      
+ Reading file 
+ fcst00210.grd                                                                  
+                      
+ Reading file 
+ fcst00211.grd                                                                  
+                      
+ Reading file 
+ fcst00212.grd                                                                  
+                      
+ Reading file 
+ fcst00213.grd                                                                  
+                      
+ Reading file 
+ fcst00214.grd                                                                  
+                      
+ Reading file 
+ fcst00215.grd                                                                  
+                      
+ Reading file 
+ fcst00216.grd                                                                  
+                      
+ Reading file 
+ fcst00217.grd                                                                  
+                      
+ Reading file 
+ fcst00218.grd                                                                  
+                      
+ Reading file 
+ fcst00219.grd                                                                  
+                      
+ Reading file 
+ fcst00220.grd                                                                  
+                      
+ Reading file 
+ fcst00221.grd                                                                  
+                      
+ Reading file 
+ fcst00222.grd                                                                  
+                      
+ Reading file 
+ fcst00223.grd                                                                  
+                      
+ Reading file 
+ fcst00224.grd                                                                  
+                      
+ Reading file 
+ fcst00225.grd                                                                  
+                      
+ Reading file 
+ fcst00226.grd                                                                  
+                      
+ Reading file 
+ fcst00227.grd                                                                  
+                      
+ Reading file 
+ fcst00228.grd                                                                  
+                      
+ Reading file 
+ fcst00229.grd                                                                  
+                      
+ Reading file 
+ fcst00230.grd                                                                  
+                      
+ Reading file 
+ fcst00231.grd                                                                  
+                      
+ Reading file 
+ fcst00232.grd                                                                  
+                      
+ Reading file 
+ fcst00233.grd                                                                  
+                      
+ Reading file 
+ fcst00234.grd                                                                  
+                      
+ Reading file 
+ fcst00235.grd                                                                  
+                      
+ Reading file 
+ fcst00236.grd                                                                  
+                      
+ Reading file 
+ fcst00237.grd                                                                  
+                      
+ Reading file 
+ fcst00238.grd                                                                  
+                      
+ Reading file 
+ fcst00239.grd                                                                  
+                      
+ Reading file 
+ fcst00240.grd                                                                  
+                      
+ Reading file 
+ fcst00241.grd                                                                  
+                      
+ Reading file 
+ fcst00242.grd                                                                  
+                      
+ Reading file 
+ fcst00243.grd                                                                  
+                      
+ Reading file 
+ fcst00244.grd                                                                  
+                      
+ Reading file 
+ fcst00245.grd                                                                  
+                      
+ Reading file 
+ fcst00246.grd                                                                  
+                      
+ Reading file 
+ fcst00247.grd                                                                  
+                      
+ Reading file 
+ fcst00248.grd                                                                  
+                      
+ Reading file 
+ fcst00249.grd                                                                  
+                      
+ Reading file 
+ fcst00250.grd                                                                  
+                      
+ Reading file 
+ fcst00251.grd                                                                  
+                      
+ Reading file 
+ fcst00252.grd                                                                  
+                      
+ Reading file 
+ fcst00253.grd                                                                  
+                      
+ Reading file 
+ fcst00254.grd                                                                  
+                      
+ Reading file 
+ fcst00255.grd                                                                  
+                      
+ Reading file 
+ fcst00256.grd                                                                  
+                      
+ Reading file 
+ fcst00257.grd                                                                  
+                      
+ Reading file 
+ fcst00258.grd                                                                  
+                      
+ Reading file 
+ fcst00259.grd                                                                  
+                      
+ Reading file 
+ fcst00260.grd                                                                  
+                      
+ Reading file 
+ fcst00261.grd                                                                  
+                      
+ Reading file 
+ fcst00262.grd                                                                  
+                      
+ Reading file 
+ fcst00263.grd                                                                  
+                      
+ Reading file 
+ fcst00264.grd                                                                  
+                      
+ Reading file 
+ fcst00265.grd                                                                  
+                      
+ Reading file 
+ fcst00266.grd                                                                  
+                      
+ Reading file 
+ fcst00267.grd                                                                  
+                      
+ Reading file 
+ fcst00268.grd                                                                  
+                      
+ Reading file 
+ fcst00269.grd                                                                  
+                      
+ Reading file 
+ fcst00270.grd                                                                  
+                      
+ Reading file 
+ fcst00271.grd                                                                  
+                      
+ Reading file 
+ fcst00272.grd                                                                  
+                      
+ Reading file 
+ fcst00273.grd                                                                  
+                      
+ Reading file 
+ fcst00274.grd                                                                  
+                      
+ Reading file 
+ fcst00275.grd                                                                  
+                      
+ Reading file 
+ fcst00276.grd                                                                  
+                      
+ Reading file 
+ fcst00277.grd                                                                  
+                      
+ Reading file 
+ fcst00278.grd                                                                  
+                      
+ Reading file 
+ fcst00279.grd                                                                  
+                      
+ Reading file 
+ fcst00280.grd                                                                  
+                      
+ Reading file 
+ fcst00281.grd                                                                  
+                      
+ Reading file 
+ fcst00282.grd                                                                  
+                      
+ Reading file 
+ fcst00283.grd                                                                  
+                      
+ Reading file 
+ fcst00284.grd                                                                  
+                      
+ Reading file 
+ fcst00285.grd                                                                  
+                      
+ Reading file 
+ fcst00286.grd                                                                  
+                      
+ Reading file 
+ fcst00287.grd                                                                  
+                      
+ Reading file 
+ fcst00288.grd                                                                  
+                      
+ Reading file 
+ fcst00289.grd                                                                  
+                      
+ Reading file 
+ fcst00290.grd                                                                  
+                      
+ Reading file 
+ fcst00291.grd                                                                  
+                      
+ Reading file 
+ fcst00292.grd                                                                  
+                      
+ Reading file 
+ fcst00293.grd                                                                  
+                      
+ Reading file 
+ fcst00294.grd                                                                  
+                      
+ Reading file 
+ fcst00295.grd                                                                  
+                      
+ Reading file 
+ fcst00296.grd                                                                  
+                      
+ Reading file 
+ fcst00297.grd                                                                  
+                      
+ Reading file 
+ fcst00298.grd                                                                  
+                      
+ Reading file 
+ fcst00299.grd                                                                  
+                      
+ Reading file 
+ fcst00300.grd                                                                  
+                      
+ Reading file 
+ fcst00301.grd                                                                  
+                      
+ Reading file 
+ fcst00302.grd                                                                  
+                      
+ Reading file 
+ fcst00303.grd                                                                  
+                      
+ Reading file 
+ fcst00304.grd                                                                  
+                      
+ Reading file 
+ fcst00305.grd                                                                  
+                      
+ Reading file 
+ fcst00306.grd                                                                  
+                      
+ Reading file 
+ fcst00307.grd                                                                  
+                      
+ Reading file 
+ fcst00308.grd                                                                  
+                      
+ Reading file 
+ fcst00309.grd                                                                  
+                      
+ Reading file 
+ fcst00310.grd                                                                  
+                      
+ Reading file 
+ fcst00311.grd                                                                  
+                      
+ Reading file 
+ fcst00312.grd                                                                  
+                      
+ Reading file 
+ fcst00313.grd                                                                  
+                      
+ Reading file 
+ fcst00314.grd                                                                  
+                      
+ Reading file 
+ fcst00315.grd                                                                  
+                      
+ Reading file 
+ fcst00316.grd                                                                  
+                      
+ Reading file 
+ fcst00317.grd                                                                  
+                      
+ Reading file 
+ fcst00318.grd                                                                  
+                      
+ Reading file 
+ fcst00319.grd                                                                  
+                      
+ Reading file 
+ fcst00320.grd                                                                  
+                      
+ Reading file 
+ fcst00321.grd                                                                  
+                      
+ Reading file 
+ fcst00322.grd                                                                  
+                      
+ Reading file 
+ fcst00323.grd                                                                  
+                      
+ Reading file 
+ fcst00324.grd                                                                  
+                      
+ Reading file 
+ fcst00325.grd                                                                  
+                      
+ Reading file 
+ fcst00326.grd                                                                  
+                      
+ Reading file 
+ fcst00327.grd                                                                  
+                      
+ Reading file 
+ fcst00328.grd                                                                  
+                      
+ Reading file 
+ fcst00329.grd                                                                  
+                      
+ Reading file 
+ fcst00330.grd                                                                  
+                      
+ Reading file 
+ fcst00331.grd                                                                  
+                      
+ Reading file 
+ fcst00332.grd                                                                  
+                      
+ Reading file 
+ fcst00333.grd                                                                  
+                      
+ Reading file 
+ fcst00334.grd                                                                  
+                      
+ Reading file 
+ fcst00335.grd                                                                  
+                      
+ Reading file 
+ fcst00336.grd                                                                  
+                      
+ Reading file 
+ fcst00337.grd                                                                  
+                      
+ Reading file 
+ fcst00338.grd                                                                  
+                      
+ Reading file 
+ fcst00339.grd                                                                  
+                      
+ Reading file 
+ fcst00340.grd                                                                  
+                      
+ Reading file 
+ fcst00341.grd                                                                  
+                      
+ Reading file 
+ fcst00342.grd                                                                  
+                      
+ Reading file 
+ fcst00343.grd                                                                  
+                      
+ Reading file 
+ fcst00344.grd                                                                  
+                      
+ Reading file 
+ fcst00345.grd                                                                  
+                      
+ Reading file 
+ fcst00346.grd                                                                  
+                      
+ Reading file 
+ fcst00347.grd                                                                  
+                      
+ Reading file 
+ fcst00348.grd                                                                  
+                      
+ Reading file 
+ fcst00349.grd                                                                  
+                      
+ Reading file 
+ fcst00350.grd                                                                  
+                      
+ Reading file 
+ fcst00351.grd                                                                  
+                      
+ Reading file 
+ fcst00352.grd                                                                  
+                      
+ Reading file 
+ fcst00353.grd                                                                  
+                      
+ Reading file 
+ fcst00354.grd                                                                  
+                      
+ Reading file 
+ fcst00355.grd                                                                  
+                      
+ Reading file 
+ fcst00356.grd                                                                  
+                      
+ Reading file 
+ fcst00357.grd                                                                  
+                      
+ Reading file 
+ fcst00358.grd                                                                  
+                      
+ Reading file 
+ fcst00359.grd                                                                  
+                      
+ Reading file 
+ fcst00360.grd                                                                  
+                      
+ Reading file 
+ fcst00361.grd                                                                  
+                      
+ Reading file 
+ fcst00362.grd                                                                  
+                      
+ Reading file 
+ fcst00363.grd                                                                  
+                      
+ Reading file 
+ fcst00364.grd                                                                  
+                      
+ Reading file 
+ fcst00365.grd                                                                  
+                      
+ Reading file 
+ fcst00366.grd                                                                  
+                      
+ Reading file 
+ fcst00367.grd                                                                  
+                      
+ Reading file 
+ fcst00368.grd                                                                  
+                      
+ Reading file 
+ fcst00369.grd                                                                  
+                      
+ Reading file 
+ fcst00370.grd                                                                  
+                      
+ Reading file 
+ fcst00371.grd                                                                  
+                      
+ Reading file 
+ fcst00372.grd                                                                  
+                      
+ Reading file 
+ fcst00373.grd                                                                  
+                      
+ Reading file 
+ fcst00374.grd                                                                  
+                      
+ Reading file 
+ fcst00375.grd                                                                  
+                      
+ Reading file 
+ fcst00376.grd                                                                  
+                      
+ Reading file 
+ fcst00377.grd                                                                  
+                      
+ Reading file 
+ fcst00378.grd                                                                  
+                      
+ Reading file 
+ fcst00379.grd                                                                  
+                      
+ Reading file 
+ fcst00380.grd                                                                  
+                      
+ Reading file 
+ fcst00381.grd                                                                  
+                      
+ Reading file 
+ fcst00382.grd                                                                  
+                      
+ Reading file 
+ fcst00383.grd                                                                  
+                      
+ Reading file 
+ fcst00384.grd                                                                  
+                      
+ Reading file 
+ fcst00385.grd                                                                  
+                      
+ Reading file 
+ fcst00386.grd                                                                  
+                      
+ Reading file 
+ fcst00387.grd                                                                  
+                      
+ Reading file 
+ fcst00388.grd                                                                  
+                      
+ Reading file 
+ fcst00389.grd                                                                  
+                      
+ Reading file 
+ fcst00390.grd                                                                  
+                      
+ Reading file 
+ fcst00391.grd                                                                  
+                      
+ Reading file 
+ fcst00392.grd                                                                  
+                      
+ Reading file 
+ fcst00393.grd                                                                  
+                      
+ Reading file 
+ fcst00394.grd                                                                  
+                      
+ Reading file 
+ fcst00395.grd                                                                  
+                      
+ Reading file 
+ fcst00396.grd                                                                  
+                      
+ Reading file 
+ fcst00397.grd                                                                  
+                      
+ Reading file 
+ fcst00398.grd                                                                  
+                      
+ Reading file 
+ fcst00399.grd                                                                  
+                      
+ Reading file 
+ fcst00400.grd                                                                  
+                      
+ Reading file 
+ fcst00401.grd                                                                  
+                      
+ Reading file 
+ fcst00402.grd                                                                  
+                      
+ Reading file 
+ fcst00403.grd                                                                  
+                      
+ Reading file 
+ fcst00404.grd                                                                  
+                      
+ Reading file 
+ fcst00405.grd                                                                  
+                      
+ Reading file 
+ fcst00406.grd                                                                  
+                      
+ Reading file 
+ fcst00407.grd                                                                  
+                      
+ Reading file 
+ fcst00408.grd                                                                  
+                      
+ Reading file 
+ fcst00409.grd                                                                  
+                      
+ Reading file 
+ fcst00410.grd                                                                  
+                      
+ Reading file 
+ fcst00411.grd                                                                  
+                      
+ Reading file 
+ fcst00412.grd                                                                  
+                      
+ Reading file 
+ fcst00413.grd                                                                  
+                      
+ Reading file 
+ fcst00414.grd                                                                  
+                      
+ Reading file 
+ fcst00415.grd                                                                  
+                      
+ Reading file 
+ fcst00416.grd                                                                  
+                      
+ Reading file 
+ fcst00417.grd                                                                  
+                      
+ Reading file 
+ fcst00418.grd                                                                  
+                      
+ Reading file 
+ fcst00419.grd                                                                  
+                      
+ Reading file 
+ fcst00420.grd                                                                  
+                      
+ Reading file 
+ fcst00421.grd                                                                  
+                      
+ Reading file 
+ fcst00422.grd                                                                  
+                      
+ Reading file 
+ fcst00423.grd                                                                  
+                      
+ Reading file 
+ fcst00424.grd                                                                  
+                      
+ Reading file 
+ fcst00425.grd                                                                  
+                      
+ Reading file 
+ fcst00426.grd                                                                  
+                      
+ Reading file 
+ fcst00427.grd                                                                  
+                      
+ Reading file 
+ fcst00428.grd                                                                  
+                      
+ Reading file 
+ fcst00429.grd                                                                  
+                      
+ Reading file 
+ fcst00430.grd                                                                  
+                      
+ Reading file 
+ fcst00431.grd                                                                  
+                      
+ Reading file 
+ fcst00432.grd                                                                  
+                      
+ Reading file 
+ fcst00433.grd                                                                  
+                      
+ Reading file 
+ fcst00434.grd                                                                  
+                      
+ Reading file 
+ fcst00435.grd                                                                  
+                      
+ Reading file 
+ fcst00436.grd                                                                  
+                      
+ Reading file 
+ fcst00437.grd                                                                  
+                      
+ Reading file 
+ fcst00438.grd                                                                  
+                      
+ Reading file 
+ fcst00439.grd                                                                  
+                      
+ Reading file 
+ fcst00440.grd                                                                  
+                      
+ Reading file 
+ fcst00441.grd                                                                  
+                      
+ Reading file 
+ fcst00442.grd                                                                  
+                      
+ Reading file 
+ fcst00443.grd                                                                  
+                      
+ Reading file 
+ fcst00444.grd                                                                  
+                      
+ Reading file 
+ fcst00445.grd                                                                  
+                      
+ Reading file 
+ fcst00446.grd                                                                  
+                      
+ Reading file 
+ fcst00447.grd                                                                  
+                      
+ Reading file 
+ fcst00448.grd                                                                  
+                      
+ Reading file 
+ fcst00449.grd                                                                  
+                      
+ Reading file 
+ fcst00450.grd                                                                  
+                      
+ Reading file 
+ fcst00451.grd                                                                  
+                      
+ Reading file 
+ fcst00452.grd                                                                  
+                      
+ Reading file 
+ fcst00453.grd                                                                  
+                      
+ Reading file 
+ fcst00454.grd                                                                  
+                      
+ Reading file 
+ fcst00455.grd                                                                  
+                      
+ Reading file 
+ fcst00456.grd                                                                  
+                      
+ Reading file 
+ fcst00457.grd                                                                  
+                      
+ Reading file 
+ fcst00458.grd                                                                  
+                      
+ Reading file 
+ fcst00459.grd                                                                  
+                      
+ Reading file 
+ fcst00460.grd                                                                  
+                      
+ Reading file 
+ fcst00461.grd                                                                  
+                      
+ Reading file 
+ fcst00462.grd                                                                  
+                      
+ Reading file 
+ fcst00463.grd                                                                  
+                      
+ Reading file 
+ fcst00464.grd                                                                  
+                      
+ Reading file 
+ fcst00465.grd                                                                  
+                      
+ Reading file 
+ fcst00466.grd                                                                  
+                      
+ Reading file 
+ fcst00467.grd                                                                  
+                      
+ Reading file 
+ fcst00468.grd                                                                  
+                      
+ Reading file 
+ fcst00469.grd                                                                  
+                      
+ Reading file 
+ fcst00470.grd                                                                  
+                      
+ Reading file 
+ fcst00471.grd                                                                  
+                      
+ Reading file 
+ fcst00472.grd                                                                  
+                      
+ Reading file 
+ fcst00473.grd                                                                  
+                      
+ Reading file 
+ fcst00474.grd                                                                  
+                      
+ Reading file 
+ fcst00475.grd                                                                  
+                      
+ Reading file 
+ fcst00476.grd                                                                  
+                      
+ Reading file 
+ fcst00477.grd                                                                  
+                      
+ Reading file 
+ fcst00478.grd                                                                  
+                      
+ Reading file 
+ fcst00479.grd                                                                  
+                      
+ Reading file 
+ fcst00480.grd                                                                  
+                      
+ Reading file 
+ fcst00481.grd                                                                  
+                      
+ Reading file 
+ fcst00482.grd                                                                  
+                      
+ Reading file 
+ fcst00483.grd                                                                  
+                      
+ Reading file 
+ fcst00484.grd                                                                  
+                      
+ Reading file 
+ fcst00485.grd                                                                  
+                      
+ Reading file 
+ fcst00486.grd                                                                  
+                      
+ Reading file 
+ fcst00487.grd                                                                  
+                      
+ Reading file 
+ fcst00488.grd                                                                  
+                      
+ Reading file 
+ fcst00489.grd                                                                  
+                      
+ Reading file 
+ fcst00490.grd                                                                  
+                      
+ Reading file 
+ fcst00491.grd                                                                  
+                      
+ Reading file 
+ fcst00492.grd                                                                  
+                      
+ Reading file 
+ fcst00493.grd                                                                  
+                      
+ Reading file 
+ fcst00494.grd                                                                  
+                      
+ Reading file 
+ fcst00495.grd                                                                  
+                      
+ Reading file 
+ fcst00496.grd                                                                  
+                      
+ Reading file 
+ fcst00497.grd                                                                  
+                      
+ Reading file 
+ fcst00498.grd                                                                  
+                      
+ Reading file 
+ fcst00499.grd                                                                  
+                      
+ Reading file 
+ fcst00500.grd                                                                  
+                      
+ Reading file 
+ fcst00501.grd                                                                  
+                      
+ Reading file 
+ fcst00502.grd                                                                  
+                      
+ Reading file 
+ fcst00503.grd                                                                  
+                      
+ Reading file 
+ fcst00504.grd                                                                  
+                      
+ Reading file 
+ fcst00505.grd                                                                  
+                      
+ Reading file 
+ fcst00506.grd                                                                  
+                      
+ Reading file 
+ fcst00507.grd                                                                  
+                      
+ Reading file 
+ fcst00508.grd                                                                  
+                      
+ Reading file 
+ fcst00509.grd                                                                  
+                      
+ Reading file 
+ fcst00510.grd                                                                  
+                      
+ Reading file 
+ fcst00511.grd                                                                  
+                      
+ Reading file 
+ fcst00512.grd                                                                  
+                      
+ Reading file 
+ fcst00513.grd                                                                  
+                      
+ Reading file 
+ fcst00514.grd                                                                  
+                      
+ Reading file 
+ fcst00515.grd                                                                  
+                      
+ Reading file 
+ fcst00516.grd                                                                  
+                      
+ Reading file 
+ fcst00517.grd                                                                  
+                      
+ Reading file 
+ fcst00518.grd                                                                  
+                      
+ Reading file 
+ fcst00519.grd                                                                  
+                      
+ Reading file 
+ fcst00520.grd                                                                  
+                      
+ Reading file 
+ fcst00521.grd                                                                  
+                      
+ Reading file 
+ fcst00522.grd                                                                  
+                      
+ Reading file 
+ fcst00523.grd                                                                  
+                      
+ Reading file 
+ fcst00524.grd                                                                  
+                      
+ Reading file 
+ fcst00525.grd                                                                  
+                      
+ Reading file 
+ fcst00526.grd                                                                  
+                      
+ Reading file 
+ fcst00527.grd                                                                  
+                      
+ Reading file 
+ fcst00528.grd                                                                  
+                      
+ Reading file 
+ fcst00529.grd                                                                  
+                      
+ Reading file 
+ fcst00530.grd                                                                  
+                      
+ Reading file 
+ fcst00531.grd                                                                  
+                      
+ Reading file 
+ fcst00532.grd                                                                  
+                      
+ Reading file 
+ fcst00533.grd                                                                  
+                      
+ Reading file 
+ fcst00534.grd                                                                  
+                      
+ Reading file 
+ fcst00535.grd                                                                  
+                      
+ Reading file 
+ fcst00536.grd                                                                  
+                      
+ Reading file 
+ fcst00537.grd                                                                  
+                      
+ Reading file 
+ fcst00538.grd                                                                  
+                      
+ Reading file 
+ fcst00539.grd                                                                  
+                      
+ Reading file 
+ fcst00540.grd                                                                  
+                      
+ Reading file 
+ fcst00541.grd                                                                  
+                      
+ Reading file 
+ fcst00542.grd                                                                  
+                      
+ Reading file 
+ fcst00543.grd                                                                  
+                      
+ Reading file 
+ fcst00544.grd                                                                  
+                      
+ Reading file 
+ fcst00545.grd                                                                  
+                      
+ Reading file 
+ fcst00546.grd                                                                  
+                      
+ Reading file 
+ fcst00547.grd                                                                  
+                      
+ Reading file 
+ fcst00548.grd                                                                  
+                      
+ Reading file 
+ fcst00549.grd                                                                  
+                      
+ Reading file 
+ fcst00550.grd                                                                  
+                      
+ Reading file 
+ fcst00551.grd                                                                  
+                      
+ Reading file 
+ fcst00552.grd                                                                  
+                      
+ Reading file 
+ fcst00553.grd                                                                  
+                      
+ Reading file 
+ fcst00554.grd                                                                  
+                      
+ Reading file 
+ fcst00555.grd                                                                  
+                      
+ Reading file 
+ fcst00556.grd                                                                  
+                      
+ Reading file 
+ fcst00557.grd                                                                  
+                      
+ Reading file 
+ fcst00558.grd                                                                  
+                      
+ Reading file 
+ fcst00559.grd                                                                  
+                      
+ Reading file 
+ fcst00560.grd                                                                  
+                      
+ Reading file 
+ fcst00561.grd                                                                  
+                      
+ Reading file 
+ fcst00562.grd                                                                  
+                      
+ Reading file 
+ fcst00563.grd                                                                  
+                      
+ Reading file 
+ fcst00564.grd                                                                  
+                      
+ Reading file 
+ fcst00565.grd                                                                  
+                      
+ Reading file 
+ fcst00566.grd                                                                  
+                      
+ Reading file 
+ fcst00567.grd                                                                  
+                      
+ Reading file 
+ fcst00568.grd                                                                  
+                      
+ Reading file 
+ fcst00569.grd                                                                  
+                      
+ Reading file 
+ fcst00570.grd                                                                  
+                      
+ Reading file 
+ fcst00571.grd                                                                  
+                      
+ Reading file 
+ fcst00572.grd                                                                  
+                      
+ Reading file 
+ fcst00573.grd                                                                  
+                      
+ Reading file 
+ fcst00574.grd                                                                  
+                      
+ Reading file 
+ fcst00575.grd                                                                  
+                      
+ Reading file 
+ fcst00576.grd                                                                  
+                      
+ Reading file 
+ fcst00577.grd                                                                  
+                      
+ Reading file 
+ fcst00578.grd                                                                  
+                      
+ Reading file 
+ fcst00579.grd                                                                  
+                      
+ Reading file 
+ fcst00580.grd                                                                  
+                      
+ Reading file 
+ fcst00581.grd                                                                  
+                      
+ Reading file 
+ fcst00582.grd                                                                  
+                      
+ Reading file 
+ fcst00583.grd                                                                  
+                      
+ Reading file 
+ fcst00584.grd                                                                  
+                      
+ Reading file 
+ fcst00585.grd                                                                  
+                      
+ Reading file 
+ fcst00586.grd                                                                  
+                      
+ Reading file 
+ fcst00587.grd                                                                  
+                      
+ Reading file 
+ fcst00588.grd                                                                  
+                      
+ Reading file 
+ fcst00589.grd                                                                  
+                      
+ Reading file 
+ fcst00590.grd                                                                  
+                      
+ Reading file 
+ fcst00591.grd                                                                  
+                      
+ Reading file 
+ fcst00592.grd                                                                  
+                      
+ Reading file 
+ fcst00593.grd                                                                  
+                      
+ Reading file 
+ fcst00594.grd                                                                  
+                      
+ Reading file 
+ fcst00595.grd                                                                  
+                      
+ Reading file 
+ fcst00596.grd                                                                  
+                      
+ Reading file 
+ fcst00597.grd                                                                  
+                      
+ Reading file 
+ fcst00598.grd                                                                  
+                      
+ Reading file 
+ fcst00599.grd                                                                  
+                      
+ Reading file 
+ fcst00600.grd                                                                  
+                      
+ Reading file 
+ fcst00601.grd                                                                  
+                      
+ Reading file 
+ fcst00602.grd                                                                  
+                      
+ Reading file 
+ fcst00603.grd                                                                  
+                      
+ Reading file 
+ fcst00604.grd                                                                  
+                      
+ Reading file 
+ fcst00605.grd                                                                  
+                      
+ Reading file 
+ fcst00606.grd                                                                  
+                      
+ Reading file 
+ fcst00607.grd                                                                  
+                      
+ Reading file 
+ fcst00608.grd                                                                  
+                      
+ Reading file 
+ fcst00609.grd                                                                  
+                      
+ Reading file 
+ fcst00610.grd                                                                  
+                      
+ Reading file 
+ fcst00611.grd                                                                  
+                      
+ Reading file 
+ fcst00612.grd                                                                  
+                      
+ Reading file 
+ fcst00613.grd                                                                  
+                      
+ Reading file 
+ fcst00614.grd                                                                  
+                      
+ Reading file 
+ fcst00615.grd                                                                  
+                      
+ Reading file 
+ fcst00616.grd                                                                  
+                      
+ Reading file 
+ fcst00617.grd                                                                  
+                      
+ Reading file 
+ fcst00618.grd                                                                  
+                      
+ Reading file 
+ fcst00619.grd                                                                  
+                      
+ Reading file 
+ fcst00620.grd                                                                  
+                      
+ Reading file 
+ fcst00621.grd                                                                  
+                      
+ Reading file 
+ fcst00622.grd                                                                  
+                      
+ Reading file 
+ fcst00623.grd                                                                  
+                      
+ Reading file 
+ fcst00624.grd                                                                  
+                      
+ Reading file 
+ fcst00625.grd                                                                  
+                      
+ Reading file 
+ fcst00626.grd                                                                  
+                      
+ Reading file 
+ fcst00627.grd                                                                  
+                      
+ Reading file 
+ fcst00628.grd                                                                  
+                      
+ Reading file 
+ fcst00629.grd                                                                  
+                      
+ Reading file 
+ fcst00630.grd                                                                  
+                      
+ Reading file 
+ fcst00631.grd                                                                  
+                      
+ Reading file 
+ fcst00632.grd                                                                  
+                      
+ Reading file 
+ fcst00633.grd                                                                  
+                      
+ Reading file 
+ fcst00634.grd                                                                  
+                      
+ Reading file 
+ fcst00635.grd                                                                  
+                      
+ Reading file 
+ fcst00636.grd                                                                  
+                      
+ Reading file 
+ fcst00637.grd                                                                  
+                      
+ Reading file 
+ fcst00638.grd                                                                  
+                      
+ Reading file 
+ fcst00639.grd                                                                  
+                      
+ Reading file 
+ fcst00640.grd                                                                  
+                      
+ Reading file 
+ fcst00641.grd                                                                  
+                      
+ Reading file 
+ fcst00642.grd                                                                  
+                      
+ Reading file 
+ fcst00643.grd                                                                  
+                      
+ Reading file 
+ fcst00644.grd                                                                  
+                      
+ Reading file 
+ fcst00645.grd                                                                  
+                      
+ Reading file 
+ fcst00646.grd                                                                  
+                      
+ Reading file 
+ fcst00647.grd                                                                  
+                      
+ Reading file 
+ fcst00648.grd                                                                  
+                      
+ Reading file 
+ fcst00649.grd                                                                  
+                      
+ Reading file 
+ fcst00650.grd                                                                  
+                      
+ Reading file 
+ fcst00651.grd                                                                  
+                      
+ Reading file 
+ fcst00652.grd                                                                  
+                      
+ Reading file 
+ fcst00653.grd                                                                  
+                      
+ Reading file 
+ fcst00654.grd                                                                  
+                      
+ Reading file 
+ fcst00655.grd                                                                  
+                      
+ Reading file 
+ fcst00656.grd                                                                  
+                      
+ Reading file 
+ fcst00657.grd                                                                  
+                      
+ Reading file 
+ fcst00658.grd                                                                  
+                      
+ Reading file 
+ fcst00659.grd                                                                  
+                      
+ Reading file 
+ fcst00660.grd                                                                  
+                      
+ Reading file 
+ fcst00661.grd                                                                  
+                      
+ Reading file 
+ fcst00662.grd                                                                  
+                      
+ Reading file 
+ fcst00663.grd                                                                  
+                      
+ Reading file 
+ fcst00664.grd                                                                  
+                      
+ Reading file 
+ fcst00665.grd                                                                  
+                      
+ Reading file 
+ fcst00666.grd                                                                  
+                      
+ Reading file 
+ fcst00667.grd                                                                  
+                      
+ Reading file 
+ fcst00668.grd                                                                  
+                      
+ Reading file 
+ fcst00669.grd                                                                  
+                      
+ Reading file 
+ fcst00670.grd                                                                  
+                      
+ Reading file 
+ fcst00671.grd                                                                  
+                      
+ Reading file 
+ fcst00672.grd                                                                  
+                      
+ Reading file 
+ fcst00673.grd                                                                  
+                      
+ Reading file 
+ fcst00674.grd                                                                  
+                      
+ Reading file 
+ fcst00675.grd                                                                  
+                      
+ Reading file 
+ fcst00676.grd                                                                  
+                      
+ Reading file 
+ fcst00677.grd                                                                  
+                      
+ Reading file 
+ fcst00678.grd                                                                  
+                      
+ Reading file 
+ fcst00679.grd                                                                  
+                      
+ Reading file 
+ fcst00680.grd                                                                  
+                      
+ Reading file 
+ fcst00681.grd                                                                  
+                      
+ Reading file 
+ fcst00682.grd                                                                  
+                      
+ Reading file 
+ fcst00683.grd                                                                  
+                      
+ Reading file 
+ fcst00684.grd                                                                  
+                      
+ Reading file 
+ fcst00685.grd                                                                  
+                      
+ Reading file 
+ fcst00686.grd                                                                  
+                      
+ Reading file 
+ fcst00687.grd                                                                  
+                      
+ Reading file 
+ fcst00688.grd                                                                  
+                      
+ Reading file 
+ fcst00689.grd                                                                  
+                      
+ Reading file 
+ fcst00690.grd                                                                  
+                      
+ Reading file 
+ fcst00691.grd                                                                  
+                      
+ Reading file 
+ fcst00692.grd                                                                  
+                      
+ Reading file 
+ fcst00693.grd                                                                  
+                      
+ Reading file 
+ fcst00694.grd                                                                  
+                      
+ Reading file 
+ fcst00695.grd                                                                  
+                      
+ Reading file 
+ fcst00696.grd                                                                  
+                      
+ Reading file 
+ fcst00697.grd                                                                  
+                      
+ Reading file 
+ fcst00698.grd                                                                  
+                      
+ Reading file 
+ fcst00699.grd                                                                  
+                      
+ Reading file 
+ fcst00700.grd                                                                  
+                      
+ Reading file 
+ fcst00701.grd                                                                  
+                      
+ Reading file 
+ fcst00702.grd                                                                  
+                      
+ Reading file 
+ fcst00703.grd                                                                  
+                      
+ Reading file 
+ fcst00704.grd                                                                  
+                      
+ Reading file 
+ fcst00705.grd                                                                  
+                      
+ Reading file 
+ fcst00706.grd                                                                  
+                      
+ Reading file 
+ fcst00707.grd                                                                  
+                      
+ Reading file 
+ fcst00708.grd                                                                  
+                      
+ Reading file 
+ fcst00709.grd                                                                  
+                      
+ Reading file 
+ fcst00710.grd                                                                  
+                      
+ Reading file 
+ fcst00711.grd                                                                  
+                      
+ Reading file 
+ fcst00712.grd                                                                  
+                      
+ Reading file 
+ fcst00713.grd                                                                  
+                      
+ Reading file 
+ fcst00714.grd                                                                  
+                      
+ Reading file 
+ fcst00715.grd                                                                  
+                      
+ Reading file 
+ fcst00716.grd                                                                  
+                      
+ Reading file 
+ fcst00717.grd                                                                  
+                      
+ Reading file 
+ fcst00718.grd                                                                  
+                      
+ Reading file 
+ fcst00719.grd                                                                  
+                      
+ Reading file 
+ fcst00720.grd                                                                  
+                      
+ Reading file 
+ fcst00721.grd                                                                  
+                      
+ Reading file 
+ fcst00722.grd                                                                  
+                      
+ Reading file 
+ fcst00723.grd                                                                  
+                      
+ Reading file 
+ fcst00724.grd                                                                  
+                      
+ Reading file 
+ fcst00725.grd                                                                  
+                      
+ Reading file 
+ fcst00726.grd                                                                  
+                      
+ Reading file 
+ fcst00727.grd                                                                  
+                      
+ Reading file 
+ fcst00728.grd                                                                  
+                      
+ Reading file 
+ fcst00729.grd                                                                  
+                      
+ Reading file 
+ fcst00730.grd                                                                  
+                      
+ Reading file 
+ fcst00731.grd                                                                  
+                      
+ Reading file 
+ fcst00732.grd                                                                  
+                      
+ Reading file 
+ fcst00733.grd                                                                  
+                      
+ Reading file 
+ fcst00734.grd                                                                  
+                      
+ Reading file 
+ fcst00735.grd                                                                  
+                      
+ Reading file 
+ fcst00736.grd                                                                  
+                      
+ Reading file 
+ fcst00737.grd                                                                  
+                      
+ Reading file 
+ fcst00738.grd                                                                  
+                      
+ Reading file 
+ fcst00739.grd                                                                  
+                      
+ Reading file 
+ fcst00740.grd                                                                  
+                      
+ Reading file 
+ fcst00741.grd                                                                  
+                      
+ Reading file 
+ fcst00742.grd                                                                  
+                      
+ Reading file 
+ fcst00743.grd                                                                  
+                      
+ Reading file 
+ fcst00744.grd                                                                  
+                      
+ Reading file 
+ fcst00745.grd                                                                  
+                      
+ Reading file 
+ fcst00746.grd                                                                  
+                      
+ Reading file 
+ fcst00747.grd                                                                  
+                      
+ Reading file 
+ fcst00748.grd                                                                  
+                      
+ Reading file 
+ fcst00749.grd                                                                  
+                      
+ Reading file 
+ fcst00750.grd                                                                  
+                      
+ Reading file 
+ fcst00751.grd                                                                  
+                      
+ Reading file 
+ fcst00752.grd                                                                  
+                      
+ Reading file 
+ fcst00753.grd                                                                  
+                      
+ Reading file 
+ fcst00754.grd                                                                  
+                      
+ Reading file 
+ fcst00755.grd                                                                  
+                      
+ Reading file 
+ fcst00756.grd                                                                  
+                      
+ Reading file 
+ fcst00757.grd                                                                  
+                      
+ Reading file 
+ fcst00758.grd                                                                  
+                      
+ Reading file 
+ fcst00759.grd                                                                  
+                      
+ Reading file 
+ fcst00760.grd                                                                  
+                      
+ Reading file 
+ fcst00761.grd                                                                  
+                      
+ Reading file 
+ fcst00762.grd                                                                  
+                      
+ Reading file 
+ fcst00763.grd                                                                  
+                      
+ Reading file 
+ fcst00764.grd                                                                  
+                      
+ Reading file 
+ fcst00765.grd                                                                  
+                      
+ Reading file 
+ fcst00766.grd                                                                  
+                      
+ Reading file 
+ fcst00767.grd                                                                  
+                      
+ Reading file 
+ fcst00768.grd                                                                  
+                      
+ Reading file 
+ fcst00769.grd                                                                  
+                      
+ Reading file 
+ fcst00770.grd                                                                  
+                      
+ Reading file 
+ fcst00771.grd                                                                  
+                      
+ Reading file 
+ fcst00772.grd                                                                  
+                      
+ Reading file 
+ fcst00773.grd                                                                  
+                      
+ Reading file 
+ fcst00774.grd                                                                  
+                      
+ Reading file 
+ fcst00775.grd                                                                  
+                      
+ Reading file 
+ fcst00776.grd                                                                  
+                      
+ Reading file 
+ fcst00777.grd                                                                  
+                      
+ Reading file 
+ fcst00778.grd                                                                  
+                      
+ Reading file 
+ fcst00779.grd                                                                  
+                      
+ Reading file 
+ fcst00780.grd                                                                  
+                      
+ Reading file 
+ fcst00781.grd                                                                  
+                      
+ Reading file 
+ fcst00782.grd                                                                  
+                      
+ Reading file 
+ fcst00783.grd                                                                  
+                      
+ Reading file 
+ fcst00784.grd                                                                  
+                      
+ Reading file 
+ fcst00785.grd                                                                  
+                      
+ Reading file 
+ fcst00786.grd                                                                  
+                      
+ Reading file 
+ fcst00787.grd                                                                  
+                      
+ Reading file 
+ fcst00788.grd                                                                  
+                      
+ Reading file 
+ fcst00789.grd                                                                  
+                      
+ Reading file 
+ fcst00790.grd                                                                  
+                      
+ Reading file 
+ fcst00791.grd                                                                  
+                      
+ Reading file 
+ fcst00792.grd                                                                  
+                      
+ Reading file 
+ fcst00793.grd                                                                  
+                      
+ Reading file 
+ fcst00794.grd                                                                  
+                      
+ Reading file 
+ fcst00795.grd                                                                  
+                      
+ Reading file 
+ fcst00796.grd                                                                  
+                      
+ Reading file 
+ fcst00797.grd                                                                  
+                      
+ Reading file 
+ fcst00798.grd                                                                  
+                      
+ Reading file 
+ fcst00799.grd                                                                  
+                      
+ Reading file 
+ fcst00800.grd                                                                  
+                      
+ Reading file 
+ fcst00801.grd                                                                  
+                      
+ Reading file 
+ fcst00802.grd                                                                  
+                      
+ Reading file 
+ fcst00803.grd                                                                  
+                      
+ Reading file 
+ fcst00804.grd                                                                  
+                      
+ Reading file 
+ fcst00805.grd                                                                  
+                      
+ Reading file 
+ fcst00806.grd                                                                  
+                      
+ Reading file 
+ fcst00807.grd                                                                  
+                      
+ Reading file 
+ fcst00808.grd                                                                  
+                      
+ Reading file 
+ fcst00809.grd                                                                  
+                      
+ Reading file 
+ fcst00810.grd                                                                  
+                      
+ Reading file 
+ fcst00811.grd                                                                  
+                      
+ Reading file 
+ fcst00812.grd                                                                  
+                      
+ Reading file 
+ fcst00813.grd                                                                  
+                      
+ Reading file 
+ fcst00814.grd                                                                  
+                      
+ Reading file 
+ fcst00815.grd                                                                  
+                      
+ Reading file 
+ fcst00816.grd                                                                  
+                      
+ Reading file 
+ fcst00817.grd                                                                  
+                      
+ Reading file 
+ fcst00818.grd                                                                  
+                      
+ Reading file 
+ fcst00819.grd                                                                  
+                      
+ Reading file 
+ fcst00820.grd                                                                  
+                      
+ Reading file 
+ fcst00821.grd                                                                  
+                      
+ Reading file 
+ fcst00822.grd                                                                  
+                      
+ Reading file 
+ fcst00823.grd                                                                  
+                      
+ Reading file 
+ fcst00824.grd                                                                  
+                      
+ Reading file 
+ fcst00825.grd                                                                  
+                      
+ Reading file 
+ fcst00826.grd                                                                  
+                      
+ Reading file 
+ fcst00827.grd                                                                  
+                      
+ Reading file 
+ fcst00828.grd                                                                  
+                      
+ Reading file 
+ fcst00829.grd                                                                  
+                      
+ Reading file 
+ fcst00830.grd                                                                  
+                      
+ Reading file 
+ fcst00831.grd                                                                  
+                      
+ Reading file 
+ fcst00832.grd                                                                  
+                      
+ Reading file 
+ fcst00833.grd                                                                  
+                      
+ Reading file 
+ fcst00834.grd                                                                  
+                      
+ Reading file 
+ fcst00835.grd                                                                  
+                      
+ Reading file 
+ fcst00836.grd                                                                  
+                      
+ Reading file 
+ fcst00837.grd                                                                  
+                      
+ Reading file 
+ fcst00838.grd                                                                  
+                      
+ Reading file 
+ fcst00839.grd                                                                  
+                      
+ Reading file 
+ fcst00840.grd                                                                  
+                      
+ Reading file 
+ fcst00841.grd                                                                  
+                      
+ Reading file 
+ fcst00842.grd                                                                  
+                      
+ Reading file 
+ fcst00843.grd                                                                  
+                      
+ Reading file 
+ fcst00844.grd                                                                  
+                      
+ Reading file 
+ fcst00845.grd                                                                  
+                      
+ Reading file 
+ fcst00846.grd                                                                  
+                      
+ Reading file 
+ fcst00847.grd                                                                  
+                      
+ Reading file 
+ fcst00848.grd                                                                  
+                      
+ Reading file 
+ fcst00849.grd                                                                  
+                      
+ Reading file 
+ fcst00850.grd                                                                  
+                      
+ Reading file 
+ fcst00851.grd                                                                  
+                      
+ Reading file 
+ fcst00852.grd                                                                  
+                      
+ Reading file 
+ fcst00853.grd                                                                  
+                      
+ Reading file 
+ fcst00854.grd                                                                  
+                      
+ Reading file 
+ fcst00855.grd                                                                  
+                      
+ Reading file 
+ fcst00856.grd                                                                  
+                      
+ Reading file 
+ fcst00857.grd                                                                  
+                      
+ Reading file 
+ fcst00858.grd                                                                  
+                      
+ Reading file 
+ fcst00859.grd                                                                  
+                      
+ Reading file 
+ fcst00860.grd                                                                  
+                      
+ Reading file 
+ fcst00861.grd                                                                  
+                      
+ Reading file 
+ fcst00862.grd                                                                  
+                      
+ Reading file 
+ fcst00863.grd                                                                  
+                      
+ Reading file 
+ fcst00864.grd                                                                  
+                      
+ Reading file 
+ fcst00865.grd                                                                  
+                      
+ Reading file 
+ fcst00866.grd                                                                  
+                      
+ Reading file 
+ fcst00867.grd                                                                  
+                      
+ Reading file 
+ fcst00868.grd                                                                  
+                      
+ Reading file 
+ fcst00869.grd                                                                  
+                      
+ Reading file 
+ fcst00870.grd                                                                  
+                      
+ Reading file 
+ fcst00871.grd                                                                  
+                      
+ Reading file 
+ fcst00872.grd                                                                  
+                      
+ Reading file 
+ fcst00873.grd                                                                  
+                      
+ Reading file 
+ fcst00874.grd                                                                  
+                      
+ Reading file 
+ fcst00875.grd                                                                  
+                      
+ Reading file 
+ fcst00876.grd                                                                  
+                      
+ Reading file 
+ fcst00877.grd                                                                  
+                      
+ Reading file 
+ fcst00878.grd                                                                  
+                      
+ Reading file 
+ fcst00879.grd                                                                  
+                      
+ Reading file 
+ fcst00880.grd                                                                  
+                      
+ Reading file 
+ fcst00881.grd                                                                  
+                      
+ Reading file 
+ fcst00882.grd                                                                  
+                      
+ Reading file 
+ fcst00883.grd                                                                  
+                      
+ Reading file 
+ fcst00884.grd                                                                  
+                      
+ Reading file 
+ fcst00885.grd                                                                  
+                      
+ Reading file 
+ fcst00886.grd                                                                  
+                      
+ Reading file 
+ fcst00887.grd                                                                  
+                      
+ Reading file 
+ fcst00888.grd                                                                  
+                      
+ Reading file 
+ fcst00889.grd                                                                  
+                      
+ Reading file 
+ fcst00890.grd                                                                  
+                      
+ Reading file 
+ fcst00891.grd                                                                  
+                      
+ Reading file 
+ fcst00892.grd                                                                  
+                      
+ Reading file 
+ fcst00893.grd                                                                  
+                      
+ Reading file 
+ fcst00894.grd                                                                  
+                      
+ Reading file 
+ fcst00895.grd                                                                  
+                      
+ Reading file 
+ fcst00896.grd                                                                  
+                      
+ Reading file 
+ fcst00897.grd                                                                  
+                      
+ Reading file 
+ fcst00898.grd                                                                  
+                      
+ Reading file 
+ fcst00899.grd                                                                  
+                      
+ Reading file 
+ fcst00900.grd                                                                  
+                      
+ Reading file 
+ fcst00901.grd                                                                  
+                      
+ Reading file 
+ fcst00902.grd                                                                  
+                      
+ Reading file 
+ fcst00903.grd                                                                  
+                      
+ Reading file 
+ fcst00904.grd                                                                  
+                      
+ Reading file 
+ fcst00905.grd                                                                  
+                      
+ Reading file 
+ fcst00906.grd                                                                  
+                      
+ Reading file 
+ fcst00907.grd                                                                  
+                      
+ Reading file 
+ fcst00908.grd                                                                  
+                      
+ Reading file 
+ fcst00909.grd                                                                  
+                      
+ Reading file 
+ fcst00910.grd                                                                  
+                      
+ Reading file 
+ fcst00911.grd                                                                  
+                      
+ Reading file 
+ fcst00912.grd                                                                  
+                      
+ Reading file 
+ fcst00913.grd                                                                  
+                      
+ Reading file 
+ fcst00914.grd                                                                  
+                      
+ Reading file 
+ fcst00915.grd                                                                  
+                      
+ Reading file 
+ fcst00916.grd                                                                  
+                      
+ Reading file 
+ fcst00917.grd                                                                  
+                      
+ Reading file 
+ fcst00918.grd                                                                  
+                      
+ Reading file 
+ fcst00919.grd                                                                  
+                      
+ Reading file 
+ fcst00920.grd                                                                  
+                      
+ Reading file 
+ fcst00921.grd                                                                  
+                      
+ Reading file 
+ fcst00922.grd                                                                  
+                      
+ Reading file 
+ fcst00923.grd                                                                  
+                      
+ Reading file 
+ fcst00924.grd                                                                  
+                      
+ Reading file 
+ fcst00925.grd                                                                  
+                      
+ Reading file 
+ fcst00926.grd                                                                  
+                      
+ Reading file 
+ fcst00927.grd                                                                  
+                      
+ Reading file 
+ fcst00928.grd                                                                  
+                      
+ Reading file 
+ fcst00929.grd                                                                  
+                      
+ Reading file 
+ fcst00930.grd                                                                  
+                      
+ Reading file 
+ fcst00931.grd                                                                  
+                      
+ Reading file 
+ fcst00932.grd                                                                  
+                      
+ Reading file 
+ fcst00933.grd                                                                  
+                      
+ Reading file 
+ fcst00934.grd                                                                  
+                      
+ Reading file 
+ fcst00935.grd                                                                  
+                      
+ Reading file 
+ fcst00936.grd                                                                  
+                      
+ Reading file 
+ fcst00937.grd                                                                  
+                      
+ Reading file 
+ fcst00938.grd                                                                  
+                      
+ Reading file 
+ fcst00939.grd                                                                  
+                      
+ Reading file 
+ fcst00940.grd                                                                  
+                      
+ Reading file 
+ fcst00941.grd                                                                  
+                      
+ Reading file 
+ fcst00942.grd                                                                  
+                      
+ Reading file 
+ fcst00943.grd                                                                  
+                      
+ Reading file 
+ fcst00944.grd                                                                  
+                      
+ Reading file 
+ fcst00945.grd                                                                  
+                      
+ Reading file 
+ fcst00946.grd                                                                  
+                      
+ Reading file 
+ fcst00947.grd                                                                  
+                      
+ Reading file 
+ fcst00948.grd                                                                  
+                      
+ Reading file 
+ fcst00949.grd                                                                  
+                      
+ Reading file 
+ fcst00950.grd                                                                  
+                      
+ Reading file 
+ fcst00951.grd                                                                  
+                      
+ Reading file 
+ fcst00952.grd                                                                  
+                      
+ Reading file 
+ fcst00953.grd                                                                  
+                      
+ Reading file 
+ fcst00954.grd                                                                  
+                      
+ Reading file 
+ fcst00955.grd                                                                  
+                      
+ Reading file 
+ fcst00956.grd                                                                  
+                      
+ Reading file 
+ fcst00957.grd                                                                  
+                      
+ Reading file 
+ fcst00958.grd                                                                  
+                      
+ Reading file 
+ fcst00959.grd                                                                  
+                      
+ Reading file 
+ fcst00960.grd                                                                  
+                      
+ Reading file 
+ fcst00961.grd                                                                  
+                      
+ Reading file 
+ fcst00962.grd                                                                  
+                      
+ Reading file 
+ fcst00963.grd                                                                  
+                      
+ Reading file 
+ fcst00964.grd                                                                  
+                      
+ Reading file 
+ fcst00965.grd                                                                  
+                      
+ Reading file 
+ fcst00966.grd                                                                  
+                      
+ Reading file 
+ fcst00967.grd                                                                  
+                      
+ Reading file 
+ fcst00968.grd                                                                  
+                      
+ Reading file 
+ fcst00969.grd                                                                  
+                      
+ Reading file 
+ fcst00970.grd                                                                  
+                      
+ Reading file 
+ fcst00971.grd                                                                  
+                      
+ Reading file 
+ fcst00972.grd                                                                  
+                      
+ Reading file 
+ fcst00973.grd                                                                  
+                      
+ Reading file 
+ fcst00974.grd                                                                  
+                      
+ Reading file 
+ fcst00975.grd                                                                  
+                      
+ Reading file 
+ fcst00976.grd                                                                  
+                      
+ Reading file 
+ fcst00977.grd                                                                  
+                      
+ Reading file 
+ fcst00978.grd                                                                  
+                      
+ Reading file 
+ fcst00979.grd                                                                  
+                      
+ Reading file 
+ fcst00980.grd                                                                  
+                      
+ Reading file 
+ fcst00981.grd                                                                  
+                      
+ Reading file 
+ fcst00982.grd                                                                  
+                      
+ Reading file 
+ fcst00983.grd                                                                  
+                      
+ Reading file 
+ fcst00984.grd                                                                  
+                      
+ Reading file 
+ fcst00985.grd                                                                  
+                      
+ Reading file 
+ fcst00986.grd                                                                  
+                      
+ Reading file 
+ fcst00987.grd                                                                  
+                      
+ Reading file 
+ fcst00988.grd                                                                  
+                      
+ Reading file 
+ fcst00989.grd                                                                  
+                      
+ Reading file 
+ fcst00990.grd                                                                  
+                      
+ Reading file 
+ fcst00991.grd                                                                  
+                      
+ Reading file 
+ fcst00992.grd                                                                  
+                      
+ Reading file 
+ fcst00993.grd                                                                  
+                      
+ Reading file 
+ fcst00994.grd                                                                  
+                      
+ Reading file 
+ fcst00995.grd                                                                  
+                      
+ Reading file 
+ fcst00996.grd                                                                  
+                      
+ Reading file 
+ fcst00997.grd                                                                  
+                      
+ Reading file 
+ fcst00998.grd                                                                  
+                      
+ Reading file 
+ fcst00999.grd                                                                  
+                      
+ Reading file 
+ fcst01000.grd                                                                  
+                      
+ [Warning]: Field qc at lev    50.0000000000000       will be ignored
+ [Warning]: Field qc at lev    150.000000000000       will be ignored
+ [Warning]: Field qc at lev    250.000000000000       will be ignored
+ [Warning]: Field qc at lev    350.000000000000       will be ignored
+ [Warning]: Field qc at lev    450.000000000000       will be ignored
+ [Warning]: Field qc at lev    552.500000000000       will be ignored
+ [Warning]: Field qc at lev    662.500000000000       will be ignored
+ [Warning]: Field qc at lev    787.500000000000       will be ignored
+ [Warning]: Field qc at lev    932.500000000000       will be ignored
+ [Warning]: Field qc at lev    1097.50000000000       will be ignored
+ [Warning]: Field qc at lev    1282.50000000000       will be ignored
+ [Warning]: Field qc at lev    1487.50000000000       will be ignored
+ [Warning]: Field qc at lev    1712.50000000000       will be ignored
+ [Warning]: Field qc at lev    1957.50000000000       will be ignored
+ [Warning]: Field qc at lev    2222.50000000000       will be ignored
+ [Warning]: Field qc at lev    2507.50000000000       will be ignored
+ [Warning]: Field qc at lev    2812.50000000000       will be ignored
+ [Warning]: Field qc at lev    3137.50000000000       will be ignored
+ [Warning]: Field qc at lev    3482.50000000000       will be ignored
+ [Warning]: Field qc at lev    3845.00000000000       will be ignored
+ [Warning]: Field qc at lev    4220.00000000000       will be ignored
+ [Warning]: Field qc at lev    4605.00000000000       will be ignored
+ [Warning]: Field qc at lev    5000.00000000000       will be ignored
+ [Warning]: Field qc at lev    5400.00000000000       will be ignored
+ [Warning]: Field qc at lev    5800.00000000000       will be ignored
+ [Warning]: Field qc at lev    6200.00000000000       will be ignored
+ [Warning]: Field qc at lev    6600.00000000000       will be ignored
+ [Warning]: Field qc at lev    7000.00000000000       will be ignored
+ [Warning]: Field qc at lev    7400.00000000000       will be ignored
+ [Warning]: Field qc at lev    7800.00000000000       will be ignored
+ [Warning]: Field qc at lev    8200.00000000000       will be ignored
+ [Warning]: Field qc at lev    8600.00000000000       will be ignored
+ [Warning]: Field qc at lev    9000.00000000000       will be ignored
+ [Warning]: Field qc at lev    9400.00000000000       will be ignored
+ [Warning]: Field qc at lev    9800.00000000000       will be ignored
+ [Warning]: Field qc at lev    10200.0000000000       will be ignored
+ [Warning]: Field qc at lev    10600.0000000000       will be ignored
+ [Warning]: Field qc at lev    11000.0000000000       will be ignored
+ [Warning]: Field qc at lev    11400.0000000000       will be ignored
+ [Warning]: Field qc at lev    11800.0000000000       will be ignored
+ [Warning]: Field qc at lev    12200.0000000000       will be ignored
+ [Warning]: Field qc at lev    12600.0000000000       will be ignored
+ [Warning]: Field qc at lev    13000.0000000000       will be ignored
+ [Warning]: Field qc at lev    13400.0000000000       will be ignored
+ [Warning]: Field qc at lev    13800.0000000000       will be ignored
+ [Warning]: Field qc at lev    14200.0000000000       will be ignored
+ [Warning]: Field qc at lev    14600.0000000000       will be ignored
+ [Warning]: Field qc at lev    15000.0000000000       will be ignored
+ [Warning]: Field qc at lev    15400.0000000000       will be ignored
+ [Warning]: Field qc at lev    15800.0000000000       will be ignored
+ [Warning]: Field qc at lev    16200.0000000000       will be ignored
+ [Warning]: Field qc at lev    16600.0000000000       will be ignored
+ [Warning]: Field qc at lev    17000.0000000000       will be ignored
+ [Warning]: Field qc at lev    17400.0000000000       will be ignored
+ [Warning]: Field qc at lev    17800.0000000000       will be ignored
+ [Warning]: Field qc at lev    18200.0000000000       will be ignored
+ [Warning]: Field qc at lev    18600.0000000000       will be ignored
+ [Warning]: Field qc at lev    19000.0000000000       will be ignored
+ [Warning]: Field qc at lev    19400.0000000000       will be ignored
+ [Warning]: Field qc at lev    19800.0000000000       will be ignored
+ [Warning]: Field qr at lev    50.0000000000000       will be ignored
+ [Warning]: Field qr at lev    150.000000000000       will be ignored
+ [Warning]: Field qr at lev    250.000000000000       will be ignored
+ [Warning]: Field qr at lev    350.000000000000       will be ignored
+ [Warning]: Field qr at lev    450.000000000000       will be ignored
+ [Warning]: Field qr at lev    552.500000000000       will be ignored
+ [Warning]: Field qr at lev    662.500000000000       will be ignored
+ [Warning]: Field qr at lev    787.500000000000       will be ignored
+ [Warning]: Field qr at lev    932.500000000000       will be ignored
+ [Warning]: Field qr at lev    1097.50000000000       will be ignored
+ [Warning]: Field qr at lev    1282.50000000000       will be ignored
+ [Warning]: Field qr at lev    1487.50000000000       will be ignored
+ [Warning]: Field qr at lev    1712.50000000000       will be ignored
+ [Warning]: Field qr at lev    1957.50000000000       will be ignored
+ [Warning]: Field qr at lev    2222.50000000000       will be ignored
+ [Warning]: Field qr at lev    2507.50000000000       will be ignored
+ [Warning]: Field qr at lev    2812.50000000000       will be ignored
+ [Warning]: Field qr at lev    3137.50000000000       will be ignored
+ [Warning]: Field qr at lev    3482.50000000000       will be ignored
+ [Warning]: Field qr at lev    3845.00000000000       will be ignored
+ [Warning]: Field qr at lev    4220.00000000000       will be ignored
+ [Warning]: Field qr at lev    4605.00000000000       will be ignored
+ [Warning]: Field qr at lev    5000.00000000000       will be ignored
+ [Warning]: Field qr at lev    5400.00000000000       will be ignored
+ [Warning]: Field qr at lev    5800.00000000000       will be ignored
+ [Warning]: Field qr at lev    6200.00000000000       will be ignored
+ [Warning]: Field qr at lev    6600.00000000000       will be ignored
+ [Warning]: Field qr at lev    7000.00000000000       will be ignored
+ [Warning]: Field qr at lev    7400.00000000000       will be ignored
+ [Warning]: Field qr at lev    7800.00000000000       will be ignored
+ [Warning]: Field qr at lev    8200.00000000000       will be ignored
+ [Warning]: Field qr at lev    8600.00000000000       will be ignored
+ [Warning]: Field qr at lev    9000.00000000000       will be ignored
+ [Warning]: Field qr at lev    9400.00000000000       will be ignored
+ [Warning]: Field qr at lev    9800.00000000000       will be ignored
+ [Warning]: Field qr at lev    10200.0000000000       will be ignored
+ [Warning]: Field qr at lev    10600.0000000000       will be ignored
+ [Warning]: Field qr at lev    11000.0000000000       will be ignored
+ [Warning]: Field qr at lev    11400.0000000000       will be ignored
+ [Warning]: Field qr at lev    11800.0000000000       will be ignored
+ [Warning]: Field qr at lev    12200.0000000000       will be ignored
+ [Warning]: Field qr at lev    12600.0000000000       will be ignored
+ [Warning]: Field qr at lev    13000.0000000000       will be ignored
+ [Warning]: Field qr at lev    13400.0000000000       will be ignored
+ [Warning]: Field qr at lev    13800.0000000000       will be ignored
+ [Warning]: Field qr at lev    14200.0000000000       will be ignored
+ [Warning]: Field qr at lev    14600.0000000000       will be ignored
+ [Warning]: Field qr at lev    15000.0000000000       will be ignored
+ [Warning]: Field qr at lev    15400.0000000000       will be ignored
+ [Warning]: Field qr at lev    15800.0000000000       will be ignored
+ [Warning]: Field qr at lev    16200.0000000000       will be ignored
+ [Warning]: Field qr at lev    16600.0000000000       will be ignored
+ [Warning]: Field qr at lev    17000.0000000000       will be ignored
+ [Warning]: Field qr at lev    17400.0000000000       will be ignored
+ [Warning]: Field qr at lev    17800.0000000000       will be ignored
+ [Warning]: Field qr at lev    18200.0000000000       will be ignored
+ [Warning]: Field qr at lev    18600.0000000000       will be ignored
+ [Warning]: Field qr at lev    19000.0000000000       will be ignored
+ [Warning]: Field qr at lev    19400.0000000000       will be ignored
+ [Warning]: Field qr at lev    19800.0000000000       will be ignored
+ [Warning]: Field qi at lev    50.0000000000000       will be ignored
+ [Warning]: Field qi at lev    150.000000000000       will be ignored
+ [Warning]: Field qi at lev    250.000000000000       will be ignored
+ [Warning]: Field qi at lev    350.000000000000       will be ignored
+ [Warning]: Field qi at lev    450.000000000000       will be ignored
+ [Warning]: Field qi at lev    552.500000000000       will be ignored
+ [Warning]: Field qi at lev    662.500000000000       will be ignored
+ [Warning]: Field qi at lev    787.500000000000       will be ignored
+ [Warning]: Field qi at lev    932.500000000000       will be ignored
+ [Warning]: Field qi at lev    1097.50000000000       will be ignored
+ [Warning]: Field qi at lev    1282.50000000000       will be ignored
+ [Warning]: Field qi at lev    1487.50000000000       will be ignored
+ [Warning]: Field qi at lev    1712.50000000000       will be ignored
+ [Warning]: Field qi at lev    1957.50000000000       will be ignored
+ [Warning]: Field qi at lev    2222.50000000000       will be ignored
+ [Warning]: Field qi at lev    2507.50000000000       will be ignored
+ [Warning]: Field qi at lev    2812.50000000000       will be ignored
+ [Warning]: Field qi at lev    3137.50000000000       will be ignored
+ [Warning]: Field qi at lev    3482.50000000000       will be ignored
+ [Warning]: Field qi at lev    3845.00000000000       will be ignored
+ [Warning]: Field qi at lev    4220.00000000000       will be ignored
+ [Warning]: Field qi at lev    4605.00000000000       will be ignored
+ [Warning]: Field qi at lev    5000.00000000000       will be ignored
+ [Warning]: Field qi at lev    5400.00000000000       will be ignored
+ [Warning]: Field qi at lev    5800.00000000000       will be ignored
+ [Warning]: Field qi at lev    6200.00000000000       will be ignored
+ [Warning]: Field qi at lev    6600.00000000000       will be ignored
+ [Warning]: Field qi at lev    7000.00000000000       will be ignored
+ [Warning]: Field qi at lev    7400.00000000000       will be ignored
+ [Warning]: Field qi at lev    7800.00000000000       will be ignored
+ [Warning]: Field qi at lev    8200.00000000000       will be ignored
+ [Warning]: Field qi at lev    8600.00000000000       will be ignored
+ [Warning]: Field qi at lev    9000.00000000000       will be ignored
+ [Warning]: Field qi at lev    9400.00000000000       will be ignored
+ [Warning]: Field qi at lev    9800.00000000000       will be ignored
+ [Warning]: Field qi at lev    10200.0000000000       will be ignored
+ [Warning]: Field qi at lev    10600.0000000000       will be ignored
+ [Warning]: Field qi at lev    11000.0000000000       will be ignored
+ [Warning]: Field qi at lev    11400.0000000000       will be ignored
+ [Warning]: Field qi at lev    11800.0000000000       will be ignored
+ [Warning]: Field qi at lev    12200.0000000000       will be ignored
+ [Warning]: Field qi at lev    12600.0000000000       will be ignored
+ [Warning]: Field qi at lev    13000.0000000000       will be ignored
+ [Warning]: Field qi at lev    13400.0000000000       will be ignored
+ [Warning]: Field qi at lev    13800.0000000000       will be ignored
+ [Warning]: Field qi at lev    14200.0000000000       will be ignored
+ [Warning]: Field qi at lev    14600.0000000000       will be ignored
+ [Warning]: Field qi at lev    15000.0000000000       will be ignored
+ [Warning]: Field qi at lev    15400.0000000000       will be ignored
+ [Warning]: Field qi at lev    15800.0000000000       will be ignored
+ [Warning]: Field qi at lev    16200.0000000000       will be ignored
+ [Warning]: Field qi at lev    16600.0000000000       will be ignored
+ [Warning]: Field qi at lev    17000.0000000000       will be ignored
+ [Warning]: Field qi at lev    17400.0000000000       will be ignored
+ [Warning]: Field qi at lev    17800.0000000000       will be ignored
+ [Warning]: Field qi at lev    18200.0000000000       will be ignored
+ [Warning]: Field qi at lev    18600.0000000000       will be ignored
+ [Warning]: Field qi at lev    19000.0000000000       will be ignored
+ [Warning]: Field qi at lev    19400.0000000000       will be ignored
+ [Warning]: Field qi at lev    19800.0000000000       will be ignored
+ [Warning]: Field qs at lev    50.0000000000000       will be ignored
+ [Warning]: Field qs at lev    150.000000000000       will be ignored
+ [Warning]: Field qs at lev    250.000000000000       will be ignored
+ [Warning]: Field qs at lev    350.000000000000       will be ignored
+ [Warning]: Field qs at lev    450.000000000000       will be ignored
+ [Warning]: Field qs at lev    552.500000000000       will be ignored
+ [Warning]: Field qs at lev    662.500000000000       will be ignored
+ [Warning]: Field qs at lev    787.500000000000       will be ignored
+ [Warning]: Field qs at lev    932.500000000000       will be ignored
+ [Warning]: Field qs at lev    1097.50000000000       will be ignored
+ [Warning]: Field qs at lev    1282.50000000000       will be ignored
+ [Warning]: Field qs at lev    1487.50000000000       will be ignored
+ [Warning]: Field qs at lev    1712.50000000000       will be ignored
+ [Warning]: Field qs at lev    1957.50000000000       will be ignored
+ [Warning]: Field qs at lev    2222.50000000000       will be ignored
+ [Warning]: Field qs at lev    2507.50000000000       will be ignored
+ [Warning]: Field qs at lev    2812.50000000000       will be ignored
+ [Warning]: Field qs at lev    3137.50000000000       will be ignored
+ [Warning]: Field qs at lev    3482.50000000000       will be ignored
+ [Warning]: Field qs at lev    3845.00000000000       will be ignored
+ [Warning]: Field qs at lev    4220.00000000000       will be ignored
+ [Warning]: Field qs at lev    4605.00000000000       will be ignored
+ [Warning]: Field qs at lev    5000.00000000000       will be ignored
+ [Warning]: Field qs at lev    5400.00000000000       will be ignored
+ [Warning]: Field qs at lev    5800.00000000000       will be ignored
+ [Warning]: Field qs at lev    6200.00000000000       will be ignored
+ [Warning]: Field qs at lev    6600.00000000000       will be ignored
+ [Warning]: Field qs at lev    7000.00000000000       will be ignored
+ [Warning]: Field qs at lev    7400.00000000000       will be ignored
+ [Warning]: Field qs at lev    7800.00000000000       will be ignored
+ [Warning]: Field qs at lev    8200.00000000000       will be ignored
+ [Warning]: Field qs at lev    8600.00000000000       will be ignored
+ [Warning]: Field qs at lev    9000.00000000000       will be ignored
+ [Warning]: Field qs at lev    9400.00000000000       will be ignored
+ [Warning]: Field qs at lev    9800.00000000000       will be ignored
+ [Warning]: Field qs at lev    10200.0000000000       will be ignored
+ [Warning]: Field qs at lev    10600.0000000000       will be ignored
+ [Warning]: Field qs at lev    11000.0000000000       will be ignored
+ [Warning]: Field qs at lev    11400.0000000000       will be ignored
+ [Warning]: Field qs at lev    11800.0000000000       will be ignored
+ [Warning]: Field qs at lev    12200.0000000000       will be ignored
+ [Warning]: Field qs at lev    12600.0000000000       will be ignored
+ [Warning]: Field qs at lev    13000.0000000000       will be ignored
+ [Warning]: Field qs at lev    13400.0000000000       will be ignored
+ [Warning]: Field qs at lev    13800.0000000000       will be ignored
+ [Warning]: Field qs at lev    14200.0000000000       will be ignored
+ [Warning]: Field qs at lev    14600.0000000000       will be ignored
+ [Warning]: Field qs at lev    15000.0000000000       will be ignored
+ [Warning]: Field qs at lev    15400.0000000000       will be ignored
+ [Warning]: Field qs at lev    15800.0000000000       will be ignored
+ [Warning]: Field qs at lev    16200.0000000000       will be ignored
+ [Warning]: Field qs at lev    16600.0000000000       will be ignored
+ [Warning]: Field qs at lev    17000.0000000000       will be ignored
+ [Warning]: Field qs at lev    17400.0000000000       will be ignored
+ [Warning]: Field qs at lev    17800.0000000000       will be ignored
+ [Warning]: Field qs at lev    18200.0000000000       will be ignored
+ [Warning]: Field qs at lev    18600.0000000000       will be ignored
+ [Warning]: Field qs at lev    19000.0000000000       will be ignored
+ [Warning]: Field qs at lev    19400.0000000000       will be ignored
+ [Warning]: Field qs at lev    19800.0000000000       will be ignored
+ [Warning]: Field qg at lev    50.0000000000000       will be ignored
+ [Warning]: Field qg at lev    150.000000000000       will be ignored
+ [Warning]: Field qg at lev    250.000000000000       will be ignored
+ [Warning]: Field qg at lev    350.000000000000       will be ignored
+ [Warning]: Field qg at lev    450.000000000000       will be ignored
+ [Warning]: Field qg at lev    552.500000000000       will be ignored
+ [Warning]: Field qg at lev    662.500000000000       will be ignored
+ [Warning]: Field qg at lev    787.500000000000       will be ignored
+ [Warning]: Field qg at lev    932.500000000000       will be ignored
+ [Warning]: Field qg at lev    1097.50000000000       will be ignored
+ [Warning]: Field qg at lev    1282.50000000000       will be ignored
+ [Warning]: Field qg at lev    1487.50000000000       will be ignored
+ [Warning]: Field qg at lev    1712.50000000000       will be ignored
+ [Warning]: Field qg at lev    1957.50000000000       will be ignored
+ [Warning]: Field qg at lev    2222.50000000000       will be ignored
+ [Warning]: Field qg at lev    2507.50000000000       will be ignored
+ [Warning]: Field qg at lev    2812.50000000000       will be ignored
+ [Warning]: Field qg at lev    3137.50000000000       will be ignored
+ [Warning]: Field qg at lev    3482.50000000000       will be ignored
+ [Warning]: Field qg at lev    3845.00000000000       will be ignored
+ [Warning]: Field qg at lev    4220.00000000000       will be ignored
+ [Warning]: Field qg at lev    4605.00000000000       will be ignored
+ [Warning]: Field qg at lev    5000.00000000000       will be ignored
+ [Warning]: Field qg at lev    5400.00000000000       will be ignored
+ [Warning]: Field qg at lev    5800.00000000000       will be ignored
+ [Warning]: Field qg at lev    6200.00000000000       will be ignored
+ [Warning]: Field qg at lev    6600.00000000000       will be ignored
+ [Warning]: Field qg at lev    7000.00000000000       will be ignored
+ [Warning]: Field qg at lev    7400.00000000000       will be ignored
+ [Warning]: Field qg at lev    7800.00000000000       will be ignored
+ [Warning]: Field qg at lev    8200.00000000000       will be ignored
+ [Warning]: Field qg at lev    8600.00000000000       will be ignored
+ [Warning]: Field qg at lev    9000.00000000000       will be ignored
+ [Warning]: Field qg at lev    9400.00000000000       will be ignored
+ [Warning]: Field qg at lev    9800.00000000000       will be ignored
+ [Warning]: Field qg at lev    10200.0000000000       will be ignored
+ [Warning]: Field qg at lev    10600.0000000000       will be ignored
+ [Warning]: Field qg at lev    11000.0000000000       will be ignored
+ [Warning]: Field qg at lev    11400.0000000000       will be ignored
+ [Warning]: Field qg at lev    11800.0000000000       will be ignored
+ [Warning]: Field qg at lev    12200.0000000000       will be ignored
+ [Warning]: Field qg at lev    12600.0000000000       will be ignored
+ [Warning]: Field qg at lev    13000.0000000000       will be ignored
+ [Warning]: Field qg at lev    13400.0000000000       will be ignored
+ [Warning]: Field qg at lev    13800.0000000000       will be ignored
+ [Warning]: Field qg at lev    14200.0000000000       will be ignored
+ [Warning]: Field qg at lev    14600.0000000000       will be ignored
+ [Warning]: Field qg at lev    15000.0000000000       will be ignored
+ [Warning]: Field qg at lev    15400.0000000000       will be ignored
+ [Warning]: Field qg at lev    15800.0000000000       will be ignored
+ [Warning]: Field qg at lev    16200.0000000000       will be ignored
+ [Warning]: Field qg at lev    16600.0000000000       will be ignored
+ [Warning]: Field qg at lev    17000.0000000000       will be ignored
+ [Warning]: Field qg at lev    17400.0000000000       will be ignored
+ [Warning]: Field qg at lev    17800.0000000000       will be ignored
+ [Warning]: Field qg at lev    18200.0000000000       will be ignored
+ [Warning]: Field qg at lev    18600.0000000000       will be ignored
+ [Warning]: Field qg at lev    19000.0000000000       will be ignored
+ [Warning]: Field qg at lev    19400.0000000000       will be ignored
+ [Warning]: Field qg at lev    19800.0000000000       will be ignored
+ [Warning]: Field topo at lev    50.0000000000000       will be ignored
+ [Warning]: Field rain at lev    50.0000000000000       will be ignored
+ [Warning]: Field snow at lev    50.0000000000000       will be ignored
+ [Warning]: Field max_dbz at lev    50.0000000000000       will be ignored
+           1
+         149
+          71
+           6
+          16
+         173
+         145
+          81
+          51
+          21
+          46
+          31
+          91
+          41
+         113
+         137
+          61
+          66
+         153
+         165
+         121
+         161
+         141
+          86
+          76
+         157
+          11
+         105
+         177
+         109
+         125
+         117
+         169
+         101
+         129
+          26
+         133
+          96
+          56
+          36
+           2
+         178
+           7
+         174
+         170
+          12
+         166
+         126
+         130
+         150
+         118
+         134
+         114
+          17
+         102
+          97
+         142
+         146
+         138
+          82
+         122
+          22
+          57
+          62
+         106
+          77
+         158
+         110
+          52
+         154
+          27
+          42
+         162
+          37
+          87
+          92
+          72
+          67
+          47
+          32
+           3
+         179
+           8
+         175
+         171
+           4
+          13
+         180
+         167
+         127
+         131
+         151
+         119
+         115
+         135
+         103
+          98
+          18
+         143
+         147
+          83
+         139
+         123
+          23
+          58
+          63
+          78
+          53
+         107
+         111
+         159
+         163
+          43
+         155
+          88
+          38
+          93
+          28
+          73
+          68
+          48
+          33
+           9
+         176
+           5
+         172
+         168
+          14
+         128
+         132
+         116
+          10
+         120
+         152
+         136
+         104
+          99
+          19
+         144
+         140
+         148
+         124
+          84
+          24
+          59
+         108
+         156
+         164
+          64
+          89
+         112
+         160
+          79
+          54
+          39
+          44
+          94
+          29
+          74
+          69
+          49
+          34
+          15
+         100
+          20
+          85
+          25
+          60
+          65
+          90
+          55
+          80
+          40
+          95
+          45
+          30
+          75
+          70
+          35
+          50
