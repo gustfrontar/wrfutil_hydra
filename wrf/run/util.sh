@@ -1347,17 +1347,14 @@ while [ $my_redo -le $max_redo  ] ; do
 	 EM=$ENDMEMBER
 	 uy_job=1
 	   
-	   check_forecast $WORKDIR $IM $EM
-	   if [ -e $WORKDIR/REDO ] ; then
-	     error_check=1
-	     echo "[Warnning]: Ensemble run corresponding to ens member from $IM to $EM failed"
-	   fi
-
+	   error_check=`check_forecast $WORKDIR $IM $EM `
+   
 	 #Take action according to forecast error check
 
 	 if [ $error_check -eq 0 ] ; then
 	    my_redo=`expr $max_redo + 1 ` #Break the cycle we are done!
 	 else
+           echo "[Warnning]: Ensemble run corresponding to ens member from $IM to $EM failed"
 	   my_redo=`expr $my_redo + 1 `   #At least one job fail: redo!
 	   if [ $my_redo -gt $max_redo ] ; then
 	     #We cannot continue with the cycle
@@ -1390,36 +1387,27 @@ move_forecast_data(){
  fi
 
 
- IM=$INIMEMBER
 
- while [ $IM -le $ENDMEMBER ] ; do #[While over ensemble members]
-   EM=`expr $IM + $MAX_MEMBER_PER_JOB - 1 `
-    if [ $EM -gt $ENDMEMBER ] ; then
-      EM=$ENDMEMBER
-    fi
-
-   WORKDIR=$TMPDIR/run/*/
+   WORKDIR=$TMPDIR/run/wrf/
 
    if [ $FORECAST -eq 1 ] ; then
-      M=$IM
-      while [ $M -le $EM ] ; do
+      M=$INIMEMBER
+      while [ $M -le $ENDMEMBER ] ; do
         MEM=`ens_member $M`
         mkdir -p ${RESULTDIRG}/${MEM}/
-        cat ${WORKDIR}/WRF${mem}/rsl.error.* > ${RESULTDIRG}/wrf${mem}.log       
-        mv  ${WORKDIR}/WRF${mem}/daupdatebc${mem}.log   ${RESULTDIRG}/
-        mv  ${WORKDIR}/WRF$MEM/wrfout* ${RESULTDIRG}/${MEM}/   
+        cat ${WORKDIR}/WRF${MEM}/rsl.error.* > ${RESULTDIRG}/wrf${MEM}.log       
+        mv  ${WORKDIR}/WRF${MEM}/daupdatebc${MEM}.log   ${RESULTDIRG}/
+        mv  ${WORKDIR}/WRF${MEM}/wrfout* ${RESULTDIRG}/${MEM}/   
         M=`expr $M + 1 `
       done
    fi
-
-   mv ${WORKDIR}/*.log      ${RESULTDIRG}/
 
    if [ $ANALYSIS -eq 1 ] ; then
 
     local LOCAL_OUTFREC=$WINDOW_FREC
 
-    M=$IM
-    while [ $M -le $EM ] ; do
+    M=$INIMEMBER
+    while [ $M -le $ENDMEMBER ] ; do
 
      MEM=`ens_member $M `
 
@@ -1427,23 +1415,24 @@ move_forecast_data(){
      local it=1
      while [ ${CDATEL} -le ${WEDATE} ] ; do
        it=`add_zeros $it 2 `
-       local_file=` wrfout_file_name $CDATEL $DOMAIN`
-       mv ${WORKDIR}/WRF${mem}/$local_file $TMPDIR/LETKF/gs${it}${mem}    
+       MYDOM=1
+       #while [ $MYDOM -le $MAX_DOM ] ; do
+         MYDOM=`add_zeros $MYDOM 2 `
+         local_file=` wrfout_file_name $CDATEL $MYDOM`
+         mv ${WORKDIR}/WRF${MEM}/$local_file $TMPDIR/LETKF/gs${it}${MEM}
+       #done
        CDATEL=`date_edit2 $CDATEL $LOCAL_OUTFREC ` 
        it=`expr ${it} + 1`
      done
   
-     cat ${WORKDIR}/WRF${mem}/rsl.error.* > ${RESULTDIRG}/wrf${mem}.log 
-     mv  ${WORKDIR}/WRF${mem}/daupdatebc${mem}.log   ${RESULTDIRG}/
-     rm  ${WORKDIR}/WRF${mem}/wrfout*              
+     cat ${WORKDIR}/WRF${MEM}/rsl.error.* > ${RESULTDIRG}/wrf${MEM}.log 
+     mv  ${WORKDIR}/WRF${MEM}/daupdatebc${MEM}.log   ${RESULTDIRG}/
+     rm  ${WORKDIR}/WRF${MEM}/wrfout*              
      
      cp ${TMPDIR}/LETKF/gs${NBSLOT}${MEM}   ${RESULTDIRG}/gues${MEM} 
      M=`expr $M + 1 `
     done
    fi
-
-   IM=`expr $EM + 1 `
- done #[End while over ensemble members and jobs]
 
 }
 
@@ -1571,12 +1560,6 @@ run_forecast_sub () {
       fi
 
 
-      #Prepare the script 
-#      echo "#!/bin/bash    "                                              >  $local_script
-#      echo "#PBS -l nodes=$TOTAL_NODES_FORECAST:ppn=$PROC_PER_NODE   "    >> $local_script
-#      echo "#PBS -S /bin/bash                                        "    >> $local_script
-#      echo "source $TMPDIR/SCRIPTS/util.sh                           "    >> $local_script
-#      echo "SYSTEM=$SYSTEM                                           "    >> $local_script
       if [ $SYSTEM -eq 1 ] ; then 
        generate_machinefile $WORKDIR $PBS_NODEFILE $MAX_SIMULTANEOUS_JOBS $PROC_PER_MEMBER 
       fi
@@ -1619,10 +1602,11 @@ run_forecast_sub () {
        MEM=`ens_member $M `
          sleep 0.3
          if [ $SYSTEM -eq 1 ] ; then
-           $MPIBIN -np ${PROC_PER_MEMBER} -f $WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM} &
+           $MPIBIN -np 1 -f $WORKDIR/machinefile.${JOB}  $WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM} &
          fi
          if [  $SYSTEM -eq 0 ] ; then
-           $MPIBIN -np ${NODE_PER_MEMBER} --vcoordfile $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM}  &
+           echo ${NODELIST[$MYNODE]} > ./tmp_machinefile
+           $MPIBIN -np 1 --vcoordfile $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM}  &
          fi
          #$WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM} & 
          JOB=`expr $JOB + 1 `
@@ -2488,7 +2472,7 @@ arw_postproc_noqueue () {
         ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM} 2>&1  " &
 
       fi
-      if [ $SYSTEM -eq 1 ] ; then
+      if [ $SYSTEM -eq 0 ] ; then
 
         echo ${NODELIST[$MYNODE]} > ./tmp_machinefile
 
@@ -2585,7 +2569,7 @@ arw_postproc_forecast_noqueue () {
           ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM} 2>&1  " &
 
         fi
-        if [ $SYSTEM -eq 1 ] ; then
+        if [ $SYSTEM -eq 0 ] ; then
 
           echo ${NODELIST[$MYNODE]} > ./tmp_machinefile
  
@@ -2601,7 +2585,6 @@ arw_postproc_forecast_noqueue () {
 
 
 }
-
 
 
 upp_postproc_noqueue () {
@@ -2682,7 +2665,7 @@ if [  $ENABLE_UPP -eq 1 ];then
      ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM} 2>&1  " &
 
     fi
-    if [ $SYSTEM -eq 1 ] ; then
+    if [ $SYSTEM -eq 0 ] ; then
 
      echo ${NODELIST[$MYNODE]} > ./tmp_machinefile
 
@@ -2780,7 +2763,7 @@ if [ $ENABLE_UPP -eq 1 ] ; then
       ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM} 2>&1  " &
 
      fi
-     if [ $SYSTEM -eq 1 ] ; then
+     if [ $SYSTEM -eq 0 ] ; then
 
       echo ${NODELIST[$MYNODE]} > ./tmp_machinefile
 
@@ -3436,22 +3419,22 @@ local M=$INIMEMBER
 local cycle_error=0
 while [ $M -le $ENDMEMBER ] ; do
  local MEM=`ens_member $M `
- grep "SUCCESS COMPLETE WRF" ${WORKDIR}/wrf${MEM}.log > /dev/null 2>&1 
+ grep "SUCCESS COMPLETE WRF" ${WORKDIR}/WRF${MEM}/rsl.error.0000 > /dev/null 2>&1 
  if [ $? -ne 0 ] ; then
    echo "[Error]: WRF for ensemble member $MEM"          
    echo "====================================="
    echo "SHOWING LAST PART OF wrf${MEM}.log     "
-   tail ${WORKDIR}/wrf${MEM}.log 
+   tail ${WORKDIR}/WRF${MEM}/rsl.error.0000
    cycle_error=1
  fi
  
  if [ $ITER -ne 1 -a $USE_ANALYSIS_IC -ne 1 ] ; then
-  grep  "Update_bc completed successfully" ${WORKDIR}/daupdatebc${MEM}.log > /dev/null  2>&1 
+  grep  "Update_bc completed successfully" ${WORKDIR}/WRF${MEM}/daupdatebc${MEM}.log > /dev/null  2>&1 
   if [ $? -ne 0 ] ; then
    echo "[Error]: WRF da update bc for ensemble member $MEM"
    echo "====================================="
    echo "SHOWING LAST PART OF dapudatebc${MEM}.log     "
-   tail ${WORKDIR}/daupdatebc${MEM}.log
+   tail ${WORKDIR}/WRF${MEM}/daupdatebc${MEM}.log
    cycle_error=1
   fi
  fi
@@ -3462,11 +3445,9 @@ done
 if [ $cycle_error -eq 1 ] ; then
    echo "FORECAST ABNORMAL END -> REDO FORECAST FOR MEMBERS $INIMEMBER $ENDMEMBER "
    #exit 1
-   touch $WORKDIR/REDO
+   echo 1
 else
-   if [ -e $WORKDIR/REDO ] ; then
-     rm -f $WORKDIR/REDO
-   fi
+   echo 0
 fi
 
 
