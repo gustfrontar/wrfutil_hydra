@@ -37,8 +37,8 @@ NBASE_VARS=4
 NCOV_VARS=4
 COMPUTEINDEX=.true.
 DELTA=40
-BASE_VARS='qhydro','u','v','tk'
-COV_VARS='qhydro','u','v','tk'
+BASE_VARS="'qhydro','u','v','tk'"
+COV_VARS="'qhydro','u','v','tk'"
 TMPDIR=/data9/jruiz/TMP/$EXPERIMENT/                      #Temporary work directory.
 
 ulimit -s unlimited
@@ -56,7 +56,7 @@ my_namelist=$TMPDIR/covariance_matrix.namelist
 echo "&general                                                            " >  $my_namelist
 echo "nbv=$MEMBER                                                         " >> $my_namelist
 echo "npoints=0                                                           " >> $my_namelist
-echo "pvarname=tk,p,u,w,tk,p,u,dbz,w,tk,dbz,p,qv,w,tk,dbz,p,qv,           " >> $my_namelist
+echo "pvarname="'tk','p','u','w','tk','p','u','dbz','w',"                 " >> $my_namelist
 echo "bootstrap=$BOOTSTRAP                                                " >> $my_namelist
 echo "bootstrap_samples=$BOOTSTRAP_SAMPLES                                " >> $my_namelist
 echo "nignore=0                                                           " >> $my_namelist
