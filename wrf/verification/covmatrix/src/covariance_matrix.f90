@@ -326,15 +326,17 @@ IF( computeindex )THEN
  DO ii=1,NBASE_VARS !Loop over base vars
   DO jj=1,NCOV_VARS !Loop over cov vars
 
-    CALL get_var_startend( ctl , TRIM(BASE_VARS(ii)) ,var1_si,var1_ei,var1_i)
-    CALL get_var_startend( ctl , TRIM(COV_VARS(ii)) ,var2_si,var2_ei,var2_i)
+    CALL get_var_startend( ctl , TRIM(BASE_VARS(ii)) , var1_si,var1_ei,var1_i)
+    CALL get_var_startend( ctl , TRIM(COV_VARS(jj))  , var2_si,var2_ei,var2_i)
 
     local_nz1=ctl%varlev( var1_i )
     local_nz2=ctl%varlev( var2_i )
 
+    WRITE(*,*)"Processing covariance strength between ",TRIM(BASE_VARS(ii))," and ",TRIM(COV_VARS(jj))
+
     IF( ( local_nz1 /= local_nz2 ) .OR. ( local_nz1 /= local_nzc ) )THEN
       WRITE(*,*)"Error: BASE variable and COV variable must have the same number of vertical levels"
-      WRITE(*,*)TRIM(BASE_VARS(ii)),TRIM(COV_VARS(ii)),local_nz1,local_nz2,var1_i,var2_i
+      WRITE(*,*)TRIM(BASE_VARS(ii)),TRIM(COV_VARS(jj)),local_nz1,local_nz2,var1_i,var2_i
       STOP
     ENDIF
     
@@ -354,27 +356,27 @@ IF( computeindex )THEN
                              correlation_index,correlationdist_index,cov_profile,corr_profile,num_profile,ctl%nlon,       &
                              ctl%nlat,local_nz1,nbv,delta,skip,local_undefmask,ctl%undefbin)
 
-    tmpfilename='covindex_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.grd'
+    tmpfilename='covindex_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(jj)) // '.grd'
 
     CALL write_grd(tmpfilename,ctl%nlon,ctl%nlat,local_nz1,covariance_index,totalundefmask,ctl%undefbin)
 
-    tmpfilename='corrindex_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.grd'
+    tmpfilename='corrindex_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(jj)) // '.grd'
 
     CALL write_grd(tmpfilename,ctl%nlon,ctl%nlat,local_nz1,correlation_index,totalundefmask,ctl%undefbin)
 
-    tmpfilename='corrdistindex_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.grd'
+    tmpfilename='corrdistindex_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(jj)) // '.grd'
 
     CALL write_grd(tmpfilename,ctl%nlon,ctl%nlat,local_nz1,correlationdist_index,totalundefmask,ctl%undefbin)
 
-    tmpfilename='cov_profile_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.txt'
+    tmpfilename='cov_profile_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(jj)) // '.txt'
 
     CALL write_profile(tmpfilename,cov_profile,delta,local_nz1,2)
 
-    tmpfilename='corr_profile_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.txt'
+    tmpfilename='corr_profile_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(jj)) // '.txt'
 
     CALL write_profile(tmpfilename,corr_profile,delta,local_nz1,2)
 
-    tmpfilename='num_profile_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(ii)) // '.txt'
+    tmpfilename='num_profile_' // TRIM(BASE_VARS(ii)) // '_' // TRIM(COV_VARS(jj)) // '.txt'
 
     CALL write_profile(tmpfilename,REAL(num_profile,r_sngl),delta,local_nz1,2)
 

@@ -206,9 +206,11 @@ IMPLICIT NONE
 INTEGER,      INTENT(IN) :: delta , nz , ncat
 CHARACTER(*), INTENT(IN) :: filename
 REAL(r_sngl), INTENT(IN) :: profile(delta,nz,ncat)
-INTEGER                  :: ii,jj,kk,iunit=66
+INTEGER                  :: ii,jj,kk,iunit=66,reclen
+ 
+ reclen=delta * 20
 
- OPEN(iunit,FILE=filename,FORM='formatted',RECL=400)
+ OPEN(iunit,FILE=filename,FORM='formatted',RECL=reclen)
  WRITE(iunit,*)delta,nz,ncat
  DO jj = 1, ncat
   DO kk=1,nz
@@ -241,7 +243,11 @@ moments=0.0e0
     DO jj=1,ny
      DO kk=1,nz
        tmp=( ( ensemble(ii,jj,kk,:)-moments(ii,jj,kk,1) ) )**im
-       CALL com_mean_sngl(nbv,tmp,moments(ii,jj,kk,im))
+       IF ( im == 1 )THEN
+        moments(ii,jj,kk,im) = SUM( tmp )/REAL( nbv , r_sngl ) 
+       ELSE
+        moments(ii,jj,kk,im) = SUM( tmp )/REAL( nbv -1 , r_sngl )
+       ENDIF
      ENDDO
     ENDDO
    ENDDO
@@ -408,7 +414,7 @@ var2_m(:,:,:,2)=sqrt(var2_m(:,:,:,2)) !Get standard deviation.
 !$OMP reduction(+:cov_profile,corr_profile,num_profile)
 
 DO ii=1,nx
- !WRITE(*,*)ii
+ WRITE(*,*)ii
  DO jj=1,ny
   DO kk=1,nz
    IF( undefmask(ii,jj,kk) )THEN
@@ -423,10 +429,6 @@ DO ii=1,nx
     if( jmax > ny)jmax=ny
 
     pensemble=var1_ens(ii,jj,kk,:)
-   DO iii=1,nbv
-    WRITE(*,*)pensemble(iii)
-   ENDDO
-    STOP
 
     tmp_cov_profile=0.0e0
     tmp_corr_profile=0.0e0
@@ -434,21 +436,21 @@ DO ii=1,nx
     tmp_num_profile=0
 
 
-    DO iii=imin,skip_cov,imax
-     DO jjj=jmin,skip_cov,jmax
+    DO iii=imin,imax,skip_cov
+     DO jjj=jmin,jmax,skip_cov
 
       tmpdist= sqrt(real(iii-ii,r_sngl)**2 + real(jjj-jj,r_sngl)**2) !/real(delta,r_sngl)
 
       IF( undefmask(iii,jjj,kk) .and. tmpdist <= real(delta,r_size) )THEN
+   
+       IF( var1_m(ii,jj,kk,2) > 0 .and. var2_m(iii,jjj,kk,2) > 0 )THEN
 
         CALL com_covar_sngl(nbv,var2_ens(iii,jjj,kk,:),pensemble,tmpcov)
   
         tmpcorr=tmpcov/( var1_m(ii,jj,kk,2) * var2_m(iii,jjj,kk,2) ) 
 
-        current_index=FLOOR( tmpdist / delta ) + 1
+        current_index=FLOOR( tmpdist ) + 1
 
-        !WRITE(*,*)tmpcorr
- 
         IF( current_index >= delta) current_index=delta
 
         tmp_cov_profile(current_index)=tmp_cov_profile(current_index)+ABS(tmpcov) 
@@ -458,6 +460,8 @@ DO ii=1,nx
         !dist_profile(current_index)=dist_profile(current_index)+tmpdist*ABS(tmpcorr)
 
         tmp_num_profile(current_index)=tmp_num_profile(current_index) + 1
+    
+       ENDIF
   
       ENDIF
        
@@ -475,7 +479,6 @@ DO ii=1,nx
       corr_profile(:,kk,2)=corr_profile(:,kk,2) + tmp_corr_profile
       num_profile(:,kk,2)=num_profile(:,kk,2) + tmp_num_profile
     ENDIF
-       
   
     contador=0 
     DO iii=1,delta
@@ -492,9 +495,9 @@ DO ii=1,nx
     ENDDO
 
     IF( contador >= 0 )THEN
+      corrstdist(ii,jj,kk)=corrstdist(ii,jj,kk)/corrst(ii,jj,kk)
       covst(ii,jj,kk)=covst(ii,jj,kk)/REAL(contador,r_sngl)
       corrst(ii,jj,kk)=corrst(ii,jj,kk)/REAL(contador,r_sngl)
-      corrstdist(ii,jj,kk)=corrstdist(ii,jj,kk)/corrst(ii,jj,kk)
     ELSE
       covst(ii,jj,kk)=undefbin
       corrst(ii,jj,kk)=undefbin
@@ -518,9 +521,9 @@ ENDDO
   DO ii=1,delta
    DO kk=1,nz
     DO jj=1,2
-     IF( num_profile(ii,jj,kk) >= 1 )THEN
-       cov_profile(ii,kk,jj)=cov_profile(ii,jj,kk) / real( num_profile(ii,jj,kk) , r_sngl )
-       corr_profile(ii,kk,jj)=corr_profile(ii,jj,kk) / real( num_profile(ii,jj,kk) , r_sngl )
+     IF( num_profile(ii,kk,jj) >= 1 )THEN
+       cov_profile(ii,kk,jj)=cov_profile(ii,kk,jj) / real( num_profile(ii,kk,jj) , r_sngl )
+       corr_profile(ii,kk,jj)=corr_profile(ii,kk,jj) / real( num_profile(ii,kk,jj) , r_sngl )
      ELSE
        cov_profile(ii,kk,jj)=undefbin
        corr_profile(ii,kk,jj)=undefbin
