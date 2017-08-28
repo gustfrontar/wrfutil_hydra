@@ -19,15 +19,15 @@ ENDDATE=20130713054000
 
 INCREMENT=60   #Time resolution in seconds.
 
-MAX_RUNNING=20        #Number of threads
+MAX_RUNNING=40        #Number of threads
 MEMBER=1000             #Ensemble size
 BOOTSTRAP=.false.
 BOOTSTRAP_SAMPLES=100
 SKIPX=1
 SKIPY=1
 SKIPZ=1
-SMOOTHCOV=.false.
-SMOOTHCOVLENGTH=20.0d4
+SMOOTHCOV=.true.
+SMOOTHCOVLENGTH=10.0d4
 SMOOTHDX=1.0d3
 COMPUTEMOMENTS=.false.
 MAX_MOMENTS=4
@@ -39,7 +39,7 @@ COMPUTEINDEX=.true.
 DELTA=40
 BASE_VARS="'qhydro','u','v','tk'"
 COV_VARS="'qhydro','u','v'"
-TMPDIR=/home/jruiz/TMP/$EXPERIMENT/                      #Temporary work directory.
+TMPDIR=/home/jruiz/TMP/${EXPERIMENT}_${SMOOTHCOVLENGTH}/                      #Temporary work directory.
 
 ulimit -s unlimited
 export OMP_STACKSIZE=500M
@@ -106,26 +106,27 @@ CDATE=$INIDATE
    done
 
 
-   time ./covariance_matrix.exe #> cov.log 
+   time ./covariance_matrix.exe > cov.log 
 
+   mkdir -p $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/smooth_${SMOOTHCOVLENGTH}/
 
-   mv covindex*.grd       $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv corrindex*.grd      $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/   
-   mv corrdistindex*.grd  $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
+   mv covindex*.grd       $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/smooth_${SMOOTHCOVLENGTH}/
+   mv corrindex*.grd      $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/smooth_${SMOOTHCOVLENGTH}/
+   mv corrdistindex*.grd  $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/smooth_${SMOOTHCOVLENGTH}/
 
-   mv cov_profile*.txt    $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv corr_profile*.txt   $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/ 
-   mv num_profile*.txt    $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
+   mv cov_profile*.txt    $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/smooth_${SMOOTHCOVLENGTH}/
+   mv corr_profile*.txt   $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/smooth_${SMOOTHCOVLENGTH}/
+   mv num_profile*.txt    $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/smooth_${SMOOTHCOVLENGTH}/
 
-   mv covmat_x???y???z???.grd $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv bssprd_x???y???z???.grd $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv impact_x???y???z???.grd $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv bsmean_x???y???z???.grd $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv histgr_x???y???z???.grd $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
+   mv covmat_x???y???z???.grd $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/smooth_${SMOOTHCOVLENGTH}/
+   mv bssprd_x???y???z???.grd $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/smooth_${SMOOTHCOVLENGTH}/
+   mv impact_x???y???z???.grd $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/smooth_${SMOOTHCOVLENGTH}/
+   mv bsmean_x???y???z???.grd $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/smooth_${SMOOTHCOVLENGTH}/
+   mv histgr_x???y???z???.grd $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/smooth_${SMOOTHCOVLENGTH}/
 
-   mv histogram.grd           $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv minvar.grd              $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
-   mv maxvar.grd              $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
+   mv histogram.grd           $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/smooth_${SMOOTHCOVLENGTH}/
+   mv minvar.grd              $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/smooth_${SMOOTHCOVLENGTH}/
+   mv maxvar.grd              $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/smooth_${SMOOTHCOVLENGTH}/
 
    CDATE=`date_edit2 $CDATE $INCREMENT `
 

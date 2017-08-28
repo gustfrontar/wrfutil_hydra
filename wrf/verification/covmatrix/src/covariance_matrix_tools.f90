@@ -47,7 +47,7 @@ module covariance_matrix_tools
   CHARACTER(clen) :: BASE_VARS(max_vars)  !This is a list of reference or observed variables.
   CHARACTER(clen) :: COV_VARS(max_vars)   !This is the variables whose correlation / covariance with the observed variables will be measured.
   INTEGER :: NBASE_VARS=0 , NCOV_VARS=0   !Number of base vars and cov vars.
-  REAL(r_sngl)    :: tr_rain = 1.0e-3 , tr_norain = 1.0e-5 !Condensate thresholds to separate rainy grid points.
+  REAL(r_sngl)    :: tr_rain = 5.0e-4 , tr_norain = 1.0e-5 !Condensate thresholds to separate rainy grid points.
 
   character(50) :: inputendian='little_endian'
   character(50) :: outputendian='big_endian'
@@ -414,11 +414,11 @@ var2_m(:,:,:,2)=sqrt(var2_m(:,:,:,2)) !Get standard deviation.
 !$OMP reduction(+:cov_profile,corr_profile,num_profile)
 
 DO ii=1,nx
- WRITE(*,*)ii
+ !WRITE(*,*)ii
  DO jj=1,ny
   DO kk=1,nz
    IF( undefmask(ii,jj,kk) )THEN
- 
+
     imin=ii-delta
     imax=ii+delta
     if( imin < 1 )imin=1

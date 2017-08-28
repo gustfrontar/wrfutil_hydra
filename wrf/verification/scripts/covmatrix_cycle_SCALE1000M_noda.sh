@@ -10,7 +10,7 @@ UTIL=/data10/jruiz/LETKF_WRF/wrf/run/util.sh
 
 DATAPATH=/data10/jruiz/EXPERIMENTS/
 
-EXPERIMENT=OsakaPAR_1km_control1000m_smallrandompert_new
+EXPERIMENT=OsakaPAR_1km_control1000m_smallrandompert_noda
 
 TYPE="analgp"
 

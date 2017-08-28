@@ -316,7 +316,7 @@ IF( computeindex )THEN
  local_nzc=ctl%varlev( cond_i )
  ALLOCATE( mean_cond( ctl%nlon , ctl%nlat , local_nzc ) )
  IF( cond_i /= 0 )THEN
-   CALL compute_moments(ensemble(:,:,cond_si:cond_ei,:),ctl%nlon,ctl%nlat,local_nz1,nbv,1,mean_cond, &
+   CALL compute_moments(ensemble(:,:,cond_si:cond_ei,:),ctl%nlon,ctl%nlat,local_nzc,nbv,1,mean_cond, &
                            totalundefmask(:,:,cond_si:cond_ei),ctl%undefbin)
  ELSE
    mean_cond=0.0e0
