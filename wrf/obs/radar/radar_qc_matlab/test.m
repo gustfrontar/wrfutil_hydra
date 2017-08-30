@@ -74,7 +74,7 @@ filelist = dir( [BASEDIR '/*.nc3'] );
 %Loop over files
 for ifile=1:1 %size(filelist,1)
     %Read variables in file "filename"
-    filename = [ BASEDIR '/' filelist(ifile).name ];
+    filename = [ BASEDIR '/cfrad.20091117_175345.000_to_20091117_175734.000_PAR_SUR.nc3' ];
     [radar, ref, dv, dvc, phidp, rhohv, kdp, present_ref, present_dv, present_dvc, present_phidp, present_rhohv, present_kdp] = read_radar_netcdf(filename , minref );
     
 

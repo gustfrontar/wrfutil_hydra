@@ -1,0 +1,58 @@
+
+&breeding
+
+! File naming convention.
+
+  input_file_prefix_ctrl='ctrl'
+  input_file_prefix_pp  ='pp'
+  input_file_prefix_pn  ='pn'
+
+! Rescaling 
+
+  norm_threshold        =0.01d0
+
+! Norm computation.
+
+  norm_type = 'UVT'
+  wind_scale            =1.0d0
+  t_scale               =1.0d0
+  p_scale               =1.0d0
+  ave_norm_xy           =.true.
+  ave_norm_z            =.true.
+  is = 10
+  ie = 170
+  js = 10
+  je = 170
+  ks = 0
+  ke = 0
+  smooth_norm_xy = .false.
+  smooth_norm_z  = .false.
+  smooth_sx      = 3.0d3
+  smooth_sz      = 3.0d3
+  
+! Bred vector initialization
+ 
+  init_bv = INIT_BV
+
+! Breeding in place
+
+  breeding_in_place = BREEDING_IN_PLACE
+
+! Initial perturbations
+
+  perturb_t = .true.
+  perturb_t_amp = 0.5d0
+  perturb_t_sclh = 0.5d3
+  perturb_t_sclv = 0.5d3
+  perturb_wind= .true.
+  perturb_wind_amp = 0.5d0
+  perturb_wind_sclh = 0.5d3
+  perturb_wind_sclv = 0.5d3
+
+! Boundary damping of the perturbations
+  
+  bdy_width = 10 
+
+/
+
+

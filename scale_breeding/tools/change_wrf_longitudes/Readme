@@ -1,0 +1,1 @@
+WRF Longitude convention is from -180 to 180, but some programs like scale model expect data from 0 to 360. This program modifies wrfoutput files in order to get them ready to be used as scale boundary conditions.

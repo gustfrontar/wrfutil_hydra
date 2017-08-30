@@ -1,0 +1,455 @@
+&PARAM_IO
+!--IO_LOG_BASENAME--
+ IO_LOG_ALLNODE = .false.,
+/
+
+!&PARAM_PROF
+! PROF_mpi_barrier = .true.,
+!/
+
+&PARAM_TIME
+ TIME_STARTDATE = SYYYY, SMM, SDD, SHH, SMN, SSS,
+ TIME_STARTMS               = 0.D0,
+ TIME_DURATION              = FLENGTH,
+ TIME_DURATION_UNIT         = "SEC",
+ TIME_DT                    = 2.D0,
+ TIME_DT_UNIT               = "SEC",
+ TIME_DT_ATMOS_DYN          = 0.4D0,
+ TIME_DT_ATMOS_DYN_UNIT     = "SEC",
+ TIME_DT_ATMOS_PHY_MP       = 2.D0,
+ TIME_DT_ATMOS_PHY_MP_UNIT  = "SEC",
+ TIME_DT_ATMOS_PHY_RD       = 30.D0,
+ TIME_DT_ATMOS_PHY_RD_UNIT  = "SEC",
+ TIME_DT_ATMOS_PHY_SF       = 2.D0,
+ TIME_DT_ATMOS_PHY_SF_UNIT  = "SEC",
+ TIME_DT_ATMOS_PHY_TB       = 2.D0,
+ TIME_DT_ATMOS_PHY_TB_UNIT  = "SEC",
+ TIME_DT_OCEAN              = 30.D0,
+ TIME_DT_OCEAN_UNIT         = "SEC",
+ TIME_DT_LAND               = 30.D0,
+ TIME_DT_LAND_UNIT          = "SEC",
+ TIME_DT_URBAN              = 30.D0,
+ TIME_DT_URBAN_UNIT         = "SEC",
+ TIME_DT_ATMOS_RESTART      = FRESTARTFREQ
+ TIME_DT_ATMOS_RESTART_UNIT = "SEC",
+ TIME_DT_OCEAN_RESTART      = FRESTARTFREQ
+ TIME_DT_OCEAN_RESTART_UNIT = "SEC",
+ TIME_DT_LAND_RESTART      =  FRESTARTFREQ
+ TIME_DT_LAND_RESTART_UNIT  = "SEC", 
+ TIME_DT_URBAN_RESTART      = FRESTARTFREQ
+ TIME_DT_URBAN_RESTART_UNIT = "SEC",
+/
+
+&PARAM_STATISTICS
+ STATISTICS_checktotal     = .false.,
+ STATISTICS_use_globalcomm = .false.,
+/
+
+&PARAM_RESTART
+ RESTART_OUTPUT      = .true.,
+ RESTART_IN_BASENAME = "init_d01_INITDATE",
+ RESTART_OUT_BASENAME = "restart",
+/
+
+&PARAM_LANDUSE
+ LANDUSE_IN_BASENAME  = "./landuse_d01",
+/
+
+&PARAM_LAND_PROPERTY
+ LAND_PROPERTY_IN_FILENAME = "param.bucket.conf",
+/
+
+
+&PARAM_DOMAIN_CATALOGUE
+ DOMAIN_CATALOGUE_OUTPUT = .true.,
+/
+
+#################################################
+#
+# model configuration: process
+#
+#################################################
+
+&PARAM_PRC
+ PRC_NUM_X      = PRC_NUM_X_IN,
+ PRC_NUM_Y      = PRC_NUM_Y_IN,
+ PRC_PERIODIC_X = .false.,
+ PRC_PERIODIC_Y = .false.,
+/
+
+#################################################
+#
+# model configuration: region
+#
+#################################################
+
+&PARAM_INDEX
+ KMAX = 60,
+ IMAX = IMAX_IN,
+ JMAX = JMAX_IN,
+/
+
+&PARAM_LAND_INDEX
+ LKMAX = 5,
+/
+
+&PARAM_URBAN_INDEX
+ UKMAX = 5,
+/
+
+&PARAM_LAND_GRID
+ LDZ = 0.05D0, 0.15D0, 0.30D0, 0.50D0, 1.00D0,
+/
+
+&PARAM_URBAN_GRID
+ UDZ = 0.01D0, 0.01D0, 0.03D0, 0.05D0, 0.10D0,
+/
+
+&PARAM_GRID
+ DX = 1000.D0,
+ DY = 1000.D0,
+ FZ(:) = 100.D0,  200.D0,  300.D0,  400.D0,  500.D0,
+         605.D0,  720.D0,  855.D0, 1010.D0, 1185.D0,
+        1380.D0, 1595.D0, 1830.D0, 2085.D0, 2360.D0,
+        2655.D0, 2970.D0, 3305.D0, 3660.D0, 4030.D0,
+        4410.D0, 4800.D0, 5200.D0, 5600.D0, 6000.D0,
+        6400.D0, 6800.D0, 7200.D0, 7600.D0, 8000.D0,
+        8400.D0, 8800.D0, 9200.D0, 9600.D0,10000.D0,
+       10400.D0,10800.D0,11200.D0,11600.D0,12000.D0,
+       12400.D0,12800.D0,13200.D0,13600.D0,14000.D0,
+       14400.D0,14800.D0,15200.D0,15600.D0,16000.D0,
+       16400.D0,16800.D0,17200.D0,17600.D0,18000.D0,
+       18400.D0,18800.D0,19200.D0,19600.D0,20000.D0,
+
+ BUFFER_DZ = 5000.D0,
+ BUFFER_DX = 20000.D0,
+ BUFFER_DY = 20000.D0,
+/
+
+&PARAM_MAPPROJ
+ MPRJ_basepoint_lon = 135.523D0,
+ MPRJ_basepoint_lat =  34.823D0,
+ MPRJ_basepoint_x   = 90000.0D0,
+ MPRJ_basepoint_y   = 90000.0D0,
+ MPRJ_type          = 'LC',
+ MPRJ_LC_lat1       =  32.5D0,
+ MPRJ_LC_lat2       =  37.5D0,
+/
+
+
+&PARAM_NEST
+ USE_NESTING               = .false.,
+ OFFLINE                   = .true.,
+ OFFLINE_PARENT_PRC_NUM_X  = 0,
+ OFFLINE_PARENT_PRC_NUM_Y  = 0,
+ OFFLINE_PARENT_KMAX       = 0,
+ OFFLINE_PARENT_IMAX       = 0,
+ OFFLINE_PARENT_JMAX       = 0,
+ OFFLINE_PARENT_LKMAX      = 5,
+ LATLON_CATALOGUE_FNAME    = "tmp",
+/
+
+#################################################
+#
+# model configuration: administrator
+#
+#################################################
+
+&PARAM_CONST
+ CONST_THERMODYN_TYPE = "SIMPLE",
+/
+
+&PARAM_TRACER
+ TRACER_TYPE = "TOMITA08",
+/
+
+&PARAM_ATMOS
+ ATMOS_DYN_TYPE    = "HEVI",
+ ATMOS_PHY_MP_TYPE = "TOMITA08",
+ ATMOS_PHY_RD_TYPE = "MSTRNX",
+ ATMOS_PHY_SF_TYPE = "COUPLE",
+ ATMOS_PHY_TB_TYPE = "HYBRID",
+/
+
+&PARAM_OCEAN
+ OCEAN_TYPE = "CONST",
+/
+
+&PARAM_LAND
+ LAND_TYPE = "SLAB",
+/
+
+&PARAM_URBAN
+ URBAN_TYPE = "SLC",
+/
+
+#################################################
+#
+# model configuration: atmosphere
+#
+#################################################
+
+&PARAM_ATMOS_VARS
+ ATMOS_VARS_CHECKRANGE = .true.,
+/
+
+&PARAM_ATMOS_REFSTATE
+ ATMOS_REFSTATE_TYPE = "INIT",
+ ATMOS_REFSTATE_UPDATE_FLAG = .true.,
+ ATMOS_REFSTATE_UPDATE_DT   = 10800.D0,
+/
+
+&PARAM_ATMOS_BOUNDARY
+ ATMOS_BOUNDARY_TYPE        = "REAL",
+ ATMOS_BOUNDARY_IN_BASENAME = 'boundary',
+ ATMOS_BOUNDARY_USE_VELZ    = .true.,
+ ATMOS_BOUNDARY_USE_QHYD    = .true.,
+ ATMOS_BOUNDARY_VALUE_VELZ  = 0.0D0,
+ ATMOS_BOUNDARY_UPDATE_DT   = BDYDATAFREQ,
+ ATMOS_BOUNDARY_USE_DENS    = .true.,
+ ATMOS_BOUNDARY_USE_VELZ    = .true.,
+ ATMOS_BOUNDARY_USE_QHYD    = .true.,
+ ATMOS_BOUNDARY_VALUE_VELZ  = 0.0D0,
+ ATMOS_BOUNDARY_LINEAR_H    = .false.,
+ ATMOS_BOUNDARY_EXP_H       = 2.d0,
+/
+
+&PARAM_ATMOS_DYN
+ ATMOS_DYN_TINTEG_LARGE_TYPE          = "EULER",
+ ATMOS_DYN_TINTEG_SHORT_TYPE          = "RK4",
+ ATMOS_DYN_TINTEG_TRACER_TYPE         = "RK3WS2002",
+ ATMOS_DYN_FVM_FLUX_TYPE              = "CD4",
+ ATMOS_DYN_FVM_FLUX_TRACER_TYPE       = "UD3KOREN1993",
+ ATMOS_DYN_FLAG_FCT_TRACER            = .false.,
+ ATMOS_DYN_NUMERICAL_DIFF_COEF        = 2.5D-3,
+ ATMOS_DYN_NUMERICAL_DIFF_COEF_TRACER = 1.0D-4,
+ ATMOS_DYN_enable_coriolis       = .true.,
+/
+
+&PARAM_ATMOS_PHY_TB_SMG
+ ATMOS_PHY_TB_SMG_consistent_tke = .false.,
+ ATMOS_PHY_TB_SMG_implicit       = .true.,
+/
+
+&PARAM_ATMOS_PHY_RD_MSTRN
+ ATMOS_PHY_RD_MSTRN_TOA                   = 100.D0,
+ ATMOS_PHY_RD_MSTRN_KADD                  = 30,
+ ATMOS_PHY_RD_MSTRN_GASPARA_IN_FILENAME   = "PARAG.29",
+ ATMOS_PHY_RD_MSTRN_AEROPARA_IN_FILENAME  = "PARAPC.29",
+ ATMOS_PHY_RD_MSTRN_HYGROPARA_IN_FILENAME = "VARDATA.RM29",
+ ATMOS_PHY_RD_MSTRN_NBAND                 = 29,
+/
+
+
+&PARAM_ATMOS_PHY_RD_PROFILE
+ ATMOS_PHY_RD_PROFILE_CIRA86_IN_FILENAME    = "cira.nc",
+ ATMOS_PHY_RD_PROFILE_MIPAS2001_IN_BASENAME = ".",
+/
+
+
+&PARAM_ATMOS_PHY_MP_TOMITA08
+ enable_kk2000 = .false.,
+ Cr = 58.D0,
+ Cs = 0.9D0,
+ drag_g = 2.5D0,
+ beta_saut = 6D-3,
+ gamma_saut = 6D-2,
+ gamma_sacr = 2D-2,
+/
+
+#################################################
+#
+# model configuration: ocean
+#
+#################################################
+
+&PARAM_OCEAN_VARS
+ OCEAN_VARS_CHECKRANGE = .true.,
+/
+
+&PARAM_OCEAN_PHY_SLAB
+ OCEAN_PHY_SLAB_DEPTH = 10.D0,
+/
+
+&PARAM_OCEAN_ROUGHNESS
+ OCEAN_ROUGHNESS_TYPE = "MOON07",
+/
+
+#################################################
+#
+# model configuration: land
+#
+#################################################
+
+&PARAM_LAND_VARS
+ LAND_VARS_CHECKRANGE = .false.,
+/
+
+&PARAM_LAND_PHY_SLAB
+ LAND_PHY_UPDATE_BOTTOM_TEMP  = .false.,
+ LAND_PHY_UPDATE_BOTTOM_WATER = .true.,
+/
+
+#################################################
+#
+# model configuration: urban
+#
+#################################################
+
+&PARAM_URBAN_VARS
+ URBAN_VARS_CHECKRANGE = .false.,
+/
+
+#################################################
+#
+# model configuration: coupler
+#
+#################################################
+
+&PARAM_URBAN_PHY_SLC
+ ZR         = 15.0D0,
+ roof_width = 7.5D0,
+ road_width = 22.5D0,
+ AH         = 0.0D0,
+ ALH        = 0.0D0,
+ STRGR      = 0.0D0,
+ STRGB      = 0.0D0,
+ STRGG      = 0.0D0,
+ AKSR       = 2.28D0,
+ AKSB       = 2.28D0,
+ AKSG       = 2.28D0,
+ ALBR       = 0.20D0,
+ ALBB       = 0.20D0,
+ ALBG       = 0.20D0,
+ EPSR       = 0.97D0,
+ EPSB       = 0.97D0,
+ EPSG       = 0.97D0,
+ Z0R        = 0.005D0,
+ Z0B        = 0.005D0,
+ Z0G        = 0.005D0,
+ CAPR       = 2.01D6,
+ CAPB       = 2.01D6,
+ CAPG       = 2.01D6,
+/
+
+#################################################
+#
+# model configuration: history
+#
+#################################################
+
+&PARAM_HISTORY
+ HISTORY_DEFAULT_BASENAME  = "history",
+ HISTORY_DEFAULT_TINTERVAL = FOUTPUTFREQ,
+ HISTORY_DEFAULT_TUNIT     = "SEC",
+ HISTORY_DEFAULT_TAVERAGE  = .false.,
+ HISTORY_DEFAULT_DATATYPE  = "REAL4",
+ HISTORY_DEFAULT_ZINTERP   = .false.,
+ HISTORY_OUTPUT_STEP0      = .true.,
+/
+
+&PARAM_HIST
+ HIST_BND = .false.,
+/
+
+&HISTITEM item='DENS' /
+&HISTITEM item='MOMZ' /
+&HISTITEM item='MOMX' /
+&HISTITEM item='MOMY' /
+&HISTITEM item='RHOT' /
+
+&HISTITEM item='QV'   /
+&HISTITEM item='QC'   /
+&HISTITEM item='QR'   /
+&HISTITEM item='QI'   /
+&HISTITEM item='QS'   /
+&HISTITEM item='QG'   /
+&HISTITEM item='QHYD' /
+&HISTITEM item='QLIQ' /
+&HISTITEM item='QICE' /
+
+&HISTITEM item='T'    /
+&HISTITEM item='PRES' /
+&HISTITEM item='U'    /
+&HISTITEM item='V'    /
+&HISTITEM item='W'    /
+&HISTITEM item="Uabs" /
+&HISTITEM item='PT'   /
+&HISTITEM item='RH'   /
+&HISTITEM item='RHL'  /
+&HISTITEM item='RHI'  /
+
+&HISTITEM item='PREC', taverage=.true. /
+&HISTITEM item='RAIN', taverage=.true. /
+&HISTITEM item='SNOW', taverage=.true. /
+
+&HISTITEM item='SFC_PRES'   /
+&HISTITEM item='SFC_TEMP'   /
+&HISTITEM item='SFC_ALB_SW' /
+&HISTITEM item='SFC_ALB_LW' /
+&HISTITEM item='SFC_Z0M'     /
+
+&HISTITEM item='U10' /
+&HISTITEM item='V10' /
+&HISTITEM item="Uabs10" /
+&HISTITEM item='T2'  /
+&HISTITEM item='Q2'  /
+&HISTITEM item="MSLP" /
+
+&HISTITEM item="LHFLX" /
+&HISTITEM item="SHFLX" /
+&HISTITEM item="GHFLX" /
+
+&HISTITEM item="SFLX_LW_up"   /
+&HISTITEM item="SFLX_LW_dn"   /
+&HISTITEM item="SFLX_SW_up"   /
+&HISTITEM item="SFLX_SW_dn"   /
+
+&HISTITEM item='OSR' /
+&HISTITEM item='OLR' /
+&HISTITEM item='SLR' /
+&HISTITEM item='SSR' /
+
+&HISTITEM item="RADFLUX_SWUP" /
+&HISTITEM item="RADFLUX_SWDN" /
+
+&HISTITEM item="OCEAN_TEMP"     /
+&HISTITEM item="OCEAN_SFC_TEMP" /
+&HISTITEM item="OCEAN_ALB_SW"   /
+&HISTITEM item="OCEAN_ALB_LW"   /
+&HISTITEM item="OCEAN_SFC_Z0M"  /
+&HISTITEM item="OCEAN_SFC_Z0H"  /
+&HISTITEM item="OCEAN_SFC_Z0E"  /
+
+&HISTITEM item="LAND_TEMP"     /
+&HISTITEM item="LAND_WATER"    /
+&HISTITEM item="LAND_SFC_TEMP" /
+&HISTITEM item="LAND_ALB_SW"   /
+&HISTITEM item="LAND_ALB_LW"   /
+
+&HISTITEM item="URBAN_TC"       /
+&HISTITEM item="URBAN_SFC_TEMP" /
+
+#################################################
+#
+# model configuration: monitor
+#
+#################################################
+
+&PARAM_MONITOR
+ MONITOR_STEP_INTERVAL = 120,
+/
+
+&MONITITEM item="QDRY" /
+&MONITITEM item="QTOT" /
+&MONITITEM item="ENGT" /
+&MONITITEM item="ENGP" /
+&MONITITEM item="ENGK" /
+&MONITITEM item="ENGI" /
+
+&MONITITEM item="ENGFLXT" /
+
+&MONITITEM item="ENGSFC_SH" /
+&MONITITEM item="ENGSFC_LH" /
+&MONITITEM item="ENGSFC_RD" /
+&MONITITEM item="ENGTOA_RD" /

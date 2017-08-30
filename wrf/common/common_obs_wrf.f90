@@ -339,7 +339,7 @@ SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
 
        !Set yobs as a large negative value + rh
 
-       yobs= -1000.0d0 + yobs
+       yobs=  yobs - 1000.0d0
 
      ENDIF
 

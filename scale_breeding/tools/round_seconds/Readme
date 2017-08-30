@@ -1,0 +1,2 @@
+Sometimes WRF output is not precisely at the output frequency requested.
+Sometimes the output is lagged by a few seconds. In these cases this tool will round the internala file date and the file name to the nearest zero second time.
