@@ -1,0 +1,4480 @@
+>>>
+>>> STARTING SCALE BREEDING CYCLE FROM  TO 
+>>>
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053130 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519535.hakushu-ib
+
+real	4m43.713s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 1 
+519541.hakushu-ib
+
+real	1m19.188s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519543.hakushu-ib
+
+real	6m3.399s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 2 
+519550.hakushu-ib
+
+real	1m4.138s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519551.hakushu-ib
+
+real	4m45.128s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 3 
+519558.hakushu-ib
+
+real	0m55.416s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519559.hakushu-ib
+
+real	4m23.115s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 4 
+519566.hakushu-ib
+
+real	0m56.563s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519567.hakushu-ib
+
+real	5m4.921s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 5 
+519574.hakushu-ib
+
+real	0m56.233s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519575.hakushu-ib
+
+real	4m50.246s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 6 
+519582.hakushu-ib
+
+real	0m57.015s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519583.hakushu-ib
+
+real	4m52.110s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 7 
+519592.hakushu-ib
+
+real	1m18.852s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519597.hakushu-ib
+
+real	4m52.916s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 8 
+519610.hakushu-ib
+
+real	1m31.102s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519611.hakushu-ib
+
+real	5m13.733s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 9 
+519619.hakushu-ib
+
+real	0m57.791s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519620.hakushu-ib
+
+real	5m12.109s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 10 
+519627.hakushu-ib
+
+real	1m1.607s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519628.hakushu-ib
+
+real	4m45.472s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 11 
+519635.hakushu-ib
+
+real	0m55.500s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519636.hakushu-ib
+
+real	5m35.132s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 12 
+519642.hakushu-ib
+
+real	2m11.848s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519644.hakushu-ib
+
+real	5m37.136s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 13 
+519650.hakushu-ib
+
+real	1m22.976s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519652.hakushu-ib
+
+real	4m55.409s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 14 
+519659.hakushu-ib
+
+real	0m56.183s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519660.hakushu-ib
+
+real	4m57.791s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 15 
+519667.hakushu-ib
+
+real	0m56.674s
+user	0m0.000s
+sys	0m0.000s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519668.hakushu-ib
+
+real	5m12.455s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 16 
+519675.hakushu-ib
+
+real	0m55.832s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519677.hakushu-ib
+
+real	5m1.504s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 17 
+519693.hakushu-ib
+
+real	1m38.712s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519695.hakushu-ib
+
+real	5m41.306s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 18 
+519704.hakushu-ib
+
+real	1m16.514s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519705.hakushu-ib
+
+real	4m43.370s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 19 
+519712.hakushu-ib
+
+real	0m57.875s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519713.hakushu-ib
+
+real	5m21.286s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 20 
+519720.hakushu-ib
+
+real	0m55.520s
+user	0m0.000s
+sys	0m0.004s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053200 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519721.hakushu-ib
+
+real	4m24.656s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 1 
+519728.hakushu-ib
+
+real	0m57.088s
+user	0m0.008s
+sys	0m0.000s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519729.hakushu-ib
+
+real	5m5.904s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 2 
+519736.hakushu-ib
+
+real	0m54.566s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519737.hakushu-ib
+
+real	4m34.672s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 3 
+519744.hakushu-ib
+
+real	0m53.943s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519745.hakushu-ib
+
+real	4m53.177s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 4 
+519752.hakushu-ib
+
+real	0m54.374s
+user	0m0.008s
+sys	0m0.000s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519753.hakushu-ib
+
+real	4m25.066s
+user	0m0.012s
+sys	0m0.000s
+Rescale bred vector for iter = 5 
+519760.hakushu-ib
+
+real	0m53.769s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519761.hakushu-ib
+
+real	4m41.905s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 6 
+519768.hakushu-ib
+
+real	0m54.696s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519769.hakushu-ib
+
+real	4m59.746s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 7 
+519785.hakushu-ib
+
+real	1m10.269s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519787.hakushu-ib
+
+real	4m35.401s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 8 
+519797.hakushu-ib
+
+real	1m7.472s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519798.hakushu-ib
+
+real	4m32.756s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 9 
+519804.hakushu-ib
+
+real	1m16.569s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519806.hakushu-ib
+
+real	4m35.487s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 10 
+519812.hakushu-ib
+
+real	1m4.780s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519814.hakushu-ib
+
+real	4m39.932s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 11 
+519819.hakushu-ib
+
+real	0m57.754s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519822.hakushu-ib
+
+real	5m28.320s
+user	0m0.012s
+sys	0m0.000s
+Rescale bred vector for iter = 12 
+519827.hakushu-ib
+
+real	0m57.513s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519830.hakushu-ib
+
+real	4m55.663s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 13 
+519835.hakushu-ib
+
+real	0m57.959s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519838.hakushu-ib
+
+real	4m35.942s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 14 
+519843.hakushu-ib
+
+real	0m57.836s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519846.hakushu-ib
+
+real	5m7.860s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 15 
+519851.hakushu-ib
+
+real	0m57.881s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519854.hakushu-ib
+
+real	4m49.826s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 16 
+519859.hakushu-ib
+
+real	0m57.051s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519862.hakushu-ib
+
+real	6m2.307s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 17 
+519875.hakushu-ib
+
+real	1m2.369s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519882.hakushu-ib
+
+real	5m6.079s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 18 
+519888.hakushu-ib
+
+real	1m30.717s
+user	0m0.008s
+sys	0m0.004s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519892.hakushu-ib
+
+real	5m5.443s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 19 
+519897.hakushu-ib
+
+real	1m26.846s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519902.hakushu-ib
+
+real	5m19.257s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 20 
+519907.hakushu-ib
+
+real	1m34.297s
+user	0m0.000s
+sys	0m0.008s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053230 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519911.hakushu-ib
+
+real	4m20.881s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 1 
+519916.hakushu-ib
+
+real	1m6.833s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519919.hakushu-ib
+
+real	3m48.720s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 2 
+519922.hakushu-ib
+
+real	1m4.006s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519926.hakushu-ib
+
+real	4m38.055s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 3 
+519930.hakushu-ib
+
+real	1m4.303s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519933.hakushu-ib
+
+real	3m47.924s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 4 
+519937.hakushu-ib
+
+real	1m22.417s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519940.hakushu-ib
+
+real	4m35.521s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 5 
+519946.hakushu-ib
+
+real	1m0.360s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519948.hakushu-ib
+
+real	4m57.935s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 6 
+519954.hakushu-ib
+
+real	0m55.489s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519955.hakushu-ib
+
+real	4m42.230s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 7 
+519971.hakushu-ib
+
+real	1m10.693s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519973.hakushu-ib
+
+real	5m9.207s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 8 
+519983.hakushu-ib
+
+real	1m6.086s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519984.hakushu-ib
+
+real	4m31.349s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 9 
+519991.hakushu-ib
+
+real	1m1.444s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+519992.hakushu-ib
+
+real	4m39.770s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 10 
+519999.hakushu-ib
+
+real	0m55.826s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520000.hakushu-ib
+
+real	5m0.788s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 11 
+520007.hakushu-ib
+
+real	0m55.306s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520008.hakushu-ib
+
+real	5m11.797s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 12 
+520015.hakushu-ib
+
+real	1m27.459s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520016.hakushu-ib
+
+real	4m35.338s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 13 
+520023.hakushu-ib
+
+real	1m28.181s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520025.hakushu-ib
+
+real	4m43.925s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 14 
+520031.hakushu-ib
+
+real	1m3.712s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520033.hakushu-ib
+
+real	4m39.118s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 15 
+520039.hakushu-ib
+
+real	1m28.903s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520041.hakushu-ib
+
+real	4m10.887s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 16 
+520047.hakushu-ib
+
+real	1m24.925s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520050.hakushu-ib
+
+real	5m39.810s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 17 
+520064.hakushu-ib
+
+real	1m4.833s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520068.hakushu-ib
+
+real	5m1.601s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 18 
+520076.hakushu-ib
+
+real	1m6.115s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520079.hakushu-ib
+
+real	4m44.766s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 19 
+520085.hakushu-ib
+
+real	1m15.911s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520087.hakushu-ib
+
+real	5m6.406s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 20 
+520093.hakushu-ib
+
+real	1m2.809s
+user	0m0.000s
+sys	0m0.008s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053300 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520095.hakushu-ib
+
+real	4m43.039s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 1 
+520101.hakushu-ib
+
+real	1m0.140s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520102.hakushu-ib
+
+real	4m27.071s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 2 
+520108.hakushu-ib
+
+real	0m54.773s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520111.hakushu-ib
+
+real	4m31.818s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 3 
+520116.hakushu-ib
+
+real	1m7.268s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520118.hakushu-ib
+
+real	4m44.582s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 4 
+520124.hakushu-ib
+
+real	0m55.666s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520127.hakushu-ib
+
+real	5m3.159s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 5 
+520132.hakushu-ib
+
+real	1m26.269s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520136.hakushu-ib
+
+real	5m22.915s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 6 
+520140.hakushu-ib
+
+real	1m12.858s
+user	0m0.008s
+sys	0m0.000s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520145.hakushu-ib
+
+real	5m28.885s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 7 
+520161.hakushu-ib
+
+real	1m31.148s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520165.hakushu-ib
+
+real	5m19.837s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 8 
+520171.hakushu-ib
+
+real	1m4.387s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520176.hakushu-ib
+
+real	5m26.259s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 9 
+520182.hakushu-ib
+
+real	0m53.910s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520183.hakushu-ib
+
+real	5m10.908s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 10 
+520187.hakushu-ib
+
+real	1m18.504s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520191.hakushu-ib
+
+real	5m16.058s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 11 
+520197.hakushu-ib
+
+real	1m14.910s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520199.hakushu-ib
+
+real	5m3.142s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 12 
+520205.hakushu-ib
+
+real	1m5.240s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520208.hakushu-ib
+
+real	4m48.820s
+user	0m0.012s
+sys	0m0.000s
+Rescale bred vector for iter = 13 
+520213.hakushu-ib
+
+real	1m4.428s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520216.hakushu-ib
+
+real	4m52.962s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 14 
+520222.hakushu-ib
+
+real	1m6.552s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520224.hakushu-ib
+
+real	5m3.300s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 15 
+520229.hakushu-ib
+
+real	1m4.619s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520231.hakushu-ib
+
+real	5m11.498s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 16 
+520246.hakushu-ib
+
+real	1m4.814s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520248.hakushu-ib
+
+real	4m51.104s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 17 
+520257.hakushu-ib
+
+real	0m56.899s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520259.hakushu-ib
+
+real	4m39.955s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 18 
+520266.hakushu-ib
+
+real	1m14.742s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520269.hakushu-ib
+
+real	4m37.326s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 19 
+520274.hakushu-ib
+
+real	1m5.398s
+user	0m0.008s
+sys	0m0.000s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520275.hakushu-ib
+
+real	4m25.354s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 20 
+520282.hakushu-ib
+
+real	1m37.128s
+user	0m0.004s
+sys	0m0.004s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053330 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520285.hakushu-ib
+
+real	5m31.043s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 1 
+520290.hakushu-ib
+
+real	1m0.706s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520294.hakushu-ib
+
+real	5m33.790s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 2 
+520300.hakushu-ib
+
+real	1m18.675s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520305.hakushu-ib
+
+real	5m4.318s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 3 
+520306.hakushu-ib
+
+real	1m6.643s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520311.hakushu-ib
+
+real	5m35.267s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 4 
+520316.hakushu-ib
+
+real	1m12.854s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520321.hakushu-ib
+
+real	4m46.454s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 5 
+520324.hakushu-ib
+
+real	1m22.305s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520331.hakushu-ib
+
+real	4m34.466s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 6 
+520344.hakushu-ib
+
+real	1m1.420s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520349.hakushu-ib
+
+real	4m51.073s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 7 
+520352.hakushu-ib
+
+real	1m7.555s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520356.hakushu-ib
+
+real	5m50.609s
+user	0m0.008s
+sys	0m0.000s
+Rescale bred vector for iter = 8 
+520361.hakushu-ib
+
+real	1m7.328s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520366.hakushu-ib
+
+real	4m39.225s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 9 
+520369.hakushu-ib
+
+real	1m2.719s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520373.hakushu-ib
+
+real	5m52.800s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 10 
+520379.hakushu-ib
+
+real	0m54.862s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520382.hakushu-ib
+
+real	5m5.171s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 11 
+520387.hakushu-ib
+
+real	0m56.397s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520390.hakushu-ib
+
+real	5m29.958s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 12 
+520395.hakushu-ib
+
+real	0m55.235s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520398.hakushu-ib
+
+real	4m24.266s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 13 
+520403.hakushu-ib
+
+real	0m55.293s
+user	0m0.008s
+sys	0m0.000s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520405.hakushu-ib
+
+real	4m37.139s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 14 
+520411.hakushu-ib
+
+real	0m54.940s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520412.hakushu-ib
+
+real	4m47.212s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 15 
+520420.hakushu-ib
+
+real	1m6.051s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520424.hakushu-ib
+
+real	4m49.179s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 16 
+520438.hakushu-ib
+
+real	1m26.970s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520440.hakushu-ib
+
+real	5m5.921s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 17 
+520448.hakushu-ib
+
+real	0m55.173s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520449.hakushu-ib
+
+real	4m42.376s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 18 
+520456.hakushu-ib
+
+real	0m54.828s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520457.hakushu-ib
+
+real	4m28.417s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 19 
+520464.hakushu-ib
+
+real	0m54.662s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520465.hakushu-ib
+
+real	4m48.209s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 20 
+520472.hakushu-ib
+
+real	0m55.636s
+user	0m0.004s
+sys	0m0.000s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053400 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520473.hakushu-ib
+
+real	4m27.967s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 1 
+520480.hakushu-ib
+
+real	0m53.872s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520481.hakushu-ib
+
+real	4m14.912s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 2 
+520486.hakushu-ib
+
+real	1m14.318s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520489.hakushu-ib
+
+real	4m25.788s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 3 
+520494.hakushu-ib
+
+real	1m6.033s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520496.hakushu-ib
+
+real	6m5.801s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 4 
+520502.hakushu-ib
+
+real	0m55.056s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520505.hakushu-ib
+
+real	4m57.688s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 5 
+520510.hakushu-ib
+
+real	0m55.430s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520514.hakushu-ib
+
+real	5m35.908s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 6 
+520529.hakushu-ib
+
+real	0m57.352s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520533.hakushu-ib
+
+real	4m52.994s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 7 
+520539.hakushu-ib
+
+real	0m54.591s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520542.hakushu-ib
+
+real	3m56.650s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 8 
+520546.hakushu-ib
+
+real	0m54.113s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520547.hakushu-ib
+
+real	3m46.468s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 9 
+520551.hakushu-ib
+
+real	1m35.730s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520553.hakushu-ib
+
+real	4m54.712s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 10 
+520556.hakushu-ib
+
+real	1m19.107s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520560.hakushu-ib
+
+real	4m0.331s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 11 
+520563.hakushu-ib
+
+real	1m25.682s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520565.hakushu-ib
+
+real	4m40.346s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 12 
+520569.hakushu-ib
+
+real	1m4.915s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520571.hakushu-ib
+
+real	4m27.092s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 13 
+520575.hakushu-ib
+
+real	1m22.108s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520577.hakushu-ib
+
+real	4m16.131s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 14 
+520581.hakushu-ib
+
+real	1m36.313s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520583.hakushu-ib
+
+real	4m45.387s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 15 
+520588.hakushu-ib
+
+real	1m38.669s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520589.hakushu-ib
+
+real	4m30.316s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 16 
+520602.hakushu-ib
+
+real	1m18.779s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520605.hakushu-ib
+
+real	4m52.566s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 17 
+520612.hakushu-ib
+
+real	1m5.936s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520615.hakushu-ib
+
+real	4m35.343s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 18 
+520619.hakushu-ib
+
+real	0m56.960s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520621.hakushu-ib
+
+real	4m57.706s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 19 
+520626.hakushu-ib
+
+real	1m10.700s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520628.hakushu-ib
+
+real	5m9.575s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 20 
+520632.hakushu-ib
+
+real	0m57.225s
+user	0m0.000s
+sys	0m0.008s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053430 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520633.hakushu-ib
+
+real	5m19.331s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 1 
+520637.hakushu-ib
+
+real	1m46.319s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520640.hakushu-ib
+
+real	4m40.637s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 2 
+520644.hakushu-ib
+
+real	1m7.692s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520646.hakushu-ib
+
+real	4m35.105s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 3 
+520650.hakushu-ib
+
+real	1m7.276s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520652.hakushu-ib
+
+real	4m31.861s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 4 
+520656.hakushu-ib
+
+real	1m25.238s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520658.hakushu-ib
+
+real	4m44.190s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 5 
+520662.hakushu-ib
+
+real	1m5.993s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520664.hakushu-ib
+
+real	4m45.619s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 6 
+520676.hakushu-ib
+
+real	1m55.128s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520681.hakushu-ib
+
+real	5m38.954s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 7 
+520688.hakushu-ib
+
+real	1m4.221s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520689.hakushu-ib
+
+real	4m33.392s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 8 
+520694.hakushu-ib
+
+real	1m22.025s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520696.hakushu-ib
+
+real	3m52.780s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 9 
+520700.hakushu-ib
+
+real	0m56.704s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520701.hakushu-ib
+
+real	3m51.299s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 10 
+520706.hakushu-ib
+
+real	0m57.246s
+user	0m0.008s
+sys	0m0.004s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520707.hakushu-ib
+
+real	3m39.640s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 11 
+520710.hakushu-ib
+
+real	1m12.240s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520713.hakushu-ib
+
+real	4m44.848s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 12 
+520715.hakushu-ib
+
+real	1m9.434s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520719.hakushu-ib
+
+real	4m31.684s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 13 
+520720.hakushu-ib
+
+real	1m0.016s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520723.hakushu-ib
+
+real	6m3.843s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 14 
+520728.hakushu-ib
+
+real	1m22.071s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520731.hakushu-ib
+
+real	4m34.782s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 15 
+520734.hakushu-ib
+
+real	1m30.069s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520737.hakushu-ib
+
+real	4m31.913s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 16 
+520748.hakushu-ib
+
+real	1m56.884s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520754.hakushu-ib
+
+real	4m2.515s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 17 
+520759.hakushu-ib
+
+real	1m6.558s
+user	0m0.000s
+sys	0m0.012s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520762.hakushu-ib
+
+real	4m5.383s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 18 
+520765.hakushu-ib
+
+real	1m19.334s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520768.hakushu-ib
+
+real	4m47.794s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 19 
+520772.hakushu-ib
+
+real	1m5.996s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520773.hakushu-ib
+
+real	5m45.260s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 20 
+520777.hakushu-ib
+
+real	1m42.141s
+user	0m0.008s
+sys	0m0.000s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053500 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520781.hakushu-ib
+
+real	4m40.032s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 1 
+520785.hakushu-ib
+
+real	1m26.527s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520786.hakushu-ib
+
+real	4m22.929s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 2 
+520791.hakushu-ib
+
+real	1m29.332s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520793.hakushu-ib
+
+real	4m0.098s
+user	0m0.008s
+sys	0m0.000s
+Rescale bred vector for iter = 3 
+520796.hakushu-ib
+
+real	1m31.654s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520799.hakushu-ib
+
+real	4m38.792s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 4 
+520803.hakushu-ib
+
+real	1m41.308s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520805.hakushu-ib
+
+real	5m40.300s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 5 
+520809.hakushu-ib
+
+real	1m24.974s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520814.hakushu-ib
+
+real	4m56.726s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 6 
+520827.hakushu-ib
+
+real	0m54.209s
+user	0m0.008s
+sys	0m0.000s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520829.hakushu-ib
+
+real	5m14.714s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 7 
+520834.hakushu-ib
+
+real	1m16.732s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520838.hakushu-ib
+
+real	3m56.544s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 8 
+520840.hakushu-ib
+
+real	0m56.933s
+user	0m0.000s
+sys	0m0.012s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520841.hakushu-ib
+
+real	3m43.572s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 9 
+520846.hakushu-ib
+
+real	0m55.750s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520847.hakushu-ib
+
+real	3m50.064s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 10 
+520852.hakushu-ib
+
+real	0m56.753s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520853.hakushu-ib
+
+real	3m42.129s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 11 
+520854.hakushu-ib
+
+real	0m58.821s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520857.hakushu-ib
+
+real	5m21.016s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 12 
+520861.hakushu-ib
+
+real	1m0.723s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520864.hakushu-ib
+
+real	4m50.878s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 13 
+520868.hakushu-ib
+
+real	0m56.778s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520870.hakushu-ib
+
+real	4m52.184s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 14 
+520872.hakushu-ib
+
+real	1m20.984s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520876.hakushu-ib
+
+real	4m40.125s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 15 
+520878.hakushu-ib
+
+real	1m5.222s
+user	0m0.008s
+sys	0m0.004s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520882.hakushu-ib
+
+real	5m46.987s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 16 
+520893.hakushu-ib
+
+real	1m8.294s
+user	0m0.008s
+sys	0m0.000s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520897.hakushu-ib
+
+real	5m11.142s
+user	0m0.012s
+sys	0m0.000s
+Rescale bred vector for iter = 17 
+520905.hakushu-ib
+
+real	1m29.464s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520908.hakushu-ib
+
+real	4m53.724s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 18 
+520912.hakushu-ib
+
+real	1m2.862s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520914.hakushu-ib
+
+real	4m49.223s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 19 
+520919.hakushu-ib
+
+real	1m20.940s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520921.hakushu-ib
+
+real	4m29.143s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 20 
+520924.hakushu-ib
+
+real	1m32.364s
+user	0m0.000s
+sys	0m0.008s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053530 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520927.hakushu-ib
+
+real	4m48.530s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 1 
+520931.hakushu-ib
+
+real	1m27.879s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520934.hakushu-ib
+
+real	4m54.959s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 2 
+520937.hakushu-ib
+
+real	1m47.092s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520940.hakushu-ib
+
+real	4m56.951s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 3 
+520944.hakushu-ib
+
+real	1m5.307s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520946.hakushu-ib
+
+real	4m35.420s
+user	0m0.008s
+sys	0m0.000s
+Rescale bred vector for iter = 4 
+520949.hakushu-ib
+
+real	1m33.218s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520953.hakushu-ib
+
+real	5m54.323s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 5 
+520958.hakushu-ib
+
+real	1m35.894s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520967.hakushu-ib
+
+real	4m57.900s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 6 
+520977.hakushu-ib
+
+real	1m45.095s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520979.hakushu-ib
+
+real	4m10.183s
+user	0m0.008s
+sys	0m0.000s
+Rescale bred vector for iter = 7 
+520984.hakushu-ib
+
+real	1m13.396s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520985.hakushu-ib
+
+real	4m59.506s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 8 
+520990.hakushu-ib
+
+real	1m28.302s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520992.hakushu-ib
+
+real	4m46.689s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 9 
+520996.hakushu-ib
+
+real	0m57.891s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+520998.hakushu-ib
+
+real	5m22.363s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 10 
+521002.hakushu-ib
+
+real	1m6.425s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521004.hakushu-ib
+
+real	4m41.610s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 11 
+521008.hakushu-ib
+
+real	0m57.907s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521010.hakushu-ib
+
+real	4m57.800s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 12 
+521014.hakushu-ib
+
+real	1m24.895s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521016.hakushu-ib
+
+real	4m37.968s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 13 
+521019.hakushu-ib
+
+real	1m24.203s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521022.hakushu-ib
+
+real	4m28.433s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 14 
+521026.hakushu-ib
+
+real	1m30.756s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521028.hakushu-ib
+
+real	4m28.129s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 15 
+521038.hakushu-ib
+
+real	1m31.417s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521042.hakushu-ib
+
+real	5m24.201s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 16 
+521049.hakushu-ib
+
+real	0m59.820s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521052.hakushu-ib
+
+real	5m35.199s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 17 
+521056.hakushu-ib
+
+real	1m8.540s
+user	0m0.008s
+sys	0m0.004s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521060.hakushu-ib
+
+real	4m36.485s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 18 
+521062.hakushu-ib
+
+real	0m58.339s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521064.hakushu-ib
+
+real	5m50.568s
+user	0m0.012s
+sys	0m0.000s
+Rescale bred vector for iter = 19 
+521068.hakushu-ib
+
+real	1m8.703s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521072.hakushu-ib
+
+real	4m36.701s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 20 
+521074.hakushu-ib
+
+real	1m2.930s
+user	0m0.004s
+sys	0m0.008s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053600 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521077.hakushu-ib
+
+real	5m31.480s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 1 
+521080.hakushu-ib
+
+real	1m2.033s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521083.hakushu-ib
+
+real	4m37.157s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 2 
+521086.hakushu-ib
+
+real	1m16.268s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521089.hakushu-ib
+
+real	5m7.985s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 3 
+521094.hakushu-ib
+
+real	1m19.761s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521096.hakushu-ib
+
+real	5m22.202s
+user	0m0.012s
+sys	0m0.000s
+Rescale bred vector for iter = 4 
+521099.hakushu-ib
+
+real	1m33.673s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521105.hakushu-ib
+
+real	4m8.794s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 5 
+521116.hakushu-ib
+
+real	1m8.573s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521119.hakushu-ib
+
+real	3m54.985s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 6 
+521122.hakushu-ib
+
+real	0m59.353s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521125.hakushu-ib
+
+real	5m39.837s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 7 
+521130.hakushu-ib
+
+real	1m27.366s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521133.hakushu-ib
+
+real	4m52.668s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 8 
+521136.hakushu-ib
+
+real	1m18.495s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521139.hakushu-ib
+
+real	4m49.063s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 9 
+521143.hakushu-ib
+
+real	1m4.437s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521147.hakushu-ib
+
+real	3m56.620s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 10 
+521148.hakushu-ib
+
+real	0m56.356s
+user	0m0.000s
+sys	0m0.012s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521149.hakushu-ib
+
+real	3m54.600s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 11 
+521154.hakushu-ib
+
+real	0m54.985s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521155.hakushu-ib
+
+real	4m5.879s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 12 
+521160.hakushu-ib
+
+real	0m56.413s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521161.hakushu-ib
+
+real	4m11.975s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 13 
+521164.hakushu-ib
+
+real	1m10.912s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521167.hakushu-ib
+
+real	5m24.978s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 14 
+521170.hakushu-ib
+
+real	1m6.918s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521173.hakushu-ib
+
+real	4m25.116s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 15 
+521181.hakushu-ib
+
+real	1m9.179s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521186.hakushu-ib
+
+real	5m8.251s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 16 
+521192.hakushu-ib
+
+real	0m57.814s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521196.hakushu-ib
+
+real	5m55.021s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 17 
+521201.hakushu-ib
+
+real	1m33.338s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521204.hakushu-ib
+
+real	4m26.938s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 18 
+521208.hakushu-ib
+
+real	1m36.850s
+user	0m0.008s
+sys	0m0.000s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521210.hakushu-ib
+
+real	4m48.110s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 19 
+521215.hakushu-ib
+
+real	1m16.518s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521216.hakushu-ib
+
+real	4m38.751s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 20 
+521221.hakushu-ib
+
+real	1m22.643s
+user	0m0.008s
+sys	0m0.004s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053630 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521223.hakushu-ib
+
+real	4m29.193s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 1 
+521227.hakushu-ib
+
+real	0m54.014s
+user	0m0.008s
+sys	0m0.000s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521228.hakushu-ib
+
+real	4m17.913s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 2 
+521232.hakushu-ib
+
+real	1m28.436s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521234.hakushu-ib
+
+real	5m27.803s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 3 
+521239.hakushu-ib
+
+real	1m34.518s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521240.hakushu-ib
+
+real	3m53.797s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 4 
+521245.hakushu-ib
+
+real	1m17.812s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521246.hakushu-ib
+
+real	4m48.637s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 5 
+521260.hakushu-ib
+
+real	1m24.156s
+user	0m0.008s
+sys	0m0.000s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521264.hakushu-ib
+
+real	4m48.678s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 6 
+521270.hakushu-ib
+
+real	0m56.982s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521271.hakushu-ib
+
+real	4m25.296s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 7 
+521276.hakushu-ib
+
+real	0m56.480s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521277.hakushu-ib
+
+real	4m27.513s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 8 
+521281.hakushu-ib
+
+real	0m56.961s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521283.hakushu-ib
+
+real	4m20.650s
+user	0m0.012s
+sys	0m0.000s
+Rescale bred vector for iter = 9 
+521287.hakushu-ib
+
+real	1m34.490s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521289.hakushu-ib
+
+real	4m31.906s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 10 
+521293.hakushu-ib
+
+real	1m7.747s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521295.hakushu-ib
+
+real	4m31.779s
+user	0m0.008s
+sys	0m0.000s
+Rescale bred vector for iter = 11 
+521298.hakushu-ib
+
+real	0m59.287s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521300.hakushu-ib
+
+real	5m6.817s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 12 
+521305.hakushu-ib
+
+real	1m3.935s
+user	0m0.008s
+sys	0m0.004s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521307.hakushu-ib
+
+real	4m29.264s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 13 
+521309.hakushu-ib
+
+real	1m30.337s
+user	0m0.000s
+sys	0m0.012s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521312.hakushu-ib
+
+real	5m30.950s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 14 
+521316.hakushu-ib
+
+real	1m37.145s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521319.hakushu-ib
+
+real	5m50.949s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 15 
+521334.hakushu-ib
+
+real	0m55.516s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521336.hakushu-ib
+
+real	4m35.193s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 16 
+521341.hakushu-ib
+
+real	1m29.266s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521343.hakushu-ib
+
+real	4m52.251s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 17 
+521347.hakushu-ib
+
+real	0m56.092s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521348.hakushu-ib
+
+real	4m20.228s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 18 
+521353.hakushu-ib
+
+real	0m56.380s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521354.hakushu-ib
+
+real	4m28.049s
+user	0m0.004s
+sys	0m0.012s
+Rescale bred vector for iter = 19 
+521359.hakushu-ib
+
+real	0m57.037s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521360.hakushu-ib
+
+real	4m29.394s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 20 
+521365.hakushu-ib
+
+real	0m56.574s
+user	0m0.004s
+sys	0m0.004s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053700 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521366.hakushu-ib
+
+real	4m9.528s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 1 
+521369.hakushu-ib
+
+real	1m9.648s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521372.hakushu-ib
+
+real	5m1.552s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 2 
+521374.hakushu-ib
+
+real	1m3.633s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521377.hakushu-ib
+
+real	4m33.612s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 3 
+521380.hakushu-ib
+
+real	1m11.664s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521383.hakushu-ib
+
+real	5m2.344s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 4 
+521388.hakushu-ib
+
+real	1m7.802s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521390.hakushu-ib
+
+real	4m15.581s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 5 
+521399.hakushu-ib
+
+real	1m26.968s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521403.hakushu-ib
+
+real	5m19.232s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 6 
+521409.hakushu-ib
+
+real	1m4.100s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521414.hakushu-ib
+
+real	4m1.013s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 7 
+521416.hakushu-ib
+
+real	0m57.233s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521417.hakushu-ib
+
+real	3m44.460s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 8 
+521422.hakushu-ib
+
+real	0m56.453s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521423.hakushu-ib
+
+real	3m45.628s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 9 
+521428.hakushu-ib
+
+real	0m56.116s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521429.hakushu-ib
+
+real	3m36.824s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 10 
+521432.hakushu-ib
+
+real	1m11.256s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521435.hakushu-ib
+
+real	4m41.215s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 11 
+521438.hakushu-ib
+
+real	1m15.967s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521441.hakushu-ib
+
+real	5m23.680s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 12 
+521444.hakushu-ib
+
+real	1m28.678s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521447.hakushu-ib
+
+real	4m50.690s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 13 
+521451.hakushu-ib
+
+real	1m10.214s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521452.hakushu-ib
+
+real	3m57.403s
+user	0m0.008s
+sys	0m0.000s
+Rescale bred vector for iter = 14 
+521456.hakushu-ib
+
+real	0m56.155s
+user	0m0.000s
+sys	0m0.012s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521457.hakushu-ib
+
+real	4m39.918s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 15 
+521462.hakushu-ib
+
+real	1m38.233s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521463.hakushu-ib
+
+real	5m16.518s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 16 
+521479.hakushu-ib
+
+real	1m14.042s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521481.hakushu-ib
+
+real	4m43.342s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 17 
+521487.hakushu-ib
+
+real	0m58.228s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521489.hakushu-ib
+
+real	4m37.313s
+user	0m0.008s
+sys	0m0.000s
+Rescale bred vector for iter = 18 
+521493.hakushu-ib
+
+real	1m10.497s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521495.hakushu-ib
+
+real	4m34.596s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 19 
+521499.hakushu-ib
+
+real	0m52.726s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521500.hakushu-ib
+
+real	4m33.128s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 20 
+521505.hakushu-ib
+
+real	0m55.442s
+user	0m0.004s
+sys	0m0.004s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053730 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521506.hakushu-ib
+
+real	4m12.867s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 1 
+521511.hakushu-ib
+
+real	0m53.186s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521512.hakushu-ib
+
+real	4m10.024s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 2 
+521516.hakushu-ib
+
+real	1m35.987s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521518.hakushu-ib
+
+real	5m13.661s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 3 
+521523.hakushu-ib
+
+real	1m50.694s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521524.hakushu-ib
+
+real	4m57.052s
+user	0m0.008s
+sys	0m0.000s
+Rescale bred vector for iter = 4 
+521530.hakushu-ib
+
+real	1m18.330s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521531.hakushu-ib
+
+real	5m14.803s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 5 
+521536.hakushu-ib
+
+real	1m14.532s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521538.hakushu-ib
+
+real	5m2.092s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 6 
+521549.hakushu-ib
+
+real	0m56.522s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521553.hakushu-ib
+
+real	7m24.474s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 7 
+521561.hakushu-ib
+
+real	1m17.782s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521564.hakushu-ib
+
+real	4m39.933s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 8 
+521567.hakushu-ib
+
+real	1m6.368s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521571.hakushu-ib
+
+real	3m48.911s
+user	0m0.008s
+sys	0m0.000s
+Rescale bred vector for iter = 9 
+521573.hakushu-ib
+
+real	0m53.156s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521574.hakushu-ib
+
+real	3m39.417s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 10 
+521579.hakushu-ib
+
+real	0m52.687s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521580.hakushu-ib
+
+real	3m44.676s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 11 
+521585.hakushu-ib
+
+real	0m52.186s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521586.hakushu-ib
+
+real	3m55.563s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 12 
+521587.hakushu-ib
+
+real	0m58.467s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521591.hakushu-ib
+
+real	5m33.895s
+user	0m0.008s
+sys	0m0.000s
+Rescale bred vector for iter = 13 
+521595.hakushu-ib
+
+real	1m26.538s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521598.hakushu-ib
+
+real	5m1.611s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 14 
+521601.hakushu-ib
+
+real	1m18.785s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521604.hakushu-ib
+
+real	4m45.326s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 15 
+521607.hakushu-ib
+
+real	1m9.574s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521611.hakushu-ib
+
+real	4m43.322s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 16 
+521622.hakushu-ib
+
+real	1m33.835s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521628.hakushu-ib
+
+real	5m27.580s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 17 
+521633.hakushu-ib
+
+real	1m10.614s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521636.hakushu-ib
+
+real	4m34.310s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 18 
+521639.hakushu-ib
+
+real	1m4.245s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521641.hakushu-ib
+
+real	4m43.046s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 19 
+521646.hakushu-ib
+
+real	0m53.830s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521647.hakushu-ib
+
+real	4m10.977s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 20 
+521651.hakushu-ib
+
+real	1m31.921s
+user	0m0.000s
+sys	0m0.008s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053800 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521653.hakushu-ib
+
+real	4m35.805s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 1 
+521658.hakushu-ib
+
+real	1m26.826s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521659.hakushu-ib
+
+real	4m24.186s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 2 
+521664.hakushu-ib
+
+real	1m28.432s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521665.hakushu-ib
+
+real	3m49.522s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 3 
+521670.hakushu-ib
+
+real	1m20.479s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521671.hakushu-ib
+
+real	4m39.140s
+user	0m0.008s
+sys	0m0.000s
+Rescale bred vector for iter = 4 
+521676.hakushu-ib
+
+real	1m23.023s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521677.hakushu-ib
+
+real	4m20.481s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 5 
+521682.hakushu-ib
+
+real	1m19.306s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521684.hakushu-ib
+
+real	5m41.264s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 6 
+521696.hakushu-ib
+
+real	1m40.689s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521703.hakushu-ib
+
+real	4m37.042s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 7 
+521709.hakushu-ib
+
+real	1m39.147s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521711.hakushu-ib
+
+real	4m16.193s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 8 
+521715.hakushu-ib
+
+real	1m11.630s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521716.hakushu-ib
+
+real	5m4.829s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 9 
+521721.hakushu-ib
+
+real	1m24.028s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521723.hakushu-ib
+
+real	4m24.410s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 10 
+521727.hakushu-ib
+
+real	0m57.256s
+user	0m0.008s
+sys	0m0.000s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521728.hakushu-ib
+
+real	4m23.452s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 11 
+521733.hakushu-ib
+
+real	0m58.413s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521734.hakushu-ib
+
+real	4m4.466s
+user	0m0.008s
+sys	0m0.000s
+Rescale bred vector for iter = 12 
+521739.hakushu-ib
+
+real	0m57.709s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521740.hakushu-ib
+
+real	4m21.203s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 13 
+521744.hakushu-ib
+
+real	1m38.950s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521746.hakushu-ib
+
+real	4m53.584s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 14 
+521751.hakushu-ib
+
+real	1m37.405s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521752.hakushu-ib
+
+real	4m23.068s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 15 
+521757.hakushu-ib
+
+real	1m26.238s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521758.hakushu-ib
+
+real	5m8.219s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 16 
+521771.hakushu-ib
+
+real	1m20.281s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521776.hakushu-ib
+
+real	4m12.092s
+user	0m0.012s
+sys	0m0.000s
+Rescale bred vector for iter = 17 
+521782.hakushu-ib
+
+real	1m6.275s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521784.hakushu-ib
+
+real	4m19.375s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 18 
+521789.hakushu-ib
+
+real	0m56.741s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521790.hakushu-ib
+
+real	4m4.332s
+user	0m0.004s
+sys	0m0.012s
+Rescale bred vector for iter = 19 
+521795.hakushu-ib
+
+real	0m58.322s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521796.hakushu-ib
+
+real	4m12.325s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 20 
+521800.hakushu-ib
+
+real	1m35.116s
+user	0m0.004s
+sys	0m0.004s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053830 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521802.hakushu-ib
+
+real	4m42.035s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 1 
+521806.hakushu-ib
+
+real	1m29.243s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521808.hakushu-ib
+
+real	4m43.843s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 2 
+521812.hakushu-ib
+
+real	1m0.250s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521814.hakushu-ib
+
+real	5m0.315s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 3 
+521818.hakushu-ib
+
+real	1m2.576s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521821.hakushu-ib
+
+real	4m49.381s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 4 
+521824.hakushu-ib
+
+real	1m11.094s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521828.hakushu-ib
+
+real	4m44.239s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 5 
+521831.hakushu-ib
+
+real	1m16.402s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521834.hakushu-ib
+
+real	5m3.811s
+user	0m0.012s
+sys	0m0.000s
+Rescale bred vector for iter = 6 
+521843.hakushu-ib
+
+real	1m11.526s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521846.hakushu-ib
+
+real	4m52.803s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 7 
+521854.hakushu-ib
+
+real	1m2.552s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521855.hakushu-ib
+
+real	4m49.310s
+user	0m0.012s
+sys	0m0.000s
+Rescale bred vector for iter = 8 
+521859.hakushu-ib
+
+real	0m58.065s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521860.hakushu-ib
+
+real	4m32.670s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 9 
+521863.hakushu-ib
+
+real	0m55.662s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521864.hakushu-ib
+
+real	4m44.788s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 10 
+521867.hakushu-ib
+
+real	0m55.299s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521868.hakushu-ib
+
+real	5m6.067s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 11 
+521871.hakushu-ib
+
+real	0m57.366s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521872.hakushu-ib
+
+real	4m58.818s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 12 
+521875.hakushu-ib
+
+real	0m57.436s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521876.hakushu-ib
+
+real	4m54.187s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 13 
+521879.hakushu-ib
+
+real	0m57.319s
+user	0m0.000s
+sys	0m0.012s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521880.hakushu-ib
+
+real	4m56.453s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 14 
+521883.hakushu-ib
+
+real	0m57.059s
+user	0m0.008s
+sys	0m0.000s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521884.hakushu-ib
+
+real	5m12.429s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 15 
+521887.hakushu-ib
+
+real	0m56.578s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521888.hakushu-ib
+
+real	5m33.201s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 16 
+521898.hakushu-ib
+
+real	1m24.819s
+user	0m0.008s
+sys	0m0.004s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521901.hakushu-ib
+
+real	4m49.480s
+user	0m0.008s
+sys	0m0.000s
+Rescale bred vector for iter = 17 
+521907.hakushu-ib
+
+real	1m8.777s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521908.hakushu-ib
+
+real	4m46.524s
+user	0m0.012s
+sys	0m0.004s
+Rescale bred vector for iter = 18 
+521912.hakushu-ib
+
+real	0m56.753s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521913.hakushu-ib
+
+real	4m51.554s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 19 
+521916.hakushu-ib
+
+real	0m56.719s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521917.hakushu-ib
+
+real	4m40.766s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 20 
+521920.hakushu-ib
+
+real	0m58.768s
+user	0m0.000s
+sys	0m0.008s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053900 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521921.hakushu-ib
+
+real	4m47.624s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 1 
+521924.hakushu-ib
+
+real	0m57.170s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521925.hakushu-ib
+
+real	4m25.995s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 2 
+521928.hakushu-ib
+
+real	0m57.213s
+user	0m0.000s
+sys	0m0.012s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521929.hakushu-ib
+
+real	4m21.773s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 3 
+521932.hakushu-ib
+
+real	0m56.725s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521933.hakushu-ib
+
+real	4m37.371s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 4 
+521936.hakushu-ib
+
+real	0m57.114s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521937.hakushu-ib
+
+real	4m37.888s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 5 
+521940.hakushu-ib
+
+real	0m57.557s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521941.hakushu-ib
+
+real	4m42.423s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 6 
+521944.hakushu-ib
+
+real	0m57.901s
+user	0m0.008s
+sys	0m0.000s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521946.hakushu-ib
+
+real	5m8.388s
+user	0m0.008s
+sys	0m0.008s
+Rescale bred vector for iter = 7 
+521960.hakushu-ib
+
+real	0m56.360s
+user	0m0.000s
+sys	0m0.000s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521961.hakushu-ib
+
+real	4m29.490s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector for iter = 8 
+521965.hakushu-ib
+
+real	0m55.195s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521966.hakushu-ib
+
+real	4m31.495s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 9 
+521969.hakushu-ib
+
+real	0m55.539s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521970.hakushu-ib
+
+real	4m37.702s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 10 
+521973.hakushu-ib
+
+real	0m54.998s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521974.hakushu-ib
+
+real	4m49.458s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 11 
+521977.hakushu-ib
+
+real	0m58.060s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521978.hakushu-ib
+
+real	5m14.357s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 12 
+521981.hakushu-ib
+
+real	0m57.517s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521982.hakushu-ib
+
+real	4m44.338s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 13 
+521985.hakushu-ib
+
+real	0m57.089s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521986.hakushu-ib
+
+real	5m7.925s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 14 
+521989.hakushu-ib
+
+real	0m58.230s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521990.hakushu-ib
+
+real	4m46.879s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 15 
+521993.hakushu-ib
+
+real	0m57.360s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521994.hakushu-ib
+
+real	4m53.019s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 16 
+521997.hakushu-ib
+
+real	0m58.208s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+521998.hakushu-ib
+
+real	5m6.641s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 17 
+522012.hakushu-ib
+
+real	1m8.664s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522014.hakushu-ib
+
+real	4m30.512s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 18 
+522018.hakushu-ib
+
+real	0m56.736s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522019.hakushu-ib
+
+real	5m30.880s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 19 
+522022.hakushu-ib
+
+real	1m2.923s
+user	0m0.008s
+sys	0m0.000s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522023.hakushu-ib
+
+real	6m18.737s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 20 
+522026.hakushu-ib
+
+real	0m55.709s
+user	0m0.004s
+sys	0m0.000s
+Las iteraciones de breeding in place son 20
+We will perform 20 iteratons in this cycle
+Running cycle starting at 20130713053930 
+Evolve bred vector for iter = 1 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522029.hakushu-ib
+
+real	4m58.577s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 1 
+522032.hakushu-ib
+
+real	0m5.178s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 2 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522033.hakushu-ib
+
+real	5m50.682s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 2 
+522036.hakushu-ib
+
+real	0m5.377s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 3 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522037.hakushu-ib
+
+real	4m51.940s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 3 
+522040.hakushu-ib
+
+real	0m5.398s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 4 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522041.hakushu-ib
+
+real	5m20.819s
+user	0m0.008s
+sys	0m0.000s
+Rescale bred vector for iter = 4 
+522044.hakushu-ib
+
+real	0m5.472s
+user	0m0.012s
+sys	0m0.000s
+Evolve bred vector for iter = 5 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522045.hakushu-ib
+
+real	5m0.570s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 5 
+522048.hakushu-ib
+
+real	0m6.093s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 6 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522049.hakushu-ib
+
+real	5m17.398s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector for iter = 6 
+522052.hakushu-ib
+
+real	0m9.622s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector for iter = 7 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522053.hakushu-ib
+
+real	5m37.866s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 7 
+522065.hakushu-ib
+
+real	0m6.846s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 8 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522066.hakushu-ib
+
+real	4m49.434s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 8 
+522072.hakushu-ib
+
+real	0m5.253s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 9 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522073.hakushu-ib
+
+real	5m31.492s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 9 
+522077.hakushu-ib
+
+real	0m8.531s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 10 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522078.hakushu-ib
+
+real	5m39.808s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 10 
+522081.hakushu-ib
+
+real	0m11.477s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 11 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522082.hakushu-ib
+
+real	6m45.158s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 11 
+522085.hakushu-ib
+
+real	0m9.825s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 12 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522086.hakushu-ib
+
+real	5m47.393s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector for iter = 12 
+522089.hakushu-ib
+
+real	0m5.581s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 13 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522090.hakushu-ib
+
+real	4m51.428s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 13 
+522093.hakushu-ib
+
+real	0m5.160s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 14 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522094.hakushu-ib
+
+real	4m55.439s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 14 
+522097.hakushu-ib
+
+real	0m5.500s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector for iter = 15 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522098.hakushu-ib
+
+real	4m59.884s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 15 
+522101.hakushu-ib
+
+real	0m5.547s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector for iter = 16 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522102.hakushu-ib
+
+real	5m43.514s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector for iter = 16 
+522105.hakushu-ib
+
+real	0m5.499s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector for iter = 17 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522106.hakushu-ib
+
+real	4m16.643s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 17 
+522108.hakushu-ib
+
+real	0m3.925s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 18 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522109.hakushu-ib
+
+real	3m43.289s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector for iter = 18 
+522117.hakushu-ib
+
+real	0m4.497s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector for iter = 19 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522118.hakushu-ib
+
+real	3m49.688s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector for iter = 19 
+522124.hakushu-ib
+
+real	0m3.975s
+user	0m0.000s
+sys	0m0.000s
+Evolve bred vector for iter = 20 
+Unperturbed boundary conditions will be used in the evolution of the perturbation
+522125.hakushu-ib
+
+real	3m42.485s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector for iter = 20 
+522127.hakushu-ib
+
+real	0m3.940s
+user	0m0.012s
+sys	0m0.000s
+mv: cannot move `/home/jruiz/share/scale_breeding/run/../tmp/breeding_osaka_pawr_1km_bip_local_1000m_UVT/out/20130713053130' to `/home/jruiz/share/exp/breeding_osaka_pawr_1km_bip_local_1000m_UVT/20130713053130': File exists
+mv: cannot move `/home/jruiz/share/scale_breeding/run/../tmp/breeding_osaka_pawr_1km_bip_local_1000m_UVT/out/latlon' to `/home/jruiz/share/exp/breeding_osaka_pawr_1km_bip_local_1000m_UVT/latlon': File exists
+mv: cannot move `/home/jruiz/share/scale_breeding/run/../tmp/breeding_osaka_pawr_1km_bip_local_1000m_UVT/out/logs' to `/home/jruiz/share/exp/breeding_osaka_pawr_1km_bip_local_1000m_UVT/logs': File exists
+mv: target `/home/jruiz/share/exp/breeding_osaka_pawr_1km_bip_local_1000m_UVT//logs/scale_pp_20130713053100_0001pp.log' is not a directory
+mv: cannot move `/home/jruiz/share/scale_breeding/run/../tmp/breeding_osaka_pawr_1km_bip_local_1000m_UVT/out/20130713053130/0001' to `/home/jruiz/share/exp/breeding_osaka_pawr_1km_bip_local_1000m_UVT//20130713053130/0001': File exists
+NORMAL END

@@ -1,0 +1,596 @@
+>>>
+>>> STARTING WRF-LETKF CYCLE FROM  TO 
+>>>
+Initialize bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499180.hakushu-ib
+
+real	0m0.753s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector 
+499181.hakushu-ib
+
+real	0m0.594s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499182.hakushu-ib
+
+real	0m0.701s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector 
+499183.hakushu-ib
+
+real	0m0.853s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499184.hakushu-ib
+
+real	0m0.629s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector 
+499185.hakushu-ib
+
+real	0m0.705s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499499172.hakushu-ib
+al	0m0.684s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector 
+499187.hakushu-ib
+
+real	0m1.617s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499189.hakushu-ib
+
+real	0m0.639s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector 
+499190.hakushu-ib
+
+real	0m0.953s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499191.hakushu-ib
+
+real	0m0.692s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector 
+499192.hakushu-ib
+
+real	0m0.822s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499194.hakushu-ib
+
+real	0m0.631s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector 
+499195.hakushu-ib
+
+real	0m0.701s
+user	0m0.000s
+sys	0m0.012s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499196.hakushu-ib
+
+real	0m0.697s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector 
+499197.hakushu-ib
+
+real	0m0.684s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499198.hakushu-ib
+
+real	0m0.697s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector 
+499199.hakushu-ib
+
+real	0m0.685s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499200.hakushu-ib
+
+real	0m0.758s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector 
+499201.hakushu-ib
+
+real	0m0.596s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499202.hakushu-ib
+
+real	0m59.584s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector 
+499204.hakushu-ib
+
+real	0m2.840s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499205.hakushu-ib
+
+real	0m39.590s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector 
+499206.hakushu-ib
+
+real	0m2.719s
+user	0m0.000s
+sys	0m0.012s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499207.hakushu-ib
+
+real	0m2.352s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector 
+499209.hakushu-ib
+
+real	0m0.675s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499212.hakushu-ib
+
+real	0m0.711s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector 
+499214.hakushu-ib
+
+real	0m0.830s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499216.hakushu-ib
+
+real	0m0.737s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector 
+499217.hakushu-ib
+
+real	0m0.682s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499218.hakushu-ib
+
+real	0m0.763s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector 
+499219.hakushu-ib
+
+real	0m0.673s
+user	0m0.000s
+sys	0m0.012s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499220.hakushu-ib
+
+real	0m0.763s
+user	0m0.000s
+sys	0m0.012s
+Rescale bred vector 
+499221.hakushu-ib
+
+real	0m0.686s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499222.hakushu-ib
+
+real	0m0.834s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector 
+499223.hakushu-ib
+
+real	0m0.713s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499224.hakushu-ib
+
+real	0m0.759s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector 
+499225.hakushu-ib
+
+real	0m0.628s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499226.hakushu-ib
+
+real	0m0.758s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector 
+499227.hakushu-ib
+
+real	0m0.633s
+user	0m0.008s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499228.hakushu-ib
+
+real	0m0.775s
+user	0m0.008s
+sys	0m0.004s
+Rescale bred vector 
+499229.hakushu-ib
+
+real	0m0.645s
+user	0m0.008s
+sys	0m0.000s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499230.hakushu-ib
+
+real	0m0.752s
+user	0m0.004s
+sys	0m0.008s
+Rescale bred vector 
+499231.hakushu-ib
+
+real	0m0.701s
+user	0m0.008s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499232.hakushu-ib
+
+real	0m0.748s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector 
+499233.hakushu-ib
+
+real	0m0.616s
+user	0m0.000s
+sys	0m0.008s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499234.hakushu-ib
+
+real	0m0.776s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector 
+499235.hakushu-ib
+
+real	0m0.625s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499236.hakushu-ib
+
+real	1m7.499s
+user	0m0.008s
+sys	0m0.000s
+Rescale bred vector 
+499241.hakushu-ib
+
+real	0m0.668s
+user	0m0.000s
+sys	0m0.012s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499242.hakushu-ib
+
+real	0m55.269s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector 
+499244.hakushu-ib
+
+real	0m7.171s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499246.hakushu-ib
+
+real	0m49.691s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector 
+499247.hakushu-ib
+
+real	0m0.692s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499248.hakushu-ib
+
+real	0m0.787s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector 
+499250.hakushu-ib
+
+real	0m0.793s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499252.hakushu-ib
+
+real	0m0.783s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector 
+499253.hakushu-ib
+
+real	0m0.613s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499254.hakushu-ib
+
+real	0m0.810s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector 
+499255.hakushu-ib
+
+real	0m0.604s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499256.hakushu-ib
+
+real	0m0.762s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector 
+499257.hakushu-ib
+
+real	0m0.588s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499258.hakushu-ib
+
+real	0m0.731s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector 
+499259.hakushu-ib
+
+real	0m0.622s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499260.hakushu-ib
+
+real	0m0.729s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector 
+499261.hakushu-ib
+
+real	0m0.600s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499262.hakushu-ib
+
+real	0m0.719s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector 
+499263.hakushu-ib
+
+real	0m0.611s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499264.hakushu-ib
+
+real	0m0.779s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector 
+499265.hakushu-ib
+
+real	0m0.617s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499266.hakushu-ib
+
+real	0m0.788s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector 
+499267.hakushu-ib
+
+real	0m0.612s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499268.hakushu-ib
+
+real	0m0.747s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector 
+499269.hakushu-ib
+
+real	0m0.582s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499270.hakushu-ib
+
+real	0m0.733s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector 
+499271.hakushu-ib
+
+real	0m0.612s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499272.hakushu-ib
+
+real	0m0.842s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector 
+499273.hakushu-ib
+
+real	0m0.612s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499274.hakushu-ib
+
+real	0m0.767s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector 
+499275.hakushu-ib
+
+real	0m0.613s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499276.hakushu-ib
+
+real	0m0.748s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector 
+499277.hakushu-ib
+
+real	0m0.643s
+user	0m0.000s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499278.hakushu-ib
+
+real	0m0.793s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector 
+499279.hakushu-ib
+
+real	0m0.661s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499280.hakushu-ib
+
+real	0m0.750s
+user	0m0.004s
+sys	0m0.000s
+Rescale bred vector 
+499281.hakushu-ib
+
+real	0m0.840s
+user	0m0.004s
+sys	0m0.004s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499282.hakushu-ib
+
+real	0m0.754s
+user	0m0.004s
+sys	0m0.004s
+Rescale bred vector 
+499283.hakushu-ib
+
+real	0m0.658s
+user	0m0.004s
+sys	0m0.008s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499284.hakushu-ib
+
+real	0m0.722s
+user	0m0.000s
+sys	0m0.004s
+Rescale bred vector 
+499285.hakushu-ib
+
+real	0m0.569s
+user	0m0.004s
+sys	0m0.000s
+Evolve bred vector 
+PN will use 0001 member ad bdy, PP will use 0002 member as bdy
+499286.hakushu-ib
+
+real	0m0.661s
+user	0m0.000s
+sys	0m0.008s
+Rescale bred vector 
+499287.hakushu-ib

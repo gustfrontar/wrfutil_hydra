@@ -662,6 +662,8 @@ iprh=0
         IF( hdxf(iobs,i) .GT. minref)THEN
            hdxf(iobs,i)=10*log10(hdxf(iobs,i)) 
            rainratio=rainratio+1.0d0
+        ELSEIF( hdxf(iobs,i) == minref )THEN
+           hdxf(iobs,i)=minrefdbz
         !ELSE
         !   hdxf(iobs,i)=minrefdbz
         ENDIF
@@ -672,7 +674,7 @@ iprh=0
      IF( rainratio .GE. rainratio_threshold .AND. value(iobs) .GT. minrefdbz )THEN
          ir=ir+1
          DO i=1,nmember  !Convert all pseudo rh values to minimum reflectivity.
-           IF( hdxf(iobs,i) .LE. minref )THEN
+           IF( hdxf(iobs,i) .LE. minrefdbz )THEN
              hdxf(iobs,i)=minrefdbz
            ENDIF
          ENDDO
@@ -682,7 +684,7 @@ iprh=0
             !This will be a pseudo rh observation
             iprh=iprh+1
             DO i=1,nmember  
-              IF( hdxf(iobs,i) .LE. minref )THEN
+              IF( hdxf(iobs,i) .LT. minrefdbz )THEN
                 hdxf(iobs,i)=hdxf(iobs,i)+1000.0d0 !Restore the rh value.
               ELSE
                 hdxf(iobs,i)=1.0d0 !If the member has reflectivity assume 100% rh.
@@ -703,7 +705,7 @@ iprh=0
      IF( value(iobs) == minrefdbz .AND. rainratio .GT. 0.0d0 )THEN
          izeroref = izeroref + 1
          DO i=1,nmember  !Convert all pseudo rh values to minimum reflectivity.
-           IF( hdxf(iobs,i) .LE. minref )THEN
+           IF( hdxf(iobs,i) .LE. minrefdbz )THEN
              hdxf(iobs,i)=minrefdbz
            ENDIF
          ENDDO
