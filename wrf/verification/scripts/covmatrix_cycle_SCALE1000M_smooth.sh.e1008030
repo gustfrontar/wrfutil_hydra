@@ -1,0 +1,10 @@
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+forrtl: error (78): process killed (SIGTERM)
+Image              PC                Routine            Line        Source             
+covariance_matrix  00000000004469AA  Unknown               Unknown  Unknown
+libpthread-2.22.s  00002AAAAB37FB10  Unknown               Unknown  Unknown
+covariance_matrix  0000000000420E05  covariance_matrix         557  covariance_matrix_tools.f90
+covariance_matrix  00000000004140F1  MAIN__                    111  covariance_matrix.f90
+covariance_matrix  00000000004036DE  Unknown               Unknown  Unknown
+libc-2.22.so       00002AAAAB7B06E5  __libc_start_main     Unknown  Unknown
+covariance_matrix  00000000004035E9  Unknown               Unknown  Unknown

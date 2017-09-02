@@ -295,7 +295,7 @@ tmpundefmask=.true. !Do not mask output fields.
   DO ii=1,nx
    DO jj=1,ny
     DO kk=1,nz
-      if( .not. undefmask(ii,jj,kk) ) then
+      if( undefmask(ii,jj,kk) ) then
 
        dvar=( varmax(ii,jj,kk)-varmin(ii,jj,kk) )/real(nbins,r_sngl)
 
