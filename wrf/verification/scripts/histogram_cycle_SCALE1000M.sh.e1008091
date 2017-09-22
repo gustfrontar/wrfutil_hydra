@@ -1,0 +1,257 @@
+rm: cannot remove '/home/jruiz/TMP/OsakaPAR_1km_control1000m_smallrandompert_noda_hist//fcst?????.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m5.472s
+user	13m2.039s
+sys	0m9.586s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m16.906s
+user	16m17.656s
+sys	1m24.760s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m13.810s
+user	16m7.772s
+sys	1m41.495s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m8.278s
+user	13m6.812s
+sys	0m8.816s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m11.505s
+user	10m55.367s
+sys	0m8.372s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m21.194s
+user	15m53.464s
+sys	1m38.032s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m22.897s
+user	16m30.261s
+sys	2m1.038s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m4.695s
+user	12m29.621s
+sys	0m8.535s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m0.298s
+user	12m42.753s
+sys	0m7.470s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m21.713s
+user	14m50.828s
+sys	1m14.089s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m25.108s
+user	14m43.543s
+sys	1m55.101s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m26.076s
+user	13m58.926s
+sys	0m57.611s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m16.283s
+user	14m18.579s
+sys	1m23.592s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m16.894s
+user	14m45.356s
+sys	1m43.546s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m26.558s
+user	14m28.994s
+sys	0m54.615s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	0m39.696s
+user	5m54.997s
+sys	0m43.359s
+mv: cannot stat 'covindex*.grd': No such file or directory
+mv: cannot stat 'corrindex*.grd': No such file or directory
+mv: cannot stat 'corrdistindex*.grd': No such file or directory
+mv: cannot stat 'cov_profile*.txt': No such file or directory
+mv: cannot stat 'corr_profile*.txt': No such file or directory
+mv: cannot stat 'num_profile*.txt': No such file or directory
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
