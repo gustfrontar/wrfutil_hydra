@@ -1,5 +1,6 @@
 #PBS -l nodes=@@NODES@@:ppn=@@PPN@@
 #PBS -S /bin/bash
+#PBS -l walltime=100:00:00
 
 #=======================================================================
 # This script runs multiple data assimilation cycles.

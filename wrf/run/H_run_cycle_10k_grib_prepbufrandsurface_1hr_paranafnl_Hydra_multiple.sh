@@ -18,7 +18,7 @@
 CDIR=`pwd`
 
 #CONFIGURATION
-CONFIGURATION=test    #Define a experiment configuration
+CONFIGURATION=control_paranafnl10k_60m_prepbufrandsurface_1hr_grib_Hydra    #Define a experiment configuration
 MCONFIGURATION=machine_radar60m_multiple_Hydra             #Define a machine configuration (number of nodes, etc)
 
 RESTART=0

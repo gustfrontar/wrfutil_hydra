@@ -1300,7 +1300,7 @@ while [ $my_redo -le $max_redo  ] ; do
  #Prepare and submit the jobs
 
  if [ $RUN_ONLY_MEAN -eq 1 ] ; then
-  INIMEMBER=$MEANMEMBER
+  SINIMEMBER=$MEANMEMBER
   ENDMEMBER=$MEANMEMBER
  else
   INIMEMBER=1
@@ -1581,9 +1581,10 @@ run_forecast_sub () {
       JOB=1
       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
-         sleep 0.3
+         sleep 0.5
          if [ $SYSTEM -eq 1 ] ; then
            $MPIBIN -np ${PROC_PER_MEMBER} -f $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_REAL.sh $WORKDIR/WRF${MEM}/ > $WORKDIR/WRF${MEM}/real.log & 
+           #$MPIBIN -np ${PROC_PER_MEMBER} -f $PBS_NODEFILE $WORKDIR/WRF_REAL.sh $WORKDIR/WRF${MEM}/ > $WORKDIR/WRF${MEM}/real.log &
          fi
          if [  $SYSTEM -eq 0 ] ; then
            $MPIBIN -np ${NODE_PER_MEMBER} --vcoordfile $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_REAL.sh $WORKDIR/WRF${MEM}/ > $WORKDIR/WRF${MEM}/real.log & 
@@ -1600,9 +1601,10 @@ run_forecast_sub () {
        JOB=1
        while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ];do
        MEM=`ens_member $M `
-         sleep 0.3
+         sleep 0.5
          if [ $SYSTEM -eq 1 ] ; then
            $MPIBIN -np 1 -f $WORKDIR/machinefile.${JOB}  $WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM} &
+           #$MPIBIN -np 1 -f $PBS_NODEFILE  $WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM} &
          fi
          if [  $SYSTEM -eq 0 ] ; then
            echo ${NODELIST[$MYNODE]} > ./tmp_machinefile
@@ -1621,9 +1623,10 @@ run_forecast_sub () {
       JOB=1
       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
-         sleep 0.3 
+         sleep 0.5
          if [ $SYSTEM -eq 1 ] ; then
           $MPIBIN -np ${PROC_PER_MEMBER} -f ${WORKDIR}/machinefile.${JOB} ${WORKDIR}/WRF_WRF.sh ${WORKDIR}/WRF${MEM} > ${WORKDIR}/WRF${MEM}/wrf.log &  
+          #$MPIBIN -np 1 -f $PBS_NODEFILE  ${WORKDIR}/WRF_WRF.sh ${WORKDIR}/WRF${MEM} > ${WORKDIR}/WRF${MEM}/wrf.log &
          fi
          if [ $SYSTEM -eq 0 ] ; then
           $MPIBIN -np ${NODE_PER_MEMBER} --vcoordfile $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_WRF.sh $WORKDIR/WRF${MEM} > $WORKDIR/WRF${MEM}/wrf.log &
@@ -1652,7 +1655,6 @@ run_letkf_noqueue () {
       get_observations $TMPDIR/LETKF
 
       #Prepare and run the jobs
-
 
 #      local_script=$1
 

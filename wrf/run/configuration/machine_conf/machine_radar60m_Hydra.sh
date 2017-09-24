@@ -1,7 +1,7 @@
 #MACHINE CONFIGURATION
 GROUP=""
 SYSTEM=1  # 0 - K computer , 1 - qsub cluster
-PROC_PER_NODE=24    #K computer number of procs per node.
+PROC_PER_NODE=24    #computer number of procs per node.
 PROC_PER_MEMBER=4   #Number  of procs per ensemble members (torque)
 NODES_PER_MEMBER=1  #Number of nodes per ensemble member.
 PPSSERVER=tormenta  #Hostname of pps server (for perturbation generation and post processing)

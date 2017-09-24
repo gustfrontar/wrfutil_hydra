@@ -15,11 +15,11 @@
 # Modify below according to your environment
 #-----------------------------------------------------------------------
 #Get root dir
-CDIR=`pwd`
+TMPDIR=`pwd`
 
 #CONFIGURATION
-CONFIGURATION=test    #Define a experiment configuration
-MCONFIGURATION=machine_radar60m_multiple_Hydra             #Define a machine configuration (number of nodes, etc)
+CONFIGURATION=control_paranafnl10k_60m_prepbufrandsurface_1hr_grib_K    #Define a experiment configuration
+MCONFIGURATION=machine_radar60m_multiple_K             #Define a machine configuration (number of nodes, etc)
 
 RESTART=0
 RESTARTDATE=20091117000000
@@ -29,8 +29,8 @@ MYHOST=`hostname`
 PID=$$
 MYSCRIPT=${0##*/}
 
-CONFFILE=$CDIR/configuration/analysis_conf/${CONFIGURATION}.sh   
-MCONFFILE=$CDIR/configuration/machine_conf/${MCONFIGURATION}.sh
+CONFFILE=$TMPDIR/configuration/analysis_conf/${CONFIGURATION}.sh   
+MCONFFILE=$TMPDIR/configuration/machine_conf/${MCONFIGURATION}.sh
 
 if [ -e $CONFFILE ];then
 source $CONFFILE
@@ -48,6 +48,12 @@ fi
 
 #Load functions for LETKF-WRF cycle.
 source $UTIL
+
+echo '>>>'
+echo ">>> GET THE QUEUE"
+echo '>>>'
+
+QUEUE=`get_queue $TOTAL_NODES_FORECAST `
 
 echo '>>>'
 echo ">>> INITIALIZING WORK DIRECTORY AND OUTPUT DIRECTORY"
@@ -74,10 +80,10 @@ echo '>>>'
 
 get_domain
 
-edit_multiplecycle $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh
+edit_multiplecycle $TMPDIR/SCRIPTS/K_run_multiple_cycles.sh
 
 #Run multiple cycles with only one QSUB
-sub_and_wait $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh  
+###sub_and_wait $TMPDIR/SCRIPTS/K_run_multiple_cycles.sh  
 
 #Move experiment data to OUTPUTDIR
 
@@ -85,4 +91,3 @@ mv $TMPDIR/output/* $OUTPUTDIR
 
 echo "NORMAL END"
 
-#} > $my_log 2>&1

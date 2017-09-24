@@ -18,11 +18,11 @@
 CDIR=`pwd`
 
 #CONFIGURATION
-CONFIGURATION=test    #Define a experiment configuration
-MCONFIGURATION=machine_radar60m_multiple_Hydra             #Define a machine configuration (number of nodes, etc)
+CONFIGURATION=control_parana_newobs_60m_radar_grib_Hydra       #Define a experiment configuration
+MCONFIGURATION=machine_radar60m_multiple_Hydra          #Define a machine configuration (number of nodes, etc)
 
 RESTART=0
-RESTARTDATE=20091117000000
+RESTARTDATE=20091117201000
 RESTARTITER=10
 
 MYHOST=`hostname`
@@ -31,6 +31,7 @@ MYSCRIPT=${0##*/}
 
 CONFFILE=$CDIR/configuration/analysis_conf/${CONFIGURATION}.sh   
 MCONFFILE=$CDIR/configuration/machine_conf/${MCONFIGURATION}.sh
+
 
 if [ -e $CONFFILE ];then
 source $CONFFILE
@@ -55,7 +56,12 @@ echo '>>>'
 
 safe_init_outputdir $OUTPUTDIR
 
+#Start of the section that will be output to my log.
+#{
+
 safe_init_tmpdir $TMPDIR
+
+save_configuration $CDIR/$MYSCRIPT
 
 echo '>>>'                                           
 echo ">>> COPYING DATA TO WORK DIRECTORY "          
@@ -65,8 +71,6 @@ copy_data
 
 copy_data_multiplecycles
 
-save_configuration $CDIR/$MYSCRIPT
-
 #Generating the domain requires acces to GEOG database.
 echo '>>>'                                           
 echo ">>> GENERATING DOMAIN "          
@@ -74,15 +78,16 @@ echo '>>>'
 
 get_domain
 
+
 edit_multiplecycle $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh
 
 #Run multiple cycles with only one QSUB
 sub_and_wait $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh  
 
 #Move experiment data to OUTPUTDIR
-
 mv $TMPDIR/output/* $OUTPUTDIR
 
 echo "NORMAL END"
+
 
 #} > $my_log 2>&1

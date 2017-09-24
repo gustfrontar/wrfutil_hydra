@@ -14,7 +14,7 @@ import os
 
 basedir='/home/jruiz/share/EXPERIMENTS/experiments_large_ensemble/data/'
 
-expname = '/OsakaPAR_1km_control1000m_smallrandompert_new/'
+expname = '/OsakaPAR_1km_control1000m_smallrandompert_noda/'
 
 plotbasedir=basedir + expname + '/plots/'
 
@@ -44,7 +44,7 @@ if not os.path.exists(plotbasedir):
    os.mkdir(plotbasedir)
 
 #Defini initial and end times using datetime module.
-itime = dt.datetime(2013,7,13,5,11,00)  #Initial time.
+itime = dt.datetime(2013,7,13,5,39,00)  #Initial time.
 etime = dt.datetime(2013,7,13,5,39,00)  #End time.
 
 #Define the delta.
@@ -146,7 +146,7 @@ while ( ctime <= etime ):
   print("plotting the kld")
   varname= 'kld_' + key
   myrange='fixed'
-  scale_max=0.5
+  scale_max=0.15
   scale_min=0
 
   print('Kld for Var ',key,' ',(np.nanmin(my_kld)),np.nanmax(my_kld))

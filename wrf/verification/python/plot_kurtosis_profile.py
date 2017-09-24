@@ -14,7 +14,7 @@ import os
 
 basedir='/home/jruiz/share/EXPERIMENTS/experiments_large_ensemble/data/'
 
-expname = '/OsakaPAR_1km_control1000m_smallrandompert_new/'
+expname = '/OsakaPAR_1km_control1000m_smallrandompert_noda/'
 
 plotbasedir=basedir + expname + '/plots/'
 
@@ -258,10 +258,12 @@ for key in vprofile  :
     plt.ylabel('Pressure')
     plt.xlabel('Time')
 
-    plt.show()
+    #plt.show()
 
     print( 'Generationg the following figure : ' + 'Figure_kurt_profile_rain_var_' + key + '.png' )
     plt.savefig( my_plotdir +  'Figure_kurt_profile_var_' + key + '.png' )
+
+    plt.close()
 
     my_profile=vprofile[key] 
 
@@ -280,7 +282,9 @@ for key in vprofile  :
     plt.ylabel('Pressure')
     plt.xlabel('Time')
 
-    plt.show()
+    #plt.show()
 
     print( 'Generationg the following figure : ' + 'Figure_kurt_profile_norain_var_' + key + '.png' )
     plt.savefig( my_plotdir +  'Figure_kurt_profile_var_' + key + '.png' )
+
+    plt.close()

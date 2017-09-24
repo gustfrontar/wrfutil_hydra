@@ -4,7 +4,7 @@ import os.path
 
 default_undef_val=1.0e33
 
-def read_data_direct(inputfilename,nx,ny,nz,dtypein,undef_in=default_undef_val,undef_out=default_undef_val):
+def read_data_direct(inputfilename,nx,ny,nz,dtypein,undef_in=default_undef_val,undef_out=default_undef_val,seq_acces=False):
 #dtypein is the native input data format.
 #>f32 for big endian data format with single precission.
 #f32 for little endian data with single precission ... and so on.
@@ -13,19 +13,28 @@ def read_data_direct(inputfilename,nx,ny,nz,dtypein,undef_in=default_undef_val,u
 
      f=open(inputfilename,'r')
 
-     field=np.fromfile(inputfilename,dtype=dtypein,count=nx*ny*nz)
+     if ( seq_acces ) :
 
-     #print(nx)
-     #print(ny)
-     #print(nz)
-     #print(field)
+       field=np.ones((nx,ny,nz))*undef_out    
 
-     field=np.reshape(field,(nz,nx,ny))  #Get a 3D-array
-     field=field.transpose(1, 2, 0)      #Reorder array dimensions to (lon,lat,z)
+       for ii in range(0,nz) :
+         nada=np.fromfile(f,dtype='>i4',count=1)
+         tmpfield=np.fromfile(f,dtype=dtypein,count=nx*ny)
+         nada=np.fromfile(f,dtype='>i4',count=1)
+       
+         field[:,:,ii]=np.reshape(tmpfield,(nx,ny))
+       
+     else :
+       field=np.fromfile(f,dtype=dtypein,count=nx*ny*nz)
+
+       field=np.reshape(field,(nz,nx,ny))  #Get a 3D-array
+       field=field.transpose(1, 2, 0)      #Reorder array dimensions to (lon,lat,z)
 
      field[ abs(field) > undef_in ]=undef_out #Use the undef val of this module instead of the original undef value.
 
    else :
+
+     print('Not found ',inputfilename)
 
      #If the file does not exist we will consider the entire data volume as missing data.
  
@@ -130,20 +139,13 @@ def read_data_scale_2(filename,nx,ny,nz,ctl_vars,ctl_inirecord,ctl_endrecord,dty
    ivar=0
    for my_var in ctl_vars   :
 
-     my_data[my_var]=tmp_data[:,:,ctl_inirecord[ivar]:ctl_endrecord[ivar]+1]
+      my_data[my_var]=tmp_data[:,:,ctl_inirecord[ivar]:ctl_endrecord[ivar]+1]
 
-     ivar=ivar+1
+      ivar=ivar+1
 
    return my_data
 
 
-
-
-
-
-
-
-       
 
 
 

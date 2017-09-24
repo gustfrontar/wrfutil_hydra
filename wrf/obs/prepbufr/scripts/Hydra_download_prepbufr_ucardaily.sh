@@ -10,9 +10,9 @@ DATASRC=2 # 1:NOAA/NOMADS , 2:UCAR/DSS
 export http_proxy="proxy.fcen.uba.ar:8080"
 
 # Initial time
-IDATE=20091101000000
+IDATE=20170201000000
 # Final time
-EDATE=20091130180000
+EDATE=20170228180000
 # Frequency
 DF=86400   #file frequency in seconds
 
