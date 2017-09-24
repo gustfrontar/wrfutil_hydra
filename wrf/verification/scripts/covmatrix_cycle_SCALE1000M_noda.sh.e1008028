@@ -1,0 +1,209 @@
+rm: cannot remove '/home/jruiz/TMP/OsakaPAR_1km_control1000m_smallrandompert_noda//fcst?????.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	322m44.216s
+user	5516m27.263s
+sys	86m12.172s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	324m59.271s
+user	5556m59.979s
+sys	81m49.303s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	313m26.165s
+user	5375m40.100s
+sys	68m39.877s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	327m18.762s
+user	5624m6.227s
+sys	80m46.855s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	330m51.890s
+user	5629m39.274s
+sys	73m32.199s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	315m5.492s
+user	5407m16.679s
+sys	78m54.695s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	331m7.329s
+user	5680m28.953s
+sys	69m20.816s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	334m24.682s
+user	5680m20.408s
+sys	85m2.608s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	324m38.834s
+user	5568m57.174s
+sys	76m32.320s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	325m48.393s
+user	5599m19.868s
+sys	77m35.368s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	195m36.567s
+user	3350m42.124s
+sys	20m21.272s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	335m49.553s
+user	5755m47.049s
+sys	79m22.966s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	329m14.346s
+user	5574m12.252s
+sys	82m22.846s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	335m16.607s
+user	5715m53.680s
+sys	61m47.135s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	326m47.026s
+user	5539m23.425s
+sys	80m4.313s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory
+OMP: Warning #181: OMP_STACKSIZE: ignored because KMP_STACKSIZE has been defined
+
+real	1m42.301s
+user	16m17.059s
+sys	1m7.496s
+mv: cannot stat 'covmat_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bssprd_x???y???z???.grd': No such file or directory
+mv: cannot stat 'impact_x???y???z???.grd': No such file or directory
+mv: cannot stat 'bsmean_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histgr_x???y???z???.grd': No such file or directory
+mv: cannot stat 'histogram.grd': No such file or directory
+mv: cannot stat 'minvar.grd': No such file or directory
+mv: cannot stat 'maxvar.grd': No such file or directory

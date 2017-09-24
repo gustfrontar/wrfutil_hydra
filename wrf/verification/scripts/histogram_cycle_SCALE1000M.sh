@@ -10,7 +10,7 @@ UTIL=/data10/jruiz/LETKF_WRF/wrf/run/util.sh
 
 DATAPATH=/data10/jruiz/EXPERIMENTS/
 
-EXPERIMENT=OsakaPAR_1km_control1000m_smallrandompert_new
+EXPERIMENT=OsakaPAR_1km_control1000m_smallrandompert_noda
 
 TYPE="analgp"
 
@@ -19,7 +19,7 @@ ENDDATE=20130713054000
 
 INCREMENT=60   #Time resolution in seconds.
 
-MAX_RUNNING=20        #Number of threads
+MAX_RUNNING=40        #Number of threads
 MEMBER=1000             #Ensemble size
 BOOTSTRAP=.false.
 BOOTSTRAP_SAMPLES=100
@@ -39,7 +39,7 @@ COMPUTEINDEX=.false.
 DELTA=40
 BASE_VARS="'qhydro','u','v','tk'"
 COV_VARS="'qhydro','u','v'"
-TMPDIR=/home/jruiz/TMP/$EXPERIMENT/                      #Temporary work directory.
+TMPDIR=/home/jruiz/TMP/${EXPERIMENT}_hist/                      #Temporary work directory.
 
 ulimit -s unlimited
 export OMP_STACKSIZE=500M
@@ -108,8 +108,6 @@ CDATE=$INIDATE
 
 
    time ./covariance_matrix.exe #> cov.log 
-
-   exit
 
    mv covindex*.grd       $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/
    mv corrindex*.grd      $DATAPATH/$EXPERIMENT/$CDATE/$TYPE/   
