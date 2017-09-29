@@ -2385,7 +2385,7 @@ while [ $M -le $ENDMEMBER ] ; do
         ssh ${NODELIST[$MYNODE]} "$local_script $MEM $DATE1 $DATE2 > $PERTMETEMDIR/perturb_met_em${MEM}.log 2>&1 " & 
    
       fi
-      if [ $SYSTEM -eq 1 ] ; then
+      if [ $SYSTEM -eq 0 ] ; then
 
         echo ${NODELIST[$MYNODE]} > ./tmp_machinefile 
         

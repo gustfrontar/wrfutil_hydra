@@ -1,14 +1,12 @@
-#!/bin/bash
+#PBS -l nodes=2:ppn=24
+#PBS -S /bin/bash
+#PBS -l walltime=100:00:00
+
 #=======================================================================
-# Driver Script for multiple cycle qsub script.
-#   To run the WRF-LETKF in a qsub cluster.
-#   This scripts prepares all the data needed to run the letkf cycle 
-#   then submmits the job to the torque queu
-#   New developments:
-#   -WPS is run in pre/post nodes and real and wrf are run in computation nodes.
-#   -Letkf incorporates relaxation to prior inflation and eigen exa
-#    matrix computations. 
-#   -LETKF uses NETCDF IO.
+# This script runs multiple data assimilation cycles.
+# The driver script sets the TMP directory with all the required data
+# and this scripts executes multiple data assimilation cycle and the output
+# goes to the TMP directory.
 #=======================================================================
 #set -x
 #-----------------------------------------------------------------------
@@ -17,72 +15,8 @@
 #Get root dir
 CDIR=`pwd`
 
-#CONFIGURATION
-CONFIGURATION=test    #Define a experiment configuration
-MCONFIGURATION=machine_radar60m_multiple_Hydra             #Define a machine configuration (number of nodes, etc)
+cd /home/jruiz/share/LETKF_WRF/wrf/run
 
-RESTART=0
-RESTARTDATE=20091117000000
-RESTARTITER=10
+source util.sh
 
-MYHOST=`hostname`
-PID=$$
-MYSCRIPT=${0##*/}
-
-CONFFILE=$CDIR/configuration/analysis_conf/${CONFIGURATION}.sh   
-MCONFFILE=$CDIR/configuration/machine_conf/${MCONFIGURATION}.sh
-
-if [ -e $CONFFILE ];then
-source $CONFFILE
-else
-echo "CAN'T FIND CONFIGURATION FILE $CONFFILE "
-exit
-fi
-
-if [ -e $MCONFFILE ];then
-source $MCONFFILE
-else
-echo "CAN'T FIND MACHINE CONFIGURATION FILE $MCONFFILE "
-exit
-fi
-
-#Load functions for LETKF-WRF cycle.
-source $UTIL
-
-echo '>>>'
-echo ">>> INITIALIZING WORK DIRECTORY AND OUTPUT DIRECTORY"
-echo '>>>'
-
-safe_init_outputdir $OUTPUTDIR
-
-safe_init_tmpdir $TMPDIR
-
-echo '>>>'                                           
-echo ">>> COPYING DATA TO WORK DIRECTORY "          
-echo '>>>'  
-                                     
-copy_data
-
-copy_data_multiplecycles
-
-save_configuration $CDIR/$MYSCRIPT
-
-#Generating the domain requires acces to GEOG database.
-echo '>>>'                                           
-echo ">>> GENERATING DOMAIN "          
-echo '>>>' 
-
-get_domain
-
-edit_multiplecycle $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh
-
-#Run multiple cycles with only one QSUB
-sub_and_wait $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh  
-
-#Move experiment data to OUTPUTDIR
-
-mv $TMPDIR/output/* $OUTPUTDIR
-
-echo "NORMAL END"
-
-#} > $my_log 2>&1
+cat $PBS_NODEFILE
