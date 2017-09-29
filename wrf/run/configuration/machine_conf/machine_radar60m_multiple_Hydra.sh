@@ -8,8 +8,6 @@ PPSSERVER=tormenta  #Hostname of pps server (for perturbation generation and pos
 MAX_RUNNING=24      #Maximum number of simultaneous processes running in PPS servers.
 ELAPSE="00:10:00"   #MAXIMUM ELAPSE TIME (MODIFY ACCORDING TO THE SIZE OF THE DOMAIN AND THE RESOLUTION)
 MAX_BACKGROUND_JOBS=128
-LD_LIBRARY_PATH_ADD="/home/jruiz/mpich_intel/lib/:/opt/intel/lib/intel64"
-PATH_ADD="/home/jruiz/mpich_intel/bin/"
 
 TOTAL_NODES_FORECAST=10
 TOTAL_NODES_LETKF=10

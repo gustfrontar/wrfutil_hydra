@@ -7,8 +7,6 @@ PPSSERVER=pps2      #Hostname of pps server (for perturbation generation and pos
 MAX_RUNNING=1       #Maximum number of simultaneous processes running in PPS servers.
 ELAPSE="04:00:00"   #MAXIMUM ELAPSE TIME (MODIFY ACCORDING TO THE SIZE OF THE DOMAIN AND THE RESOLUTION)
 MAX_BACKGROUND_JOBS=128
-LD_LIBRARY_PATH_ADD="/opt/intel/lib/intel64"
-PATH_ADD="/home/ra000015/a03094/libintel/bin/:/home/ra000015/a03094/grads-2.0.1.oga.1/Contents/:/opt/intel/bin/"
 
 TOTAL_NODES_FORECAST=40
 TOTAL_NODES_LETKF=40

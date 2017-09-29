@@ -7,8 +7,6 @@ PPSSERVER=tormenta  #Hostname of pps server (for perturbation generation and pos
 MAX_RUNNING=2       #Maximum number of simultaneous processes running in PPS servers.
 ELAPSE="00:10:00"   #MAXIMUM ELAPSE TIME (MODIFY ACCORDING TO THE SIZE OF THE DOMAIN AND THE RESOLUTION)
 MAX_BACKGROUND_JOBS=128
-LD_LIBRARY_PATH_ADD=""
-PATH_ADD=""
 
 TOTAL_NODES_FORECAST=2
 TOTAL_NODES_LETKF=2
