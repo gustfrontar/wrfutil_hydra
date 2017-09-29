@@ -1,5 +1,5 @@
 #KALMAN FILTER CONFIGURATION
-DOMAINCONF=PARANA_10KM                  #Define a domain
+DOMAINCONF=CORDOBA_10KM                  #Define a domain
 LETKFNAMELIST=control                   #Define a letkf namelist template
 
 MEMBER=60        #Number of ensemble members.
@@ -26,11 +26,11 @@ NVERTDB=38   #Number of vertical levels in initial and boundary conditions pertu
 MM=$MEMBER                      #Variable for iteration limits.
 MEANMEMBER=`expr $MEMBER + 1 `  #This is the member ID corresponding to the ensemble mean.
 
-WINDOW=3600            #Assimilation frequency. (seconds)
-WINDOW_START=1800      #Window start (seconds from forecast initialization)     
-WINDOW_END=3600        #Window end   (seconds from forecast initialization)
-WINDOW_FREC=1800       #Output frequency within window (seconds) should be the same as the maximum observation frequency.
-ASSIMILATION_FREC=3600 #Assimilation frequency  (seconds)
+WINDOW=10800        #Assimilation frequency. (seconds)
+WINDOW_START=3600   #Window start (seconds from forecast initialization)     
+WINDOW_END=10800    #Window end   (seconds from forecast initialization)
+WINDOW_FREC=3600    #Output frequency within window (seconds) should be the same as the maximum observation frequency.
+ASSIMILATION_FREC=10800 #Assimilation frequency  (seconds)
 NSLOTS=`expr $WINDOW_END \/ $WINDOW_FREC - $WINDOW_START \/ $WINDOW_FREC  + 1 `        #Number of time slots. 
 NBSLOT=`expr $ASSIMILATION_FREC \/ $WINDOW_FREC - $WINDOW_START \/ $WINDOW_FREC + 1 `  #Time slot corresponding to the analysis.
 if [ $NBSLOT -lt 10 ] ; then
@@ -63,13 +63,13 @@ INTERP_METHOD=1
 ENABLE_UPP=1           #1 - generate grib sigma files (for da downscalling) , 0 - do not generate grib sigma files.
 
 ### LETKF setting
-OBS="PREPBUFR_AND_SURFACE"                                 # Name of conventional observations folder.
-RADAROBS="LETKF_SO15KM_V3"                                 # Name of radar observation folder.
+OBS=""                                                     # Name of conventional observations folder.
+RADAROBS=""                                                # Name of radar observation folder.
 EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION}                # name of experiment
 
 ### initial date setting
-IDATE=20091117000000
-EDATE=20091118000000     #20091117230000
+IDATE=20170208000000
+EDATE=20170210000000     #20091117230000
 
 #### DATA
 OBSDIR=${HOMEDIR}/DATA/OBS/$OBS/                                                          # Folder where conventional observations are.
@@ -78,16 +78,16 @@ RADAROBSDIR=${HOMEDIR}/DATA/OBS/$RADAROBS/                                      
 TMPDIR=${HOME}/TMP/$EXP/                                                                  # Temporal work directory (should be accessible for all computation nodes)
 OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                    # Where results will be stored.
 GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/SA/                                                # Folder where bdy and initial grib files are located.
-GRIBTABLE="Vtable.GFS"                                                                    # Bdy and init data source Vtable name.
+GRIBTABLE="Vtable.GFSNEW"                                                                 # Bdy and init data source Vtable name.
 MEMBER_BDY=1                                                                              # Total number of boundary conditions ensemble members.
 MEANMEMBER_BDY=1                                                                          # Boundary conditions ensemble member corresponding to the ensemble mean.
 
-PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                    # Folder where data for perturbing bdy are located.
+PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/00001/                              # Folder where data for perturbing bdy are located.
 PERTGRIBTABLE="Vtable.CFSR2_web"                                                          # Bdy perturbation source vtable name.
-GEOG=/share/GEOG/                                                                         # Folder where WPS GEOG dataset is located.
+GEOG=/share/GEOG/                                                 # Folder where WPS GEOG dataset is located.
 
 #INITIAL AND BOUNDARY PERTURBATIONS
-AMP_FACTOR="0.1"             #Perturbation scale factor.
+AMP_FACTOR="0.1"              #Perturbation scale factor.
 RANDOM_AMP_FACTOR="0.0"       #Random perturbation scale factor.
 PERTURB_BOUNDARY=1            #Wether boundary conditions are going to be perturbed.
 PERTURB_ATMOSPHERE=".true."   #Wether atmospheric conditions will be perturbed (boundary and first cycle)
@@ -109,7 +109,7 @@ PERTURB_WIND_SCLV="5000d0"    #WIND random perturbation vertical scale
 #Random dates for boundary perturbations.
 INIPERTDATE=20060101000000    #Initial date in grib database (used for perturbing initial and boundary conditions)
 ENDPERTDATE=20091231180000    #Final date in grib database (used for perturbing initial and boundary conditions)
-PERTREFDATE=20091117000000    #At this date the initial perturbation dates will be taken. This date is used to keep consisntency among the perturbations
+PERTREFDATE=20170208000000    #At this date the initial perturbation dates will be taken. This date is used to keep consisntency among the perturbations
                               #used in forecast and analysis experiments. This date must be previous or equal to IDATE.
 INPUT_PERT_DATES_FROM_FILE=0  #0 - generate a new set of random dates, 1 - read random dates from a file. 
 INI_PERT_DATE_FILE=${HOMEDIR}/DATA/INITIAL_RANDOM_DATES/initial_perturbation_dates_60m  #List of initial random dates.

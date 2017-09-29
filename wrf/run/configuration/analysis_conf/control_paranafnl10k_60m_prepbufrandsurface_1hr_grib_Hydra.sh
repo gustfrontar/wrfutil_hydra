@@ -26,10 +26,10 @@ NVERTDB=38   #Number of vertical levels in initial and boundary conditions pertu
 MM=$MEMBER                      #Variable for iteration limits.
 MEANMEMBER=`expr $MEMBER + 1 `  #This is the member ID corresponding to the ensemble mean.
 
-WINDOW=3600            #Assimilation frequency. (seconds)
-WINDOW_START=1800      #Window start (seconds from forecast initialization)     
-WINDOW_END=3600        #Window end   (seconds from forecast initialization)
-WINDOW_FREC=1800       #Output frequency within window (seconds) should be the same as the maximum observation frequency.
+WINDOW=3600         #Assimilation frequency. (seconds)
+WINDOW_START=3600   #Window start (seconds from forecast initialization)     
+WINDOW_END=3600     #Window end   (seconds from forecast initialization)
+WINDOW_FREC=3600    #Output frequency within window (seconds) should be the same as the maximum observation frequency.
 ASSIMILATION_FREC=3600 #Assimilation frequency  (seconds)
 NSLOTS=`expr $WINDOW_END \/ $WINDOW_FREC - $WINDOW_START \/ $WINDOW_FREC  + 1 `        #Number of time slots. 
 NBSLOT=`expr $ASSIMILATION_FREC \/ $WINDOW_FREC - $WINDOW_START \/ $WINDOW_FREC + 1 `  #Time slot corresponding to the analysis.
@@ -64,7 +64,7 @@ ENABLE_UPP=1           #1 - generate grib sigma files (for da downscalling) , 0 
 
 ### LETKF setting
 OBS="PREPBUFR_AND_SURFACE"                                 # Name of conventional observations folder.
-RADAROBS="LETKF_SO15KM_V3"                                 # Name of radar observation folder.
+RADAROBS=""                                                # Name of radar observation folder.
 EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION}                # name of experiment
 
 ### initial date setting

@@ -78,7 +78,7 @@ TMPDIR=${HOMEDIR}/TMP/$EXP/                                                     
 OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                    # Where results will be stored.
 GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/ARGENTINA/                                         # Folder where bdy and initial grib files are located.
 GRIBTABLE="Vtable.GFS"                                                                    # Bdy and init data source Vtable name.
-PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                    # Folder where data for perturbing bdy are located.
+PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/00001/                                    # Folder where data for perturbing bdy are located.
 PERTGRIBTABLE="Vtable.CFSR"                                                               # Bdy perturbation source vtable name.
 GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/                                                 # Folder where WPS GEOG dataset is located.
 

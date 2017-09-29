@@ -14,7 +14,7 @@ import os
 
 basedir='/home/jruiz/share/EXPERIMENTS/experiments_large_ensemble/data/'
 
-expname = '/OsakaPAR_1km_control1000m_smallrandompert_new/'
+expname = '/OsakaPAR_1km_control1000m_smallrandompert_noda/'
 
 plotbasedir=basedir + expname + '/plots/'
 
@@ -175,8 +175,8 @@ while ( ctime <= etime ):
          my_kld=kld[key][buffer_zone_size:-buffer_zone_size,buffer_zone_size:-buffer_zone_size,ilev]
              
     
-         vprofile[key][ilev,it,0]=np.nansum(my_kld[rain_mask])
-         vprofile[key][ilev,it,1]=np.nansum(my_kld[norain_mask])
+         vprofile[key][ilev,it,0]=np.nanmean(my_kld[rain_mask])
+         vprofile[key][ilev,it,1]=np.nanmean(my_kld[norain_mask])
 
          ndata[key][ilev,it,0] = np.nansum( rain_mask )
          ndata[key][ilev,it,1] = np.nansum( norain_mask )
@@ -203,22 +203,22 @@ tmp[data_mask]=tmp[data_mask]/tmp_ndata[data_mask]
 tmp[np.logical_not(data_mask)]=np.nan
 wprofile[:,:,1]=tmp
 
-for key in vprofile :
-
-  #Get the average
-    tmp=vprofile[key][:,:,0]
-    tmp_ndata=ndata[key][:,:,0]
-    data_mask= tmp_ndata > 0 
-    tmp[data_mask]=tmp[data_mask]/tmp_ndata[data_mask]
-    tmp[np.logical_not(data_mask)]=np.nan
-    vprofile[key][:,:,0]=tmp
-
-    tmp=vprofile[key][:,:,1]
-    tmp_ndata=ndata[key][:,:,1]
-    data_mask= tmp_ndata > 0        
-    tmp[data_mask]=tmp[data_mask]/tmp_ndata[data_mask]
-    tmp[np.logical_not(data_mask)]=np.nan
-    vprofile[key][:,:,1]=tmp
+#for key in vprofile :
+#
+#  #Get the average
+#    tmp=vprofile[key][:,:,0]
+#    tmp_ndata=ndata[key][:,:,0]
+#    data_mask= tmp_ndata > 0 
+#    tmp[data_mask]=tmp[data_mask]/tmp_ndata[data_mask]
+#    tmp[np.logical_not(data_mask)]=np.nan
+#    vprofile[key][:,:,0]=tmp
+#
+#    tmp=vprofile[key][:,:,1]
+#    tmp_ndata=ndata[key][:,:,1]
+#    data_mask= tmp_ndata > 0        
+#    tmp[data_mask]=tmp[data_mask]/tmp_ndata[data_mask]
+#    tmp[np.logical_not(data_mask)]=np.nan
+#    vprofile[key][:,:,1]=tmp
 
 #Compute the time averaged moments and plot them.
 my_plotdir= plotbasedir + '/time_independent_plots/'
@@ -242,19 +242,22 @@ for key in vprofile  :
 
 
     plt.contourf(times,-np.log(levels),my_profile[:,:,0],cmap=plt.cm.get_cmap('YlGnBu'),vmax=var_range_max,vmin=0)
+    plt.colorbar()
     plt.yticks(-np.log(levels), levels_str, rotation='horizontal')
     plt.contour(times,-np.log(levels),wprofile[:,:,0],np.arange(1,5,1),vmax=5,vmin=1,)
-    plt.colorbar()
+    
 
 
     plt.ylabel('Pressure')
     plt.xlabel('Time')
 
-    plt.show()
+    #plt.show()
 
     print( 'Generationg the following figure : ' + 'Figure_kld_profile_rain_var_' + key + '.png' )
-    plt.savefig( my_plotdir +  'Figure_kld_profile_var_' + key + '.png' )
+    plt.savefig( my_plotdir +  'Figure_kld_profile_rain_var_' + key + '.png' )
 
+    plt.close()
+  
     my_profile=vprofile[key] 
 
     print("Plotting the KLD Vertical profile no rain")
@@ -272,7 +275,9 @@ for key in vprofile  :
     plt.ylabel('Pressure')
     plt.xlabel('Time')
 
-    plt.show()
+    #plt.show()
 
     print( 'Generationg the following figure : ' + 'Figure_kld_profile_norain_var_' + key + '.png' )
-    plt.savefig( my_plotdir +  'Figure_kld_profile_var_' + key + '.png' )
+    plt.savefig( my_plotdir +  'Figure_kld_profile_norain_var_' + key + '.png' )
+
+    plt.close()

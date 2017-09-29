@@ -27,9 +27,9 @@ MM=$MEMBER                      #Variable for iteration limits.
 MEANMEMBER=`expr $MEMBER + 1 `  #This is the member ID corresponding to the ensemble mean.
 
 WINDOW=3600            #Assimilation frequency. (seconds)
-WINDOW_START=1800      #Window start (seconds from forecast initialization)     
+WINDOW_START=3600      #Window start (seconds from forecast initialization)     
 WINDOW_END=3600        #Window end   (seconds from forecast initialization)
-WINDOW_FREC=1800       #Output frequency within window (seconds) should be the same as the maximum observation frequency.
+WINDOW_FREC=3600       #Output frequency within window (seconds) should be the same as the maximum observation frequency.
 ASSIMILATION_FREC=3600 #Assimilation frequency  (seconds)
 NSLOTS=`expr $WINDOW_END \/ $WINDOW_FREC - $WINDOW_START \/ $WINDOW_FREC  + 1 `        #Number of time slots. 
 NBSLOT=`expr $ASSIMILATION_FREC \/ $WINDOW_FREC - $WINDOW_START \/ $WINDOW_FREC + 1 `  #Time slot corresponding to the analysis.
@@ -84,7 +84,7 @@ MEANMEMBER_BDY=1                                                                
 
 PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                    # Folder where data for perturbing bdy are located.
 PERTGRIBTABLE="Vtable.CFSR2_web"                                                          # Bdy perturbation source vtable name.
-GEOG=/share/GEOG/                                                                         # Folder where WPS GEOG dataset is located.
+GEOG=/share/GEOG/                                                                          # Folder where WPS GEOG dataset is located.
 
 #INITIAL AND BOUNDARY PERTURBATIONS
 AMP_FACTOR="0.1"             #Perturbation scale factor.

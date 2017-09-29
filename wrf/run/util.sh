@@ -1304,7 +1304,7 @@ while [ $my_redo -le $max_redo  ] ; do
  #Prepare and submit the jobs
 
  if [ $RUN_ONLY_MEAN -eq 1 ] ; then
-  INIMEMBER=$MEANMEMBER
+  SINIMEMBER=$MEANMEMBER
   ENDMEMBER=$MEANMEMBER
  else
   INIMEMBER=1
@@ -1585,9 +1585,10 @@ run_forecast_sub () {
       JOB=1
       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
-         sleep 0.3
+         sleep 0.5
          if [ $SYSTEM -eq 1 ] ; then
            $MPIBIN -np ${PROC_PER_MEMBER} -f $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_REAL.sh $WORKDIR/WRF${MEM}/ > $WORKDIR/WRF${MEM}/real.log & 
+           #$MPIBIN -np ${PROC_PER_MEMBER} -f $PBS_NODEFILE $WORKDIR/WRF_REAL.sh $WORKDIR/WRF${MEM}/ > $WORKDIR/WRF${MEM}/real.log &
          fi
          if [  $SYSTEM -eq 0 ] ; then
            $MPIBIN -np ${NODE_PER_MEMBER} --vcoordfile $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_REAL.sh $WORKDIR/WRF${MEM}/ > $WORKDIR/WRF${MEM}/real.log & 
@@ -1604,9 +1605,10 @@ run_forecast_sub () {
        JOB=1
        while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ];do
        MEM=`ens_member $M `
-         sleep 0.3
+         sleep 0.5
          if [ $SYSTEM -eq 1 ] ; then
            $MPIBIN -np 1 -f $WORKDIR/machinefile.${JOB}  $WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM} &
+           #$MPIBIN -np 1 -f $PBS_NODEFILE  $WORKDIR/WRF_PRE.sh $WORKDIR/WRF${MEM} ${MEM} &
          fi
          if [  $SYSTEM -eq 0 ] ; then
            echo ${NODELIST[$MYNODE]} > ./tmp_machinefile
@@ -1625,9 +1627,10 @@ run_forecast_sub () {
       JOB=1
       while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
       MEM=`ens_member $M `
-         sleep 0.3 
+         sleep 0.5
          if [ $SYSTEM -eq 1 ] ; then
           $MPIBIN -np ${PROC_PER_MEMBER} -f ${WORKDIR}/machinefile.${JOB} ${WORKDIR}/WRF_WRF.sh ${WORKDIR}/WRF${MEM} > ${WORKDIR}/WRF${MEM}/wrf.log &  
+          #$MPIBIN -np 1 -f $PBS_NODEFILE  ${WORKDIR}/WRF_WRF.sh ${WORKDIR}/WRF${MEM} > ${WORKDIR}/WRF${MEM}/wrf.log &
          fi
          if [ $SYSTEM -eq 0 ] ; then
           $MPIBIN -np ${NODE_PER_MEMBER} --vcoordfile $WORKDIR/machinefile.${JOB} $WORKDIR/WRF_WRF.sh $WORKDIR/WRF${MEM} > $WORKDIR/WRF${MEM}/wrf.log &
@@ -1656,7 +1659,6 @@ run_letkf_noqueue () {
       get_observations $TMPDIR/LETKF
 
       #Prepare and run the jobs
-
 
 #      local_script=$1
 
@@ -1866,7 +1868,6 @@ echo "source $TMPDIR/SCRIPTS/util.sh                                            
 
 echo "ulimit -s unlimited                                                       " >> $local_script
 echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                     " >> $local_script
-#echo "export PATH=$LD_PATH_ADD:$PATH                                            " >> $local_script
 echo "mkdir -p $WORKDIR                                                         " >> $local_script
 echo "cd $WORKDIR                                                               " >> $local_script
 echo "rm -fr  $WORKDIR/geo_em*                                                  " >> $local_script
@@ -1962,7 +1963,6 @@ echo "set -x                                                                    
 echo "source $TMPDIR/SCRIPTS/util.sh                                              " >> $local_script
 echo "ulimit -s unlimited                                                         " >> $local_script
 echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                       " >> $local_script
-#echo "export PATH=$LD_PATH_ADD:$PATH                                              " >> $local_script
 echo "MEM=\$1                                                                     " >> $local_script
 echo "mkdir -p $METEMDIR/\${MEM}/WORK                                             " >> $local_script
 echo "cd $METEMDIR/\${MEM}/WORK                                                   " >> $local_script
@@ -2206,7 +2206,6 @@ echo "source $TMPDIR/SCRIPTS/util.sh                                            
 
 echo "ulimit -s unlimited                                                       " >> $local_script
 echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                     " >> $local_script
-#echo "export PATH=$LD_PATH_ADD:$PATH                                            " >> $local_script
 echo "mkdir -p \$WORKDIR                                                        " >> $local_script
 echo "cd \$WORKDIR                                                              " >> $local_script
 
@@ -2386,7 +2385,7 @@ while [ $M -le $ENDMEMBER ] ; do
         ssh ${NODELIST[$MYNODE]} "$local_script $MEM $DATE1 $DATE2 > $PERTMETEMDIR/perturb_met_em${MEM}.log 2>&1 " & 
    
       fi
-      if [ $SYSTEM -eq 1 ] ; then
+      if [ $SYSTEM -eq 0 ] ; then
 
         echo ${NODELIST[$MYNODE]} > ./tmp_machinefile 
         
@@ -2428,7 +2427,6 @@ arw_postproc_noqueue () {
   edit_namelist_arwpost $WORKDIR/namelist.ARWpost $CDATE $CDATE $ARWPOST_FREC
 
   echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
-#  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
   fi
@@ -2519,7 +2517,6 @@ arw_postproc_forecast_noqueue () {
   ARWPOST_FREC=$WINDOW_FREC
 
   echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
-#  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
   echo "source $TMPDIR/SCRIPTS/util.sh                                " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
@@ -2612,7 +2609,6 @@ if [  $ENABLE_UPP -eq 1 ];then
   local CDATEWRF=`date_in_wrf_format $CDATE `
 
   echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
-#  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
   fi
@@ -2711,7 +2707,6 @@ if [ $ENABLE_UPP -eq 1 ] ; then
   fi
 
   echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
-#  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
   echo "source $TMPDIR/SCRIPTS/util.sh                                " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
@@ -3148,7 +3143,6 @@ while [ $my_domain -le $MAX_DOM ] ; do
   #Create run script
   echo "#!/bin/bash                                                                         " >  ${WORKDIR}/tmp.sh
   echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                               " >> ${WORKDIR}/tmp.sh
-#  echo "export PATH=$LD_PATH_ADD:$PATH                                                      " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                                             " >> ${WORKDIR}/tmp.sh
   fi
@@ -3188,7 +3182,6 @@ if [ $ANALYSIS -eq 1  ] ; then
   #Create run script
   echo "#!/bin/bash                                                                         " >  ${WORKDIR}/tmp.sh
   echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                               " >> ${WORKDIR}/tmp.sh
-#  echo "export PATH=$LD_PATH_ADD:$PATH                                                      " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                                             " >> ${WORKDIR}/tmp.sh
   fi
@@ -3222,8 +3215,7 @@ if [ $ANALYSIS -eq 1  ] ; then
 
   #Create run script
   echo "#!/bin/bash                                                                         " >  ${WORKDIR}/tmp.sh
-  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                       " >> ${WORKDIR}/tmp.sh
-#  echo "export PATH=$LD_PATH_ADD:$PATH                                                      " >> ${WORKDIR}/tmp.sh
+  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                               " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                                             " >> ${WORKDIR}/tmp.sh
   fi

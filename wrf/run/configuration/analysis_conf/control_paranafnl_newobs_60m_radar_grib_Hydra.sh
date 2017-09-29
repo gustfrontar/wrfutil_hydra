@@ -1,5 +1,5 @@
 #KALMAN FILTER CONFIGURATION
-DOMAINCONF=PARANA_10KM                  #Define a domain
+DOMAINCONF=PARANA_2KM                   #Define a domain
 LETKFNAMELIST=control                   #Define a letkf namelist template
 
 MEMBER=60        #Number of ensemble members.
@@ -26,19 +26,19 @@ NVERTDB=38   #Number of vertical levels in initial and boundary conditions pertu
 MM=$MEMBER                      #Variable for iteration limits.
 MEANMEMBER=`expr $MEMBER + 1 `  #This is the member ID corresponding to the ensemble mean.
 
-WINDOW=3600            #Assimilation frequency. (seconds)
-WINDOW_START=1800      #Window start (seconds from forecast initialization)     
-WINDOW_END=3600        #Window end   (seconds from forecast initialization)
-WINDOW_FREC=1800       #Output frequency within window (seconds) should be the same as the maximum observation frequency.
-ASSIMILATION_FREC=3600 #Assimilation frequency  (seconds)
+WINDOW=300        #Assimilation frequency. (seconds)
+WINDOW_START=120  #Window start (seconds from forecast initialization)     
+WINDOW_END=420    #Window end   (seconds from forecast initialization)
+WINDOW_FREC=60    #Output frequency within window (seconds) should be the same as the maximum observation frequency.
+ASSIMILATION_FREC=300 #Assimilation frequency  (seconds)
 NSLOTS=`expr $WINDOW_END \/ $WINDOW_FREC - $WINDOW_START \/ $WINDOW_FREC  + 1 `        #Number of time slots. 
 NBSLOT=`expr $ASSIMILATION_FREC \/ $WINDOW_FREC - $WINDOW_START \/ $WINDOW_FREC + 1 `  #Time slot corresponding to the analysis.
 if [ $NBSLOT -lt 10 ] ; then
    NBSLOT=0$NBSLOT
 fi
-SIGMA_OBS="70.0d3"
+SIGMA_OBS="2.0d3"
 SIGMA_OBSV="0.2d0"
-SIGMA_OBSZ="5.0d3" 
+SIGMA_OBSZ="2.0d3" 
 SIGMA_OBST="3.0d0"
 GROSS_ERROR="4.0d0" 
 COV_INFL_MUL="1.1d0"
@@ -60,16 +60,16 @@ OUTVARS="'umet,vmet,W,QVAPOR,QCLOUD,QRAIN,QICE,QSNOW,QGRAUP,RAINNC,tk,u10m,v10m,
 ARWPOST_FREC=21600   # Post processing frequency (seconds)
 INPUT_ROOT_NAME='wrfout'
 INTERP_METHOD=1
-ENABLE_UPP=1           #1 - generate grib sigma files (for da downscalling) , 0 - do not generate grib sigma files.
+ENABLE_UPP=0
 
 ### LETKF setting
-OBS="PREPBUFR_AND_SURFACE"                                 # Name of conventional observations folder.
-RADAROBS="LETKF_SO15KM_V3"                                 # Name of radar observation folder.
+OBS=""                                                     # Name of conventional observations folder.
+RADAROBS="/LETKF_SO2KM_V3/"            # Name of radar observation folder.
 EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION}                # name of experiment
 
 ### initial date setting
-IDATE=20091117000000
-EDATE=20091118000000     #20091117230000
+IDATE=20091117180000
+EDATE=20091117230000     #20091117230000
 
 #### DATA
 OBSDIR=${HOMEDIR}/DATA/OBS/$OBS/                                                          # Folder where conventional observations are.
@@ -79,16 +79,13 @@ TMPDIR=${HOME}/TMP/$EXP/                                                        
 OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                    # Where results will be stored.
 GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/SA/                                                # Folder where bdy and initial grib files are located.
 GRIBTABLE="Vtable.GFS"                                                                    # Bdy and init data source Vtable name.
-MEMBER_BDY=1                                                                              # Total number of boundary conditions ensemble members.
-MEANMEMBER_BDY=1                                                                          # Boundary conditions ensemble member corresponding to the ensemble mean.
-
-PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                    # Folder where data for perturbing bdy are located.
+PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/00001/                              # Folder where data for perturbing bdy are located.
 PERTGRIBTABLE="Vtable.CFSR2_web"                                                          # Bdy perturbation source vtable name.
 GEOG=/share/GEOG/                                                                         # Folder where WPS GEOG dataset is located.
 
 #INITIAL AND BOUNDARY PERTURBATIONS
 AMP_FACTOR="0.1"             #Perturbation scale factor.
-RANDOM_AMP_FACTOR="0.0"       #Random perturbation scale factor.
+RANDOM_AMP_FACTOR="0.5"       #Random perturbation scale factor.
 PERTURB_BOUNDARY=1            #Wether boundary conditions are going to be perturbed.
 PERTURB_ATMOSPHERE=".true."   #Wether atmospheric conditions will be perturbed (boundary and first cycle)
 PERTURB_SST=".true."          #Wether SST will be perturbed.
@@ -123,7 +120,6 @@ WRFMODEL=$WRF/model/WRFV3.6/                   # WRF model that run in computing
 WRFMODELPPS=$WRF/model/WRFV3.6/                # WRF model that runs in pps server  (usually the same as the one for the computing nodes)
 WPS=$WRF/model/WPS3.6/                         # WRF model pre processing utilities (for pps server)
 ARWPOST=$WRF/model/ARWpost/                    # WRF model post processing utilities that run in computing nodes.
-UPP=$WRF/model/UPPV3.0/
 SPAWN=$WRF/spawn/
 MPIBIN=mpiexec
 
@@ -135,7 +131,6 @@ NAMELISTWRF=$WRF/run/configuration/domain_conf/$DOMAINCONF/namelist.input       
 NAMELISTWPS=$WRF/run/configuration/domain_conf/$DOMAINCONF/namelist.wps             #Namelist for WRF pre processing tools
 NAMELISTLETKF=$WRF/run/configuration/letkf_conf/letkf.namelist.$LETKFNAMELIST       #Namelist for LETKF
 NAMELISTARWPOST=$WRF/run/configuration/domain_conf/$DOMAINCONF/namelist.ARWpost     #Namelist for post-processing tools.
-NAMELISTUPP=$WRF/run/configuration/domain_conf/$DOMAINCONF/wrf_cntrl.parm           #Namelist for grib post-processing.
 NAMELISTOBSOPE=$WRF/run/configuration/letkf_conf/obsope.namelist.$OBSOPENAMELIST    #Namelist for observation operator.
 NAMELISTPERTMETEM=$WRF/run/configuration/letkf_conf/pertmetem.namelist.control      #Namelist for boundary conditions perturbation.
 

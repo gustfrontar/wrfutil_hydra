@@ -117,6 +117,108 @@ def norm_bv( data_p , data_n , norm_type='None' , smooth='None' , sigma='None',c
 
     return norm_mean , norm_max , norm_min  , norm  #Generate a tuple as output.
 
+def norm_bv_2( data_p , data_n , norm_type='None' , smooth='None' , sigma='None',cutoff='None' ):
+#Computes the bv in a similar way as the breeding fortran module does.
+#Sigma is the standard deviation of the gaussian filter in units of grid points.
+#Smooth is a filter option. Currently gaussian filter is supported.
+
+    if norm_type == 'None' : #UVT, UV or T 
+       norm_type = 'UVT'
+
+    tmp=np.array( data_p['U'] )
+    tmp_shape = np.shape( tmp )
+    nx=tmp_shape[0]
+    ny=tmp_shape[1]
+    nz=tmp_shape[2]
+
+    norm=np.zeros((nx,ny,nz))
+
+    if norm_type == 'UVT' :
+
+       norm= norm + np.power( data_p['U'] - data_n['U'] , 2. )
+
+       norm= norm + np.power( data_p['V'] - data_n['V'] , 2. )
+
+       norm= norm + np.power( data_p['T'] - data_n['T'] , 2. )
+
+    if norm_type == 'UV' :
+
+       norm= norm + np.power( data_p['U'] - data_n['U'] , 2. )
+
+       norm= norm + np.power( data_p['V'] - data_n['V'] , 2. )
+
+    if norm_type == 'W' :
+
+       norm= norm + np.power( data_p['W'] - data_n['W'] , 2. )
+
+    if norm_type == 'T'  :
+
+       norm= norm + np.power( data_p['T'] - data_n['T'] , 2. )
+
+    if norm_type == 'QV'  :
+
+       norm= norm + np.power( data_p['QV'] - data_n['QV'] , 2. )
+
+    if norm_type == 'QHYD'  :
+
+       norm= norm + np.power( data_p['QHYD'] - data_n['QHYD'] , 2. )
+
+    norm=np.power( norm , 0.5 )
+
+    return norm  #Generate a tuple as output.
+
+def filter_field( data , smooth='None' , sigma='None', cutoff='None' ):
+
+    if smooth == 'None'    : #None, Gaussian or Lanczos
+       filter_norm=False
+    else                   :
+       filter_norm=True
+
+    if sigma == 'None' or sigma==0  :
+       sigma = 1
+       print('Warning : Sigma = 1 ')
+
+    if cutoff == 'None'    : #Convolution function size for the Gaussian filter 
+       cutoff=10
+
+
+    if( np.size( np.shape( data ) ) >= 3 ) :
+      nz=data.shape[2]
+    else :
+      nz=1
+
+    data_s=np.zeros( np.shape(data) )
+
+    if smooth == 'Gaussian'  :
+       filter_size=np.round( 2*cutoff*sigma , 0 )
+  
+       gaussian_conv_func=np.zeros(( 2*filter_size.astype(int) +1 , 2*filter_size.astype(int) +1 ))
+       for ii in range(0,2*filter_size.astype(int) + 1 ) :
+          for jj in range(0,2*filter_size.astype(int)+1) :
+             gaussian_conv_func[ii,jj] = np.exp( -0.5*(np.power( ii-filter_size.astype(int),2 ) + np.power( jj-filter_size.astype(int), 2) ) /np.power(sigma,2)   )
+
+       #Normalize the convolving function.
+       gaussian_conv_func=gaussian_conv_func/np.sum( gaussian_conv_func )
+
+       if ( nz == 1 ) :
+          data_s[:,:]=signal.convolve2d(data[:,:],gaussian_conv_func, boundary='symm', mode='same')
+       else :
+          for iz in range(0,nz) :
+             data_s[:,:,iz]=signal.convolve2d(data[:,:,iz],gaussian_conv_func, boundary='symm', mode='same')
+
+    #elif smooth == 'Lanczos'  :
+    #   for iz in range(0,nz) :
+    #       mask=np.ones((nx,ny))
+    #       norm[:,:,iz]=s2d.filter_2d(inputvar2d=norm[:,:,iz],mask=mask,lambdaf=sigma,ctyp=smooth,nx=nx,ny=ny)
+    else                      :   #TODO add lanczos 2D filter option.
+
+       print('Smooth option not recognized, we will not smooth the norm')
+
+    return data_s  #Generate a tuple as output.
+
+
+                                                                           
+
 def lat_lon_to_i_j(lonfield,latfield,lonlist,latlist) :
 #Gets the i,j which is closer to a particular lat and lon give a latfield, lonfield.
    npoints=latlist.size
@@ -158,7 +260,10 @@ def get_regional_average( var , xi='None' , xe='None' , yi='None' , ye='None', z
 
    nx = np.shape( var )[0]
    ny = np.shape( var )[1]
-   nz = np.shape( var )[2]
+   if ( np.size ( np.shape ( var ) ) >= 3 ) :
+      nz = np.shape( var )[2]
+   else :
+      nz = 1
 
    if xi == 'None'  :
       xi=np.ndarray(1)
@@ -187,8 +292,14 @@ def get_regional_average( var , xi='None' , xe='None' , yi='None' , ye='None', z
    var_min=np.zeros(nregs)
 
    for ireg in range(0,nregs) :
-      
-      tmp=var[xi[ireg]:xe[ireg]+1,yi[ireg]:ye[ireg]+1,zi[ireg]:ze[ireg]+1] #Get subregion for var.
+ 
+      if ( nz > 1 ) :
+       
+        tmp=var[xi[ireg]:xe[ireg]+1,yi[ireg]:ye[ireg]+1,zi[ireg]:ze[ireg]+1] #Get subregion for var.
+
+      else : 
+ 
+        tmp=var[xi[ireg]:xe[ireg]+1,yi[ireg]:ye[ireg]+1]
 
       #Np.nan.. functions produce warnings with the input consist only of nan  values. This warning is ignored. 
       with warnings.catch_warnings()    :
@@ -298,10 +409,14 @@ def plot_var_levels(var,lon,lat,plotlevels,plotbasedir,varname,varcontour='None'
        plot_contour=True
        #If we have a contour var, then define the clevels for plotting it.
        if clevels == 'None' :
-          data_range_max=np.max(abs(np.mean(varcontour,2)))
+          if ( np.size( varcontour.shape ) >= 3 ) :
+            data_range_max=np.max(abs(np.mean(varcontour,2)))
+          else :
+            data_range_max=np.max(abs( varcontour ) )
+
           data_range_min=-data_range_max
-          delta_data=( data_range_max - data_range_min )
-          clevels=np.zeros( ndatalevels )
+          delta_data=( data_range_max - data_range_min ) / 5
+		  #clevels=np.zeros( ndatalevels )
           clevels=np.arange( data_range_min , data_range_max , delta_data )
 
     #Create output directory
@@ -324,7 +439,7 @@ def plot_var_levels(var,lon,lat,plotlevels,plotbasedir,varname,varcontour='None'
     ll_lon=lon[0,0]
     ur_lon=lon[nx-1,ny-1]
 
-    for level in plotlevels:
+    for level in plotlevels :
 
         fig=plt.figure(1,figsize=figsize)
 
@@ -345,7 +460,10 @@ def plot_var_levels(var,lon,lat,plotlevels,plotbasedir,varname,varcontour='None'
         meridians = np.arange(0.,360.,0.5)
         m.drawmeridians(meridians,labels=[0,0,0,1],fontsize=10)
 
-        tmpplot=var[offset:nx-offset,offset:ny-offset,level]
+        if ( np.size( np.shape(var) ) >= 3 ) :
+           tmpplot=var[offset:nx-offset,offset:ny-offset,level]
+        else :
+           tmpplot=var[offset:nx-offset,offset:ny-offset]
 
         tmplon=lon[offset:nx-offset,offset:ny-offset]
 
@@ -381,7 +499,11 @@ def plot_var_levels(var,lon,lat,plotlevels,plotbasedir,varname,varcontour='None'
         m.colorbar()
 
         if plot_contour   :
-          tmpplot=np.nanmean(varcontour[offset:nx-offset,offset:ny-offset,:],2)
+ 
+          if( np.size( np.shape( varcontour ) ) >= 3 ) :
+             tmpplot=np.nanmean(varcontour[offset:nx-offset,offset:ny-offset,:],2)
+          else :
+             tmpplot=varcontour[offset:nx-offset,offset:ny-offset]
           matplotlib.rcParams['contour.negative_linestyle'] = 'solid'  #Forces negative lines to be solid too.
           m.contour(lonplot,latplot,tmpplot,levels=clevels,colors='k',linewidths=2,inline=1,fmt='%1.1f',fontsize=12)
 
