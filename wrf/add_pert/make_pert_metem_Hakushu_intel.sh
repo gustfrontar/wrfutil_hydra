@@ -13,17 +13,16 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 LIB_NETCDF="-L//apps/SLES11/opt/netcdf-fortran/4.4.1_intel/lib/ -lnetcdff"
 INC_NETCDF="-I//apps/SLES11/opt/netcdf-fortran/4.4.1_intel/include/"
 
-cd ./src
 
-PGM=./time_interp_metem.exe
+PGM=../compute_pert_metem.exe
 F90=ifort  #mpif90
 
 
 
 OMP=
-F90OPT='-convert big_endian -O3 ' #  -g -traceback'
+F90OPT='-convert big_endian -O3 '
 
-#cd ./src
+cd ./src
 
 #PRE CLEAN
 rm -f *.mod
@@ -33,11 +32,11 @@ rm -f *.o
 #COMPILIN
 $F90 $OMP $F90OPT -c SFMT.f90
 $F90 $OMP $F90OPT -c common.f90
+$F90 $OMP $F90OPT -c common_namelist.f90
 $F90 $OMP $F90OPT -c common_smooth2d.f90
 $F90 $OMP $F90OPT $INC_NETCDF -c common_metem_memnc.f90
-$F90 $OMP $F90OPT -c common_namelist.f90
 $F90 $OMP $F90OPT -c common_perturb_ensemble_metem.f90
-$F90 $OMP $F90OPT -c main_time_interp_metem.f90
+$F90 $OMP $F90OPT -c main_compute_pert_metem.f90
 $F90 $OMP $F90OPT -o ${PGM} *.o  ${LIB_NETCDF}
 
 #mv *.exe ../
@@ -45,8 +44,6 @@ $F90 $OMP $F90OPT -o ${PGM} *.o  ${LIB_NETCDF}
 #CLEAN UP
 rm -f *.mod
 rm -f *.o
-
-mv $PGM ../
 
 
 echo "NORMAL END"

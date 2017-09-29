@@ -541,6 +541,7 @@ edit_wrf_wrf () {
 local SCRIPT=$1
 echo "#!/bin/bash                                           "   > $SCRIPT
 echo "set -x                                                "  >> $SCRIPT
+echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH "  >> $SCRIPT
 echo "WORKDIR=\$1                                           "  >> $SCRIPT
 echo "                                                      "  >> $SCRIPT
 echo "cd \$WORKDIR                                          "  >> $SCRIPT
@@ -558,6 +559,7 @@ edit_wrf_real () {
 local SCRIPT=$1
 echo "#!/bin/bash                                           "   > $SCRIPT
 echo "set -x                                                "  >> $SCRIPT
+echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH "  >> $SCRIPT
 echo "WORKDIR=\$1                                           "  >> $SCRIPT
 echo "                                                      "  >> $SCRIPT
 echo "cd \$WORKDIR                                          "  >> $SCRIPT
@@ -583,6 +585,7 @@ local SCRIPT=$1
 if [ $FORECAST -eq 1 -a $INTERPANA -eq 1 ] ; then  #Forecast and analysis have different grids.
  echo "#!/bin/bash                                           "  > $SCRIPT
  echo "set -x                                                " >> $SCRIPT
+ echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH " >> $SCRIPT
  echo "WORKDIR=\$1                                           " >> $SCRIPT
  echo "                                                      " >> $SCRIPT
  echo "cd \$WORKDIR                                          " >> $SCRIPT
@@ -612,6 +615,7 @@ edit_wrf_pre () {
 local SCRIPT=$1
 echo "#!/bin/bash                                                         "  > $SCRIPT
 echo "set -x                                                              " >> $SCRIPT
+echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH               " >> $SCRIPT
 echo "WORKDIR=\$1                                                         " >> $SCRIPT
 echo "MEM=\$2                                                             " >> $SCRIPT
 echo "echo \$WORKDIR                                                      " >> $SCRIPT
@@ -1567,7 +1571,7 @@ run_forecast_sub () {
        generate_machinefile $WORKDIR null $MAX_SIMULTANEOUS_JOBS $NODES_PER_MEMBER 
       fi
       cd $WORKDIR                                             
-      export LD_LIBRARY_PATH=$LD_LIBRARY_PATH       
+      #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH       
  
       M=$INIMEMBER
       while [  $M -le $ENDMEMBER ] ; do
@@ -1694,6 +1698,7 @@ run_letkf_noqueue () {
       #will be called by mpiexec. 
       echo "#!/bin/bash                                                                   " >  $TMPDIR/LETKF/run_letkf.sh
       echo "ulimit -s unlimited                                                           " >> $TMPDIR/LETKF/run_letkf.sh
+      echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                         " >> $TMPDIR/LETKF/run_letkf.sh
       echo "./letkf.exe                                                                   " >> $TMPDIR/LETKF/run_letkf.sh
       chmod 755 $TMPDIR/LETKF/run_letkf.sh
  
@@ -1701,7 +1706,7 @@ run_letkf_noqueue () {
 #      echo "#!/bin/bash                                                                                       " >  $local_script
 #      echo "SYSTEM=$SYSTEM                                                                                    " >> $local_script
       cd $TMPDIR/LETKF       
-      export LD_LIBRARY_PATH=$LD_LIBRARY_PATH    
+      #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH    
       MM=`ens_member ${MEANMEMBER}`
       MEM=`ens_member ${MEMBER}`
       #CREATE THE FILES WHERE THE GUES AND ANAL ENSEMBLE MEANS WILL BE STORED.
@@ -1860,8 +1865,8 @@ echo "BOUNDARY_DATA_FREQ=$BOUNDARY_DATA_FREQ #Boundary data frequency (seconds) 
 echo "source $TMPDIR/SCRIPTS/util.sh                                            " >> $local_script
 
 echo "ulimit -s unlimited                                                       " >> $local_script
-echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH             " >> $local_script
-echo "export PATH=$LD_PATH_ADD:$PATH                                            " >> $local_script
+echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                     " >> $local_script
+#echo "export PATH=$LD_PATH_ADD:$PATH                                            " >> $local_script
 echo "mkdir -p $WORKDIR                                                         " >> $local_script
 echo "cd $WORKDIR                                                               " >> $local_script
 echo "rm -fr  $WORKDIR/geo_em*                                                  " >> $local_script
@@ -1956,8 +1961,8 @@ echo "#!/bin/bash                                                               
 echo "set -x                                                                      " >> $local_script
 echo "source $TMPDIR/SCRIPTS/util.sh                                              " >> $local_script
 echo "ulimit -s unlimited                                                         " >> $local_script
-echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:$LD_LIBRARY_PATH                " >> $local_script
-echo "export PATH=$LD_PATH_ADD:$PATH                                              " >> $local_script
+echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                       " >> $local_script
+#echo "export PATH=$LD_PATH_ADD:$PATH                                              " >> $local_script
 echo "MEM=\$1                                                                     " >> $local_script
 echo "mkdir -p $METEMDIR/\${MEM}/WORK                                             " >> $local_script
 echo "cd $METEMDIR/\${MEM}/WORK                                                   " >> $local_script
@@ -2200,8 +2205,8 @@ echo "WORKDIR=$PERTMETEMDIR/\$MEM/WORK  #Temporary work directory               
 echo "source $TMPDIR/SCRIPTS/util.sh                                            " >> $local_script
 
 echo "ulimit -s unlimited                                                       " >> $local_script
-echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH             " >> $local_script
-echo "export PATH=$LD_PATH_ADD:$PATH                                            " >> $local_script
+echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                     " >> $local_script
+#echo "export PATH=$LD_PATH_ADD:$PATH                                            " >> $local_script
 echo "mkdir -p \$WORKDIR                                                        " >> $local_script
 echo "cd \$WORKDIR                                                              " >> $local_script
 
@@ -2422,8 +2427,8 @@ arw_postproc_noqueue () {
   cp $TMPDIR/NAMELIST/namelist.ARWpost.template $WORKDIR/namelist.ARWpost
   edit_namelist_arwpost $WORKDIR/namelist.ARWpost $CDATE $CDATE $ARWPOST_FREC
 
-  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH " >  ${WORKDIR}/tmp.sh
-  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
+  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
+#  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
   fi
@@ -2513,8 +2518,8 @@ arw_postproc_forecast_noqueue () {
 
   ARWPOST_FREC=$WINDOW_FREC
 
-  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH " >  ${WORKDIR}/tmp.sh
-  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
+  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
+#  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
   echo "source $TMPDIR/SCRIPTS/util.sh                                " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
@@ -2606,8 +2611,8 @@ if [  $ENABLE_UPP -eq 1 ];then
                                          
   local CDATEWRF=`date_in_wrf_format $CDATE `
 
-  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH " >  ${WORKDIR}/tmp.sh
-  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
+  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
+#  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
   fi
@@ -2705,8 +2710,8 @@ if [ $ENABLE_UPP -eq 1 ] ; then
      local ENDMEMBER=$MEMBER
   fi
 
-  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH " >  ${WORKDIR}/tmp.sh
-  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
+  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
+#  echo "export PATH=$LD_PATH_ADD:$PATH                                " >> ${WORKDIR}/tmp.sh
   echo "source $TMPDIR/SCRIPTS/util.sh                                " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
@@ -3142,8 +3147,8 @@ while [ $my_domain -le $MAX_DOM ] ; do
 
   #Create run script
   echo "#!/bin/bash                                                                         " >  ${WORKDIR}/tmp.sh
-  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH                       " >> ${WORKDIR}/tmp.sh
-  echo "export PATH=$LD_PATH_ADD:$PATH                                                      " >> ${WORKDIR}/tmp.sh
+  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                               " >> ${WORKDIR}/tmp.sh
+#  echo "export PATH=$LD_PATH_ADD:$PATH                                                      " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                                             " >> ${WORKDIR}/tmp.sh
   fi
@@ -3182,8 +3187,8 @@ if [ $ANALYSIS -eq 1  ] ; then
 
   #Create run script
   echo "#!/bin/bash                                                                         " >  ${WORKDIR}/tmp.sh
-  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH                       " >> ${WORKDIR}/tmp.sh
-  echo "export PATH=$LD_PATH_ADD:$PATH                                                      " >> ${WORKDIR}/tmp.sh
+  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                               " >> ${WORKDIR}/tmp.sh
+#  echo "export PATH=$LD_PATH_ADD:$PATH                                                      " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                                             " >> ${WORKDIR}/tmp.sh
   fi
@@ -3217,8 +3222,8 @@ if [ $ANALYSIS -eq 1  ] ; then
 
   #Create run script
   echo "#!/bin/bash                                                                         " >  ${WORKDIR}/tmp.sh
-  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH                       " >> ${WORKDIR}/tmp.sh
-  echo "export PATH=$LD_PATH_ADD:$PATH                                                      " >> ${WORKDIR}/tmp.sh
+  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                       " >> ${WORKDIR}/tmp.sh
+#  echo "export PATH=$LD_PATH_ADD:$PATH                                                      " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                                             " >> ${WORKDIR}/tmp.sh
   fi

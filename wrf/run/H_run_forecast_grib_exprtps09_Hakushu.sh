@@ -18,9 +18,9 @@ CDIR=`pwd`
 
 #CONFIGURATION
 CONFIGURATION=ensemble_forecast_exprtps09_60m_radar_grib_Hakushu #Define a experiment configuration
-MCONFIGURATION=machine_radar60m_Hakushu             #Define a machine configuration (number of nodes, etc)
+MCONFIGURATION=machine_radar60m_Hakushu_multiple                 #Define a machine configuration (number of nodes, etc)
 
-RESTART=1
+RESTART=0
 RESTARTDATE=20140122175000
 RESTARTITER=10
 

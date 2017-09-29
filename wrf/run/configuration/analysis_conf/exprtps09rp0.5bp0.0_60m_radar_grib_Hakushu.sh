@@ -5,7 +5,7 @@ LETKFNAMELIST=control                   #Define a letkf namelist template
 MEMBER=60        #Number of ensemble members.
 MAX_DOM=1        #Maximum number of WRF domains.
 HOMEDIR=${HOME}/share/   
-DATADIR=${HOME}/data10/jruiz/
+DATADIR=/data10/jruiz/
 ANALYSIS=1       #Identify this job as an analysis job.
 FORECAST=0       #This is not a forecast job.
 INTERPANA=0      #This is used in forecast jobs (but we need to define it here too)
@@ -60,7 +60,7 @@ OUTVARS="'umet,vmet,W,QVAPOR,QCLOUD,QRAIN,QICE,QSNOW,QGRAUP,RAINNC,tk,u10m,v10m,
 ARWPOST_FREC=21600   # Post processing frequency (seconds)
 INPUT_ROOT_NAME='wrfout'
 INTERP_METHOD=1
-
+ENABLE_UPP=0           #1 - generate grib sigma files (for da downscalling) , 0 - do not generate grib sigma files.
 ### LETKF setting
 OBS=""                                                     # Name of conventional observations folder.
 RADAROBS="/OSSE_20140122_DBZ2.5_VR1.0_SO2KM/"              # Name of radar observation folder.
@@ -78,8 +78,8 @@ TMPDIR=${HOMEDIR}/TMP/$EXP/                                                     
 OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                    # Where results will be stored.
 GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/ARGENTINA/                                         # Folder where bdy and initial grib files are located.
 GRIBTABLE="Vtable.GFS"                                                                    # Bdy and init data source Vtable name.
-PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                    # Folder where data for perturbing bdy are located.
-PERTGRIBTABLE="Vtable.CFSR"                                                               # Bdy perturbation source vtable name.
+PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/00001/                              # Folder where data for perturbing bdy are located.
+PERTGRIBTABLE="Vtable.CFSR2_web"                                                               # Bdy perturbation source vtable name.
 GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/                                                 # Folder where WPS GEOG dataset is located.
 
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
@@ -114,16 +114,16 @@ INPUT_PERT_DATES_FROM_FILE=1  #0 - generate a new set of random dates, 1 - read 
 INI_PERT_DATE_FILE=${HOMEDIR}/DATA/INITIAL_RANDOM_DATES/initial_perturbation_dates_60m  #List of initial random dates.
 
 #### EXECUTABLES
-RUNTIMELIBS=${HOMEDIR}/libs_sparc64/lib/       #Libs that will be included in LD_LIBRARY_PATH in computing nodes.
+RUNTIMELIBS=/apps/SLES11/opt/netcdf-fortran/4.4.1_intel/lib/:/apps/SLES11/opt/hdf5/1.8.14_intel/lib/:/apps/COMMON/opt/intel/compilers_and_libraries_2017.1.132/linux/lib:/apps/COMMON/opt/intel/compilers_and_libraries_2017.4.196//linux/mpi/intel64/lib       #Libs that will be included in LD_LIBRARY_PATH in computing nodes.
 WRF=${HOMEDIR}/LETKF_WRF/wrf/                  # WRF folder (for computing nodes)
 LETKF=$WRF/letkf/letkf.exe                     # LETKF module (for computing nodes)
 UPDATEBC=$WRF/model/WRFDA/da_update_bc.exe     # Update bc tool (WRFVAR) (for computing nodes)
-WRFMODEL=$WRF/model/WRFV3.6.1/                     # WRF model that run in computing nodes.
-WRFMODELPPS=$WRF/model/WRFV3.6.1/                  # WRF model that runs in pps server  (usually the same as the one for the computing nodes)
-WPS=$WRF/model/WPSV3.6.1/                            # WRF model pre processing utilities (for pps server)
+WRFMODEL=$WRF/model/WRFV3.6.1/                 # WRF model that run in computing nodes.
+WRFMODELPPS=$WRF/model/WRFV3.6.1/              # WRF model that runs in pps server  (usually the same as the one for the computing nodes)
+WPS=$WRF/model/WPSV3.6.1/                      # WRF model pre processing utilities (for pps server)
 ARWPOST=$WRF/model/ARWpost/                    # WRF model post processing utilities that run in computing nodes.
 SPAWN=$WRF/spawn/
-MPIBIN=mpiexec
+MPIBIN=/apps/COMMON/opt/intel/compilers_and_libraries_2017.4.196/linux/mpi/bin64/mpiexec
 
 #### SCRIPTS
 UTIL=$WRF/run/util.sh                          # Script containing bash functions that will be used during execution.

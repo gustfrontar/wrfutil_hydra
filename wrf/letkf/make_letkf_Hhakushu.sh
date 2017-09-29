@@ -1,7 +1,7 @@
 #!/bin/sh
 set -ex
 PGM=letkf.exe
-F90=$HOME/mpich_intel/bin/mpif90
+F90=mpif90
 OMP=
 
 F90OPT='-O3 -convert big_endian' #-O3 -convert big_endian' #-Kfast,parallel' # -Hs'
@@ -28,8 +28,8 @@ cat $COMMONDIR/netlibblas.f >> netlib2.f
 LBLAS=""
 fi
 
-LIB_NETCDF="-L/opt/netcdf-fortran/4.2/lib/ -lnetcdff"
-INC_NETCDF="-I/opt/netcdf-fortran/4.2/include/"
+LIB_NETCDF="-L//apps/SLES11/opt/netcdf-fortran/4.4.1_intel/lib/ -lnetcdff"
+INC_NETCDF="-I//apps/SLES11/opt/netcdf-fortran/4.4.1_intel/include/"
 
 
 COMMONDIR=../../common/

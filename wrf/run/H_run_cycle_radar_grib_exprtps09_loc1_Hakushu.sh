@@ -18,7 +18,7 @@
 CDIR=`pwd`
 
 #CONFIGURATION
-CONFIGURATION=exprtps09rp0.5bp0.0_60m_radar_grib_Hakushu   #Define a experiment configuration
+CONFIGURATION=exprtps09_loc1_60m_radar_grib_Hakushu        #Define a experiment configuration
 MCONFIGURATION=machine_radar60m_Hakushu_multiple           #Define a machine configuration (number of nodes, etc)
 
 RESTART=0

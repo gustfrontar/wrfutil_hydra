@@ -2,7 +2,7 @@
 DOMAINCONF=CORDOBA_2KBIS               #Define a domain
 LETKFNAMELIST=control                   #Define a letkf namelist template
 
-MEMBER=60        #Number of ensemble members.
+MEMBER=30        #Number of ensemble members.
 MAX_DOM=1        #Maximum number of WRF domains.
 HOMEDIR=${HOME}/share/   
 DATADIR=${HOME}/data/
@@ -28,7 +28,7 @@ NVERTDB=38   #Number of vertical levels in initial and boundary conditions pertu
 MM=$MEMBER                      #Variable for iteration limits.
 MEANMEMBER=`expr $MEMBER + 1 `  #This is the member ID corresponding to the ensemble mean.
 
-WINDOW=900        #Forecast initialization frequency (seconds)
+WINDOW=1800       #Forecast initialization frequency (seconds)
 GUESFT=7200       #Forecast length (seconds)
 WINDOW_START=0    #Window start (seconds from forecast initialization)     
 WINDOW_END=$GUESFT    #Window end   (seconds from forecast initialization)
@@ -57,8 +57,8 @@ BOUNDARY_DATA_PERTURBATION_FREQ=21600 #Frequency of data used to perturb boundar
 
 #POSTPROC CONFIGURATION
 OUTLEVS="0.1,0.5,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,"      #Level list
-OUTVARS="'umet,vmet,W,QVAPOR,QCLOUD,QRAIN,QICE,QSNOW,QGRAUP,RAINNC,tk,u10m,v10m,slp,mcape,dbz,max_dbz'"  #Variable list.
-ARWPOST_FREC=21600   # Post processing frequency (seconds)
+OUTVARS="'umet,vmet,pressure,W,QVAPOR,QCLOUD,QRAIN,QICE,QSNOW,QGRAUP,RAINNC,tk,u10m,v10m,slp,mcape,dbz,max_dbz'"  #Variable list.
+ARWPOST_FREC=600   # Post processing frequency (seconds)
 INPUT_ROOT_NAME='wrfout'
 INTERP_METHOD=1
 
@@ -68,8 +68,8 @@ RADAROBS="/OSSE_20140122_DBZ2.5_VR1.0_SO2KM/"              # NOT USED IN THE FOR
 EXP=FORECAST_${DOMAINCONF}_${CONFIGURATION}                # name of experiment
 
 ### initial date setting
-IDATE=20140122175000
-EDATE=20140122185000
+IDATE=20140122183000
+EDATE=20140122120000
 
 #### DATA
 OBSDIR=${HOMEDIR}/DATA/OBS/$OBS/                                                          # NOT USED IN THE FORECAST
@@ -85,7 +85,7 @@ GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/                                       
 
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
 SCALE_FACTOR="0.05"         #Perturbation scale factor.
-RANDOM_SCALE_FACTOR="0.5"   #Random perturbation scale factor.
+RANDOM_SCALE_FACTOR="0.0"   #Random perturbation scale factor.
 PERTURB_BOUNDARY=1          #Wheter boundary conditions are going to be perturbed.
 PERTURB_BOUNDARY_TYPE=1     #DUMMY
 PERTURB_ATMOSPHERE=".true."   #Wether atmospheric conditions will be perturbed (boundary and first cycle)
@@ -113,16 +113,17 @@ INPUT_PERT_DATES_FROM_FILE=1  #0 - generate a new set of random dates, 1 - read 
 INI_PERT_DATE_FILE=${HOMEDIR}/DATA/INITIAL_RANDOM_DATES/initial_perturbation_dates_60m  #List of initial random dates.
 
 #### EXECUTABLES
-RUNTIMELIBS=${HOMEDIR}/libs_sparc64/lib/       #Libs that will be included in LD_LIBRARY_PATH in computing nodes.
+RUNTIMELIBS=/apps/SLES11/opt/netcdf-fortran/4.4.1_intel/lib/:/apps/SLES11/opt/hdf5/1.8.14_intel/lib/:/apps/COMMON/opt/intel/compilers_and_libraries_2017.1.132/linux/lib:/apps/COMMON/opt/intel/compilers_and_libraries_2017.4.196//linux/mpi/intel64/lib
 WRF=${HOMEDIR}/LETKF_WRF/wrf/                  # WRF folder (for computing nodes)
 LETKF=$WRF/letkf/letkf.exe                     # LETKF module (for computing nodes)
 UPDATEBC=$WRF/model/WRFDA/da_update_bc.exe     # Update bc tool (WRFVAR) (for computing nodes)
-WRFMODEL=$WRF/model/WRFV3/                     # WRF model that run in computing nodes.
-WRFMODELPPS=$WRF/model/WRFV3/                  # WRF model that runs in pps server  (usually the same as the one for the computing nodes)
-WPS=$WRF/model/WPS/                            # WRF model pre processing utilities (for pps server)
+WRFMODEL=$WRF/model/WRFV3.6.1/                     # WRF model that run in computing nodes.
+WRFMODELPPS=$WRF/model/WRFV3.6.1/                  # WRF model that runs in pps server  (usually the same as the one for the computing nodes)
+WPS=$WRF/model/WPSV3.6.1/                            # WRF model pre processing utilities (for pps server)
 ARWPOST=$WRF/model/ARWpost/                    # WRF model post processing utilities that run in computing nodes.
 SPAWN=$WRF/spawn/
-MPIBIN=mpiexec
+MPIBIN=/apps/COMMON/opt/intel/compilers_and_libraries_2017.4.196/linux/mpi/bin64/mpiexec
+
 
 #### SCRIPTS
 UTIL=$WRF/run/util.sh                          # Script containing bash functions that will be used during execution.

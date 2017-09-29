@@ -36,7 +36,7 @@ NBSLOT=`expr $ASSIMILATION_FREC \/ $WINDOW_FREC - $WINDOW_START \/ $WINDOW_FREC 
 if [ $NBSLOT -lt 10 ] ; then
    NBSLOT=0$NBSLOT
 fi
-SIGMA_OBS="2.0d3"
+SIGMA_OBS="1.0d3"
 SIGMA_OBSV="0.2d0"
 SIGMA_OBSZ="2.0d3" 
 SIGMA_OBST="3.0d0"
@@ -85,8 +85,8 @@ GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/                                       
 
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
 #INITIAL AND BOUNDARY PERTURBATIONS
-AMP_FACTOR="0.1"             #Perturbation scale factor.
-RANDOM_AMP_FACTOR="0.0"       #Random perturbation scale factor.
+AMP_FACTOR="0.05"             #Perturbation scale factor.
+RANDOM_AMP_FACTOR="0.5"       #Random perturbation scale factor.
 PERTURB_BOUNDARY=1            #Wether boundary conditions are going to be perturbed.
 PERTURB_ATMOSPHERE=".true."   #Wether atmospheric conditions will be perturbed (boundary and first cycle)
 PERTURB_SST=".true."          #Wether SST will be perturbed.
