@@ -144,7 +144,7 @@ echo " >>"
 echo " >> DOING POST PROCESSING"
 echo " >>"
 
-arw_postproc_forecast
+arw_postproc_forecast_noqueue 
 
 echo " >>"
 echo " >> CHECKING CYCLE"

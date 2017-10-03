@@ -786,22 +786,34 @@ safe_init_outputdir () {
 local DIRNAME="$1"
 
 #-------------------------------------------------------------------------------
+if [ $ANALYSIS -eq 1  ] ; then
+ if [ -z "$DIRNAME" ]; then
+   echo "[Warning] $FUNCNAME: '\$DIRNAME' is not set." 
+   exit 1
+ fi
+ if [ -e "$DIRNAME" -a $RESTART -eq 0 ]; then
+    echo "[Error] $DIRNAME exists: Please remove it manually to avoid data loss"
+    exit 1
+ fi
+ if [ ! -e "$DIRNAME" -a $RESTART -eq 1 ]; then
+    echo "[Error] $DIRNAME does not exist"
+    exit 1
+ fi
+ if [ -e "$DIRNAME" -a $RESTART -eq 1 ]; then
+   echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) " 
+ fi
+fi
 
-if [ -z "$DIRNAME" ]; then
-  echo "[Warning] $FUNCNAME: '\$DIRNAME' is not set." 
-  exit 1
-fi
-if [ -e "$DIRNAME" -a $RESTART -eq 0 ]; then
-   echo "[Error] $DIRNAME exists: Please remove it manually to avoid data loss"
+if [ $FORECAST -eq 1  ] ; then
+ if [ -z "$DIRNAME" ]; then
+   echo "[Warning] $FUNCNAME: '\$DIRNAME' is not set."
    exit 1
+ fi
+ if [ -e "$DIRNAME" -a $RESTART -eq 1 ]; then
+   echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) "
+ fi
 fi
-if [ ! -e "$DIRNAME" -a $RESTART -eq 1 ]; then
-   echo "[Error] $DIRNAME does not exist"
-   exit 1
-fi
-if [ -e "$DIRNAME" -a $RESTART -eq 1 ]; then
-  echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) " 
-fi
+
 
 
 mkdir -p $DIRNAME
@@ -816,13 +828,10 @@ if [ ! -O "$DIRNAME" -a $SYSTEM -eq 0 ]; then
   exit 1
 fi
 
-#rm -fr $DIRNAME/*
-#res=$? && ((res != 0)) && exit $res
+ if [ $RESTART -eq 0 ]  ; then 
+   echo "This is a new experiment -> Building output directory from scracth"
+ fi
 
-# SET OUTPUT DIRECTORY
-#if [ $RESTART -eq 0  ] ; then
-
- echo "This is a new experiment -> Building output directory from scracth"
  if [ $ANALYSIS -eq 1 ] ; then
 
  mkdir -p $DIRNAME/gues
@@ -835,24 +844,6 @@ fi
 
  mkdir -p $DIRNAME/configuration
  mkdir -p $DIRNAME/joblogs
-
-#else
-# if [ $ANALYSIS -eq 1  ] ; then
-#  if [ ! -e $DIRNAME/gues/ -o ! -e $DIRNAME/anal/ ] ; then
-#   echo "[Error] This is a restart run but OUTPUTDIR=$DIRNAME does not exist "
-#   exit 1
-#  fi
-#  echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) "
-# elif [ $FORECAST -eq 1 ] ; then
-#  if [ ! -e $DIRNAME/forecast/ ] ; then 
-#   echo "[Error] This is a restart run but OUTPUTDIR=$DIRNAME does not exist "
-#   exit 1
-#  else
-#   echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) "
-#  fi
-# fi
- 
-#fi
 
 
 #-------------------------------------------------------------------------------

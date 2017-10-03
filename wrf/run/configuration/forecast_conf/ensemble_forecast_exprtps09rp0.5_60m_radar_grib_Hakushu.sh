@@ -19,9 +19,9 @@ USE_ANALYSIS_IC=0 #1 - use global analysis as IC, 0 use LETKF analysis as IC
                   #if 0 then profide a LETKF-analysis source (ANALYSIS_SOURC)
                   #default is 0
 
-ANALYSIS_SOURCE=/data10/jruiz/EXPERIMENTS/ANALYSIS_CORDOBA_2KBIS_exprtps09_60m_radar_grib_Hakushu/
+ANALYSIS_SOURCE=/data10/jruiz/EXPERIMENTS/ANALYSIS_CORDOBA_2KBIS_exprtps09rp0.5_60m_radar_grib_Hakushu/
 
-NVERTEXP=27  #Number of vertical levels in initial and boundary conditions input grib data.
+NVERTEX=27  #Number of vertical levels in initial and boundary conditions input grib data.
 NVERTDB=38   #Number of vertical levels in initial and boundary conditions perturbation input grib data.
 
 #AUXILIARY VARIABLE FOR ENSEMBLE SIZE

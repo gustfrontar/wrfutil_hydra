@@ -19,9 +19,9 @@ USE_ANALYSIS_IC=0 #1 - use global analysis as IC, 0 use LETKF analysis as IC
                   #if 0 then profide a LETKF-analysis source (ANALYSIS_SOURC)
                   #default is 0
 
-ANALYSIS_SOURCE=/data10/jruiz/EXPERIMENTS/ANALYSIS_CORDOBA_2KBIS_exprtps09_60m_radar_grib_Hakushu/
+ANALYSIS_SOURCE=/data10/jruiz/EXPERIMENTS/ANALYSIS_CORDOBA_2KBIS_exprtps09rp0.5bp0.0_60m_radar_grib_Hakushu/
 
-NVERTEXP=27  #Number of vertical levels in initial and boundary conditions input grib data.
+NVERTEX=27  #Number of vertical levels in initial and boundary conditions input grib data.
 NVERTDB=38   #Number of vertical levels in initial and boundary conditions perturbation input grib data.
 
 #AUXILIARY VARIABLE FOR ENSEMBLE SIZE
@@ -85,7 +85,7 @@ PERTGRIBTABLE="Vtable.CFSR"                                                     
 GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/                                                 # Folder where WPS GEOG dataset is located.
 
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
-SCALE_FACTOR="0.05"         #Perturbation scale factor.
+SCALE_FACTOR="0.00"         #Perturbation scale factor.
 RANDOM_SCALE_FACTOR="0.0"   #Random perturbation scale factor.
 PERTURB_BOUNDARY=1          #Wheter boundary conditions are going to be perturbed.
 PERTURB_BOUNDARY_TYPE=1     #DUMMY
