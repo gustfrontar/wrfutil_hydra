@@ -64,7 +64,7 @@ ENABLE_UPP=0
 
 ### LETKF setting
 OBS=""                                      # Name of conventional observations folder.
-RADAROBS="/LETKF_SO2KM_V3"                  # Name of radar observation folder.
+RADAROBS="/LETKF_SO2KM_V3/"                 # Name of radar observation folder.
 EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION} # name of experiment
 
 ### initial date setting
@@ -121,7 +121,7 @@ WRFMODELPPS=$WRF/model/WRFV3.6/                # WRF model that runs in pps serv
 WPS=$WRF/model/WPS3.6/                         # WRF model pre processing utilities (for pps server)
 ARWPOST=$WRF/model/ARWpost/                    # WRF model post processing utilities that run in computing nodes.
 SPAWN=$WRF/spawn/
-MPIBIN=/share/libs/bin/mpiexec
+MPIBIN=mpiexec
 
 #### SCRIPTS
 UTIL=$WRF/run/util.sh                          # Script containing bash functions that will be used during execution.

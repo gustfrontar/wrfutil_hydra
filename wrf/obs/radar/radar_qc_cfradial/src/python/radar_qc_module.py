@@ -1,9 +1,8 @@
 #print __doc__
 
-# Author: Juan Ruiz (jruiz@cima.fcen.uba.ar)
+# Author: Rapid Refresh Argentina Team
 # License: BSD 3 clause
 
-# History: Juan Ruiz created 2017.
 
 def main_qc( filename , options ) :
 
@@ -54,10 +53,24 @@ def main_qc( filename , options ) :
 
    if options['ifetfilter']  :
      if ( ~ order_ref ) : 
-        [ ref_array , ref_az , ref_level , ref_time , ref_az_exact ]=order_variable( radar , options['reflectivity_var_name'] )
+        [ ref_array , ref_az , ref_level , ref_time , ref_index , ref_az_exact ]=order_variable( radar , options['reflectivity_var_name'] )
         order_ref=True
 
      [ echo_top .... ]=compute_echo_top( ref_array , options ) 
+
+
+   
+   #===================================================
+   # ATTENUATION FILTER
+   #===================================================
+
+
+
+   #===================================================
+   # TOPOGRAPHY BLOCKING FILTER
+   #===================================================
+
+
 
    return radar
 
@@ -96,6 +109,7 @@ def order_variable ( radar , var_name )  :
    #Allocate arrays
    order_var=np.zeros((naz,nr,nel))
    order_time=np.zeros((naz,nel)) 
+   order_index=np.zeros((naz,nel))   #This variable can be used to convert back to the azimuth - range array
    azimuth_exact=np.zeros((naz,nel))
 
    order_var[:]=np.nan
@@ -130,6 +144,43 @@ def order_variable ( radar , var_name )  :
             order_time[iaz,ilev] = np.nanmean( timelev[ az_index ] )
             azimuth_exact[iaz,ilev] = np.nanmean( azlev[ az_index ] )
             azimuth_exact[iaz,ilev] = np.nanmean( azlev[ az_index ] )
+            order_index[iaz,ilev] = az_index[0]  #If multiple levels corresponds to a single azimuth / elevation chose the first one.
 
-   return order_var , order_azimuth , levels , order_time , azimuth_exact
+   return order_var , order_azimuth , levels , order_time , order_index , azimuth_exact
+
+
+   def order_variable_inv (  radar , var , order_index )  :
+
+       import numpy as np
+   
+       #Esta funcion es la inversa de la funcion order variable. Es decir que toma un array ordenado como azimuth , range y elevation y lo vuelve
+       #a ordenar como azimuth-elevation y range. Es decir el orden original que se encuentra en los archivos con formato cfradial y que heredan los objetos radar de pyart.
+
+       #var es la variable ordenada como var(azimuth,range,elevation)
+       #order_index (azimuth,elevation) contiene la posicion original de los haces que fueron asignados a cada azimuth y elevacion por la funcion order_variable.
+       #nr numero de puntos en la direccion del rango.
+       #nb numero de beams. 
+
+       na=var.shape[0]
+       nr=var.shape[1]
+       ne=var.shape[2]
+
+       nb=radar.azimuth['data'].shape[0]
+
+       output_var=np.nan((na,nb))
+       
+
+       for ia in range(0,na)  :
+
+          for ie in range(0,ne)  :
+       
+             output_var[ia,order_index[ia,ie]]=var[ia,:,ie] 
+
+
+       #Por ahi seria conveniente reemplazar los nan por un codigo de dato faltante.
+       #Los datos faltantes pueden producirse porque hay algunos radiales que se repiten, en ese caso el array (azimuth,range,elevation) guarda un promedio de los datos y no ambos datos.
+       #Esta parte del algoritmo no es invertible.
+
+   return output_var
+
 

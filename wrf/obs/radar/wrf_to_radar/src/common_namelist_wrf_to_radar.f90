@@ -17,12 +17,12 @@ MODULE common_namelist
   INTEGER, PARAMETER :: max_radars=100
 
   !Namelist variables
-  LOGICAL            :: ADD_OBS_ERROR=.true.
+  LOGICAL            :: ADD_OBS_ERROR=.false.
   REAL(r_size)       :: REFLECTIVITY_ERROR=1.0d0 !Standard deviation of reflectivity error in DBZ
   REAL(r_size)       :: RADIALWIND_ERROR=0.5d0   !Standard deviation of radialwind error in m/s
 
   !--------------------------------------------FAKE RADAR PARAMETERS
-  LOGICAL   ::   FAKE_RADAR=.TRUE.           !We will create a non existant radar.
+  LOGICAL   ::   FAKE_RADAR=.FALSE.           !We will create a non existant radar.
   LOGICAL   ::   COMPUTE_ATTENUATION=.FALSE. !If attenuation will be simulated or not when converting from model to radar.
   INTEGER :: n_radar =1 !Number of radars.
   INTEGER :: n_model =1 !Number of model files that will be interpolated to the radar.

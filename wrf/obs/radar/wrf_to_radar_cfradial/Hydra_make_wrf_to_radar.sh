@@ -3,12 +3,12 @@ set -ex
 PGM=./wrf_to_radar.exe
 F90=ifort  
 
-LIB_NETCDF="-L/home/jruiz/netcdf4.intel/lib/ -lnetcdff"
-INC_NETCDF="-I/home/jruiz/netcdf4.intel/include/"
+LIB_NETCDF="-L/usr/local/lib/ -lnetcdff"
+INC_NETCDF="-I/usr/local/include/"
 
 
 OMP=
-F90OPT='-g -traceback ' # -convert big_endian -O3 -openmp'
+F90OPT='-O3 ' # -convert big_endian -O3 -openmp'
 
 cd ./src
 
@@ -17,7 +17,7 @@ rm -f *.mod
 rm -f *.o
 
 ln -sf ../../common/common_radar_tools_cfradial.f90     .
-#ln -sf ../../../../common/common_wrf.f90       .
+ln -sf ../../../../common/common_wrf.f90       .
 ln -sf ../../../../common/common_obs_wrf.f90   .
 ln -sf ../../../../common/module_map_utils.f90 .
 #ln -sf ../../../../common/common_namelist.f90  .

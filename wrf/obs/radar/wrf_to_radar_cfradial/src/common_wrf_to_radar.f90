@@ -70,7 +70,7 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
   !   the beam. Compute a simple radiative transfer for each path and then perform a weigthed average.
   !   In this case the attenuation can be considered in a more robust way. And the contribution
   !   of each ray to the total radar reflectivity can be weighted according to the distribution
-  !   of the power within the beam.
+  !   of the power within the beam. (this one is not implemented yet)
   !Compute maximum model height
 
    min_ref_dbz=10.0*log10(min_ref)

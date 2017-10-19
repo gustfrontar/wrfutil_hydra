@@ -548,7 +548,7 @@ SUBROUTINE read_ens_mpi(file,member,v3d,v2d)
       DO l=1,ll 
       im = myrank+1 + (l-1)*nprocs
       IF( im <= member)THEN
-          CALL read_var_wrf(ncid(im),iv,1,nlev,fieldg,'3d')
+          CALL read_var_wrf(ncid(im),iv,1,nlev,1,fieldg,'3d')
       ENDIF
 
      DO n=0,nprocs-1
@@ -567,7 +567,7 @@ SUBROUTINE read_ens_mpi(file,member,v3d,v2d)
     DO l=1,ll
     im = myrank+1 + (l-1)*nprocs
     IF( im <= member)THEN
-       CALL read_var_wrf(ncid(im),iv,1,1,fieldg,'2d')
+       CALL read_var_wrf(ncid(im),iv,1,1,1,fieldg,'2d')
     ENDIF
 
      DO n=0,nprocs-1
@@ -719,7 +719,7 @@ INTEGER(4) :: ncid(member)
   DO l=1,ll
     im = myrank+1 + (l-1)*nprocs
     IF(im <= member) THEN
-      CALL read_var_wrf(ncid(im),iv,1,1,fieldg,'pa')
+      CALL read_var_wrf(ncid(im),iv,1,1,1,fieldg,'pa')
     END IF
     DO n=0,nprocs-1
        im2 = n+1 + (l-1)*nprocs
@@ -839,7 +839,8 @@ SUBROUTINE write_ens_mpi(file,member,v3d,v2d)
       DO l=1,ll
       im = myrank+1 + (l-1)*nprocs
       IF( im <= member)THEN
-        CALL read_var_wrf(ncid(im),iv3d_qv,ilev,ilev,fieldg,'3d')
+        CALL read_var_wrf(ncid(im),iv3d_qv,ilev,ilev,1,fieldg,'3d')
+    !CALL check_io(NF90_INQ_DIMLEN(ncid,dimids(i),shape(i)))
       ENDIF
      DO n=0,nprocs-1
       im2 = n+1 + (l-1)*nprocs
@@ -853,7 +854,7 @@ SUBROUTINE write_ens_mpi(file,member,v3d,v2d)
    DO l=1,ll
     im = myrank+1 + (l-1)*nprocs
     IF( im <= member)THEN
-      CALL read_var_wrf(ncid(im),iv2d_mu,1,1,fieldg,'2d')
+      CALL read_var_wrf(ncid(im),iv2d_mu,1,1,1,fieldg,'2d')
     ENDIF
     DO n=0,nprocs-1
        im2 = n+1 + (l-1)*nprocs
@@ -866,7 +867,7 @@ SUBROUTINE write_ens_mpi(file,member,v3d,v2d)
    DO l=1,ll
     im = myrank+1 + (l-1)*nprocs
     IF( im <= member)THEN
-      CALL read_var_wrf(ncid(im),iv2d_ps,1,1,fieldg,'2d')
+      CALL read_var_wrf(ncid(im),iv2d_ps,1,1,1,fieldg,'2d')
     ENDIF
     DO n=0,nprocs-1
       im2 = n+1 + (l-1)*nprocs
