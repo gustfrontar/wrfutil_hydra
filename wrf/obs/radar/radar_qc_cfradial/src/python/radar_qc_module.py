@@ -6,20 +6,78 @@
 
 def main_qc( filename , options ) :
 
+   sys.path.append('../fortran')
+
    import numpy as np
    import matplotlib.pyplot as plt
    import pyart
+   import common_qc_tools  as qct  #Fortran code routines.
    import netCDF4
 
-#  import qctools
+#  Constant parameters
 
-   order_ref=False
-   order_v  =False
+   #Codigos que permitan identificar el control que actuo en cada pixel.
+
+   #Para la reflectividad
+   QCCODE_ATTENUATION = 10
+   QCCODE_SPECKLE     = 11
+   QCCODE_TEXTURE     = 12
+   QCCODE_RHOFILTER   = 13
+   QCCODE_SIGN        = 14
+   QCCODE_BLOCKING    = 15
+
+   #Para la velocidad radial
+   QCCODE_DEALIAS     = 30
+
+   #El codigo de los datos buenos para reflectividad y velocidad radial.
+   QCCODE_GOOD        = 0
+
+
+   name_v=options['dv_var_name']
+   name_ref=options['reflectivity_var_name']
 
    radar = pyart.io.read(filename)
 
    #Get the nyquist velocity
    nyquistv=radar.get_nyquist_vel(0,check_uniform=True)
+
+   #===================================================
+   # RESHAPE VARIABLES
+   #===================================================
+      #From time,range -> azimuth,range,elevation
+
+      [ ref_array , az , level , time , index , az_exact ]=order_variable( radar , name_ref )
+      [ v_array  ]=order_variable( radar , name_v )
+
+      na=ref_array.shape[0]
+      nr=ref_array.shape[1]
+      ne=ref_array.shape[2]
+
+      cref_array=ref_array   #Define the corrected reflectivity array.
+      cv_array  =v_array     #Define the corrected radial velocity array.
+
+
+   #===================================================
+   # INITIALIZE QC FLAGS
+   #===================================================
+
+      #TODO if present V, initialize for V
+      #TODO if present DBZ, initialize for DBZ
+      #Estos seran arrays que contengan para cada pixel
+      #un codigo que indique si es un dato bueno o si 
+      #no paso alguno de los contrles que indique cual fue
+      qcref_array=np.zeros(cref_array.shape)
+      qcv_array  =np.zeros(v_array.shape)
+
+   #===================================================
+   # GEOREFERENCE RADAR DATA
+   #===================================================
+
+      #Use pyart rutines to compute lat,lon and z at each grid point
+      #Reorder data
+      [ altitude_array ]=order_variable( radar , 'altitude' )
+      [ longitude_array ]=order_variable( radar , 'longitude' )
+      [ latitude_array ]=order_variable( radar , 'latitude' ) 
 
    #===================================================
    # DEALIASING 
@@ -28,7 +86,7 @@ def main_qc( filename , options ) :
    if options['ifdealias'] : 
 
      #Uso una de las funciones de dealiasing de pyart con los parametros por defecto
-     winddealias=pyart.correct.region_dealias.dealias_region_based(radar, interval_splits=options['interval_splits'], interval_limits=None, skip_between_rays=options['skip_between_rays'], skip_along_ray=options['skip_along_ray'], centered=True, nyquist_vel=None, check_nyquist_uniform=True, gatefilter=False, rays_wrap_around=True, keep_original=False, set_limits=True, vel_field='V', corr_vel_field=None)
+     winddealias=pyart.correct.region_dealias.dealias_region_based(radar, interval_splits=options['interval_splits'], interval_limits=None, skip_between_rays=options['skip_between_rays'], skip_along_ray=options['skip_along_ray'], centered=True, nyquist_vel=None, check_nyquist_uniform=True, gatefilter=False, rays_wrap_around=True, keep_original=False, set_limits=True, vel_field=name_v, corr_vel_field=None)
 
      #Add wind dealias to the radar objetc.
      radar.fields['Vda'] = winddealias
@@ -36,7 +94,6 @@ def main_qc( filename , options ) :
      radar.fields['Vda']['units']=radar.fields['V']['units']
      radar.fields['Vda']['long_name']=radar.fields['V']['long_name']
      radar.fields['Vda']['standard_name']=radar.fields['V']['standard_name']
-
 
    #===================================================
    # RHO HV FILTER
@@ -52,12 +109,23 @@ def main_qc( filename , options ) :
 
 
    if options['ifetfilter']  :
-     if ( ~ order_ref ) : 
-        [ ref_array , ref_az , ref_level , ref_time , ref_index , ref_az_exact ]=order_variable( radar , options['reflectivity_var_name'] )
-        order_ref=True
 
-     [ echo_top .... ]=compute_echo_top( ref_array , options ) 
+     #qct.echo_top(reflectivity=cref_array,heigth,rrange,na,nr,ne,nx,ny,nz,output_data_3d,output_data_2d)
 
+
+
+   
+   #===================================================
+   # SPECKLE FILTER
+   #===================================================
+
+   if options['ifspfilter']  :
+
+     #Compute the number pixels with reflectivities over spfiltertr sourrounding each pixels in the box defined by nx,ny,nz.
+     qct.speckle_filter(var=cref_array,na=na,nr=nr,ne=ne,nx=options['spfilternx'],ny=options['spfilterny'],nz=options['spfilternz'],threshold=options['spfiltertr'],speckle=speckle)
+
+     #Set the pixels with values below the threshold as undef. 
+     cref_array[ speckle < options['spfiletertr']  ]=options['undef'] 
 
    
    #===================================================
@@ -102,7 +170,14 @@ def order_variable ( radar , var_name )  :
    naz=np.size(order_azimuth)
    nel=np.size(levels)
 
-   var=radar.fields[var_name]['data']
+   if ( var_name == 'altitude' ) :
+      var=radar.gate_altitude['data']
+   else if( var_name == 'longitude' ) :
+      var=radar.gate_longitude['data'] 
+   else if( var_name == 'latitude'  ) :
+      var=radar.gate_latitude['data'] 
+   else
+      var=radar.fields[var_name]['data']
 
    nr=var.shape[1]
 
@@ -167,7 +242,7 @@ def order_variable ( radar , var_name )  :
 
        nb=radar.azimuth['data'].shape[0]
 
-       output_var=np.nan((na,nb))
+       output_var=np.ones((na,nb)) * options['undef']
        
 
        for ia in range(0,na)  :
@@ -176,10 +251,8 @@ def order_variable ( radar , var_name )  :
        
              output_var[ia,order_index[ia,ie]]=var[ia,:,ie] 
 
+        #TODO ver como convertir la salida en un masked array.
 
-       #Por ahi seria conveniente reemplazar los nan por un codigo de dato faltante.
-       #Los datos faltantes pueden producirse porque hay algunos radiales que se repiten, en ese caso el array (azimuth,range,elevation) guarda un promedio de los datos y no ambos datos.
-       #Esta parte del algoritmo no es invertible.
 
    return output_var
 
