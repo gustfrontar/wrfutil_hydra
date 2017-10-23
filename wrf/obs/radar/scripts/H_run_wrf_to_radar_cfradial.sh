@@ -1,7 +1,7 @@
 #This script generates pseudo-radar observations from WRF outputs.
 ulimit -s unlimited
 
-EXPERIMENT_NAME=SCALE_TO_RADAR_TEST
+EXPERIMENT_NAME=WRF_TO_RADAR_TEST
 
 MODELDATAPATH="$HOME/salidas/EXPERIMENTS/ANALYSIS_PARANA_2KM_control_paranafnl_newobs_60m_radar_grib_Hydra/"
 RADARDATAPATH="$HOME/share/DATA/OBS/OBS_REAL_PARANA_20091117_CFRADIAL/" 
@@ -58,10 +58,11 @@ cdate=$INIDATE
 itime=0001
 irad=001
 
-mkdir -p $MODELPATH/wrf_to_radar/
+mkdir -p $MODELDATAPATH/wrf_to_radar/
 
-while [ $cdate -le  $ENDDATE ]
-do
+
+#while [ $cdate -le  $ENDDATE ]
+#do
 
 cd $TMPDIR
 
@@ -106,14 +107,17 @@ for ifile in $( ls $RADARDATAPATH/cfrad* ) ; do
     echo "Radar file for $cdate is $radarfile"
 
     ln -sf $EXEC ./wrf_to_radar.exe 
-  
-    cp $MODELDATAPATH/anal/anal${MEMBER} ./model${itime}.nc
 
-    ln -sf $radarfile ./radar${irad}_${itime}.nc
+    #Model data won't be modified we can link it.  
+    ln -sf $MODELDATAPATH/anal/${modeldate}/anal${MEMBER} ./model${itime}.nc
 
+    #Radar data will be modified (additional fields will be written in the file)
+    #So this file is copied to its final destionation and then linked to the TMPPATH
+    cp $RADARDATAPATH/${myfile} $MODELDATAPATH/wrf_to_radar/$myfile
+    ln -sf $MODELDATAPATH/wrf_to_radar/$myfile  ./radar${irad}_${itime}.nc
+
+    #We execute the wrf_to_radar module.
     ./wrf_to_radar.exe
-
-    cp  ./radar${irad}_${itime}.nc $MODELDATAPATH/wrf_to_radar/$myfile 
 
   else
 
@@ -122,9 +126,5 @@ for ifile in $( ls $RADARDATAPATH/cfrad* ) ; do
   fi
 
 done
-
-
-
-
 
 

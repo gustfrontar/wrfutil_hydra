@@ -75,7 +75,7 @@ options['etfilterqccode']=3000.0
 
 
 # read in the file, create a RadarMapDisplay object
-filename = '/home/juan.guerrieri/datosmate/20091117/cfrad.20091117_200345.000_to_20091117_200734.001_PAR_SUR.nc3'
+filename = '/home/jruiz/share/DATA/OBS/OBS_REAL_PARANA_20091117_CFRADIAL/cfrad.20091117_200345.000_to_20091117_200734.001_PAR_SUR.nc3'
 
 #Performs QC operations based on options
 radar = rqc.main_qc( filename , options )

@@ -54,6 +54,8 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
   REAL(r_size)         :: tmpref,tmperr(1)
   INTEGER              :: INTERPOLATION_TECHNIQUE
 
+  write(*,*)"Hello from model_to_radar"
+
   INTERPOLATION_TECHNIQUE=1 
 
   !NOTE: input_radar can be the full radar domain or a local radar domain of the same type.
@@ -109,7 +111,6 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
 
        !Find i,j,k for the center of the beam.
        tmp=REAL(id_reflectivity_obs,r_size)
-
 
        CALL latlon_to_ij(projection,input_radar%lat(ia,ir),input_radar%lon(ia,ir), ri,rj)
 
@@ -173,16 +174,17 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
           !  !Update PIK
           !  pik = pik + att * input_radar%range_resolution / 1.0d3
           !ENDIF
+
  
           refdb=10.0d0*log10(ref)
- 
+
           IF( ref .GT. minz )THEN
-            input_radar%radarv3d_model(ir,ia,input_radar%iv3d_ref)=refdb !refdb
+            input_radar%radarv3d_model(ia,ir,input_radar%iv3d_ref)=refdb !refdb
           ENDIF
 
           !Will generate wind observations only where reflectivity data is good enough (in this case were we have clouds). 
           IF( ref .GT. minz )THEN
-            input_radar%radarv3d_model(ir,ia,input_radar%iv3d_ref)=min_ref_dbz
+            input_radar%radarv3d_model(ia,ir,input_radar%iv3d_ref)=min_ref_dbz
           ENDIF
 
         ENDIF  !Endif for domain check
@@ -204,6 +206,8 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
     STOP
 
   ENDIF
+
+  write(*,*)"Good bye from model_to_radar"
   
 
 
@@ -220,6 +224,7 @@ logical       :: model_split_output
   !Get grid properties.
   write(*,*)"Getting model info"
   current_model_file=model_file_name
+  im=1
   WRITE(current_model_file(6:9),'(I4.4)')im
   CALL set_common_wrf( current_model_file )
   ALLOCATE( gues3d(nlon,nlat,nlev,nv3d),gues2d(nlon,nlat,nv2d) )
@@ -286,9 +291,9 @@ logical       :: model_split_output
 
      CALL model_to_radar( RADAR_1 , gues3d , gues2d )
 
-     current_radar_file=inputradar
-     WRITE(current_radar_file(7:10),'(I4.4)')iradar
-     WRITE(current_radar_file(12:15),'(I4.4)')im
+     !current_radar_file=inputradar
+     !WRITE(current_radar_file(7:10),'(I4.4)')iradar
+     !WRITE(current_radar_file(12:15),'(I4.4)')im
 
      write(*,*)"Writing output data"
      CALL radar_write_model( RADAR_1 , current_radar_file )
