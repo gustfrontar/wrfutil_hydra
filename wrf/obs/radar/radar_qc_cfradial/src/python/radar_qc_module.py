@@ -1,5 +1,4 @@
 #print __doc__
-
 # Author: Rapid Refresh Argentina Team
 # License: BSD 3 clause
 
@@ -47,7 +46,7 @@ def main_qc( filename , options ) :
       #From time,range -> azimuth,range,elevation
 
       [ ref_array , az , level , time , index , az_exact ]=order_variable( radar , name_ref )
-      [ v_array  ]=order_variable( radar , name_v )
+      [ v_array                                          ]=order_variable( radar , name_v   )
 
       na=ref_array.shape[0]
       nr=ref_array.shape[1]
@@ -75,9 +74,9 @@ def main_qc( filename , options ) :
 
       #Use pyart rutines to compute lat,lon and z at each grid point
       #Reorder data
-      [ altitude_array ]=order_variable( radar , 'altitude' )
-      [ longitude_array ]=order_variable( radar , 'longitude' )
-      [ latitude_array ]=order_variable( radar , 'latitude' ) 
+      [ altitude_array  ] = order_variable( radar , 'altitude' )
+      [ longitude_array ] = order_variable( radar , 'longitude' )
+      [ latitude_array  ] = order_variable( radar , 'latitude' ) 
 
    #===================================================
    # DEALIASING 
@@ -142,7 +141,9 @@ def main_qc( filename , options ) :
 
    return radar
 
-   
+#===========================================================================================================
+# OTRAS FUNCIONES CONTENIDAS EN ESTE MODULO
+#===========================================================================================================   
 
 def order_variable ( radar , var_name )  :  
 
