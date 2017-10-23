@@ -1,9 +1,9 @@
 #print __doc__
 
-# Author: Juan Ruiz (jruiz@cima.fcen.uba.ar)
+# Author: Rapid Refresh Argentina Team
 # License: BSD 3 clause
 
-# History:  Juan Ruiz Created 2017
+# History:  Created 10-2017
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,7 +15,6 @@ import radar_qc_module as rqc
 # QC PARAMETERS
 #======================================
 options = {}
-
 
 #Flags
 options['ifdealias']=False
@@ -49,7 +48,6 @@ options['rhofilternx']=2
 options['rhofilterny']=2
 options['rhofilternz']=0
 options['rhofiltertr']=0.5
-options['rhofilterqccode']=1
 
 #Echo top parameters
 
@@ -57,10 +55,14 @@ options['etfilternx']=2
 options['etfilterny']=2
 options['etfilternz']=0
 options['etfiltertr']=0.5
-options['etfilterqccode']=3000.0
 
 #Speckle parameters
 
+options['spfilternx']=2 
+options['spfilterny']=2
+options['spfilternz']=0
+options['spfilterreftr']=5
+options['spfiltertr']=3
 
 #Attenuation parameters
 

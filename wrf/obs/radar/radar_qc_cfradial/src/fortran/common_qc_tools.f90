@@ -36,15 +36,8 @@ MODULE QC_CONST
 
   REAL(r_size)             :: undef 
 
-  INTEGER , PARAMETER  :: QCCODE_ATTENUATION = 10
-  INTEGER , PARAMETER  :: QCCODE_SPECKLE     = 11
-  INTEGER , PARAMETER  :: QCCODE_TEXTURE     = 12
-  INTEGER , PARAMETER  :: QCCODE_RHOFILTER   = 13
-  INTEGER , PARAMETER  :: QCCODE_SIGN        = 14
 
-  INTEGER , PARAMETER  :: QCCODE_GOOD        = 0
-
-  REAL(r_size) , ALLOCATABLE  :: QCARRAY(:,:,:)  !Array to store qccodes
+!  REAL(r_size) , ALLOCATABLE  :: QCARRAY(:,:,:)  !Array to store qccodes
 
 END MODULE QC_CONST
 
@@ -58,80 +51,79 @@ MODULE COMMON_QC_TOOLS
 !
 !=======================================================================
 !$USE OMP_LIB
-  USE netcdf 
   USE qc_const
   IMPLICIT NONE
   PUBLIC
 
  CONTAINS
 
-SUBROUTINE GET_QCARRAY( qc_array_out , na , nr , ne )
-IMPLICIT NONE
-INTEGER, INTENT(IN) :: na,nr,ne
-REAL(r_size) , INTENT(OUT) :: qc_array_out(na,nr,ne)
+!SUBROUTINE GET_QCARRAY( qc_array_out , na , nr , ne )
+!IMPLICIT NONE
+!INTEGER, INTENT(IN) :: na,nr,ne
+!REAL(r_size) , INTENT(OUT) :: qc_array_out(na,nr,ne)
 
-   qc_array_out = qcarray 
+!   qc_array_out = qcarray 
 
-END SUBROUTINE GET_QCARRAY
+!END SUBROUTINE GET_QCARRAY
 
-SUBROUTINE INIT_QCARRAY(na,nr,ne)
-IMPLICIT NONE
-INTEGER, INTENT(IN) :: na,nr,ne
+!SUBROUTINE INIT_QCARRAY(na,nr,ne)
+!IMPLICIT NONE
+!INTEGER, INTENT(IN) :: na,nr,ne
 
- if( allocated(QCARRAY) )deallocate(QCARRAY)
- allocate( QCARRAY(na,nr,ne) )
+! if( allocated(QCARRAY) )deallocate(QCARRAY)
+! allocate( QCARRAY(na,nr,ne) )
 
- QCARRAY=QCCODE_GOOD
+! QCARRAY=QCCODE_GOOD
 
-END SUBROUTINE INIT_QCARRAY 
+!END SUBROUTINE INIT_QCARRAY 
 
-SUBROUTINE SET_UNDEF(input_undef)
-IMPLICIT NONE
-REAL(r_size) , INTENT(IN) :: input_undef
+!SUBROUTINE SET_UNDEF(input_undef)
+!IMPLICIT NONE
+!REAL(r_size) , INTENT(IN) :: input_undef
 
-undef = input_undef
+!undef = input_undef
 
-END SUBROUTINE SET_UNDEF
+!END SUBROUTINE SET_UNDEF
 
-SUBROUTINE SPECKLE_FILTER(var,na,nr,ne,nx,ny,nz,threshold)
+SUBROUTINE SPECKLE_FILTER(var,na,nr,ne,nx,ny,nz,threshold,speckle)
 IMPLICIT NONE
 INTEGER, INTENT(IN)        :: na,nr,ne,nx,ny,nz        !Var dims and box dims
 REAL(r_size),INTENT(IN)    :: threshold                !Threshold 
 REAL(r_size),INTENT(INOUT) :: var(na,nr,ne)            !Input variable
-REAL(r_size)               :: tmp_data_3d(na,nr,ne)    !Temporal array
+REAL(r_size),INTENT(OUT)   :: speckle(na,nr,ne)        !Temporal array
 INTEGER                    :: ia,ir,ie 
 
-  CALL BOX_FUNCTIONS_2D(var,na,nr,ne,nx,ny,nz,'COUN',tmp_data_3d,threshold)
+  CALL BOX_FUNCTIONS_2D(var,na,nr,ne,nx,ny,nz,'COUN',speckle,threshold)
 
-  where( tmp_data_3d /= undef .and. tmp_data_3d < threshold )
-    var=undef
-    qcarray = QCCODE_SPECKLE
-  endwhere
+!  where( tmp_data_3d /= undef .and. tmp_data_3d < threshold )
+!    var=undef
+!    qcarray = QCCODE_SPECKLE
+!  endwhere
 
 RETURN
 END SUBROUTINE SPECKLE_FILTER
 
-SUBROUTINE RHO_FILTER(var,na,nr,ne,nx,ny,nz,threshold)
+SUBROUTINE RHO_FILTER(var,na,nr,ne,nx,ny,nz,rho_smooth)
 IMPLICIT NONE
 INTEGER, INTENT(IN)        :: na,nr,ne,nx,ny,nz        !Var dims and box dims
-REAL(r_size),INTENT(IN)    :: threshold                !Threshold 
+!REAL(r_size),INTENT(IN)    :: threshold                !Threshold 
 REAL(r_size),INTENT(INOUT) :: var(na,nr,ne)            !Input variable
-REAL(r_size)               :: rho_smooth(na,nr,ne)     !Temporal array
+REAL(r_size),INTENT(OUT)   :: rho_smooth(na,nr,ne)     !Temporal array
 INTEGER                    :: ia,ir,ie
 
   CALL BOX_FUNCTIONS_2D(var,na,nr,ne,nx,ny,nz,'MEAN',rho_smooth,0.0d0)
 
-  where( rho_smooth < threshold )
-    var=undef 
-    qcarray=QCCODE_RHOFILTER
-  endwhere
+!  where( rho_smooth < threshold )
+!    var=undef 
+!    qcarray=QCCODE_RHOFILTER
+!  endwhere
 
 RETURN
 
 END SUBROUTINE RHO_FILTER
 
 
-SUBROUTINE GET_ATTENUATION(var,na,nr,ne,beaml,a_coef,b_coef,cal_error,threshold)
+SUBROUTINE GET_ATTENUATION(var,na,nr,ne,beaml,a_coef,b_coef,cal_error,attenuation)
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !  This function estimates the attenuation percentaje due to metereological
@@ -154,8 +146,8 @@ SUBROUTINE GET_ATTENUATION(var,na,nr,ne,beaml,a_coef,b_coef,cal_error,threshold)
 IMPLICIT NONE
 INTEGER     ,INTENT(IN)    :: na,nr,ne
 REAL(r_size),INTENT(INOUT) :: var(na,nr,ne) !Input reflectivity
-REAL(r_size)               :: attenuation(na,nr,ne) !Attenuation factor.
-REAL(r_size),INTENT(IN)    :: threshold 
+REAL(r_size),INTENT(OUT)   :: attenuation(na,nr,ne) !Attenuation factor.
+!REAL(r_size),INTENT(IN)    :: threshold 
 REAL(r_size),INTENT(IN)    :: beaml  !Beam length (m)
 REAL(r_size),INTENT(IN)    :: a_coef , b_coef  !Attenuation parameters
 REAL(r_size),INTENT(IN)    :: cal_error !Calibration erro (use 1.0 if we dont know it)
@@ -195,23 +187,23 @@ ENDDO
 
 attenuation=-10*log(attenuation)  !Compute PIA
 
-!Mask attenuated beams
-where( attenuation < threshold .or. attenuation == undef )
-   var = undef 
-   qcarray = QCCODE_ATTENUATION
-endwhere
+!!Mask attenuated beams (esto lo vamos a hacer en el python no en el fortran)
+!where( attenuation < threshold .or. attenuation == undef )
+!   var = undef 
+!   qcarray = QCCODE_ATTENUATION
+!endwhere
 
 END SUBROUTINE GET_ATTENUATION
 
 
-SUBROUTINE COMPUTE_TDBZ(var,na,nr,ne,nx,ny,nz,threshold)
+SUBROUTINE COMPUTE_TDBZ(var,na,nr,ne,nx,ny,nz,texture)
 !This routine performs the radar QC computing the requested fields.
 IMPLICIT NONE
 INTEGER     ,INTENT(IN) :: na , nr , ne    !Grid dimension
 INTEGER     ,INTENT(IN) :: nx , ny , nz  !Box dimension
 REAL(r_size),INTENT(INOUT)  :: var(na,nr,ne) 
-REAL(r_size),INTENT(IN)     :: threshold
-REAL(r_size)             :: texture(na,nr,ne)
+!REAL(r_size),INTENT(IN)     :: threshold
+REAL(r_size),INTENT(OUT)    :: texture(na,nr,ne)
 REAL(r_size)             :: tmp_data_3d(na,nr,ne) 
 INTEGER                  :: ii , jj , kk
 
@@ -233,25 +225,25 @@ tmp_data_3d=undef
  !Average the squared radial differences.
  CALL BOX_FUNCTIONS_2D(tmp_data_3d,na,nr,ne,nx,ny,nz,'MEAN',texture,0.0d0)
 
- where( texture > threshold .or. texture == undef )
-      var=undef
-      qcarray=QCCODE_TEXTURE
- endwhere
+! where( texture > threshold .or. texture == undef )
+!      var=undef
+!      qcarray=QCCODE_TEXTURE
+! endwhere
 
 RETURN
 END SUBROUTINE COMPUTE_TDBZ
 
-SUBROUTINE COMPUTE_SIGN(var,na,nr,ne,nx,ny,nz,threshold)
+SUBROUTINE COMPUTE_SIGN(var,na,nr,ne,nx,ny,nz,varsign)
 !This routine computes the sign parameter
 !Kessinger et al 2003
 IMPLICIT NONE
 INTEGER     ,INTENT(IN)     :: na , nr , ne    !Grid dimension
 INTEGER     ,INTENT(IN)     :: nx , ny , nz  !Box dimension
 REAL(r_size),INTENT(INOUT)  :: var(na,nr,ne)
-REAL(r_size),INTENT(IN)     :: threshold 
+!REAL(r_size),INTENT(IN)     :: threshold 
 REAL(r_size)                :: tmp_data_3d(na,nr,ne) , diff
 INTEGER                     :: ii , jj , kk
-REAL(r_size)                :: varsign(na,nr,ne)
+REAL(r_size),INTENT(OUT)    :: varsign(na,nr,ne)
 
 !Compute the difference along the radial direction.
 tmp_data_3d=undef
@@ -276,10 +268,10 @@ tmp_data_3d=undef
  !Average the squared radial differences.
  CALL BOX_FUNCTIONS_2D(tmp_data_3d,na,nr,ne,nx,ny,nz,'MEAN',varsign,0.0d0)
 
- where( varsign > threshold .or. varsign == undef )
-    var=undef
-    qcarray=QCCODE_SIGN
- endwhere 
+! where( varsign > threshold .or. varsign == undef )
+!    var=undef
+!    qcarray=QCCODE_SIGN
+! endwhere 
 
 
 RETURN
@@ -417,7 +409,7 @@ REAL(r_size),INTENT(IN)  :: reflectivity(na,nr,ne) , heigth(nr,ne) , rrange(nr,n
 REAL(r_size),INTENT(OUT) :: output_data_3d(na,nr,ne,NPAR_ECHO_TOP_3D)  !Echo top , echo base , echo depth , max_dbz , maz_dbz_z , vertical_z_gradient
 REAL(r_size),INTENT(OUT) :: output_data_2d(na,nr,NPAR_ECHO_TOP_2D)  !Max echo top, max_echo_base, max_echo_depth, col_max, height weighted col_max
 !REAL(r_size)             :: tmp_output_data_3d(na,nr,ne,NPAR_ECHO_TOP_3D)
-!-----> The following variables will be saved within calls
+!-----> The following variables will be saved within calls to speed up the computation.
 REAL(r_size), ALLOCATABLE,SAVE :: Z(:,:) , R(:,:) 
 INTEGER, ALLOCATABLE,SAVE      :: REGJ(:,:,:) , REGI(:,:,:) , INVI(:,:,:) , INVJ(:,:,:) 
 INTEGER, ALLOCATABLE,SAVE      :: NEARESTN(:,:) , INVNEARESTN(:,:)
@@ -762,7 +754,8 @@ DO iz=1,nz
    output_2d(7) = reflectivity(iz)    !Intensity of first reflectivity maximun
    output_2d(6) = z(iz)               !Height of first reflectivity maximum
  ENDIF
- IF( reflectivity(iz) /= UNDEF .AND. (reflectivity(iz) - output_2d(7)) < first_maximum_threshold .AND. .NOT. found_first_maximum )THEN
+ IF( reflectivity(iz) /= UNDEF .AND. (reflectivity(iz) - output_2d(7)) <  & 
+     first_maximum_threshold .AND. .NOT. found_first_maximum )THEN
    found_first_maximum=.TRUE. 
  ELSE
    IF( reflectivity(iz) > output_2d(6) )THEN
@@ -788,13 +781,16 @@ END SUBROUTINE ECHO_TOP_SUB
 !   [ORIGINAL AUTHOR:] Masaru Kunii
 !-----------------------------------------------------------------------
 SUBROUTINE com_xy2ij(nx,ny,fx,fy,datax,datay,dist_min_x,dist_min_y,ratio,nearestn)
+
+  use qc_const
+
   IMPLICIT NONE
   ! --- inout variables
   INTEGER,INTENT(IN) :: nx,ny !number of grid points
   REAL(r_size),INTENT(IN) :: fx(nx,ny),fy(nx,ny) !(x,y) at (i,j)
   REAL(r_size),INTENT(IN) :: datax,datay !target (lon,lat)
   ! --- local work variables
-  INTEGER,PARAMETER :: detailout = .FALSE.
+  LOGICAL,PARAMETER :: detailout = .FALSE.
   INTEGER,PARAMETER :: num_grid_ave = 4  ! fix
   INTEGER :: ix,jy,ip,wk_maxp
   INTEGER :: iorder_we,iorder_sn
@@ -888,5 +884,5 @@ SUBROUTINE com_xy2ij(nx,ny,fx,fy,datax,datay,dist_min_x,dist_min_y,ratio,nearest
 END SUBROUTINE com_xy2ij
 
 
-END MODULE COMMON_QC_TOOLS
 
+END MODULE COMMON_QC_TOOLS
