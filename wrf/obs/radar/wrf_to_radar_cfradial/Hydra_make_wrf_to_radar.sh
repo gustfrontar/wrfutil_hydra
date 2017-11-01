@@ -8,7 +8,7 @@ INC_NETCDF="-I/usr/local/include/"
 
 
 OMP=
-F90OPT='-g -traceback -O3 ' # -convert big_endian -O3 -openmp'
+F90OPT='-openmp -O3 ' # -convert big_endian -O3 -openmp'
 
 cd ./src
 

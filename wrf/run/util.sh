@@ -1024,6 +1024,9 @@ rm -fr $TMPDIR/WPS/namelist*
  if [ ! -n "$RUN_CHEM" ] ; then
    RUN_CHEM=0
  fi
+ if [ ! -n "$ENABLE_UPP" ] ; then
+   ENABLE_UPP=0
+ fi
 
  if [ $RUN_CHEM -eq 1 ] ; then
     cp $CHEM_DATA/* $TMPDIR/WRF/

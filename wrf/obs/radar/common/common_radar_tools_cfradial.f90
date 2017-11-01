@@ -206,11 +206,15 @@ SUBROUTINE radar_write_model( myradar , myfile  )
  !Write the data
  DO iv=1,myradar%nv3d_model
 
-   write(*,*)"Writing ",myradar%element_model(iv)
+   IF ( iv == myradar%iv3d_ref_model .or.  iv == myradar%iv3d_rv_model )THEN
 
-   CALL check_io(NF90_INQ_VARID(ncid,myradar%element_model(iv),varid))
+     write(*,*)"Writing ",myradar%element_model(iv)
 
-   CALL check_io(NF90_PUT_VAR(ncid,varid,myradar%radarv3d_model(:,:,iv),(/1,1/),(/myradar%nr , myradar%nt/)))
+     CALL check_io(NF90_INQ_VARID(ncid,myradar%element_model(iv),varid))
+
+     CALL check_io(NF90_PUT_VAR(ncid,varid,myradar%radarv3d_model(:,:,iv),(/1,1/),(/myradar%nt , myradar%nr/)))
+
+   ENDIF
 
  ENDDO
 

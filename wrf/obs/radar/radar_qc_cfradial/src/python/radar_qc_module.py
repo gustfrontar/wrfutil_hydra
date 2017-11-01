@@ -5,13 +5,26 @@
 
 def main_qc( filename , options ) :
 
+   import sys
+   import time
    sys.path.append('../fortran')
 
    import numpy as np
+   import numpy.ma as ma
    import matplotlib.pyplot as plt
    import pyart
-   import common_qc_tools  as qct  #Fortran code routines.
+   from common_qc_tools  import qc  #Fortran code routines.
+   from common_qc_tools  import qc_const
    import netCDF4
+
+   import matplotlib.pyplot as plt
+
+   qc_const.undef = options['undef']   #This set the undef value for the fortran routines.
+   undef          = options['undef']   #This set the undef value for the rest of the script.
+
+   output=dict() #Initialize output dictionary.
+
+   computed_etfilter=False   #Flag to indicate if echo top has been computed already.
 
 #  Constant parameters
 
@@ -24,6 +37,8 @@ def main_qc( filename , options ) :
    QCCODE_RHOFILTER   = 13
    QCCODE_SIGN        = 14
    QCCODE_BLOCKING    = 15
+   QCCODE_ECHOTOP     = 16
+   QCCODE_ECHODEPTH   = 17
 
    #Para la velocidad radial
    QCCODE_DEALIAS     = 30
@@ -31,9 +46,10 @@ def main_qc( filename , options ) :
    #El codigo de los datos buenos para reflectividad y velocidad radial.
    QCCODE_GOOD        = 0
 
-
-   name_v=options['dv_var_name']
-   name_ref=options['reflectivity_var_name']
+   #Shortcut to variable names
+   name_v=options['v_name']
+   name_ref=options['ref_name']
+   name_rho=options['rho_name']
 
    radar = pyart.io.read(filename)
 
@@ -43,111 +59,334 @@ def main_qc( filename , options ) :
    #===================================================
    # RESHAPE VARIABLES
    #===================================================
-      #From time,range -> azimuth,range,elevation
+   #From time,range -> azimuth,range,elevation
 
-      [ ref_array , az , level , time , index , az_exact ]=order_variable( radar , name_ref )
-      [ v_array                                          ]=order_variable( radar , name_v   )
-
-      na=ref_array.shape[0]
-      nr=ref_array.shape[1]
-      ne=ref_array.shape[2]
-
-      cref_array=ref_array   #Define the corrected reflectivity array.
-      cv_array  =v_array     #Define the corrected radial velocity array.
+   startt=time.time()
 
 
-   #===================================================
-   # INITIALIZE QC FLAGS
-   #===================================================
+   if name_ref in radar.fields :
+        start=time.time()
 
-      #TODO if present V, initialize for V
-      #TODO if present DBZ, initialize for DBZ
-      #Estos seran arrays que contengan para cada pixel
-      #un codigo que indique si es un dato bueno o si 
-      #no paso alguno de los contrles que indique cual fue
-      qcref_array=np.zeros(cref_array.shape)
-      qcv_array  =np.zeros(v_array.shape)
+        [ output['ref'] , output['az'] , output['level'] , output['time'] , output['index'] , output['az_exact'] ]=order_variable( radar , name_ref , undef )
+        na=output['ref'].shape[0]
+        nr=output['ref'].shape[1]
+        ne=output['ref'].shape[2]
+        output['na']=na
+        output['nr']=nr
+        output['ne']=ne
+
+        output['cref'] = np.zeros(output['ref'].shape) 
+
+        output['cref'][:] = output['ref']                 #Initialize the corrected reflectivity array.
+
+        output['cref'][ output['cref'] == undef ]=options['norainrefval']
+        output['ref'] [ output['ref']  == undef ]=options['norainrefval']
+
+        output['qcref'] = np.zeros(output['cref'].shape)  #Set the qc flag array to 0.
+
+        end=time.time()
+
+        print("The elapsed time in {:s} is {:2f}".format("ref -> az,r,el",end-start) )
+
+ 
+   if name_v in radar.fields  : 
+
+        start=time.time()
+
+        [ output['v'] , output['az'] , output['level'] , output['time'] , output['index'] , output['az_exact']  ]=order_variable( radar , name_v , undef  )
+ 
+        na=output['ref'].shape[0]
+        nr=output['ref'].shape[1]
+        ne=output['ref'].shape[2]
+        output['na']=na
+        output['nr']=nr
+        output['ne']=ne
+ 
+        output['cv'] = np.zeros(output['v'].shape) 
+
+        output['cv'][:] = output['v']                     #Initialize the corrected doppler velocity array
+
+        output['qcv'] = np.zeros(output['v'].shape)       #Set the qc flag array to 0.
+
+        end=time.time()
+
+        print("The elapsed time in {:s} is {:2f}".format("v -> az,r,el",end-start) )
 
    #===================================================
    # GEOREFERENCE RADAR DATA
    #===================================================
 
-      #Use pyart rutines to compute lat,lon and z at each grid point
-      #Reorder data
-      [ altitude_array  ] = order_variable( radar , 'altitude' )
-      [ longitude_array ] = order_variable( radar , 'longitude' )
-      [ latitude_array  ] = order_variable( radar , 'latitude' ) 
+   #Use pyart rutines to compute x, y and z at each grid point
+   #Reorder data
+   start=time.time()
+
+   #dm is a dummy variable
+
+   [ output['altitude'] , dm , dm , dm , dm , dm ] = order_variable( radar , 'altitude' , undef )
+   [ output['x']        , dm , dm , dm , dm , dm ] = order_variable( radar , 'x' , undef ) 
+   [ output['y']        , dm , dm , dm , dm , dm ] = order_variable( radar , 'y' , undef )
+
+   #Compute distance to radar
+   output['distance']=np.power( np.power(output['x'],2)+np.power(output['y'],2) , 0.5 )
+
+   end=time.time()
+
+   print("The elapsed time in {:s} is {:2f}".format("x,y,z -> az,r,el",end-start) )
 
    #===================================================
    # DEALIASING 
    #===================================================
 
-   if options['ifdealias'] : 
+   if ( options['ifdealias'] and (name_v in radar.fields) ) : 
+     
+     start=time.time()
 
      #Uso una de las funciones de dealiasing de pyart con los parametros por defecto
-     winddealias=pyart.correct.region_dealias.dealias_region_based(radar, interval_splits=options['interval_splits'], interval_limits=None, skip_between_rays=options['skip_between_rays'], skip_along_ray=options['skip_along_ray'], centered=True, nyquist_vel=None, check_nyquist_uniform=True, gatefilter=False, rays_wrap_around=True, keep_original=False, set_limits=True, vel_field=name_v, corr_vel_field=None)
+     winddealias=pyart.correct.region_dealias.dealias_region_based(radar, interval_splits=options['interval_splits'],interval_limits=None, 
+                 skip_between_rays=options['skip_between_rays'], skip_along_ray=options['skip_along_ray'],centered=True,nyquist_vel=None,
+                 check_nyquist_uniform=True,gatefilter=False,rays_wrap_around=True,keep_original=False,set_limits=True,
+                 vel_field=name_v,corr_vel_field=None)
 
      #Add wind dealias to the radar objetc.
-     radar.fields['Vda'] = winddealias
-     radar.fields['Vda']['coordinates']=radar.fields['V']['coordinates']
-     radar.fields['Vda']['units']=radar.fields['V']['units']
-     radar.fields['Vda']['long_name']=radar.fields['V']['long_name']
-     radar.fields['Vda']['standard_name']=radar.fields['V']['standard_name']
+     radar.fields['Vda']                  = winddealias
+     radar.fields['Vda']['coordinates']   = radar.fields[name_v]['coordinates']
+     radar.fields['Vda']['units']         = radar.fields[name_v]['units']
+     radar.fields['Vda']['long_name']     = radar.fields[name_v]['long_name']
+     radar.fields['Vda']['standard_name'] = radar.fields[name_v]['standard_name']
+
+     #Re-order dealiased wind data.
+     [ output['cv'] , output['az'] , output['level'] , output['time'] , output['index'] , output['az_exact']  ]=order_variable( radar , 'Vda' , undef  )
+
+     end=time.time()
+
+     print("The elapsed time in {:s} is {:2f}".format("dealiasing",end-start) )
+
+   #===================================================
+   # DEALIASING BORDER FILTER
+   #===================================================
+
+   #TODO
 
    #===================================================
    # RHO HV FILTER
    #===================================================
 
-   if options['rhofilter']   :
+   if options['ifrhofilter']   :
 
+      start=time.time()
+
+      nx=options['rhofilternx']
+      ny=options['rhofilterny']
+      nz=options['rhofilternz']
+
+      if rho_name in radar.fields  :
+
+         [ output['rho'] , dm , dm , dm , dm , dm  ]=order_variable( radar , rho_name , undef  )
+
+         output['rho_smooth']=box_functions_2d(var=output['rho'],na=na,nr=nr,ne=ne,nx=nx,ny=nz,nz=nz,operation='MEAN',threshold=0.0)
+
+         output['cref'][ output['rho_smooth'] < options['rhofiltertr'] ] = undef
+         output['qcref'][output['rho_smooth'] < options['rhofiltertr'] ] = QCCODE_RHOFILTER
+ 
+      else   :
+         display('Warning: could not perform RHO-HV filter because rho was not found on this file')
+
+      if [ not options['rhofilter_save'] ] :
+          output['rho_smooth']=0
+          output['rho']=0
+
+      end=time.time()
+ 
+      print("The elapsed time in {:s} is {:2f}".format("rho filter",end-start) )
 
 
    #===================================================
-   # ECHO TOP FILTER
+   # ECHO TOP FILTER  
    #===================================================
 
 
-   if options['ifetfilter']  :
+   if ( options['ifetfilter'] ) :
+  
+     start=time.time()
 
-     #qct.echo_top(reflectivity=cref_array,heigth,rrange,na,nr,ne,nx,ny,nz,output_data_3d,output_data_2d)
+     if ( not computed_etfilter )     :
+
+        tmp_z=np.zeros((nr,ne))
+        tmp_d=np.zeros((nr,ne))
+
+        tmp_z[:]=output['altitude'][0,:,:]    #Store only one RHI section of the altitutde (we will assume that the altitude of a pixel is independent
+                                              #of the azimuth).
+        tmp_d[:]=output['distance'][0,:,:]    #Store only one RHI section of the distance to radar (we will assume that the altitude of a pixel is independent
+                                              #of the azimuth). 
+        tmp_max_z=np.zeros((na,nr,ne))
+
+        for ii in range(0,output['ne'])     :       #Estimate the maximum radar data height assoicated with each gate.
+           tmp_max_z[:,:,ii]=output['altitude'][:,:,output['ne']-1]
+ 
+        [tmp_data_3d,tmp_data_2d]=qc.echo_top(reflectivity=output['cref'],heigth=tmp_z,rrange=tmp_d,na=na,nr=nr,ne=ne
+                                                ,nx=options['etfilternx'],ny=options['etfilterny'],nz=options['etfilternz'])
+        computed_etfilter = True  #In case we need any of the other variables computed in this routine.
+
+        tmp_ref=0 #Unset tmp_ref to free some memory.
+        
+
+     #Mask the pixels with echo top values under the threshold.
+     #Do not mask tose pixels where the echo top threshold in below the maximum radar height (i.e. the heigth of the maximum elevation)
+     output['cref'][ np.logical_and( tmp_max_z > options['etfiltertr'] , tmp_data_3d[:,:,:,0] < options['etfiltertr'] ) ]   = undef
+     output['qcref'][ np.logical_and( tmp_max_z > options['etfiltertr'] , tmp_data_3d[:,:,:,0] < options['etfiltertr'] )  ] = QCCODE_ECHOTOP
+
+     #If requested store the auxiliary fields and data in the output dictionary.
+     if  ( options['etfilter_save'] )     : 
+        output['echo_top'] = tmp_data_3d[:,:,:,0] 
 
 
+     end=time.time()
 
-   
+     print("The elapsed time in {:s} is {:2f}".format("echo-top filter",end-start) )
+
+   #===================================================
+   # ECHO DEPTH FILTER 
+   #===================================================
+
+
+   if ( options['ifedfilter']  ) :
+
+     start=time.time()
+
+     if ( not computed_etfilter )     :
+
+        tmp_z=np.zeros((nr,ne))
+        tmp_d=np.zeros((nr,ne))
+
+        tmp_z[:]=output['altitude'][0,:,:]    #Store only one RHI section of the altitutde (we will assume that the altitude of a pixel is independent
+                                              #of the azimuth).
+        tmp_d[:]=output['distance'][0,:,:] #Store only one RHI section of the distance to radar (we will assume that the altitude of a pixel is independent
+                                              #of the azimuth). 
+        tmp_max_z=np.zeros((na,nr,ne))
+
+        for ii in range(0,output['ne'])     :       #Estimate the maximum radar data height assoicated with each gate.
+           tmp_max_z[:,:,ii]=output['altitude'][:,:,output['ne']-1]
+
+        [tmp_data_3d,tmp_data_2d]=qc.echo_top(reflectivity=output['cref'],heigth=tmp_z,rrange=tmp_d,na=na,nr=nr,ne=ne
+                                                ,nx=options['edfilternx'],ny=options['edfilterny'],nz=options['edfilternz'])
+        computed_etfilter = True  #In case we need any of the other variables computed in this routine.
+
+     #Mask the pixels with echo depth values under the threshold.
+     #Do not mask tose pixels where the echo depth threshold in below the maximum radar height (i.e. the heigth of the maximum elevation)
+     output['cref'] [ np.logical_and( tmp_max_z > options['edfiltertr'] , tmp_data_3d[:,:,:,2] < options['edfiltertr'] ) ] = undef
+     output['qcref'][ np.logical_and( tmp_max_z > options['edfiltertr'] , tmp_data_3d[:,:,:,2] < options['edfiltertr'] ) ] = QCCODE_ECHODEPTH
+
+     #If requested store the auxiliary fields and data in the output dictionary.
+     if  ( options['edfilter_save'] )     :
+        output['echo_depth'] = tmp_data_3d[:,:,:,2] 
+
+     end=time.time()
+
+     print("The elapsed time in {:s} is {:2f}".format("echo-depth filter",end-start) )
+ 
    #===================================================
    # SPECKLE FILTER
    #===================================================
 
    if options['ifspfilter']  :
 
-     #Compute the number pixels with reflectivities over spfiltertr sourrounding each pixels in the box defined by nx,ny,nz.
-     qct.speckle_filter(var=cref_array,na=na,nr=nr,ne=ne,nx=options['spfilternx'],ny=options['spfilterny'],nz=options['spfilternz'],threshold=options['spfiltertr'],speckle=speckle)
+       start=time.time()
 
-     #Set the pixels with values below the threshold as undef. 
-     cref_array[ speckle < options['spfiletertr']  ]=options['undef'] 
+       #TODO poner todo en terminos de la estructura output
+       #Compute the number pixels with reflectivities over spfiltertr sourrounding each pixels in the box defined by nx,ny,nz.
+       nx=options['spfilternx']
+       ny=options['spfilterny']
+       nz=options['spfilternz']
+       tr=options['spfilterreftr']
+       output['speckle']=qc.box_functions_2d(datain=output['cref'].data,na=na,nr=nr,ne=ne,boxx=nx,boxy=ny,boxz=nz,operation='COUN',threshold=tr) 
 
-   
+       #Set the pixels with values below the threshold as undef. 
+       output['cref'][ output['speckle'] < options['spfiltertr']  ] = undef
+       
+       output['qcref'][ output['speckle'] < options['spfiltertr'] ] = QCCODE_SPECKLE
+
+       #If the field is not included in the output then set it to 0.
+       if [ not options['spfilter_save'] ] : 
+          output['speckle']=0   
+
+       end=time.time()
+
+       print("The elapsed time in {:s} is {:2f}".format("speckle filter",end-start) )
+
    #===================================================
    # ATTENUATION FILTER
    #===================================================
 
+   if options['ifattfilter']   :
+      
+      start=time.time()
 
+      beaml=radar.range['data'][1]-radar.range['data'][0] #Get beam length
+
+      output['attenuation']=qc.get_attenuation(var=output['cref'],na=na,nr=nr,ne=ne,beaml=beaml,cal_error=options['attcalerror'])
+
+      #Set the pixels with values below the threshold as undef. 
+      output['cref'][ output['attenuation'] < options['attfiltertr']  ] = undef
+
+      output['qcref'][ output['attenuation'] < options['attfiltertr'] ] = QCCODE_ATTENUATION
+
+      if [ not options['attfilter_save'] ] :
+          output['attenuation']=0
+
+
+      end=time.time()
+
+      print("The elapsed time in {:s} is {:2f}".format("attenuation filter",end-start) )
 
    #===================================================
    # TOPOGRAPHY BLOCKING FILTER
    #===================================================
 
+   #TODO
+
+   #===================================================
+   # DOPPLER NOISE FILTER
+   #===================================================
+
+   #TODO
+
+   #===================================================
+   # INTERFERENCE FILTER
+   #===================================================
+
+   #TODO
+
+   #===================================================
+   # LOW DOPPLER VOLOCITY FILTER
+   #===================================================
+
+   #TODO
+
+   #===================================================
+   # ADD CORRECTED DATA TO RADAR OBJECT
+   #===================================================
+
+   #TODO
+
+   #===================================================
+   # END
+   #===================================================
 
 
-   return radar
+   endt=time.time()
+
+   print("The elapsed time in {:s} is {:2f}".format("the entire QC",endt-startt) )
+
+   return radar , output
 
 #===========================================================================================================
 # OTRAS FUNCIONES CONTENIDAS EN ESTE MODULO
 #===========================================================================================================   
 
-def order_variable ( radar , var_name )  :  
+def order_variable ( radar , var_name , undef )  :  
 
    import numpy as np
+   import numpy.ma as ma
 
    #order_var es la variable ordenada con los azimuths entre 0 y 360 (si hay rayos repetidos se promedian).
    #order_azimuth es el azimuth "aproximado" utilizando 0 como azimuth inicial y avanzando en intervalos regulares e iguales a la resolucion
@@ -160,7 +399,7 @@ def order_variable ( radar , var_name )  :
       print('Warning: La resolucion en azimuth no es uniforme en los diferentes angulos de elevacion ')
       print('Warning: El codigo no esta preparado para considerar este caso y puede producir efectos indesaedos ')
    ray_angle_res=np.nanmean( ray_angle_res )
-   print 'The resolution in azimuth is: %5.3f' % ( ray_angle_res )
+   #print ('The resolution in azimuth is: %5.3f' % ( ray_angle_res ) )
 
 
    levels=np.unique(radar.elevation['data'])
@@ -173,24 +412,31 @@ def order_variable ( radar , var_name )  :
 
    if ( var_name == 'altitude' ) :
       var=radar.gate_altitude['data']
-   else if( var_name == 'longitude' ) :
+   elif( var_name == 'longitude' ) :
       var=radar.gate_longitude['data'] 
-   else if( var_name == 'latitude'  ) :
+   elif( var_name == 'latitude'  ) :
       var=radar.gate_latitude['data'] 
-   else
-      var=radar.fields[var_name]['data']
+   elif( var_name == 'x' )         :
+      var=radar.gate_x['data']
+   elif( var_name == 'y' )         : 
+      var=radar.gate_y['data']
+   else  :
+      var=radar.fields[var_name]['data'].data
+
+
+      var[ var == undef ] = np.nan
 
    nr=var.shape[1]
 
    #Allocate arrays
-   order_var=np.zeros((naz,nr,nel))
-   order_time=np.zeros((naz,nel)) 
-   order_index=np.zeros((naz,nel))   #This variable can be used to convert back to the azimuth - range array
-   azimuth_exact=np.zeros((naz,nel))
+   order_var    = undef + np.zeros((naz,nr,nel))
+   order_time   =np.zeros((naz,nel)) 
+   order_index  =undef + np.zeros((naz,nel))   #This variable can be used to convert back to the azimuth - range array
+   azimuth_exact=undef + np.zeros((naz,nel))
 
-   order_var[:]=np.nan
-   order_time[:]=np.nan
-   azimuth_exact[:]=np.nan
+   order_var[:]     = undef 
+   order_time[:]    = undef 
+   azimuth_exact[:] = undef
 
    
 
@@ -222,10 +468,13 @@ def order_variable ( radar , var_name )  :
             azimuth_exact[iaz,ilev] = np.nanmean( azlev[ az_index ] )
             order_index[iaz,ilev] = az_index[0]  #If multiple levels corresponds to a single azimuth / elevation chose the first one.
 
+   order_var[ np.isnan( order_var ) ]= undef
+   order_index[ np.isnan( order_index ) ]=undef
+
    return order_var , order_azimuth , levels , order_time , order_index , azimuth_exact
 
 
-   def order_variable_inv (  radar , var , order_index )  :
+   def order_variable_inv (  radar , var , order_index  )  :
 
        import numpy as np
    
@@ -249,11 +498,10 @@ def order_variable ( radar , var_name )  :
        for ia in range(0,na)  :
 
           for ie in range(0,ne)  :
+
+             if ( not order_index[ia,ie] == undef )  :
        
-             output_var[ia,order_index[ia,ie]]=var[ia,:,ie] 
-
-        #TODO ver como convertir la salida en un masked array.
-
+                output_var[ia,order_index[ia,ie]]=var[ia,:,ie] 
 
    return output_var
 

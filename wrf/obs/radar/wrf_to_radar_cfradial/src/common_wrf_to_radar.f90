@@ -46,7 +46,7 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
   REAL(r_size)         :: qv  , qc , qr
   REAL(r_size)         :: qci , qs , qg 
   REAL(r_size)         :: u   , v  , w
-  REAL(r_size)         :: ref , vr ,  cref  , refdb
+  REAL(r_size)         :: ref , rv ,  cref  , refdb
   REAL(r_size)         :: pik !Path integrated attenuation coefficient.
   REAL(r_size)         :: prh !Pseudo relative humidity
   LOGICAL              :: ISALLOC
@@ -96,7 +96,7 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
   !SIMPLE AND FAST INTERPOLATION APPROACH.
 
 
-!$OMP PARALLEL DO DEFAULT(SHARED) FIRSTPRIVATE(ia,ie,ir,pik,tmp_z,ri,rj,rk,qv,qc,qr,qci,qs,qg,t,p,u,v,w,ref,vr,att,cref,prh)
+!$OMP PARALLEL DO DEFAULT(SHARED) FIRSTPRIVATE(ia,ie,ir,pik,tmp_z,ri,rj,rk,qv,qc,qr,qci,qs,qg,t,p,u,v,w,ref,rv,att,cref,prh)
 
     DO ia=1,input_radar%na 
       pik=0.0d0 !Path integrated attenuation coefficient.
@@ -135,14 +135,14 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
           CALL itpl_3d(v3d(:,:,:,iv3d_u),ri+0.5,rj,rk,u)
           CALL itpl_3d(v3d(:,:,:,iv3d_v),ri,rj+0.5,rk,v)
           CALL itpl_3d(v3d(:,:,:,iv3d_w),ri,rj,rk+0.5,w)
-          !Rotate ur and vr
+          !Rotate ur and rv
           CALL rotwind_letkf(u,v,input_radar%lon(ia,ir),1.0d0,projection)
  
           !Compute reflectivity at the beam center.
           CALL calc_ref_vr(qv,qc,qr,qci,qs,qg,u,v,w,t,p,           &
                input_radar%azimuth(ia),input_radar%elevation(ie)   &
-                ,method_ref_calc,ref,vr,att)
-   
+                ,method_ref_calc,ref,rv,att)
+
           !ADD ERRORS TO THE OBSERVATIONS
           IF( ADD_OBS_ERROR )THEN
             !Add error to reflectivity.
@@ -156,7 +156,7 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
         
             !Add error to doppler velocity.
             CALL com_randn(1,tmperr)
-            vr=vr+tmperr(1)*RADIALWIND_ERROR 
+            rv=rv+tmperr(1)*RADIALWIND_ERROR 
 
           ENDIF
 
@@ -176,16 +176,14 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
           !ENDIF
 
  
-          refdb=10.0d0*log10(ref)
 
           IF( ref .GT. minz )THEN
-            input_radar%radarv3d_model(ia,ir,input_radar%iv3d_ref)=refdb !refdb
-          ENDIF
-
-          !Will generate wind observations only where reflectivity data is good enough (in this case were we have clouds). 
-          IF( ref .GT. minz )THEN
+            input_radar%radarv3d_model(ia,ir,input_radar%iv3d_ref)=10.0d0*log10(ref) !refdb
+          ELSE
             input_radar%radarv3d_model(ia,ir,input_radar%iv3d_ref)=min_ref_dbz
           ENDIF
+
+          input_radar%radarv3d_model(ia,ir,input_radar%iv3d_rv)=rv
 
         ENDIF  !Endif for domain check
 
@@ -290,10 +288,6 @@ logical       :: model_split_output
      CALL radar_georeference( RADAR_1 )
 
      CALL model_to_radar( RADAR_1 , gues3d , gues2d )
-
-     !current_radar_file=inputradar
-     !WRITE(current_radar_file(7:10),'(I4.4)')iradar
-     !WRITE(current_radar_file(12:15),'(I4.4)')im
 
      write(*,*)"Writing output data"
      CALL radar_write_model( RADAR_1 , current_radar_file )
