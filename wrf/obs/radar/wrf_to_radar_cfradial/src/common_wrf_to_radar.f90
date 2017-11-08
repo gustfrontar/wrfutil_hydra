@@ -87,8 +87,10 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
 
    !CALL get_method_refcalc( input_radar%lambda , method_ref_calc )
 
-   ALLOCATE( input_radar%radarv3d_model(input_radar%na,input_radar%nr,input_radar%nv3d_model) )
+   ALLOCATE( input_radar%radarv3d_model(input_radar%nr,input_radar%na,input_radar%nv3d_model) )
    input_radar%radarv3d_model=input_radar%missing
+
+   write(*,*)input_radar%nr , input_radar%na 
 
   !Begin with the interpolation. 
 
@@ -177,13 +179,14 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
 
  
 
-          IF( ref .GT. minz )THEN
-            input_radar%radarv3d_model(ia,ir,input_radar%iv3d_ref)=10.0d0*log10(ref) !refdb
+          IF( ref .GT. min_ref )THEN
+            input_radar%radarv3d_model(ir,ia,input_radar%iv3d_ref)=10.0d0*log10(ref) !refdb
           ELSE
-            input_radar%radarv3d_model(ia,ir,input_radar%iv3d_ref)=min_ref_dbz
+            input_radar%radarv3d_model(ir,ia,input_radar%iv3d_ref)=min_ref_dbz
           ENDIF
 
-          input_radar%radarv3d_model(ia,ir,input_radar%iv3d_rv)=rv
+          input_radar%radarv3d_model(ir,ia,input_radar%iv3d_rv)=rv
+
 
         ENDIF  !Endif for domain check
 

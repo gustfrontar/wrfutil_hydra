@@ -212,7 +212,9 @@ SUBROUTINE radar_write_model( myradar , myfile  )
 
      CALL check_io(NF90_INQ_VARID(ncid,myradar%element_model(iv),varid))
 
-     CALL check_io(NF90_PUT_VAR(ncid,varid,myradar%radarv3d_model(:,:,iv),(/1,1/),(/myradar%nt , myradar%nr/)))
+     write(*,*)myradar%nr , myradar%nt 
+     write(*,*)shape(myradar%radarv3d_model) 
+     CALL check_io(NF90_PUT_VAR(ncid,varid,myradar%radarv3d_model(:,:,iv),(/1,1/),(/myradar%nr , myradar%nt/)))
 
    ENDIF
 
