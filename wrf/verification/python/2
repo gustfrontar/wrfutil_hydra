@@ -6,7 +6,6 @@ Created on 07/11/2017
 
 import sys
 sys.path.append('../../../common_python/common_modules/')
-sys.path.append('../../../common_python/common_functions/')
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime as dt
@@ -58,10 +57,9 @@ for source in ['anal','gues'] :
 
 			print ( 'Reading file: ' + my_file)
 
-			my_data=bio.read_data_direct(my_file,nx,ny,nz,dtypein='>f4',undef_in=undef_in,undef_out=undef,seq_acces=False)
+                        my_data=bio.read_data_direct(my_file,nx,ny,nz,dtypein='>f4',undef_in=undef_in,undef_out=undef,seq_acces=False)
 
-                        #Add data to the ensemble array.
-			comm.add_to_ensemble(nx=nx,ny=ny,nz=nz,ibv=im+1,my_data=my_data )
+                        comm.add_to_ensemble(nx=nx,ny=ny,nz=nz,ibv=im+1,my_data=my_data )
 
 			#my_data_coun[  my_data != undef_out  ]= my_data_coun[ my_data != undef_out ] + 1
 
@@ -73,8 +71,8 @@ for source in ['anal','gues'] :
                 #Generate a mask for the ensemble.
 		comm.getmask(nx=nx,ny=ny,nz=nz,nbv=enssize,undef=undef)
  
-		#Compute the mean and the standard deviation.
-		my_moments=comm.compute_moments(nx=nx,ny=ny,nz=nz,nbv=ne,nmoments=2,undef=undef)
+                #Compute the mean and the standard deviation.
+                my_moments=comm.compute_moments(nx=nx,ny=ny,nz=nz,nbv=ne,nmoments=2,undef=undef)
 		#Compute ensemble mean
 		#my_data_mean[ my_data_coun > 0 ]=my_data_mean[ my_data_coun > 0 ] / my_data_coun[ my_data_coun > 0 ]
 		#Compute ensemble spread

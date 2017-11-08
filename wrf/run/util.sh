@@ -196,25 +196,8 @@ ens_member () {
 
 local    MEMBER="$1"
 local    MEMBER_STR=$MEMBER
-
-    if test $MEMBER -lt 10000
-    then
-      MEMBER_STR=0$MEMBER_STR
-    fi
-    if test $MEMBER -lt 1000
-    then
-      MEMBER_STR=0$MEMBER_STR
-    fi
-    if test $MEMBER -lt 100
-    then
-      MEMBER_STR=0$MEMBER_STR
-    fi
-    if test $MEMBER -lt 10
-    then
-      MEMBER_STR=0$MEMBER_STR
-    fi
-
-    echo $MEMBER_STR
+   
+    echo `add_zeros $1 5 `
 }
 
 forecast_lead () {
