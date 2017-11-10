@@ -1,7 +1,7 @@
 #KALMAN FILTER CONFIGURATION
 DOMAINCONF=AMBA    #Define a domain
 LETKFNAMELIST=control
-MEMBER=5   #10     #Number of ensemble members.
+MEMBER=10   #10     #Number of ensemble members.
 MAX_DOM=1
 HOMEDIR=${HOME}/share/
 DATADIR=${HOME}/data/
@@ -28,7 +28,7 @@ MM=$MEMBER                      #Variable for iteration limits.
 MEANMEMBER=`expr $MEMBER + 1 `  #This is the member ID corresponding to the ensemble mean.
 
 ASSIMILATION_FREC=21600 #Forecast initialization frequency (seconds)
-GUESFT=600    #604800           #Forecast length (secons)
+GUESFT=864000    #604800           #Forecast length (secons)
 
 WINDOW=21600        #Forecast initialization frequency (seconds)
 WINDOW_START=0      #Window start (seconds from forecast initialization)
@@ -81,11 +81,11 @@ INTERP_METHOD=1
 ### LETKF setting
 OBS=""                                                     # Name of observation folder.
 RADAROBS="/OSSE_20140122_DBZ2.5_VR1.0_SO2KM/"              # Name of radar observation folder.
-EXP=TEST_${DOMAINCONF}_${CONFIGURATION}                # name of experiment
+EXP=TEST_${DOMAINCONF}_${CONFIGURATION}                    # name of experiment
 
 ### initial date setting
-IDATE=19980418000000     #EXPERIMENT INITIAL DATE
-EDATE=19980418000000     #EXPERIMENT END DATE
+IDATE=19980417000000     #EXPERIMENT INITIAL DATE
+EDATE=19980417000000     #EXPERIMENT END DATE
 
 #### DATA
 OBSDIR=${HOMEDIR}/DATA/OBS/$OBS/                                                               # observations

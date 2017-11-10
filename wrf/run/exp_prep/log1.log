@@ -1,0 +1,15 @@
+331:56415167:d=1998043000:RH:2 m above ground:anl:
+483:76160049:d=1998043000:SOILW:0-0.1 m below ground:anl:
+484:76273903:d=1998043000:SOILW:0.1-0.4 m below ground:anl:
+485:76387711:d=1998043000:TMP:0-0.1 m below ground:anl:
+486:76545370:d=1998043000:TMP:0.1-0.4 m below ground:anl:
+487:76700955:d=1998043000:WEASD:surface:anl:
+511:80996659:d=1998043000:LAND:surface:anl:
+512:81002638:d=1998043000:ICEC:surface:anl:
+513.1:81040868:d=1998043000:UGRD:10 m above ground:anl:
+513.2:81040868:d=1998043000:VGRD:10 m above ground:anl:
+514:81426125:d=1998043000:TMP:2 m above ground:anl:
+533:83706858:d=1998043000:SOILW:0.4-1 m below ground:anl:
+534:83821824:d=1998043000:SOILW:1-2 m below ground:anl:
+535:83935712:d=1998043000:TMP:0.4-1 m below ground:anl:
+536:84090254:d=1998043000:TMP:1-2 m below ground:anl:

@@ -14,7 +14,7 @@
  interval_seconds                    = BDYFREQ
  input_from_file                     = .true.,.true.,.true.,
  history_interval_s                  = OUTPUTFREQ,  OUTPUTFREQ, OUTPUTFREQ,
- frames_per_outfile                  = 1, 1, 1000,
+ frames_per_outfile                  = 1, 1, 1,
  restart                             = .false.,
  restart_interval                    = 0,
  io_form_history                     = 2,
