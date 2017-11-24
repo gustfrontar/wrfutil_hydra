@@ -14,7 +14,7 @@ import os
 
 basedir='/home/jruiz/salidas/EXPERIMENTS/'
 
-expname = 'ANALYSIS_PARANA_2KM_control_paranafnl_newobs_60m_radar_grib_Hydra'
+expname = 'ANALYSIS_PARANA_2KM_control_paranafnlinf095_newobs_60m_radar_grib_Hydra'
 
 undef_in=1.0e30
 

@@ -63,7 +63,7 @@ def read_data_direct(inputfilename,nx,ny,nz,dtypein,undef_in=default_undef_val,u
 #   return field
 
 def write_data_direct_woundef(inputfilename,field,dtypein):
-#dtypein is the native input data format.
+#dtypein is the desired data format.
 #>f32 for big endian data format with single precission.
 #f32 for little endian data with single precission ... and so on.
    tmp_shape=field.shape
@@ -79,5 +79,32 @@ def write_data_direct_woundef(inputfilename,field,dtypein):
    field.astype(dtypein).tofile(inputfilename)
 
 
+def read_data_grads(filename,nx,ny,nz,ctl_vars,ctl_inirecord,ctl_endrecord,dtypein='>f4',undef_in=default_undef_val,undef_out=default_undef_val):
+#Default data type in is >f4 (double precission big endian)
+
+#This function reads scale binary files generated with Guo-Yuan's scale python postprocessing tool.
+#In these files all selected variables are included in the same binary file.
+#nx,ny are the lon,lat dimensions nz is the total number of reccords vars*vert_levels 
+#ctl_vars is a string list containig variable names.
+#ctl_inirecord indicates the initial index for each variable (it size should be the same as ctl_vars)
+#ctl_endrecord indicates the last index for each variable.
+#A dictionary containing the different variables is returned. Each element of the dictionary is a masked array.
+
+#Warning: Key order is not guaranteed so when a loop is performed over the keys, different key order may result
+#in different excecutions of the code.
+
+   my_data=dict()
+
+   tmp_data=read_data_direct(filename,nx,ny,nz,dtypein,undef_in=undef_in,undef_out=undef_out)  #Read the data.
+
+   #Loop over variables to create the dictionary. 
+   ivar=0
+   for my_var in ctl_vars   :
+
+      my_data[my_var]=tmp_data[:,:,ctl_inirecord[ivar]:ctl_endrecord[ivar]+1]
+
+      ivar=ivar+1
+
+   return my_data
 
 

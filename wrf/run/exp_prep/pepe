@@ -1,0 +1,15 @@
+1:0:d=1998043000:RH:2 m above ground:anl:
+2:4009:d=1998043000:SOILW:0-0.1 m below ground:anl:
+3:7691:d=1998043000:SOILW:0.1-0.4 m below ground:anl:
+4:11361:d=1998043000:TMP:0-0.1 m below ground:anl:
+5:15459:d=1998043000:TMP:0.1-0.4 m below ground:anl:
+6:19553:d=1998043000:WEASD:surface:anl:
+7:21562:d=1998043000:LAND:surface:anl:
+8:22026:d=1998043000:ICEC:surface:anl:
+9:22207:d=1998043000:UGRD:10 m above ground:anl:
+10:26883:d=1998043000:VGRD:10 m above ground:anl:
+11:31543:d=1998043000:TMP:2 m above ground:anl:
+12:38080:d=1998043000:SOILW:0.4-1 m below ground:anl:
+13:41759:d=1998043000:SOILW:1-2 m below ground:anl:
+14:45423:d=1998043000:TMP:0.4-1 m below ground:anl:
+15:49522:d=1998043000:TMP:1-2 m below ground:anl:

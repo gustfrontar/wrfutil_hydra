@@ -77,7 +77,7 @@ NRADARS=1                                                                       
 RADAROBSDIR=${HOMEDIR}/DATA/OBS/$RADAROBS/                                                # Folder where radar observations are.
 TMPDIR=${HOME}/TMP/$EXP/                                                                  # Temporal work directory (should be accessible for all computation nodes)
 OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                    # Where results will be stored.
-GRIBDIR=${HOMEDIR}/DATA/GRIB/ANALYSIS_PARANA_10KM_control_paranafnl10k_60m_prepbufrandsurface_1hr_grib_Hydra/                                                # Folder where bdy and initial grib files are located.
+GRIBDIR=${HOMEDIR}/DATA/GRIB/WRF/ANALYSIS_PARANA_10KM_control_paranafnl10k_60m_prepbufrandsurface_1hr_grib_Hydra/                                                # Folder where bdy and initial grib files are located.
 GRIBTABLE="Vtable.UPP"                                                                    # Bdy and init data source Vtable name.
 PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/00001/                              # Folder where data for perturbing bdy are located.
 PERTGRIBTABLE="Vtable.CFSR2_web"                                                          # Bdy perturbation source vtable name.
@@ -85,7 +85,7 @@ GEOG=/share/GEOG/                                                               
 
 #INITIAL AND BOUNDARY PERTURBATIONS
 AMP_FACTOR="0.0"              #Perturbation scale factor.
-RANDOM_AMP_FACTOR="0.5"       #Random perturbation scale factor.
+RANDOM_AMP_FACTOR="0.0"       #Random perturbation scale factor.
 PERTURB_BOUNDARY=1            #Wether boundary conditions are going to be perturbed.
 PERTURB_ATMOSPHERE=".true."   #Wether atmospheric conditions will be perturbed (boundary and first cycle)
 PERTURB_SST=".true."          #Wether SST will be perturbed.

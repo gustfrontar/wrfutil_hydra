@@ -21,8 +21,8 @@ CDIR=`pwd`
 CONFIGURATION=control_paranafnlinf095_newobs_60m_radar_grib_Hydra    #Define a experiment configuration
 MCONFIGURATION=machine_radar60m_multiple_Hydra          #Define a machine configuration (number of nodes, etc)
 
-RESTART=0
-RESTARTDATE=20091117204500
+RESTART=1
+RESTARTDATE=20091117214500
 RESTARTITER=10
 
 MYHOST=`hostname`

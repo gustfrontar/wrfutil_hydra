@@ -1575,6 +1575,7 @@ run_forecast_sub () {
       done
       time wait 
      done
+
  
      if [ $do_wrf_pre -eq 1 ] ; then #Update lateral and lower boundary conditions.
       M=$INIMEMBER

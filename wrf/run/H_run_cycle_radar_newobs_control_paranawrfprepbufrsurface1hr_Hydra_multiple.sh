@@ -22,7 +22,7 @@ CONFIGURATION=control_paranawrfprepbufrsurface1hr_newobs_60m_radar_grib_Hydra   
 MCONFIGURATION=machine_radar60m_multiple_Hydra          #Define a machine configuration (number of nodes, etc)
 
 RESTART=0
-RESTARTDATE=20091117204500
+RESTARTDATE=20091117215000
 RESTARTITER=10
 
 MYHOST=`hostname`
