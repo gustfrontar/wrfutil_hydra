@@ -2,10 +2,10 @@
 
 #DOWNLOAD HI RESOLUTION CFSR ANALYSIS
 
-ITIME=20091116000000   #Start Time (yyyymmddhhMMss)
-ETIME=20091118000000   #End Time
+ITIME=19980429000000   #Start Time (yyyymmddhhMMss)
+ETIME=19980430000000   #End Time
 INT=21600     #Frequency
-DESTDIR=/home/jruiz/DATA/GRIB/CFSR/HIRES/GLOBAL/
+DESTDIR=/home/jruiz/share/DATA/GRIB/CFSR/HIRES/GLOBAL/
 
 source ../util.sh
 

@@ -18,6 +18,8 @@ MODULE common_namelist
 
   !Namelist variables
   LOGICAL            :: ADD_OBS_ERROR=.false.
+  LOGICAL            :: use_pseudorh =.false. !This variable is included to make
+                                              !the code compatible with common_wrf.f90
   REAL(r_size)       :: REFLECTIVITY_ERROR=1.0d0 !Standard deviation of reflectivity error in DBZ
   REAL(r_size)       :: RADIALWIND_ERROR=0.5d0   !Standard deviation of radialwind error in m/s
 

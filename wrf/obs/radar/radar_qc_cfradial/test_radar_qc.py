@@ -5,6 +5,11 @@
 
 # History:  Created 10-2017
 
+#Add path to additional modules.
+import sys
+sys.path.append('./src/python' )
+sys.path.append('./src/fortran')
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pyart
@@ -19,7 +24,9 @@ options = {}
 #Flags
 options['ifdealias']=False
 options['ifrhofilter']=False   #Rhohv filter
+options['ifattfilter']=True    #Attenuation filter
 options['ifetfilter']=True     #Echo top filter
+options['ifedfilter']=True     #Echo depth filter
 options['ifspfilter']=True     #Speckle filter
 options['ifattfileter']=True   #Attenuation filter
 options['ifblfilter']=True     #Blocking filter
@@ -27,11 +34,11 @@ options['ifmissfilter']=True   #Missing values filter
 
 #General
 
-options['reflectivity_var_name']='dBZ'            #Reflectivity
-options['corrected_reflectivity_var_name']='CdBZ' #Corrected reflectivity (qc output)
-options['dv_var_name']='V'                        #Dopper velocity
-options['dvda_var_name']='VDA'                    #Dealiased doppler velocity
-options['corrected_dv_var_name']='CV'             #Corrected wind (qc ouput)
+options['ref_name']='dBZ'            #Reflectivity
+options['cref_name']='CdBZ'          #Corrected reflectivity (qc output)
+options['v_name']='V'                #Dopper velocity
+options['cv_name']='CV'              #Corrected wind (qc ouput)
+options['rho_name']='RhoHV'          #Rho HV
 
 options['norainrefval']=-0.1
 options['undef']=-9.99e9
@@ -49,23 +56,36 @@ options['rhofilterny']=2
 options['rhofilternz']=0
 options['rhofiltertr']=0.5
 
-#Echo top parameters
+#Echo top parameters           #Filter layeers with echo top below a certain threshold.
 
-options['etfilternx']=2
-options['etfilterny']=2
-options['etfilternz']=0
-options['etfiltertr']=0.5
+options['etfilternx']=2        #Smooth parameter in x
+options['etfilterny']=2        #Smooth parameter in y
+options['etfilternz']=0        #Smooth parameter in z (dummy)
+options['etfiltertr']=3000     #Echo top threshold.
+options['etfilter_save']=True  #Wether echo top will be included in the output
+
+#Echo depth parameters          #Filters layers with depths below a certain threshold.
+
+options['edfilternx']=2         #Smooth parameter in x
+options['edfilterny']=2         #Smooth parameter in y
+options['edfilternz']=0         #Smooth parameter in z (dummy)
+options['edfiltertr']=3000      #Echo top threshold.
+options['edfilter_save']=True   #Wether echo top will be included in the output
 
 #Speckle parameters
 
-options['spfilternx']=2 
-options['spfilterny']=2
-options['spfilternz']=0
-options['spfilterreftr']=5
-options['spfiltertr']=3
+options['spfilternx']=2           #Box size in X NX=(2*spfilternx + 1)
+options['spfilterny']=2           #Box size in Y
+options['spfilternz']=0           #Box size in Z
+options['spfilterreftr']=5        #Reflectivity threshold
+options['spfiltertr']=0.3         #Count threshold
+options['spfilter_save']=True     #Save filter fields.
 
 #Attenuation parameters
 
+options['attfiltertr']=20.0       #Attenuation threshold in dBZ
+options['attcalerror']=1.0        #Calibration error
+options['attfilter_save']=True    #Save filter fields
 
 #Blocking parameters
 
@@ -77,16 +97,17 @@ options['spfiltertr']=3
 
 
 # read in the file, create a RadarMapDisplay object
-filename = '/home/jruiz/Dropbox/DATA/DATOS_RADAR/PARANA/PAR_20091117_120/cfrad.20091117_210346.000_to_20091117_210735.000_PAR_SUR.nc'
+filename = '/home/jruiz/share/DATA/OBS/OBS_REAL_PARANA_20091117_CFRADIAL/cfrad.20091117_200345.000_to_20091117_200734.001_PAR_SUR.nc3'
 
 #Performs QC operations based on options
-radar = rqc.main_qc( filename , options )
+[radar , qc_output] = rqc.main_qc( filename , options )
+
+print('End of QC')
+
+qc_output['echo_top'][ qc_output['echo_top'] == options['undef'] ] = 0.0
+
+plt.figure()
+plt.pcolor(qc_output['echo_top'][:,:,1])
+plt.show()
 
 
-#[ref_array , ref_az , ref_level , ref_time , ref_az_exact]=rqc.order_variable( radar , options['reflectivity_var_name'] )
-
-#ref_array[np.isnan(ref_array)]=0.0
-
-#plt.pcolor(ref_array[:,:,5])
-
-#plt.show()
