@@ -17,7 +17,7 @@ rm -f *.mod
 rm -f *.o
 
 ln -sf ../../common/common_radar_tools_cfradial.f90     .
-#ln -sf ../../../../common/common_wrf.f90       .
+ln -sf ../../../../common/common_wrf.f90       .
 ln -sf ../../../../common/common_obs_wrf.f90   .
 ln -sf ../../../../common/module_map_utils.f90 .
 #ln -sf ../../../../common/common_namelist.f90  .

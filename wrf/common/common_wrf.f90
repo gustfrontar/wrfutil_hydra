@@ -12,6 +12,9 @@ MODULE common_wrf
 !$USE OMP_LIB
   USE common
   USE map_utils
+
+  USE netcdf
+
   IMPLICIT NONE
   PUBLIC
 !-----------------------------------------------------------------------
@@ -30,6 +33,7 @@ MODULE common_wrf
   INTEGER,SAVE :: nlon
   INTEGER,SAVE :: nlat
   INTEGER,SAVE :: nlev
+  INTEGER,SAVE :: ntime  !Number of times in file.
   !3D VARIABLES
   INTEGER,PARAMETER :: iv3d_u=1
   INTEGER,PARAMETER :: iv3d_v=2
@@ -90,7 +94,7 @@ MODULE common_wrf
   LOGICAL, PARAMETER :: OPTIONAL_VARIABLE(nv3d+nv2d+np2d)= &  !Some input variables are optional (eg. condensates)
   &(/ .false. , .false. , .true. , .false. , .false. , .false. , .true. , .true. , &
   !   U          V         W         T         P         PH      QV        QC        
-  & .true. , .true. , .true. , .true. , .true. , .true. , .true. , .false. , .true. , .true. , .true. , .true. , &
+  & .true. , .true. , .true. , .true. , .true. , .true. , .true. , .false. , .true. , .true. , .true. , .true. ,&
   !   QR       QCI      QS       QG     CO_ANT  CO_BCK    CO_BBU     PS        T2M     Q2M       U10M    V10M
   & .true. , .true. , .true.  /)
   !  HFX_F    QFX_F   UST_F 
@@ -99,20 +103,19 @@ MODULE common_wrf
 
   TYPE(proj_info)  :: projection
 
-CONTAINS
+  CONTAINS
 !-----------------------------------------------------------------------
 ! Set the parameters
 !-----------------------------------------------------------------------
 SUBROUTINE set_common_wrf(inputfile)
   IMPLICIT NONE
-  INCLUDE 'netcdf.inc'
   REAL(r_sngl),ALLOCATABLE :: buf4(:,:)
   REAL(r_sngl) :: buf41d
   INTEGER :: i
-  INTEGER(4) :: ncid,varid,dimids(3),shape(3)
+  INTEGER(4) :: ncid,varid,dimids(4),shape(4)
   INTEGER(4),ALLOCATABLE :: start(:),count(:)
   CHARACTER(*)           :: inputfile
-  INTEGER :: ierr
+  INTEGER :: ierr , nAtts 
   
 
 
@@ -150,25 +153,26 @@ SUBROUTINE set_common_wrf(inputfile)
   ! Lon, Lat, F, phi0
   !
   WRITE(6,'(A)') 'READING: ',inputfile
-  CALL check_io(NF_OPEN(inputfile,NF_NOWRITE,ncid))
-  CALL check_io(NF_INQ_VARID(ncid,'U',varid))
-  CALL check_io(NF_INQ_VARDIMID(ncid,varid,dimids))
-  DO i=1,3
-    CALL check_io(NF_INQ_DIMLEN(ncid,dimids(i),shape(i)))
+  CALL check_io(NF90_OPEN(inputfile,NF90_NOWRITE,ncid))
+  CALL check_io(NF90_INQ_VARID(ncid,'U',varid))
+  CALL check_io(NF90_INQUIRE_VARIABLE(ncid,varid,dimids=dimids) )
+  DO i=1,4
+    CALL check_io(NF90_INQUIRE_DIMENSION(ncid,dimids(i),len=shape(i)))
   END DO
   nlon = shape(1)
   nlat = shape(2) + 1
   nlev = shape(3) + 1
+  ntime= shape(4)
   WRITE(6,'(A)') '*** grid information ***'
   WRITE(6,'(3(2X,A,I5))') 'nlon =',nlon,'nlat =',nlat,'nlev =',nlev
   nij0=nlon*nlat
   nlevall=nlev*nv3d+nv2d
   ngpv=nij0*nlevall
 
-  CALL check_io(NF_GET_ATT_REAL(ncid,NF_GLOBAL,'DX',tmpatt))
+  CALL check_io(NF90_GET_ATT(ncid,NF90_GLOBAL,'DX',tmpatt))
    dx=INT(tmpatt)
    pdx=REAL(tmpatt,r_size)
-  CALL check_io(NF_GET_ATT_REAL(ncid,NF_GLOBAL,'DY',tmpatt))
+  CALL check_io(NF90_GET_ATT(ncid,NF90_GLOBAL,'DY',tmpatt))
    dy=INT(tmpatt)
    pdy=REAL(tmpatt,r_size)
 
@@ -188,84 +192,84 @@ SUBROUTINE set_common_wrf(inputfile)
   ALLOCATE(sinalpha(nlon,nlat))
 
   !!! Time
-  CALL check_io(NF_INQ_VARID(ncid,'Times',varid))
+  CALL check_io(NF90_INQ_VARID(ncid,'Times',varid))
   ALLOCATE(start(3),count(3))
   start = (/ 1,1,1 /)
   count = (/ 19,1,1 /)
-  CALL check_io(NF_GET_VARA_TEXT(ncid,varid,start(1:2),count(1:2),hdate))
+  CALL check_io(NF90_GET_VAR(ncid,varid,hdate,start(1:2),count(1:2)))
   !!! P_top
-  CALL check_io(NF_INQ_VARID(ncid,'P_TOP',varid))
-  start = (/ 1,1,1 /)
-  count = (/ 1,1,1 /)
-  CALL  check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1,1)))
+  CALL check_io(NF90_INQ_VARID(ncid,'P_TOP',varid))
+  !start = (/ 1,1,1 /)
+  !count = (/ 1,1,1 /)
+  CALL  check_io(NF90_GET_VAR(ncid,varid,buf4(1,1)))
   p_top=REAL(buf4(1,1),r_size)
 
   start = (/ 1,1,1 /)
   !!! XLONG
   count = (/ nlon-1,nlat-1,1 /)
   lon=0.0d0
-  CALL check_io(NF_INQ_VARID(ncid,'XLONG',varid))
-  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat-1)))
+  CALL check_io(NF90_INQ_VARID(ncid,'XLONG',varid))
+  CALL check_io(NF90_GET_VAR(ncid,varid,buf4(1:nlon-1,1:nlat-1),start,count))
   lon(1:nlon-1,1:nlat-1)=REAL(buf4(1:nlon-1,1:nlat-1),r_size)  
   !!! XLAT
   count = (/ nlon-1,nlat-1,1 /)
   lat = 0.0d0
-  CALL check_io(NF_INQ_VARID(ncid,'XLAT',varid))
-  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat-1)))
+  CALL check_io(NF90_INQ_VARID(ncid,'XLAT',varid))
+  CALL check_io(NF90_GET_VAR(ncid,varid,buf4(1:nlon-1,1:nlat-1),start,count))
   lat(1:nlon-1,1:nlat-1)=REAL(buf4(1:nlon-1,1:nlat-1),r_size)
   !!! XLONG_U
   count = (/ nlon,nlat-1,1 /)
   lonu = 0.0d0
-  CALL check_io(NF_INQ_VARID(ncid,'XLONG_U',varid))
-  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon,1:nlat-1)))
+  CALL check_io(NF90_INQ_VARID(ncid,'XLONG_U',varid))
+  CALL check_io(NF90_GET_VAR(ncid,varid,buf4(1:nlon,1:nlat-1),start,count))
   lonu(1:nlon,1:nlat-1)=REAL(buf4(1:nlon,1:nlat-1),r_size)
   !!! XLAT_U
   count = (/ nlon,nlat-1,1 /)
   latu= 0.0d0
-  CALL check_io(NF_INQ_VARID(ncid,'XLAT_U',varid))
-  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon,1:nlat-1)))
+  CALL check_io(NF90_INQ_VARID(ncid,'XLAT_U',varid))
+  CALL check_io(NF90_GET_VAR(ncid,varid,buf4(1:nlon,1:nlat-1),start,count))
   latu(1:nlon,1:nlat-1)=REAL(buf4(1:nlon,1:nlat-1),r_size)
   !!! XLONG_V
   count = (/ nlon-1,nlat,1 /)
   lonv = 0.0d0
-  CALL check_io(NF_INQ_VARID(ncid,'XLONG_V',varid))
-  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat)))
+  CALL check_io(NF90_INQ_VARID(ncid,'XLONG_V',varid))
+  CALL check_io(NF90_GET_VAR(ncid,varid,buf4(1:nlon-1,1:nlat),start,count))
   lonv(1:nlon-1,1:nlat)=REAL(buf4(1:nlon-1,1:nlat),r_size)
   !!! XLAT_V
   count = (/ nlon-1,nlat,1 /)
   latv = 0.0d0
-  CALL check_io(NF_INQ_VARID(ncid,'XLAT_V',varid))
-  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat)))
+  CALL check_io(NF90_INQ_VARID(ncid,'XLAT_V',varid))
+  CALL check_io(NF90_GET_VAR(ncid,varid,buf4(1:nlon-1,1:nlat),start,count))
   latv(1:nlon-1,1:nlat)=REAL(buf4(1:nlon-1,1:nlat),r_size)
   !!! HGT
   count = (/ nlon-1,nlat-1,1 /)
   phi0 = 0.0d0
-  CALL check_io(NF_INQ_VARID(ncid,'HGT',varid))
-  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat-1)))
+  CALL check_io(NF90_INQ_VARID(ncid,'HGT',varid))
+  CALL check_io(NF90_GET_VAR(ncid,varid,buf4(1:nlon-1,1:nlat-1),start,count))
   phi0(1:nlon-1,1:nlat-1)=REAL(buf4(1:nlon-1,1:nlat-1),r_size)
   !!! LANDMASK
   count = (/ nlon-1,nlat-1,1 /)
   landmask = 0.0d0
-  CALL check_io(NF_INQ_VARID(ncid,'LANDMASK',varid))
-  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat-1)))
+  CALL check_io(NF90_INQ_VARID(ncid,'LANDMASK',varid))
+  CALL check_io(NF90_GET_VAR(ncid,varid,buf4(1:nlon-1,1:nlat-1),start,count))
   landmask(1:nlon-1,1:nlat-1)=REAL(buf4(1:nlon-1,1:nlat-1),r_size)
   count = (/ nlon-1,nlat-1,1 /)
   !!! COSINE OF WIND ROATATION
   cosalpha = 0.0d0
-  CALL check_io(NF_INQ_VARID(ncid,'COSALPHA',varid))
-  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat-1)))
+  CALL check_io(NF90_INQ_VARID(ncid,'COSALPHA',varid))
+  CALL check_io(NF90_GET_VAR(ncid,varid,buf4(1:nlon-1,1:nlat-1),start,count))
   cosalpha(1:nlon-1,1:nlat-1)=REAL(buf4(1:nlon-1,1:nlat-1),r_size)
   count = (/ nlon-1,nlat-1,1 /)
   !!! SINE OF WIND ROTATION
   sinalpha = 0.0d0
-  CALL check_io(NF_INQ_VARID(ncid,'SINALPHA',varid))
-  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,buf4(1:nlon-1,1:nlat-1)))
+  CALL check_io(NF90_INQ_VARID(ncid,'SINALPHA',varid))
+  CALL check_io(NF90_GET_VAR(ncid,varid,buf4(1:nlon-1,1:nlat-1),start,count))
   sinalpha(1:nlon-1,1:nlat-1)=REAL(buf4(1:nlon-1,1:nlat-1),r_size)
   deallocate(start,count)
 
   !!! P00
-  CALL check_io(NF_INQ_VARID(ncid,'P00',varid))
-  CALL check_io(NF_GET_VAR_REAL(ncid,varid,p0))
+  CALL check_io(NF90_INQ_VARID(ncid,'P00',varid))
+  CALL check_io(NF90_GET_VAR(ncid,varid,p0))
 
 
   IF( p0 .eq. 0.0d0 )THEN
@@ -277,11 +281,11 @@ SUBROUTINE set_common_wrf(inputfile)
   start = (/ 1,1 /)
   count = (/ nlev-1,1 /)
   dnw(1:nlev) = 0.0
-  CALL check_io(NF_INQ_VARID(ncid,'DNW',varid))
-  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,dnw(1:nlev-1)))
+  CALL check_io(NF90_INQ_VARID(ncid,'DNW',varid))
+  CALL check_io(NF90_GET_VAR(ncid,varid,dnw(1:nlev-1),start,count))
   znu(1:nlev) = 0.0
-  CALL check_io(NF_INQ_VARID(ncid,'ZNU',varid))
-  CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,znu(1:nlev-1)))
+  CALL check_io(NF90_INQ_VARID(ncid,'ZNU',varid))
+  CALL check_io(NF90_GET_VAR(ncid,varid,znu(1:nlev-1),start,count))
        
 
   DEALLOCATE(start,count)
@@ -296,17 +300,17 @@ SUBROUTINE set_common_wrf(inputfile)
 
   !Lets load the projection information for fast ll_to_ij transformations using
   !WPS original routines.
-  CALL check_io(NF_GET_ATT_INT(ncid,NF_GLOBAL,'MAP_PROJ',pcode))
+  CALL check_io(NF90_GET_ATT(ncid,NF90_GLOBAL,'MAP_PROJ',pcode))
   WRITE(6,*)'MAP_PROJ=',pcode
-  CALL check_io(NF_GET_ATT_REAL(ncid,NF_GLOBAL,'TRUELAT1',tmpatt))
+  CALL check_io(NF90_GET_ATT(ncid,NF90_GLOBAL,'TRUELAT1',tmpatt))
   ptruelat1=REAL(tmpatt,r_size)
   WRITE(6,*)'TRUELAT1=',ptruelat1
 
-  CALL check_io(NF_GET_ATT_REAL(ncid,NF_GLOBAL,'TRUELAT2',tmpatt))
+  CALL check_io(NF90_GET_ATT(ncid,NF90_GLOBAL,'TRUELAT2',tmpatt))
   ptruelat2=REAL(tmpatt,r_size)
   WRITE(6,*)'TRUELAT2=',ptruelat2
 
-  CALL check_io(NF_GET_ATT_REAL(ncid,NF_GLOBAL,'STAND_LON',tmpatt))
+  CALL check_io(NF90_GET_ATT(ncid,NF90_GLOBAL,'STAND_LON',tmpatt))
   pstdlon=REAL(tmpatt,r_size)
   WRITE(6,*)'STDLON=',pstdlon
 
@@ -322,8 +326,8 @@ SUBROUTINE set_common_wrf(inputfile)
   !Check input variables
   DO i = 1,nv3d+nv2d+np2d
       !Check if the variable is present.    
-      ierr=NF_INQ_VARID(ncid,TRIM(element(i)),varid)
-      IF( ierr == nf_noerr )THEN
+      ierr=NF90_INQ_VARID(ncid,TRIM(element(i)),varid)
+      IF( ierr == NF90_NOERR )THEN
        PRESENT_VARIABLE(i) = .true.
        WRITE(6,*)"Variable ",element(i)," is present in input file."
       ELSE
@@ -337,7 +341,7 @@ SUBROUTINE set_common_wrf(inputfile)
   ENDDO
 
 
-  CALL check_io(NF_CLOSE(ncid))
+  CALL check_io(NF90_CLOSE(ncid))
 
 
 
@@ -357,14 +361,13 @@ real(r_size) , intent(out) :: ss
 integer :: start(2) , count(2) , ncid
 character(19) :: tmpdate
 integer :: varid , tmpsec
-INCLUDE 'netcdf.inc'
 
   CALL open_wrf_file(inputfile,'ro',ncid)
-  CALL check_io(NF_INQ_VARID(ncid,'Times',varid))
+  CALL check_io(NF90_INQ_VARID(ncid,'Times',varid))
 
   start = (/ 1 ,1 /)
   count = (/ 19,1 /)
-  CALL check_io(NF_GET_VARA_TEXT(ncid,varid,start,count,tmpdate))
+  CALL check_io(NF90_GET_VAR(ncid,varid,tmpdate,start,count))
   READ(tmpdate(1:4  ),'(I4)' )iyyyy
   READ(tmpdate(6:7  ),'(I2)' )imm
   READ(tmpdate(9:10 ),'(I2)' )idd
@@ -385,14 +388,13 @@ real(r_size) , intent(in) :: ss
 integer :: start(2) , count(2) , ncid
 character(19) :: tmpdate
 integer :: varid
-INCLUDE 'netcdf.inc'
 
   CALL open_wrf_file(inputfile,'rw',ncid)
-  CALL check_io(NF_INQ_VARID(ncid,'Times',varid))
+  CALL check_io(NF90_INQ_VARID(ncid,'Times',varid))
   start = (/ 1 ,1 /)
   count = (/ 19,1 /)
   !Read the current date in file to get the date format.
-  CALL check_io(NF_GET_VARA_TEXT(ncid,varid,start,count,tmpdate))
+  CALL check_io(NF90_GET_VAR(ncid,varid,tmpdate,start,count))
 
   WRITE(tmpdate(1:4  ),'(I4.4)' )iyyyy
   WRITE(tmpdate(6:7  ),'(I2.2)' )imm
@@ -402,19 +404,18 @@ INCLUDE 'netcdf.inc'
   WRITE(tmpdate(18:19),'(I2.2)')INT(ss)
 
   !Write the new date in the file.
-  CALL check_io(NF_PUT_VARA_TEXT(ncid,varid,start,count,tmpdate))
+  CALL check_io(NF90_PUT_VAR(ncid,varid,tmpdate,start,count))
 
-  CALL check_io(NF_PUT_ATT_TEXT(ncid,NF_GLOBAL,'START_DATE',19,tmpdate))
-  CALL check_io(NF_PUT_ATT_TEXT(ncid,NF_GLOBAL,'SIMULATION_START_DATE',19,tmpdate))
+  CALL check_io(NF90_PUT_ATT(ncid,NF90_GLOBAL,'START_DATE',tmpdate))
+  CALL check_io(NF90_PUT_ATT(ncid,NF90_GLOBAL,'SIMULATION_START_DATE',tmpdate))
 
   CALL close_wrf_file(ncid)
 
 END SUBROUTINE write_date_wrf
 
-SUBROUTINE read_var_wrf(ncid,iv,slev,elev,fieldg,flag)
+SUBROUTINE read_var_wrf(ncid,iv,slev,elev,itime,fieldg,flag)
 IMPLICIT NONE
-INCLUDE 'netcdf.inc'
-INTEGER(4), INTENT(IN) :: ncid,iv,slev,elev
+INTEGER(4), INTENT(IN) :: ncid,iv,slev,elev,itime
 INTEGER                :: elev2,varid
 REAL(r_sngl),INTENT(OUT) :: fieldg(nlon,nlat,elev-slev+1)
 REAL(r_sngl)             :: auxfieldg(nlon,nlat,elev-slev+1)
@@ -485,34 +486,34 @@ IF ( flag .EQ. '3d' )THEN
      elev2=elev
    END IF
    ALLOCATE(start(4),count(4))
-   start = (/ 1,1,slev,1 /)
+   start = (/ 1,1,slev,itime /)
    count = (/ nxvar,nyvar,elev2-slev+1,1 /) 
 
    !READ ADDITIONAL DATA
    IF( iv == iv3d_t .OR. iv == iv3d_tv )THEN
-    CALL check_io(NF_INQ_VARID(ncid,'P',varid))
-    CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,fieldg(1:nxvar,1:nyvar,1:elev2-slev+1)))
-    CALL check_io(NF_INQ_VARID(ncid,'PB',varid))
-    CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,auxfieldg(1:nxvar,1:nyvar,1:elev2-slev+1)))
+    CALL check_io(NF90_INQ_VARID(ncid,'P',varid))
+    CALL check_io(NF90_GET_VAR(ncid,varid,fieldg(1:nxvar,1:nyvar,1:elev2-slev+1),start,count))
+    CALL check_io(NF90_INQ_VARID(ncid,'PB',varid))
+    CALL check_io(NF90_GET_VAR(ncid,varid,auxfieldg(1:nxvar,1:nyvar,1:elev2-slev+1),start,count))
     auxfieldg=auxfieldg+fieldg
     auxfieldg=( (auxfieldg/p0 ) ** (rd/cp) )
    ENDIF 
    IF( iv == iv3d_tv )THEN 
-    CALL check_io(NF_INQ_VARID(ncid,'QVAPOR',varid))
-    CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,fieldg(1:nxvar,1:nyvar,1:elev2-slev+1)))
+    CALL check_io(NF90_INQ_VARID(ncid,'QVAPOR',varid))
+    CALL check_io(NF90_GET_VAR(ncid,varid,fieldg(1:nxvar,1:nyvar,1:elev2-slev+1),start,count))
     fieldg=fieldg/(1.0d0 + fieldg)
     auxfieldg=auxfieldg*(1.0d0 + 0.608d0*fieldg)
    ENDIF
 
    IF( iv == iv3d_p .OR. iv == iv3d_ph )THEN
-      CALL check_io(NF_INQ_VARID(ncid,TRIM(auxvarname),varid))
-      CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,auxfieldg(1:nxvar,1:nyvar,1:elev2-slev+1)))
+      CALL check_io(NF90_INQ_VARID(ncid,TRIM(auxvarname),varid))
+      CALL check_io(NF90_GET_VAR(ncid,varid,auxfieldg(1:nxvar,1:nyvar,1:elev2-slev+1),start,count))
       fieldg=fieldg+auxfieldg
    ENDIF
   
    !READ VARIABLE
-   CALL check_io(NF_INQ_VARID(ncid,TRIM(varname),varid))
-   CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,fieldg(1:nxvar,1:nyvar,1:elev2-slev+1)))
+   CALL check_io(NF90_INQ_VARID(ncid,TRIM(varname),varid))
+   CALL check_io(NF90_GET_VAR(ncid,varid,fieldg(1:nxvar,1:nyvar,1:elev2-slev+1),start,count))
 
    !SOME EXTRA OPERATIONS
    IF( iv == iv3d_p .OR. iv == iv3d_ph )THEN
@@ -558,13 +559,13 @@ IF ( flag .EQ. '2d' )THEN
 
   IF( readvar )THEN
   
-      start = (/ 1,1,1 /)
+      start = (/ 1,1,itime /)
       count = (/ nxvar,nyvar,1,1 /) !READ ONE SINGLE LEVEL
-      CALL check_io(NF_INQ_VARID(ncid,TRIM(varname),varid))
-      CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,fieldg(1:nxvar,1:nyvar,1)))
+      CALL check_io(NF90_INQ_VARID(ncid,TRIM(varname),varid))
+      CALL check_io(NF90_GET_VAR(ncid,varid,fieldg(1:nxvar,1:nyvar,1),start,count))
       IF( iv == iv2d_mu )THEN
-          CALL check_io(NF_INQ_VARID(ncid,TRIM(auxvarname),varid))
-          CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,auxfieldg(1:nxvar,1:nyvar,1)))
+          CALL check_io(NF90_INQ_VARID(ncid,TRIM(auxvarname),varid))
+          CALL check_io(NF90_GET_VAR(ncid,varid,auxfieldg(1:nxvar,1:nyvar,1),start,count))
           fieldg=fieldg+auxfieldg
       ENDIF
 
@@ -594,11 +595,11 @@ IF ( flag .EQ. 'pa' )THEN
       END SELECT
 
   IF( readvar  )THEN
-      start = (/ 1,1,1 /)
+      start = (/ 1,1,itime/)
       count = (/ nxvar,nyvar,1,1 /) !READ ONE SINGLE LEVEL
 
-      ierr=NF_INQ_VARID(ncid,varname,varid)
-      CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,fieldg(1:nxvar,1:nyvar,1)))
+      ierr=NF90_INQ_VARID(ncid,varname,varid)
+      CALL check_io(NF90_GET_VAR(ncid,varid,fieldg(1:nxvar,1:nyvar,1),start,count))
 
       fieldg(nlon,:,1)=REAL(UNDEF,r_sngl)
       fieldg(:,nlat,1)=REAL(UNDEF,r_sngl)
@@ -616,7 +617,6 @@ END SUBROUTINE read_var_wrf
 
 SUBROUTINE write_var_wrf(ncid,iv,slev,elev,fieldg,flag)
 IMPLICIT NONE
-INCLUDE 'netcdf.inc'
 INTEGER, INTENT(IN) :: ncid,iv,slev,elev
 INTEGER(4)          :: elev2,varid,varidps,ndims,ierr
 INTEGER(4), ALLOCATABLE :: dimsid(:)
@@ -625,8 +625,9 @@ REAL(r_sngl)                 :: auxfieldg(nlon,nlat,elev-slev+1)
 INTEGER, ALLOCATABLE         :: start(:),count(:)
 INTEGER                      :: nxvar,nyvar,nzvar
 CHARACTER(2), INTENT(IN)     :: flag
-CHARACTER(20)                :: varname,auxvarname
+CHARACTER(20)                :: varname,auxvarname,auxatt
 LOGICAL                      :: PAREXIST , WRITEVAR
+INTEGER                      :: dimids(3)
 varname='                    '
 auxvarname='                    '
 auxfieldg=0.0e0
@@ -684,12 +685,12 @@ IF ( flag .EQ. '3d' )THEN
    start = (/ 1,1,slev,1 /)
    count = (/ nxvar,nyvar,elev2-slev+1,1 /)
    IF( iv == iv3d_p .OR. iv == iv3d_ph )THEN
-      CALL check_io(NF_INQ_VARID(ncid,TRIM(auxvarname),varid))
-      CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,auxfieldg(1:nxvar,1:nyvar,1:elev2-slev+1)))
+      CALL check_io(NF90_INQ_VARID(ncid,TRIM(auxvarname),varid))
+      CALL check_io(NF90_GET_VAR(ncid,varid,auxfieldg(1:nxvar,1:nyvar,1:elev2-slev+1),start,count))
       fieldg=fieldg-auxfieldg
    ENDIF
-   CALL check_io(NF_INQ_VARID(ncid,TRIM(varname),varid))
-   CALL check_io(NF_PUT_VARA_REAL(ncid,varid,start,count,fieldg(1:nxvar,1:nyvar,1:elev2-slev+1)))
+   CALL check_io(NF90_INQ_VARID(ncid,TRIM(varname),varid))
+   CALL check_io(NF90_PUT_VAR(ncid,varid,fieldg(1:nxvar,1:nyvar,1:elev2-slev+1),start,count))
 
    DEALLOCATE(start,count)
   END IF ![PRESENT_VARIABLE]
@@ -727,12 +728,12 @@ IF ( flag .EQ. '2d' )THEN
       start = (/ 1,1,1 /)
       count = (/ nxvar,nyvar,1,1 /) !READ ONE SINGLE LEVEL
       IF( iv == iv2d_mu )THEN
-          CALL check_io(NF_INQ_VARID(ncid,TRIM(auxvarname),varid))
-          CALL check_io(NF_GET_VARA_REAL(ncid,varid,start,count,auxfieldg(1:nxvar,1:nyvar,1)))
+          CALL check_io(NF90_INQ_VARID(ncid,TRIM(auxvarname),varid))
+          CALL check_io(NF90_GET_VAR(ncid,varid,auxfieldg(1:nxvar,1:nyvar,1),start,count))
           fieldg=fieldg-auxfieldg
       ENDIF
-      CALL check_io(NF_INQ_VARID(ncid,TRIM(varname),varid))
-      CALL check_io(NF_PUT_VARA_REAL(ncid,varid,start,count,fieldg(1:nxvar,1:nyvar,1)))
+      CALL check_io(NF90_INQ_VARID(ncid,TRIM(varname),varid))
+      CALL check_io(NF90_PUT_VAR(ncid,varid,fieldg(1:nxvar,1:nyvar,1),start,count))
 
 
    DEALLOCATE(start,count)
@@ -758,28 +759,36 @@ IF ( flag .EQ. 'pa' )THEN
       count = (/ nxvar,nyvar,1,1 /) !WRITE ONE SINGLE LEVEL
 
       PAREXIST=.false.
-      ierr=NF_INQ_VARID(ncid,varname,varid)
-      IF(ierr == nf_noerr)PAREXIST=.true.
+      ierr=NF90_INQ_VARID(ncid,varname,varid)
+      IF(ierr == NF90_NOERR )PAREXIST=.true.
 
       IF(.NOT. PAREXIST)THEN !Create the variable using PS as a template
        WRITE(6,*)'WARNING!!!! : PARAMETERS NOT PRESENT IN INPUT FILE'
        WRITE(6,*)'WILL GENERATE THE VARIABLES IN THE INPUT FILE'
-       CALL check_io(NF_INQ_VARID(ncid,'PSFC',varidps))
-       CALL check_io(NF_INQ_VARNDIMS(ncid,varidps,ndims))
-       ALLOCATE(dimsid(ndims))
-       CALL check_io(NF_INQ_VARDIMID(ncid,varidps,dimsid))
-       CALL check_io(NF_REDEF(ncid))
-       CALL check_io(NF_DEF_VAR(ncid,varname,NF_FLOAT,ndims,dimsid,varid))
-       !Copy PSFC attribtues to the parameters.
-       CALL check_io(NF_COPY_ATT(ncid,varidps,"units",ncid,varid))
-       CALL check_io(NF_COPY_ATT(ncid,varidps,"FieldType",ncid,varid))
-       CALL check_io(NF_COPY_ATT(ncid,varidps,"MemoryOrder",ncid,varid))
-       CALL check_io(NF_COPY_ATT(ncid,varidps,"description",ncid,varid))
-       CALL check_io(NF_COPY_ATT(ncid,varidps,"stagger",ncid,varid))
-       CALL check_io(NF_COPY_ATT(ncid,varidps,"coordinates",ncid,varid))
-       CALL check_io(NF_ENDDEF(ncid))
+       CALL check_io(NF90_INQ_VARID(ncid,'PSFC',varidps))
+       CALL check_io(NF90_INQUIRE_VARIABLE(ncid,varid,ndims=ndims) )
+       ALLOCATE( dimsid(ndims) )
+       CALL check_io(NF90_INQUIRE_VARIABLE(ncid,varid,dimids=dimids) )
+
+       CALL check_io(NF90_REDEF(ncid))
+       CALL check_io(NF90_DEF_VAR(ncid,varname,NF90_FLOAT,dimsid,varid))
+
+       CALL check_io(NF90_GET_ATT(ncid,varidps,"units",auxatt))
+       CALL check_io(NF90_PUT_ATT(ncid,varid,"units",auxatt))
+       CALL check_io(NF90_GET_ATT(ncid,varidps,"FieldType",auxatt))
+       CALL check_io(NF90_PUT_ATT(ncid,varid,"FieldType",auxatt))
+       CALL check_io(NF90_GET_ATT(ncid,varidps,"MemoryOrder",auxatt))
+       CALL check_io(NF90_PUT_ATT(ncid,varid,"MemoryOrder",auxatt))
+       CALL check_io(NF90_GET_ATT(ncid,varidps,"description",auxatt))
+       CALL check_io(NF90_PUT_ATT(ncid,varid,"description",auxatt))
+       CALL check_io(NF90_GET_ATT(ncid,varidps,"stagger",auxatt))
+       CALL check_io(NF90_PUT_ATT(ncid,varid,"stagger",auxatt))
+       CALL check_io(NF90_GET_ATT(ncid,varidps,"coordinates",auxatt))
+       CALL check_io(NF90_PUT_ATT(ncid,varid,"coordinates",auxatt))
+
+       CALL check_io(NF90_ENDDEF(ncid))
       END IF
-      CALL check_io(NF_PUT_VARA_REAL(ncid,varid,start,count,fieldg(1:nxvar,1:nyvar,1)))
+      CALL check_io(NF90_PUT_VAR(ncid,varid,fieldg(1:nxvar,1:nyvar,1),start,count))
 
    DEALLOCATE(start,count)
 
@@ -994,11 +1003,10 @@ END SUBROUTINE ensmean_ngrd
 
 SUBROUTINE check_io(status)
   IMPLICIT NONE
-  INCLUDE 'netcdf.inc'
   INTEGER(4),INTENT(IN) :: status
 
-  IF(status /= nf_noerr) THEN
-    WRITE(6,*) TRIM(nf_strerror(status))
+  IF(status /= NF90_NOERR ) THEN
+    WRITE(6,*) TRIM(NF90_STRERROR(status))
     STOP 10
   ENDIF
 
@@ -1009,12 +1017,11 @@ SUBROUTINE open_wrf_file(filename,mode,ncid)
   IMPLICIT NONE
   INTEGER(4), INTENT(OUT)   :: ncid
   CHARACTER(*) , INTENT(IN) :: filename,mode
-  INCLUDE 'netcdf.inc'
 
   IF(mode .eq. 'ro' )THEN
-  CALL check_io(NF_OPEN(TRIM(filename),NF_NOWRITE,ncid))
+  CALL check_io(NF90_OPEN(TRIM(filename),NF90_NOWRITE,ncid))
   ELSEIF(mode .eq. 'rw' )THEN
-  CALL check_io(NF_OPEN(TRIM(filename),NF_WRITE,ncid))
+  CALL check_io(NF90_OPEN(TRIM(filename),NF90_WRITE,ncid))
   END IF
 
   RETURN
@@ -1023,9 +1030,8 @@ END SUBROUTINE open_wrf_file
 SUBROUTINE close_wrf_file(ncid)
   IMPLICIT NONE
   INTEGER(4), INTENT(IN)   :: ncid
-  INCLUDE 'netcdf.inc'
 
-  CALL  check_io(NF_CLOSE(ncid))
+  CALL  check_io(NF90_CLOSE(ncid))
 
   RETURN
 END SUBROUTINE close_wrf_file
@@ -1090,12 +1096,13 @@ SUBROUTINE damp_latbnd(spec_bdy_width,nlon,nlat,nlev,var)
   RETURN
 END SUBROUTINE
 
-SUBROUTINE read_grd(filename,variables3d,variables2d)
+SUBROUTINE read_grd(filename,itime,variables3d,variables2d)
 IMPLICIT NONE
 CHARACTER(*) :: filename
 REAL(r_size) :: variables3d(nlon,nlat,nlev,nv3d) , variables2d(nlon,nlat,nv2d)
 REAL(r_sngl) :: tmp(nlon,nlat,nlev)
 INTEGER(4)   :: ncid 
+INTEGER, INTENT(IN) :: itime
 INTEGER      :: slev , elev , iv 
 
      slev=1
@@ -1106,13 +1113,13 @@ INTEGER      :: slev , elev , iv
      DO iv=1,nv3d
        !WRITE(6,*)iv
        tmp=0.0e0
-       CALL read_var_wrf(ncid,iv,slev,elev,tmp,'3d')
+       CALL read_var_wrf(ncid,iv,slev,elev,itime,tmp,'3d')
        variables3d(:,:,:,iv)=REAL(tmp,r_size)
      ENDDO
      DO iv=1,nv2d
        !WRITE(6,*)iv
        tmp=0.0e0
-       CALL read_var_wrf(ncid,iv,slev,elev,tmp(:,:,1),'2d')
+       CALL read_var_wrf(ncid,iv,slev,elev,itime,tmp(:,:,1),'2d')
        variables2d(:,:,iv)=REAL(tmp(:,:,1),r_size)
      ENDDO
 

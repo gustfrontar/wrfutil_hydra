@@ -139,6 +139,8 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
           CALL calc_ref_vr(qv,qc,qr,qci,qs,qg,u,v,w,t,p,           &
                input_radar%azimuth(ia),input_radar%elevation(ie)   &
                 ,method_ref_calc,ref,vr,att)
+
+           WRITE(*,*)vr
    
           !ADD ERRORS TO THE OBSERVATIONS
           IF( ADD_OBS_ERROR )THEN
@@ -172,14 +174,14 @@ SUBROUTINE model_to_radar( input_radar , v3d , v2d  )
           !  pik = pik + att * input_radar%range_resolution / 1.0d3
           !ENDIF
  
-          IF( ref .GT. minz )THEN
+          !IF( ref .GT. minz )THEN
           input_radar%radarv3d_model(ia,ir,ie,input_radar%iv3d_ref)=ref !refdb
-          ENDIF
+          !ENDIF
 
           !Will generate wind observations only where reflectivity data is good enough (in this case were we have clouds). 
-          IF( ref .GT. minz )THEN
+          !IF( ref .GT. minz )THEN
           input_radar%radarv3d_model(ia,ir,ie,input_radar%iv3d_vr)=vr    !Radial wind
-          ENDIF
+          !ENDIF
 
         ENDIF  !Endif for domain check
 

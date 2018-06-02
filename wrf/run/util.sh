@@ -196,25 +196,8 @@ ens_member () {
 
 local    MEMBER="$1"
 local    MEMBER_STR=$MEMBER
-
-    if test $MEMBER -lt 10000
-    then
-      MEMBER_STR=0$MEMBER_STR
-    fi
-    if test $MEMBER -lt 1000
-    then
-      MEMBER_STR=0$MEMBER_STR
-    fi
-    if test $MEMBER -lt 100
-    then
-      MEMBER_STR=0$MEMBER_STR
-    fi
-    if test $MEMBER -lt 10
-    then
-      MEMBER_STR=0$MEMBER_STR
-    fi
-
-    echo $MEMBER_STR
+   
+    echo `add_zeros $1 5 `
 }
 
 forecast_lead () {
@@ -1024,6 +1007,9 @@ rm -fr $TMPDIR/WPS/namelist*
  if [ ! -n "$RUN_CHEM" ] ; then
    RUN_CHEM=0
  fi
+ if [ ! -n "$ENABLE_UPP" ] ; then
+   ENABLE_UPP=0
+ fi
 
  if [ $RUN_CHEM -eq 1 ] ; then
     cp $CHEM_DATA/* $TMPDIR/WRF/
@@ -1589,6 +1575,7 @@ run_forecast_sub () {
       done
       time wait 
      done
+
  
      if [ $do_wrf_pre -eq 1 ] ; then #Update lateral and lower boundary conditions.
       M=$INIMEMBER

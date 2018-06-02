@@ -22,7 +22,7 @@ CONFIGURATION=control_paranafnl_newobs_60m_radar_grib_Hydra    #Define a experim
 MCONFIGURATION=machine_radar60m_multiple_Hydra          #Define a machine configuration (number of nodes, etc)
 
 RESTART=1
-RESTARTDATE=20091117192500
+RESTARTDATE=20091117204500
 RESTARTITER=10
 
 MYHOST=`hostname`

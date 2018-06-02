@@ -278,7 +278,7 @@ timeslots: DO islot=1,nslots
 
       WRITE(guesfile(3:9),'(I2.2,I5.5)') islot,im
       WRITE(6,'(A,I3.3,2A)') 'MYRANK ',myrank,' is reading a file ',guesfile
-      CALL read_grd(guesfile,v3d,v2d)
+      CALL read_grd(guesfile,1,v3d,v2d)
       !Keep model height 
       zmodel=v3d(:,:,:,iv3d_ph)/gg
 
@@ -773,7 +773,7 @@ SUBROUTINE monit_mean(file,depout)
 
   WRITE(filename(1:9),'(A4,I5.5)') file,nbv+1
   WRITE(6,*)"I will read ", filename
-  CALL read_grd(filename,v3d,v2d)
+  CALL read_grd(filename,1,v3d,v2d)
   z3d=v3d(:,:,:,iv3d_ph)/gg
 
   DO n=1,nobs

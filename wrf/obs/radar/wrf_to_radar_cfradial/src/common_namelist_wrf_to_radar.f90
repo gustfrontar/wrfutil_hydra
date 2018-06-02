@@ -29,6 +29,8 @@ MODULE common_namelist
   INTEGER :: n_times =1 !Number of model files that will be interpolated to the radar.
   LOGICAL   :: use_wt                  !If terminal velocity will be used in radial velocity computations.
 
+  LOGICAL :: USE_PSEUDORH = .FALSE.    !This flag is included to make this code compatible with LETKF_WRF observation operator.
+
   CHARACTER(100) :: w2rnamelist='w2r.namelist'
 
 CONTAINS

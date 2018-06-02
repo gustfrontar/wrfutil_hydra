@@ -22,7 +22,7 @@
  ref_lon   =  -61.537,
  truelat1  =  -31.848,
  truelat2  =  -31.848,
- stand_lon =  -60.537,
+ stand_lon =  -61.537,
  geog_data_path = './GEOG/'
 /
 

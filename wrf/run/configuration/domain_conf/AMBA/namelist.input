@@ -14,7 +14,7 @@
  interval_seconds                    = BDYFREQ
  input_from_file                     = .true.,.true.,.true.,
  history_interval_s                  = OUTPUTFREQ,  OUTPUTFREQ, OUTPUTFREQ,
- frames_per_outfile                  = 1, 1, 1000,
+ frames_per_outfile                  = 1, 1, 1,
  restart                             = .false.,
  restart_interval                    = 0,
  io_form_history                     = 2,
@@ -29,13 +29,19 @@
  auxinput8_inname                    = 'wrfchemi_gocart_bg_d<domain>',
  io_form_auxinput8                   = 2,
  auxinput12_inname                   = 'wrf_chem_input',
- io_form_auxinput12                   = 0,
+ io_form_auxinput12                  = 0,
  auxinput13_inname                   = 'wrfchemv_d<domain>',
- io_form_auxinput13                   = 0,
+ io_form_auxinput13                  = 0,
  auxinput5_interval_m                = 60, 86400, 60,
  auxinput7_interval_m                = 86400, 86400, 60,
  auxinput8_interval_m                = 86400, 86400, 60,
  auxinput13_interval_m               = 86400, 86400, 60,
+ iofields_filename                   = "myoutfields.txt",
+ frames_per_auxinput5                = 1,
+ auxhist24_outname                   = 'wrfchem_extraout_d<domain>_<date>',
+ auxhist24_interval                  = 60, 60,
+ io_form_auxhist24                   = 2,
+ frames_per_auxhist24                = 1,
  debug_level                         = 0, 
 /
 
@@ -45,7 +51,7 @@
  &domains
  use_adaptive_time_step              = .true.,
  step_to_output_time                 = .true.,
- target_cfl                          = 1.2, 1.2,
+ target_cfl                 = 1.2, 1.2,
  max_step_increase_pct      = 5,   5,
  starting_time_step         = 5,   5,
  max_time_step              = 25,   6,
@@ -83,9 +89,9 @@
  &physics
  mp_physics                          = 4,     4,     2, 
  progn                               = 0,     0,     0,
- ra_lw_physics                       = 4,     4,     1,
- ra_sw_physics                       = 4,     4,     1,
- radt                                = 30,    30,    30,
+ ra_lw_physics                       = 1,     4,     1,
+ ra_sw_physics                       = 1,     4,     1,
+ radt                                = 5,    30,    30,
  sf_sfclay_physics                   = 5,     2,     1,
  sf_surface_physics                  = 2,     2,     1,
  bl_pbl_physics                      = 5,     2,     1,
@@ -163,8 +169,8 @@
  bioemdt                             = 0,   0
  photdt                              = 0,   0,
  chemdt                              = 0,   0,
- io_style_emissions                  = 1,
- emiss_opt                           = 2,   2,
+ io_style_emissions                  = 2,
+ emiss_opt                           = 3,   2,
  emiss_inpt_opt                      = 1,
  emiss_opt_vol                       = 0,   0,
  chem_in_opt                         = 0,   0,
@@ -193,7 +199,8 @@
  aer_ra_feedback                     = 0,   0,
  aer_op_opt                          = 0,   0,
  opt_pars_out                        = 0,
- diagnostic_chem                     = 0, 
+ diagnostic_chem                     = 1,
+ chemdiag                            = 1,
  /
 
 

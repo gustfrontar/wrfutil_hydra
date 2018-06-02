@@ -9,13 +9,13 @@ INT=21600
 PARALLEL=1
 export OMP_NUM_THREADS=1
 
-REGNAME="EUROPE"
-LATRANGE="30:70"
-LONRANGE="-20:60"
+#REGNAME="EUROPE"
+#LATRANGE="30:70"
+#LONRANGE="-20:60"
 
-#REGNAME="SA"
-#LATRANGE="-90:20"
-#LONRANGE="200:360"
+REGNAME="SA"
+LATRANGE="-90:20"
+LONRANGE="200:360"
 
 #REGNAME="JAPAN"
 #LATRANGE="25:50"
@@ -45,7 +45,7 @@ do
   MES=`echo $CTIME | cut -c5-6`
   DIA=`echo $CTIME | cut -c7-8`
   HORA=`echo $CTIME | cut -c9-10`
-  wgrib2 $ORIGINALDIR/pgbh06.gdas.${ANIO}${MES}${DIA}${HORA}.grb2 -set_ftime "anl" -set_grib_type jpeg -match ":(UGRD|VGRD|TMP|HGT|RH|PRES|PRMSL):" -small_grib $LONRANGE $LATRANGE ./grib1  > ./tmp.log  
+  wgrib2 $ORIGINALDIR/pgbh06.gdas.${ANIO}${MES}${DIA}${HORA}.grb2 -set_ftime "anl" -set_grib_type jpeg -match ":(UGRD|VGRD|TMP|HGT|RH|PRES|PRMSL|SOILW|TSOIL|LAND|ICEC|WEASD):" -small_grib $LONRANGE $LATRANGE ./grib1  > ./tmp.log  
  
   wgrib2 $ORIGINALDIR/flxf06.gdas.${ANIO}${MES}${DIA}${HORA}.grb2 -set_ftime "anl" -set_grib_type jpeg -match ":(UGRD|VGRD|TMP|HGT|RH|PRES|PRMSL|SOILW|TSOIL|LAND|ICEC|WEASD):" -small_grib $LONRANGE $LATRANGE ./grib2 > ./tmp.log
 

@@ -19,7 +19,7 @@ USE_ANALYSIS_IC=0 #1 - use global analysis as IC, 0 use LETKF analysis as IC
                   #if 0 then profide a LETKF-analysis source (ANALYSIS_SOURC)
                   #default is 0
 
-NVERTEXP=38  #Number of vertical levels in initial and boundary conditions input grib data.
+NVERTEXP=27  #Number of vertical levels in initial and boundary conditions input grib data.
 NVERTDB=38   #Number of vertical levels in initial and boundary conditions perturbation input grib data.
 
 #AUXILIARY VARIABLE FOR ENSEMBLE SIZE
@@ -41,9 +41,9 @@ SIGMA_OBSV="0.2d0"
 SIGMA_OBSZ="2.0d3" 
 SIGMA_OBST="3.0d0"
 GROSS_ERROR="4.0d0" 
-COV_INFL_MUL="1.1d0"
+COV_INFL_MUL="1.2d0"
 SP_INFL_ADD="0.d0"  
-RELAX_ALPHA_SPREAD="0.9d0"
+RELAX_ALPHA_SPREAD="0.95d0"
 RELAX_ALPHA="0.0d0" 
 USE_ADAPTIVE_INFLATION=0  #1 turn on addaptive inflation (Miyoshi 2011), 0 Turn off adaptive inflation
 				  #Note that for addaptive inflation to work COV_INFL_MUL should be < 0.0
@@ -63,9 +63,9 @@ INTERP_METHOD=1
 ENABLE_UPP=0
 
 ### LETKF setting
-OBS=""                                      # Name of conventional observations folder.
-RADAROBS="/LETKF_SO2KM_V3"                  # Name of radar observation folder.
-EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION} # name of experiment
+OBS=""                                                     # Name of conventional observations folder.
+RADAROBS="/LETKF_SO2KM_V3/"            # Name of radar observation folder.
+EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION}                # name of experiment
 
 ### initial date setting
 IDATE=20091117180000
@@ -77,8 +77,8 @@ NRADARS=1                                                                       
 RADAROBSDIR=${HOMEDIR}/DATA/OBS/$RADAROBS/                                                # Folder where radar observations are.
 TMPDIR=${HOME}/TMP/$EXP/                                                                  # Temporal work directory (should be accessible for all computation nodes)
 OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                    # Where results will be stored.
-GRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                        # Folder where bdy and initial grib files are located.
-GRIBTABLE="Vtable.CFSR2_web"                                                              # Bdy and init data source Vtable name.
+GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/SA/                                                # Folder where bdy and initial grib files are located.
+GRIBTABLE="Vtable.GFS"                                                                    # Bdy and init data source Vtable name.
 PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/00001/                              # Folder where data for perturbing bdy are located.
 PERTGRIBTABLE="Vtable.CFSR2_web"                                                          # Bdy perturbation source vtable name.
 GEOG=/share/GEOG/                                                                         # Folder where WPS GEOG dataset is located.
@@ -121,7 +121,7 @@ WRFMODELPPS=$WRF/model/WRFV3.6/                # WRF model that runs in pps serv
 WPS=$WRF/model/WPS3.6/                         # WRF model pre processing utilities (for pps server)
 ARWPOST=$WRF/model/ARWpost/                    # WRF model post processing utilities that run in computing nodes.
 SPAWN=$WRF/spawn/
-MPIBIN=/share/libs/bin/mpiexec
+MPIBIN=mpiexec
 
 #### SCRIPTS
 UTIL=$WRF/run/util.sh                          # Script containing bash functions that will be used during execution.
