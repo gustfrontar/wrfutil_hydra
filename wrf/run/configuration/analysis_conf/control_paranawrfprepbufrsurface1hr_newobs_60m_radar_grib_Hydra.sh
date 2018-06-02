@@ -53,6 +53,7 @@ GUESFT=$WINDOW_END  # First guess forecast length (seconds)
 
 BOUNDARY_DATA_FREQ=21600              #Boundary data frequency. (seconds)
 BOUNDARY_DATA_PERTURBATION_FREQ=21600 #Frequency of data used to perturb boundary conditions (seconds)
+MEMBER_BDY=60                         #Number of boundary conditions ensemble members.
 
 #POSTPROC CONFIGURATION
 OUTLEVS="0.1,0.5,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,"      #Level list

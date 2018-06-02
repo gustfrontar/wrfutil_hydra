@@ -1836,7 +1836,7 @@ local local_script=$WORKDIR/get_domain.sh
 
 cd $WORKDIR
 
-#GENERATE THE SCRIPT TO GET UNPERTURBED MET_EM FILE FOR THE CURRENT TIME.
+#GENERATE THE SCRIPT TO GENERATE STATIC FIELDS.
 echo "#!/bin/bash                                                               "  > $local_script            
 echo "set -x                                                                    " >> $local_script
 echo "MAX_DOM=$MAX_DOM                                                          " >> $local_script
@@ -2220,7 +2220,7 @@ while [ $THEDATE -le $FDATE  ] ; do
    echo "l_time_diff=\`date_diff \$LDATE $PERTREFDATE \`                             " >> $local_script
    echo "u_time_diff=\`expr \$l_time_diff + $BOUNDARY_DATA_PERTURBATION_FREQ \`      " >> $local_script
 
-   echo "if [ ! -e $PERTMETEMDIR/\$CFILE ] ; then                                    " >> $local_script
+   echo "if [ ! -e $PERTMETEMDIR/\$MEM/\$CFILE ] ; then                                         " >> $local_script
 #   echo "ln -sf $METEMDIR/\${MEM}/\$CFILE \$WORKDIR                               " >> $local_script
 
    #Original data will be perturbed only at the initial cycle or if the Perturb_boundary option is enabled.

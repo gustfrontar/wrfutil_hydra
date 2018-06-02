@@ -1,9 +1,7 @@
 #This script generates pseudo-radar observations from WRF outputs.
 ulimit -s unlimited
 
-EXPERIMENT_NAME=WRF_TO_RADAR_TEST
-
-MODELDATAPATH="$HOME/salidas/EXPERIMENTS/ANALYSIS_PARANA_2KM_control_paranafnl_newobs_60m_radar_grib_Hydra/"
+MODELDATAPATH="$HOME/salidas/EXPERIMENTS/ANALYSIS_PARANA_2KM_control_paranacfsr_newobs_60m_radar_grib_Hydra/"
 RADARDATAPATH="$HOME/share/DATA/OBS/OBS_REAL_PARANA_20091117_CFRADIAL/" 
 
 TMPDIR="$HOME/TMP/WRF_TO_RADAR/"

@@ -9,8 +9,8 @@ MAX_RUNNING=24      #Maximum number of simultaneous processes running in PPS ser
 ELAPSE="00:10:00"   #MAXIMUM ELAPSE TIME (MODIFY ACCORDING TO THE SIZE OF THE DOMAIN AND THE RESOLUTION)
 MAX_BACKGROUND_JOBS=128
 
-TOTAL_NODES_FORECAST=8
-TOTAL_NODES_LETKF=8
+TOTAL_NODES_FORECAST=4
+TOTAL_NODES_LETKF=4
 
 #These options control job split (in case of big jobs)
 #Job split is performed authomaticaly if the number of ensemble members is
