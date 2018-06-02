@@ -4,8 +4,8 @@ LETKFNAMELIST=control                   #Define a letkf namelist template
 
 MEMBER=60        #Number of ensemble members.
 MAX_DOM=1        #Maximum number of WRF domains.
-HOMEDIR=${HOME}/share/   
-DATADIR=${HOME}/data/
+HOMEDIR=/data6/jruiz/  
+DATADIR=${HOME}/share/
 ANALYSIS=1       #Identify this job as an analysis job.
 FORECAST=0       #This is not a forecast job.
 INTERPANA=0      #This is used in forecast jobs (but we need to define it here too)
@@ -71,16 +71,16 @@ IDATE=20140122173000
 EDATE=20140122200000
 
 #### DATA
-OBSDIR=${HOMEDIR}/DATA/OBS/$OBS/                                                          # Folder where conventional observations are.
+OBSDIR=${DATADIR}/DATA/OBS/$OBS/                                                          # Folder where conventional observations are.
 NRADARS=1                                                                                 # Number of available radars.
-RADAROBSDIR=${HOMEDIR}/DATA/OBS/$RADAROBS/                                                # Folder where radar observations are.
-TMPDIR=${HOME}/TMP/$EXP/                                                                  # Temporal work directory (should be accessible for all computation nodes)
-OUTPUTDIR=${HOME}/salidas/EXPERIMENTS/$EXP/                                               # Where results will be stored.
-GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/ARGENTINA/                                         # Folder where bdy and initial grib files are located.
+RADAROBSDIR=${DATADIR}/DATA/OBS/$RADAROBS/                                                # Folder where radar observations are.
+TMPDIR=${HOMEDIR}/TMP/$EXP/                                                                  # Temporal work directory (should be accessible for all computation nodes)
+OUTPUTDIR=${HOMEDIR}/EXPERIMENTS/$EXP/                                               # Where results will be stored.
+GRIBDIR=${DATADIR}/DATA/GRIB/FNL/HIRES/ARGENTINA/                                         # Folder where bdy and initial grib files are located.
 GRIBTABLE="Vtable.GFS"                                                                    # Bdy and init data source Vtable name.
-PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                    # Folder where data for perturbing bdy are located.
+PERTGRIBDIR=${DATADIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                    # Folder where data for perturbing bdy are located.
 PERTGRIBTABLE="Vtable.CFSR"                                                               # Bdy perturbation source vtable name.
-GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/                                                 # Folder where WPS GEOG dataset is located.
+GEOG=${DATADIR}/LETKF_WRF/wrf/model/GEOG/                                                 # Folder where WPS GEOG dataset is located.
 
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
 AMP_FACTOR="0.05"             #Perturbation scale factor.
@@ -112,11 +112,11 @@ ENDPERTDATE=20091231180000    #Final date in grib database (used for perturbing 
 PERTREFDATE=20140122000000    #At this date the initial perturbation dates will be taken. This date is used to keep consisntency among the perturbations
                               #used in forecast and analysis experiments. This date must be previous or equal to IDATE.
 INPUT_PERT_DATES_FROM_FILE=1  #0 - generate a new set of random dates, 1 - read random dates from a file. 
-INI_PERT_DATE_FILE=${HOMEDIR}/DATA/INITIAL_RANDOM_DATES/initial_perturbation_dates_60m  #List of initial random dates.
+INI_PERT_DATE_FILE=${DATADIR}/DATA/INITIAL_RANDOM_DATES/initial_perturbation_dates_60m  #List of initial random dates.
 
 #### EXECUTABLES
-RUNTIMELIBS=${HOMEDIR}/libs_sparc64/lib/       #Libs that will be included in LD_LIBRARY_PATH in computing nodes.
-WRF=${HOMEDIR}/LETKF_WRF/wrf/                  # WRF folder (for computing nodes)
+RUNTIMELIBS=${DATADIR}/libs_sparc64/lib/       #Libs that will be included in LD_LIBRARY_PATH in computing nodes.
+WRF=${DATADIR}/LETKF_WRF/wrf/                  # WRF folder (for computing nodes)
 LETKF=$WRF/letkf/letkf.exe                     # LETKF module (for computing nodes)
 UPDATEBC=$WRF/model/WRFDA/da_update_bc.exe     # Update bc tool (WRFVAR) (for computing nodes)
 WRFMODEL=$WRF/model/WRFV3/                     # WRF model that run in computing nodes.

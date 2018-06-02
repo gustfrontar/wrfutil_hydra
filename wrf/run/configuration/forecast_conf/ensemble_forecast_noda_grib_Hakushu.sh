@@ -15,11 +15,11 @@ USE_ANALYSIS_BC=1 #1 - use analysis as BC , 0 - use forecasts as bc (e.g. global
                   # if 1 then bc data will be taken from exp_met_em folder in the corresponding INPUT folder.
                   # if 0 then bc data will be taken from for_met_em folder in the corresponding INPUT folder.
                   # default is 1
-USE_ANALYSIS_IC=0 #1 - use global analysis as IC, 0 use LETKF analysis as IC
+USE_ANALYSIS_IC=1 #1 - use global analysis as IC, 0 use LETKF analysis as IC
                   #if 0 then profide a LETKF-analysis source (ANALYSIS_SOURC)
                   #default is 0
 
-ANALYSIS_SOURCE=/data10/jruiz/EXPERIMENTS/ANALYSIS_CORDOBA_2KBIS_exprtps08_60m_radar_grib_Hakushu/
+ANALYSIS_SOURCE=""
 
 NVERTEXP=27  #Number of vertical levels in initial and boundary conditions input grib data.
 NVERTDB=38   #Number of vertical levels in initial and boundary conditions perturbation input grib data.
@@ -29,7 +29,7 @@ MM=$MEMBER                      #Variable for iteration limits.
 MEANMEMBER=`expr $MEMBER + 1 `  #This is the member ID corresponding to the ensemble mean.
 
 WINDOW=1800       #Forecast initialization frequency (seconds)
-GUESFT=7200       #Forecast length (seconds)
+GUESFT=28800      #Forecast length (seconds)
 WINDOW_START=0    #Window start (seconds from forecast initialization)     
 WINDOW_END=$GUESFT    #Window end   (seconds from forecast initialization)
 WINDOW_FREC=600   #Output frequency within window (seconds) should be the same as the maximum observation frequency.
@@ -69,8 +69,8 @@ RADAROBS="/OSSE_20140122_DBZ2.5_VR1.0_SO2KM/"              # NOT USED IN THE FOR
 EXP=FORECAST_${DOMAINCONF}_${CONFIGURATION}                # name of experiment
 
 ### initial date setting
-IDATE=20140122183000
-EDATE=20140122200000
+IDATE=20140122120000
+EDATE=20140122120000
 
 #### DATA
 OBSDIR=${HOMEDIR}/DATA/OBS/$OBS/                                                          # NOT USED IN THE FORECAST
@@ -80,15 +80,14 @@ TMPDIR=${HOMEDIR}/TMP/$EXP/                                                     
 OUTPUTDIR=${DATADIR}/EXPERIMENTS/$EXP/                                                    # Where results will be stored.
 GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/ARGENTINA/                                         # Folder where bdy and initial grib files are located.
 GRIBTABLE="Vtable.GFS"                                                                    # Bdy and init data source Vtable name.
-PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                    # Folder where data for perturbing bdy are located.
+PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/00001/                              # Folder where data for perturbing bdy are located.
 PERTGRIBTABLE="Vtable.CFSR"                                                               # Bdy perturbation source vtable name.
 GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/                                                 # Folder where WPS GEOG dataset is located.
 
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
-SCALE_FACTOR="0.05"         #Perturbation scale factor.
-RANDOM_SCALE_FACTOR="0.0"   #Random perturbation scale factor.
-PERTURB_BOUNDARY=1          #Wheter boundary conditions are going to be perturbed.
-PERTURB_BOUNDARY_TYPE=1     #DUMMY
+AMP_FACTOR="0.05"             #Perturbation scale factor.
+RANDOM_AMP_FACTOR="0.0"       #Random perturbation scale factor.
+PERTURB_BOUNDARY=1            #Wether boundary conditions are going to be perturbed.
 PERTURB_ATMOSPHERE=".true."   #Wether atmospheric conditions will be perturbed (boundary and first cycle)
 PERTURB_SST=".true."          #Wether SST will be perturbed.
 PERTURB_SOIL=".true."         #Wether SOIL conditions will be perturbed (soil moisture and soil temperature)
@@ -105,6 +104,7 @@ PERTURB_T_SCLV="5000d0"       #T random perturbation vertical scale
 PERTURB_RH_SCLV="5000d0"      #RH random perturbation vertical scale
 PERTURB_WIND_SCLV="5000d0"    #WIND random perturbation vertical scale
 
+
 #Random dates for boundary perturbations.
 INIPERTDATE=20060101000000    #Initial date in grib database (used for perturbing initial and boundary conditions)
 ENDPERTDATE=20091231180000    #Final date in grib database (used for perturbing initial and boundary conditions)
@@ -118,9 +118,9 @@ RUNTIMELIBS=/apps/SLES11/opt/netcdf-fortran/4.4.1_intel/lib/:/apps/SLES11/opt/hd
 WRF=${HOMEDIR}/LETKF_WRF/wrf/                  # WRF folder (for computing nodes)
 LETKF=$WRF/letkf/letkf.exe                     # LETKF module (for computing nodes)
 UPDATEBC=$WRF/model/WRFDA/da_update_bc.exe     # Update bc tool (WRFVAR) (for computing nodes)
-WRFMODEL=$WRF/model/WRFV3.6.1/                     # WRF model that run in computing nodes.
-WRFMODELPPS=$WRF/model/WRFV3.6.1/                  # WRF model that runs in pps server  (usually the same as the one for the computing nodes)
-WPS=$WRF/model/WPSV3.6.1/                            # WRF model pre processing utilities (for pps server)
+WRFMODEL=$WRF/model/WRFV3.6.1/                 # WRF model that run in computing nodes.
+WRFMODELPPS=$WRF/model/WRFV3.6.1/              # WRF model that runs in pps server  (usually the same as the one for the computing nodes)
+WPS=$WRF/model/WPSV3.6.1/                      # WRF model pre processing utilities (for pps server)
 ARWPOST=$WRF/model/ARWpost/                    # WRF model post processing utilities that run in computing nodes.
 SPAWN=$WRF/spawn/
 MPIBIN=/apps/COMMON/opt/intel/compilers_and_libraries_2017.4.196/linux/mpi/bin64/mpiexec

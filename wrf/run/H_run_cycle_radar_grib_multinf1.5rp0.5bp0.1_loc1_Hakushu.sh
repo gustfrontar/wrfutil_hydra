@@ -18,18 +18,18 @@
 CDIR=`pwd`
 
 #CONFIGURATION
-CONFIGURATION=ensemble_forecast_exprtps08_inf1.5_60m_radar_grib_Hakushu #Define a experiment configuration
-MCONFIGURATION=machine_radar60m_Hakushu_multiple                     #Define a machine configuration (number of nodes, etc)
+CONFIGURATION=multinf1.5rp0.5bp0.05_60m_radar_grib       #Define a experiment configuration
+MCONFIGURATION=machine_radar60m_Hakushu_multiple           #Define a machine configuration (number of nodes, etc)
 
-RESTART=0
-RESTARTDATE=20091117200000
+RESTART=1
+RESTARTDATE=20140122191000
 RESTARTITER=10
 
 MYHOST=`hostname`
 PID=$$
 MYSCRIPT=${0##*/}
 
-CONFFILE=$CDIR/configuration/forecast_conf/${CONFIGURATION}.sh   
+CONFFILE=$CDIR/configuration/analysis_conf/${CONFIGURATION}.sh   
 MCONFFILE=$CDIR/configuration/machine_conf/${MCONFIGURATION}.sh
 
 if [ -e $CONFFILE ];then
@@ -55,12 +55,7 @@ echo '>>>'
 
 safe_init_outputdir $OUTPUTDIR
 
-#Start of the section that will be output to my log.
-#{
-
 safe_init_tmpdir $TMPDIR
-
-save_configuration $CDIR/$MYSCRIPT
 
 echo '>>>'                                           
 echo ">>> COPYING DATA TO WORK DIRECTORY "          
@@ -70,6 +65,9 @@ copy_data
 
 copy_data_multiplecycles
 
+save_configuration $CDIR/$MYSCRIPT
+
+
 #Generating the domain requires acces to GEOG database.
 echo '>>>'                                           
 echo ">>> GENERATING DOMAIN "          
@@ -77,12 +75,13 @@ echo '>>>'
 
 get_domain
 
-edit_multiplecycle $TMPDIR/SCRIPTS/H_run_multiple_forecasts.sh
+edit_multiplecycle $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh
 
 #Run multiple cycles with only one QSUB
-sub_and_wait $TMPDIR/SCRIPTS/H_run_multiple_forecasts.sh  
+sub_and_wait $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh  
 
 #Move experiment data to OUTPUTDIR
+
 mv $TMPDIR/output/* $OUTPUTDIR
 
 echo "NORMAL END"
