@@ -97,7 +97,7 @@ options['attfilter_save']=True    #Save filter fields
 
 
 # read in the file, create a RadarMapDisplay object
-filename = '/home/jruiz/share/DATA/OBS/OBS_REAL_PARANA_20091117_CFRADIAL/cfrad.20091117_200345.000_to_20091117_200734.001_PAR_SUR.nc3'
+filename = '/media/jruiz/PAWR/Dropbox/DATA/DATOS_RADAR/PARANA/PAR_20091117_120/cfrad.20091117_210346.000_to_20091117_210735.000_PAR_SUR.nc'
 
 #Performs QC operations based on options
 [radar , qc_output] = rqc.main_qc( filename , options )
