@@ -344,15 +344,15 @@ timeslots: DO islot=1,nslots
            tmpk(n) = 1.00001d0
            IF( ABS( dz ) > 200.0 )THEN
              WRITE(6,*)'Assimilation of surface observation fails, delta z is too high'
+             CYCLE
            ENDIF
         ENDIF
  
         !
         ! observational operator
         !
-        CALL Trans_XtoY(tmpelm(n),tmptyp(n),tmplon(n),tmplat(n),tmpi(n),tmpj(n),tmpk(n),&
+        CALL Trans_XtoY(tmpelm(n),tmptyp(n),tmplon(n),tmplat(n),tmpdat(n),tmpi(n),tmpj(n),tmpk(n),&
          & tmpaz(n),tmpel(n),v3d,v2d,tmphdxf(n,im))
-
 
       END DO
 !$OMP END PARALLEL DO
@@ -369,9 +369,7 @@ timeslots: DO islot=1,nslots
 
   CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
-
   CALL allreduce_obs_mpi(nobs+nobsradar,nbv,tmphdxf)
-
 
   !Select radar observations to be assimilted and compute pseudo relative humidity
 IF( nobsradar .GT. 0 )THEN
@@ -395,8 +393,16 @@ IF( nobs + nobsradar .GT. 0)THEN
       DO i=1,nbv
         tmphdxf(n,i) = tmphdxf(n,i) - tmpdep(n) ! Hdx
       END DO
+      IF ( tmptyp(n) == -9 )THEN !SIMULATED OBS FOR TESTING AND DEBUG
+         WRITE(6,*)"[WARNING]: Simulated obs detected "
+         WRITE(6,*)tmpelm(n),tmplon(n),tmplat(n),tmpdat(n)
+         !The simulated increment is contained in the obs value.
+         tmpdat(n) = tmpdep(n) + tmpdat(n)
+      ENDIF
+
       tmpdep(n) = tmpdat(n) - tmpdep(n) ! y-Hx
     ENDIF
+
 
     IF(tmpelm(n) == id_tcmip_obs) THEN
 !!! (1) gross_error set for tcmip_obs
@@ -801,7 +807,7 @@ SUBROUTINE monit_mean(file,depout)
       CALL itpl_2d(phi0,obsi(n),obsj(n),rk)
       rk = obslev(n) - rk
     END IF
-    CALL Trans_XtoY(obselm(n),obstyp(n),obslon(n),obslat(n),obsi(n),obsj(n),rk,obsaz(n),obsel(n),v3d,v2d,hdxf)
+    CALL Trans_XtoY(obselm(n),obstyp(n),obslon(n),obslat(n),obsdat(n),obsi(n),obsj(n),rk,obsaz(n),obsel(n),v3d,v2d,hdxf)
 
     !Transform reflectivity to dBz scale.
     if( ielem == id_reflectivity_obs )then

@@ -24,21 +24,20 @@ options = {}
 #Flags
 options['ifdealias']=False
 options['ifrhofilter']=False   #Rhohv filter
-options['ifattfilter']=True    #Attenuation filter
+options['ifattfilter']=False   #Attenuation filter
 options['ifetfilter']=True     #Echo top filter
-options['ifedfilter']=True     #Echo depth filter
-options['ifspfilter']=True     #Speckle filter
-options['ifattfileter']=True   #Attenuation filter
-options['ifblfilter']=True     #Blocking filter
-options['ifmissfilter']=True   #Missing values filter
+options['ifedfilter']=False    #Echo depth filter
+options['ifspfilter']=False    #Speckle filter
+options['ifblfilter']=False    #Blocking filter
+options['ifmissfilter']=False  #Missing values filter
 
 #General
 
-options['ref_name']='dBZ'            #Reflectivity
-options['cref_name']='CdBZ'          #Corrected reflectivity (qc output)
-options['v_name']='V'                #Dopper velocity
-options['cv_name']='CV'              #Corrected wind (qc ouput)
-options['rho_name']='RhoHV'          #Rho HV
+options['ref_name']='dBZ'      #Reflectivity
+options['cref_name']='CdBZ'    #Corrected reflectivity (qc output)
+options['v_name']='V'          #Dopper velocity
+options['cv_name']='CV'        #Corrected wind (qc ouput)
+options['rho_name']='RhoHV'    #Rho HV
 
 options['norainrefval']=-0.1
 options['undef']=-9.99e9

@@ -10,23 +10,6 @@ function [ref2]=compute_detectmissing(radar,ref,ref_thresh,minref,nmissing_max)
 % computed. The box can be 1D, 2D or 3D. Size of the box in each direction
 % is computed as: 2nx+1, 2ny+1 and 2nz+1 respectively.
 
-tic
-% Juan Ruiz 2014
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%tic
-
-%data(isnan(data))=radar.replacerefmissing;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% COMPUTATION OF RADIAL BEAM DIFFERENCE.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% SUM DIFERENCE OVER THE SQUARE LOCAL BOX (CAN BE A 1D, 2D or 3D BOX)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%To reduce memory size the computation will be done level by level.
-
 ref2=ref;
 
 for ie=1:radar.ne
@@ -49,26 +32,6 @@ for ie=1:radar.ne
             nmissing=nmissing+1;
          end
      end
-
-%      ismissing=false;
-%      nmissing=1;
-%      for ir=2:radar.nr-1 
-%          if( abs( ref(ia,ir-1,ie) - ref(ia,ir,ie) ) > 2.0*ref_thresh & ref(ia,ir,ie) > minref & ref(ia,ir-1,ie) > minref ) 
-%              ismissing=true;
-%              nmissing=1;
-%          end
-%          if( ismissing & abs( ref(ia,ir+1,ie) - ref(ia,ir,ie) ) > 2.0*ref_thresh )
-%              ismissing=false;
-%          end
-%          if( nmissing > nmissing_max )
-%              ismissing=false;
-%          end
-%          if( ismissing )
-%             ref2(ia,ir,ie)=NaN;
-%             nmissing=nmissing+1;
-%          end
-%      end
-
 
   end
 end

@@ -93,18 +93,18 @@ NRADARS=1
 RADAROBSDIR=${HOMEDIR}/DATA/OBS/$RADAROBS/
 TMPDIR=${HOME}/TMP/$EXP/                                                                  # work directory
 OUTPUTDIR=${HOME}/salidas/EXPERIMENTS/$EXP/                                               # Where results should appear.
-GRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                         # Folder where bdy and inita data gribs are located.
+GRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                        # Folder where bdy and inita data gribs are located.
 #GRIBDIRSFC=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINASFC/
 GRIBTABLE="Vtable.CFSR2_web"                                                              # Bdy and init data source Vtable name.
-PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/                                    # Folder where data for perturbing bdy are located.
+PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/00001/                              # Folder where data for perturbing bdy are located.
 PERTGRIBTABLE="Vtable.CFSR2_web"                                                          # Bdy perturbation source vtable name.
 CHEM_DATA=${HOMEDIR}/DATA/INVENTARIO/AMBA/
 GEOG=${HOMEDIR}/LETKF_WRF/wrf/model/GEOG/
 
 
 #Random dates for boundary perturbations.
-INIPERTDATE=20091231180000                 
-ENDPERTDATE=20060101000000
+INIPERTDATE=20060101000000    #Initial date in grib database (used for perturbing
+ENDPERTDATE=20091231180000    #Final date in grib database (used for perturbing i
 PERTREFDATE=19980417000000    #At this date the initial perturbation dates will be taken. This date is used to keep consisntency among the perturbations
                               #used in forecast and analysis experiments. This date must be previous or equal to IDATE.
 
@@ -133,5 +133,5 @@ NAMELISTWPS=$WRF/run/configuration/domain_conf/$DOMAINCONF/namelist.wps         
 NAMELISTLETKF=$WRF/run/configuration/letkf_conf/letkf.namelist.$LETKFNAMELIST       #Namelist for LETKF
 NAMELISTARWPOST=$WRF/run/configuration/domain_conf/$DOMAINCONF/namelist.ARWpost     #Namelist for post-processing tools.
 NAMELISTOBSOPE=$WRF/run/configuration/letkf_conf/obsope.namelist.$OBSOPENAMELIST    #Namelist for observation operator.
-NAMELISTPERTMETEM=$WRF/run/configuration/letkf_conf/pertmetem.namelist.$LETKFNAMELIST          #Namelist for boundary perturbation.
+NAMELISTPERTMETEM=$WRF/run/configuration/letkf_conf/pertmetem.namelist.control          #Namelist for boundary perturbation.
 

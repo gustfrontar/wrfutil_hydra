@@ -1,0 +1,39 @@
+&share
+ wrf_core = 'ARW',
+ max_dom = MAX_DOM,
+ start_date = 'SYYYY-SMM-SDD_SHH:SMN:SSS','SYYYY-SMM-SDD_SHH:SMN:SSS','SYYYY-SMM-SDD_SHH:SMN:SSS'
+ end_date   = 'EYYYY-EMM-EDD_EHH:EMN:ESS','EYYYY-EMM-EDD_EHH:EMN:ESS','EYYYY-EMM-EDD_EHH:EMN:ESS'
+ interval_seconds = BDYFREQ
+ io_form_geogrid = 2,
+/
+
+&geogrid
+ parent_id         =   1,   1,
+ parent_grid_ratio =   1,   3,
+ i_parent_start    =   1,  11,
+ j_parent_start    =   1,  11,
+ e_we              =  105, 253,
+ e_sn              =  105,  253,
+ geog_data_res = '10m','2m',
+ dx = 12000,
+ dy = 12000,
+ map_proj = 'lambert',
+ ref_lat   = -31.858,
+ ref_lon   = -60.54,
+ truelat1  = -31.858,
+ truelat2  = -31.858,
+ stand_lon = -59.923,
+ geog_data_path = './GEOG/'
+/
+
+&ungrib
+ out_format = 'SI',
+ prefix = 'FILE',
+/
+
+&metgrid
+ fg_name = 'FILE'
+ io_form_metgrid = 2,
+/
+
+

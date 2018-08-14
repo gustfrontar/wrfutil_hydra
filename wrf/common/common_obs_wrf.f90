@@ -157,7 +157,7 @@ END SUBROUTINE get_method_refcalc
 !-----------------------------------------------------------------------
 ! Transformation from model variables to an observation
 !-----------------------------------------------------------------------
-SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
+SUBROUTINE Trans_XtoY(elm,typ,olon,olat,odat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
   IMPLICIT NONE
   REAL(r_size),INTENT(IN) :: elm , olon , olat
   REAL(r_size),INTENT(IN) :: ri,rj,rk
@@ -166,7 +166,8 @@ SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
   REAL(r_size),INTENT(IN) :: v3d(nlon,nlat,nlev,nv3d)
   REAL(r_size),INTENT(IN) :: v2d(nlon,nlat,nv2d)
   REAL(r_size),INTENT(OUT) :: yobs
-  REAL(r_size),INTENT(IN)  :: typ !Observation type, currently used to identify radar.
+  REAL(r_size),INTENT(INOUT)  :: odat  !Odat will be modified in case of simulated obs.
+  REAL(r_size),INTENT(INOUT)  :: typ !Observation type, currently used to identify radar.
   REAL(r_size) :: rh(nlon,nlat,nlev)
   REAL(r_size) :: sh(nlon,nlat,nlev)
   REAL(r_size) :: tv(nlon,nlat,nlev)    
@@ -344,6 +345,8 @@ SUBROUTINE Trans_XtoY(elm,typ,olon,olat,ri,rj,rk,raz,rel,v3d,v2d,yobs)
      ENDIF
 
   END SELECT
+
+
 
 
   RETURN

@@ -1836,7 +1836,7 @@ local local_script=$WORKDIR/get_domain.sh
 
 cd $WORKDIR
 
-#GENERATE THE SCRIPT TO GET UNPERTURBED MET_EM FILE FOR THE CURRENT TIME.
+#GENERATE THE SCRIPT TO GENERATE STATIC FIELDS.
 echo "#!/bin/bash                                                               "  > $local_script            
 echo "set -x                                                                    " >> $local_script
 echo "MAX_DOM=$MAX_DOM                                                          " >> $local_script
@@ -2087,10 +2087,11 @@ else
               fi 
               CFILE=`met_em_file_name $TMPDATE $my_domain`
               cp $METEMDIR/$MEMB/$CFILE $METEMDIR/$MEMM/
-              TMPDATE=`date_edit2 $TMPDATE $METEM_DATA_FREQ `
 
               my_domain=`expr $my_domain + 1 `
             done 
+
+            TMPDATE=`date_edit2 $TMPDATE $METEM_DATA_FREQ `
           done 
 
 
@@ -2220,7 +2221,7 @@ while [ $THEDATE -le $FDATE  ] ; do
    echo "l_time_diff=\`date_diff \$LDATE $PERTREFDATE \`                             " >> $local_script
    echo "u_time_diff=\`expr \$l_time_diff + $BOUNDARY_DATA_PERTURBATION_FREQ \`      " >> $local_script
 
-   echo "if [ ! -e $PERTMETEMDIR/\$CFILE ] ; then                                    " >> $local_script
+   echo "if [ ! -e $PERTMETEMDIR/\$MEM/\$CFILE ] ; then                                         " >> $local_script
 #   echo "ln -sf $METEMDIR/\${MEM}/\$CFILE \$WORKDIR                               " >> $local_script
 
    #Original data will be perturbed only at the initial cycle or if the Perturb_boundary option is enabled.
@@ -2228,8 +2229,8 @@ while [ $THEDATE -le $FDATE  ] ; do
     #Get the dates that we will use to create the perturbation and link the corresponding met_em files
     echo "DATEP1A=\`date_edit2 \$DATEP1 \$l_time_diff \`                            " >> $local_script
     echo "DATEP2A=\`date_edit2 \$DATEP2 \$l_time_diff \`                            " >> $local_script
-    echo "   TMPFILE1A=\`met_em_file_name \$DATEP1A ?? \`                           " >> $local_script
-    echo "   TMPFILE2A=\`met_em_file_name \$DATEP2A ?? \`                           " >> $local_script
+    echo "   TMPFILE1A=\`met_em_file_name \$DATEP1A \$MAX_DOM \`                    " >> $local_script
+    echo "   TMPFILE2A=\`met_em_file_name \$DATEP2A \$MAX_DOM \`                    " >> $local_script
 
     #IF perturbed met_ems are not present generate them                            
     echo "if [ ! -e  $PERTMETEMDB/\$TMPFILE1A ] ; then                              " >> $local_script
@@ -2262,8 +2263,8 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "DATEP1B=\`date_edit2 \$DATEP1 \$u_time_diff \`                              " >> $local_script
     echo "DATEP2B=\`date_edit2 \$DATEP2 \$u_time_diff \`                              " >> $local_script
 
-    echo "   TMPFILE1B=\`met_em_file_name \$DATEP1B ?? \`                            " >> $local_script
-    echo "   TMPFILE2B=\`met_em_file_name \$DATEP2B ?? \`                            " >> $local_script
+    echo "   TMPFILE1B=\`met_em_file_name \$DATEP1B \$MAX_DOM \`                     " >> $local_script
+    echo "   TMPFILE2B=\`met_em_file_name \$DATEP2B \$MAX_DOM \`                     " >> $local_script
 
     echo "if [ ! -e  $PERTMETEMDB/\$TMPFILE1B ] ; then                               " >> $local_script
     echo "   ln -sf  $TMPDIR/WPS/*             ./                                    " >> $local_script
@@ -2300,6 +2301,7 @@ while [ $THEDATE -le $FDATE  ] ; do
       if [ $my_domain -lt 10 ] ; then 
        my_domain=0$my_domain
       fi
+      echo "   CFILE=\`met_em_file_name $THEDATE $my_domain \`                         " >> $local_script
       echo "   TMPFILE1A=\`met_em_file_name \$DATEP1A $my_domain \`                    " >> $local_script
       echo "   TMPFILE2A=\`met_em_file_name \$DATEP2A $my_domain \`                    " >> $local_script
       echo "   TMPFILE1B=\`met_em_file_name \$DATEP1B $my_domain \`                    " >> $local_script

@@ -27,7 +27,7 @@ MODULE QC_CONST
   REAL(r_size),PARAMETER :: rad2deg=180d0/3.1415926535d0
   REAL(r_size),PARAMETER :: clight=299792458.0d0 !Speed of light
 
-  INTEGER      , PARAMETER :: NPAR_ECHO_TOP_3D=6 , NPAR_ECHO_TOP_2D=7 !Number of parameters in output arrays.
+  INTEGER      , PARAMETER :: NPAR_ECHO_TOP_3D=6 , NPAR_ECHO_TOP_2D=4 !Number of parameters in output arrays.
   REAL(r_size) , PARAMETER :: MAX_Z_ECHO_TOP=20.0d4 , MAX_R_ECHO_TOP=240.0d03
   REAL(r_size) , PARAMETER :: DZ_ECHO_TOP = 500.0d0 , DX_ECHO_TOP = 500.0d0
 
@@ -357,12 +357,9 @@ ENDDO
 RETURN
 END SUBROUTINE BOX_FUNCTIONS_2D
 
-SUBROUTINE  ECHO_TOP(reflectivity,heigth,rrange,na,nr,ne,nx,ny,nz,output_data_3d,output_data_2d)
+SUBROUTINE  ECHO_TOP(reflectivity,heigth,rrange,na,nr,ne,nx,ny,nz,echo_top_3d)
 !Curretnly this routine:
-!Compute 3D echo top, echo base , echo depth , max dbz and max dbz z
-!Performs interpolation from original radar grid (r,elevation) to an uniform (r,z) grid, where
-!the parameters are computed.
-!Then the result is interpolated back to the original radar grid.
+!Computes 3D echo top.
 
 use qc_const
 
@@ -371,9 +368,7 @@ IMPLICIT NONE
 INTEGER     ,INTENT(IN)  :: na,nr,ne
 INTEGER     ,INTENT(IN)  :: nx,ny,nz
 REAL(r_size),INTENT(IN)  :: reflectivity(na,nr,ne) , heigth(nr,ne) , rrange(nr,ne)  
-REAL(r_size),INTENT(OUT) :: output_data_3d(na,nr,ne,NPAR_ECHO_TOP_3D)  !Echo top , echo base , echo depth , max_dbz , maz_dbz_z , vertical_z_gradient
-REAL(r_size),INTENT(OUT) :: output_data_2d(na,nr,NPAR_ECHO_TOP_2D)  !Max echo top, max_echo_base, max_echo_depth, col_max, height weighted col_max
-!REAL(r_size)             :: tmp_output_data_3d(na,nr,ne,NPAR_ECHO_TOP_3D)
+REAL(r_size),INTENT(OUT) :: echo_top_3d(na,nr,ne)  !Echo top 
 !-----> The following variables will be saved within calls to speed up the computation.
 REAL(r_size), ALLOCATABLE,SAVE :: Z(:,:) , R(:,:) 
 INTEGER, ALLOCATABLE,SAVE      :: REGJ(:,:,:) , REGI(:,:,:) , INVI(:,:,:) , INVJ(:,:,:) 
@@ -385,7 +380,8 @@ LOGICAL,SAVE                   :: INITIALIZED=.FALSE.
 REAL(r_size), ALLOCATABLE      :: REGREF(:,:)
 CHARACTER(4)                   :: OPERATION='MEAN'
 INTEGER                        :: i, ii , jj , ia , ip 
-REAL(r_size),ALLOCATABLE       :: tmp_data3d(:,:,:,:) , tmp_data3d_2(:,:,:,:) , tmp_data2d(:,:,:), tmp_data2d_2(:,:,:)
+REAL(r_size),ALLOCATABLE       :: tmp_data3d(:,:,:,:)
+REAL(r_size),ALLOCATABLE       :: tmp3d(NPAR_ECHOTOP_3D) , tmp2d(NPAR_ECHOTOP_2D)
 
 
 !WRITE(6,*)'HELLO FROM COMPUTE_ECHO_TOP'
@@ -425,23 +421,15 @@ REGNR=INT(MAX_R_ECHO_TOP / DX_ECHO_TOP)+1
 
 ENDIF !End of first call only section.
 
-ALLOCATE( tmp_data3d(na,REGNR,REGNZ,NPAR_ECHO_TOP_3D))
-ALLOCATE( tmp_data3d_2(na,REGNR,REGNZ,NPAR_ECHO_TOP_3D))
-ALLOCATE( tmp_data2d(na,REGNR,NPAR_ECHO_TOP_2D))
-ALLOCATE( tmp_data2d_2(na,REGNR,NPAR_ECHO_TOP_2D))
+ALLOCATE( echo_top_az(REGNR,REGNZ) , tmp_echo_top_3d(na,nr,ne) )
+ALLOCATE( tmp3d(REGNZ,NPAR_ECHOTOP_3D) , tmp2d(NPAR_ECHOTOP_2D) )
 
 ALLOCATE( REGREF(REGNR,REGNZ) )
 
-
-tmp_data3d=UNDEF
-tmp_data3d_2=UNDEF
-!tmp_output_data_3d=UNDEF
-
-output_data_3d=UNDEF
-
-!$OMP PARALLEL DO SCHEDULE(DYNAMIC) PRIVATE(ia,ii,jj,REGREF)
+!$OMP PARALLEL DO SCHEDULE(DYNAMIC) PRIVATE(ia,ii,jj,REGREF,tmp_data,tmp3d,tmp2d)
 DO ia=1,na
  REGREF=UNDEF
+ echo_top_az=UNDEF
  !Interp reflectivity from elevation-range grid to z-range grid. (nearest neighbor)
  DO ii=1,REGNR
   DO jj=1,REGNZ 
@@ -450,68 +438,34 @@ DO ia=1,na
      ENDIF
   ENDDO
 
-  CALL ECHO_TOP_SUB(REGREF(ii,:),Z(ii,:),REGNZ,tmp_data3d(ia,ii,:,:),tmp_data2d(ia,ii,:),MAX_ECHO_TOP_LEVS,DBZ_THRESHOLD_ECHO_TOP)
+  CALL ECHO_TOP_SUB(REGREF(ii,:),Z(ii,:),REGNZ,tmp3d,tmp2d,MAX_ECHO_TOP_LEVS,DBZ_THRESHOLD_ECHO_TOP)
+   
+  echo_top_az(ii,:)=tmp3d(:,1)
 
- ENDDO
-
- !----> DEBUG
- !IF(ia == 67)THEN
- !WRITE(*,*)REGNR,REGNZ
- !OPEN(34,FILE='slice.grd',FORM='unformatted',access='sequential')
- !WRITE(34)REAL(tmp_data3d(ia,:,:,6),r_sngl)
- !WRITE(34)REAL(REGREF(:,:),r_sngl)
- !ENDIF
- !----> DEBUG
-
+  DO ii=1,nr
+   DO jj=1,ne
+    IF( INVNEARESTN(ii,jj) .GT. 0 )THEN
+      echo_top_3d(ia,ii,jj)=tmp_data3d_2(ia,INVI(ii,jj,INVNEARESTN(ii,jj)),INVJ(ii,jj,INVNEARESTN(ii,jj)))
+    ENDIF
+    IF( echo_top_3d(ia,ii,jj) /= UNDEF)THEN
+      echo_top_3d(ia,ii,jj)=echo_top_3d(ia,ii,jj) !-topography(ia,ii,jj)  (dejopara mas adelante)
+    ENDIF
+   ENDDO
+  ENDDO
 
 ENDDO
 !$OMP END PARALLEL DO
 
 
 !DO ip=1,NPAR_ECHO_TOP_3D
-CALL BOX_FUNCTIONS_2D(tmp_data3d(:,:,:,1),na,REGNR,REGNZ,nx,ny,nz,'MEAN',0.0d0,tmp_data3d_2(:,:,:,1))
-CALL BOX_FUNCTIONS_2D(tmp_data3d(:,:,:,2),na,REGNR,REGNZ,nx,ny,nz,'MEAN',0.0d0,tmp_data3d_2(:,:,:,2))
-CALL BOX_FUNCTIONS_2D(tmp_data3d(:,:,:,3),na,REGNR,REGNZ,nx,ny,nz,'MEAN',0.0d0,tmp_data3d_2(:,:,:,3))
-CALL BOX_FUNCTIONS_2D(tmp_data3d(:,:,:,4),na,REGNR,REGNZ,nx,ny,nz,'MEAN',0.0d0,tmp_data3d_2(:,:,:,4))
-CALL BOX_FUNCTIONS_2D(tmp_data3d(:,:,:,5),na,REGNR,REGNZ,0,1,0,'MINN',0.0d0,tmp_data3d_2(:,:,:,5))
-CALL BOX_FUNCTIONS_2D(tmp_data3d(:,:,:,6),na,REGNR,REGNZ,0,1,0,'MINN',0.0d0,tmp_data3d_2(:,:,:,6))
+CALL BOX_FUNCTIONS_2D(tmp_echo_top_3d,na,REGNR,REGNZ,0,1,0,'MINN',0.0d0,echo_top_3d)
 !END DO
 
-DO ip=1,NPAR_ECHO_TOP_2D
-CALL BOX_FUNCTIONS_2D(tmp_data2d(:,:,ip),na,REGNR,1,nx,ny,0,'MEAN',0.0d0,tmp_data2d_2(:,:,ip))
-END DO
 
 
-!Interpolate back to the elevation-range grid. (Using nearest neighbor)
-
-!$OMP PARALLEL DO SCHEDULE(DYNAMIC) PRIVATE(ia,ii,jj)
-DO ia=1,na
- DO ii=1,nr
-  DO jj=1,ne
-    IF( INVNEARESTN(ii,jj) .GT. 0 )THEN
-      output_data_3d(ia,ii,jj,:)=tmp_data3d_2(ia,INVI(ii,jj,INVNEARESTN(ii,jj)),INVJ(ii,jj,INVNEARESTN(ii,jj)),:)
-    ENDIF
-    IF( output_data_3d(ia,ii,jj,5) /= UNDEF)THEN
-      output_data_3d(ia,ii,jj,5)=output_data_3d(ia,ii,jj,5) !-topography(ia,ii,jj)  (dejo para mas adelante)
-    ENDIF
-  ENDDO
-    IF( INVNEARESTN(ii,1) .GT. 0 )THEN !We interpolate the data to the lowest level.
-      output_data_2d(ia,ii,:)=tmp_data2d_2(ia,INVI(ii,1,INVNEARESTN(ii,1)),:)
-    ENDIF
- ENDDO
-
- !We will use the vertical reflectivity gradient and maximum ref height over the terrain only for heights between 0 and 2 km
- !WHERE( heigth - topography(ia,:,:) < 0 .OR. heigth - topography(ia,:,:) > 2000 )
- !     output_data_3d(ia,:,:,6)=UNDEF
- !     output_data_3d(ia,:,:,5)=UNDEF
- !ENDWHERE
-
-
-ENDDO   
-!$OMP END PARALLEL DO
-
-DEALLOCATE( tmp_data3d_2 , tmp_data3d )
+DEALLOCATE( echo_top_az )
 DEALLOCATE( REGREF )
+DEALLOCATE( tmp3d , tmp2d )
 
 
 INITIALIZED=.TRUE.
@@ -702,42 +656,6 @@ DO itop=1,max_levs
 ENDDO
 
 
-!Compute heigh weigthed averaged reflectivity, the height of the first reflectivity maximum and its intensity.
-
-
-ave_ref=0
-sum_z=0
-found_first_maximum=.FALSE.
-imax=0
-DO iz=1,nz
-
- IF( reflectivity(iz) .NE. UNDEF )THEN
-   ave_ref = z(iz) * reflectivity(iz)
-   sum_z   = z(iz)
- ENDIF
-
- IF( reflectivity(iz) /= UNDEF .AND. output_2d(7) == UNDEF )THEN
-   output_2d(7) = reflectivity(iz)    !Intensity of first reflectivity maximun
-   output_2d(6) = z(iz)               !Height of first reflectivity maximum
- ENDIF
- IF( reflectivity(iz) /= UNDEF .AND. (reflectivity(iz) - output_2d(7)) <  & 
-     first_maximum_threshold .AND. .NOT. found_first_maximum )THEN
-   found_first_maximum=.TRUE. 
- ELSE
-   IF( reflectivity(iz) > output_2d(6) )THEN
-     output_2d(7) = reflectivity(iz) !Keep updating the maximum until we reach the first maximum.
-     output_2d(6) = z(iz)            !Keep updating the height of the maximum 
-   ENDIF
- ENDIF
-
-ENDDO
-IF( sum_z .GT. 0 )THEN
-  output_2d(5) = ave_ref / sum_z
-ELSE
-  output_2d(5) = 0
-ENDIF
-
-!Max echo top, max_echo_base, max_echo_depth, col_max, height weighted col_max
 RETURN
 END SUBROUTINE ECHO_TOP_SUB
 
