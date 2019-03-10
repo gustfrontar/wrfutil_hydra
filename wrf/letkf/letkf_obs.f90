@@ -134,6 +134,7 @@ SUBROUTINE set_letkf_obs
   
   DO islot=1,nslots
    DO iradar=1,nradar
+
     nobslotsradar(islot,iradar)=0
     WRITE(radarfile(4:5),'(I2.2)')islot
     WRITE(radarfile(6:7),'(I2.2)')iradar
@@ -142,6 +143,7 @@ SUBROUTINE set_letkf_obs
       !Get radar data size
       CALL get_nobs_radar( radarfile , nobslotsradar(islot,iradar),radar_lon(iradar),radar_lat(iradar),radar_z(iradar) )   
       nobsradar=nobsradar+nobslotsradar(islot,iradar)
+
      ELSE
       WRITE(6,*)'WARNING: FILE ',radarfile,' NOT FOUND'
      ENDIF

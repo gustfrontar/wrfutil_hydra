@@ -234,6 +234,45 @@ local    FLEADT_STR=$FLEADT
     echo $FLEADT_STR
 }
 
+maximum_common_divisor () {
+
+   local n1=$1
+   local n2=$2
+   local gcd=0
+   if test $n1 -gt $n2 ; then
+      local i=1
+      while test $i -le $n1 ; do
+        local a=`expr $n1 % $i`
+        local b=`expr $n2 % $i`
+        if test $a -eq 0 -a $b -eq 0 ; then
+	   if test $gcd -lt $i ; then
+             gcd=$i
+           fi
+        fi
+        i=`expr $i + 1`
+      done
+   fi
+   if test $n2 -gt $n1 ; then
+      i=1
+      while test $i -le $n2 ; do
+        a=`expr $n1 % $i`
+        b=`expr $n2 % $i`
+        if test $a -eq 0 -a $b -eq 0 ; then
+           if test $gcd -lt $i ; then
+             gcd=$i
+           fi
+        fi
+        i=`expr $i + 1`
+      done
+   fi
+
+   if test $n2 -eq $n1 ; then
+     gcd=$n2
+   fi
+
+   echo $gcd
+}
+
 
 #slot_number () {
 #
@@ -1194,11 +1233,11 @@ set_pre_processing_intervals ()  {
 #If the variable is not set then try to estimate a proper value.
 if [ ! -n "$METEM_DATA_FREQ" ] ; then
 
- METEM_DATA_FREQ=`expr $GUESFT % $BOUNDARY_DATA_FREQ ` 
+ METEM_DATA_FREQ=`maximum_common_divisor $GUESFT $BOUNDARY_DATA_FREQ ` 
 
- if [  $METEM_DATA_FREQ -eq 0 ] ; then
-    METEM_DATA_FREQ=$BOUNDARY_DATA_FREQ
- fi
+ #if [  $METEM_DATA_FREQ -eq 0 ] ; then
+ #   METEM_DATA_FREQ=$BOUNDARY_DATA_FREQ
+ #fi
 
 fi
 
@@ -1993,9 +2032,8 @@ fi
 local my_domain=1
 
 while [ $my_domain -le $MAX_DOM ] ; do
- if [ $my_domain -lt 10 ] ; then 
-    my_domain=0$my_domain
- fi
+
+    my_domain=`add_zeros $my_domain 2 `
     echo "CFILE=\`met_em_file_name \$CDATE $my_domain \`                           " >> $local_script
     echo "if [  ! -e  $METEMDIR/\${MEM}/\$CFILE ] ; then                           " >> $local_script  #If CFILE is present we can go to the next time.
     echo "TMPFILE1=\`met_em_file_name \$CDATE1 $my_domain \`                       " >> $local_script
@@ -2082,9 +2120,7 @@ else
           while [  $TMPDATE -le $FDATE ] ; do 
             local my_domain=1 
             while [ $my_domain -le $MAX_DOM ] ; do
-              if [ $my_domain -lt 10 ] ; then 
-                my_domain=0$my_domain
-              fi 
+              my_domain=`add_zeros $my_domain 2 `
               CFILE=`met_em_file_name $TMPDATE $my_domain`
               cp $METEMDIR/$MEMB/$CFILE $METEMDIR/$MEMM/
 
@@ -2209,31 +2245,33 @@ fi
 
 THEDATE=$CDATE
 
+local my_max_dom=` add_zeros $MAX_DOM 2 `
+
 while [ $THEDATE -le $FDATE  ] ; do
 
    if [ $perturb_met_em -eq 1 ] ; then
 
-   echo "CFILE=\`met_em_file_name $THEDATE 01 \`                                  " >> $local_script
-   echo "MAX_DOM=$MAX_DOM                                                         " >> $local_script
+   echo "CFILE=\`met_em_file_name $THEDATE 01 \`                                     " >> $local_script
+   echo "MAX_DOM=$my_max_dom                                                         " >> $local_script
    #We have the initial random dates, we have to compute the random date corresponding to the current
    #time. So we compute the difference between the current date and the initial date.
    echo "LDATE=\`date_floor $THEDATE $BOUNDARY_DATA_PERTURBATION_FREQ \`             " >> $local_script
    echo "l_time_diff=\`date_diff \$LDATE $PERTREFDATE \`                             " >> $local_script
    echo "u_time_diff=\`expr \$l_time_diff + $BOUNDARY_DATA_PERTURBATION_FREQ \`      " >> $local_script
 
-   echo "if [ ! -e $PERTMETEMDIR/\$MEM/\$CFILE ] ; then                                         " >> $local_script
+   echo "if [ ! -e $PERTMETEMDIR/\$MEM/\$CFILE ] ; then                              " >> $local_script
 #   echo "ln -sf $METEMDIR/\${MEM}/\$CFILE \$WORKDIR                               " >> $local_script
 
    #Original data will be perturbed only at the initial cycle or if the Perturb_boundary option is enabled.
     echo " Boundary data is going to be perturbed"
     #Get the dates that we will use to create the perturbation and link the corresponding met_em files
-    echo "DATEP1A=\`date_edit2 \$DATEP1 \$l_time_diff \`                            " >> $local_script
-    echo "DATEP2A=\`date_edit2 \$DATEP2 \$l_time_diff \`                            " >> $local_script
-    echo "   TMPFILE1A=\`met_em_file_name \$DATEP1A \$MAX_DOM \`                    " >> $local_script
-    echo "   TMPFILE2A=\`met_em_file_name \$DATEP2A \$MAX_DOM \`                    " >> $local_script
+    echo "DATEP1A=\`date_edit2 \$DATEP1 \$l_time_diff \`                             " >> $local_script
+    echo "DATEP2A=\`date_edit2 \$DATEP2 \$l_time_diff \`                             " >> $local_script
+    echo "   TMPFILE1A=\`met_em_file_name \$DATEP1A \$MAX_DOM \`                     " >> $local_script
+    echo "   TMPFILE2A=\`met_em_file_name \$DATEP2A \$MAX_DOM \`                     " >> $local_script
 
     #IF perturbed met_ems are not present generate them                            
-    echo "if [ ! -e  $PERTMETEMDB/\$TMPFILE1A ] ; then                              " >> $local_script
+    echo "if [ ! -e  $PERTMETEMDB/\$TMPFILE1A ] ; then                               " >> $local_script
     echo "   ln -sf  $TMPDIR/WPS/*             ./                                    " >> $local_script
     echo "   ln -sf  $TMPDIR/domain/geo_em.d*  ./                                    " >> $local_script
     echo "   rm ./namelist.wps                                                       " >> $local_script
@@ -2243,10 +2281,10 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv \$TMPFILE1A       $PERTMETEMDB                                       " >> $local_script
+    echo "   mv met_em*.nc       $PERTMETEMDB                                        " >> $local_script
     echo "fi                                                                         " >> $local_script
 
-    echo "if [ ! -e  $PERTMETEMDB/\$TMPFILE2A ] ; then                              " >> $local_script
+    echo "if [ ! -e  $PERTMETEMDB/\$TMPFILE2A ] ; then                               " >> $local_script
     echo "   ln -sf  $TMPDIR/WPS/*             ./                                    " >> $local_script
     echo "   ln -sf  $TMPDIR/domain/geo_em.d*  ./                                    " >> $local_script
     echo "   rm ./namelist.wps                                                       " >> $local_script
@@ -2256,12 +2294,12 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv \$TMPFILE2A     $PERTMETEMDB                                         " >> $local_script
+    echo "   mv met_em*.nc     $PERTMETEMDB                                          " >> $local_script
     echo "fi                                                                         " >> $local_script
 
     #Repeat for the upper date.
-    echo "DATEP1B=\`date_edit2 \$DATEP1 \$u_time_diff \`                              " >> $local_script
-    echo "DATEP2B=\`date_edit2 \$DATEP2 \$u_time_diff \`                              " >> $local_script
+    echo "DATEP1B=\`date_edit2 \$DATEP1 \$u_time_diff \`                             " >> $local_script
+    echo "DATEP2B=\`date_edit2 \$DATEP2 \$u_time_diff \`                             " >> $local_script
 
     echo "   TMPFILE1B=\`met_em_file_name \$DATEP1B \$MAX_DOM \`                     " >> $local_script
     echo "   TMPFILE2B=\`met_em_file_name \$DATEP2B \$MAX_DOM \`                     " >> $local_script
@@ -2276,7 +2314,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv \$TMPFILE1B       $PERTMETEMDB                                       " >> $local_script
+    echo "   mv met_em*.nc       $PERTMETEMDB                                        " >> $local_script
     echo "fi                                                                         " >> $local_script
 
     echo "if [ ! -e  $PERTMETEMDB/\$TMPFILE2B ] ; then                               " >> $local_script
@@ -2289,7 +2327,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     echo "   rm ./Vtable ; ln -sf ./ungrib/Variable_Tables/$PERTGRIBTABLE  ./Vtable  " >> $local_script
     echo "   ./ungrib.exe > ./ungrib.log                                             " >> $local_script
     echo "   ./metgrid.exe > ./metgrid.log                                           " >> $local_script
-    echo "   mv \$TMPFILE2B     $PERTMETEMDB                                         " >> $local_script
+    echo "   mv met_em*.nc     $PERTMETEMDB                                          " >> $local_script
     echo "fi                                                                         " >> $local_script
 
     echo "  rm -fr FILE*                                                             " >> $local_script
@@ -2298,9 +2336,7 @@ while [ $THEDATE -le $FDATE  ] ; do
     local my_domain=1
 
     while [ $my_domain -le $PMAX_DOM ] ; do
-      if [ $my_domain -lt 10 ] ; then 
-       my_domain=0$my_domain
-      fi
+      my_domain=` add_zeros $my_domain 2 `
       echo "   CFILE=\`met_em_file_name $THEDATE $my_domain \`                         " >> $local_script
       echo "   TMPFILE1A=\`met_em_file_name \$DATEP1A $my_domain \`                    " >> $local_script
       echo "   TMPFILE2A=\`met_em_file_name \$DATEP2A $my_domain \`                    " >> $local_script
@@ -2332,9 +2368,7 @@ while [ $THEDATE -le $FDATE  ] ; do
   else #Else  over perturbation of met_ems.
    local my_domain=1
    while [ $my_domain -le $PMAX_DOM ] ; do
-    if [ $my_domain -lt 10 ] ; then
-      my_domain=0$my_domain
-    fi
+    my_domain=` add_zeros $my_domain 2 `
     echo "CFILE=\`met_em_file_name $THEDATE $my_domain \`                             " >> $local_script
     echo "ln -sf $METEMDIR/\$CFILE ./$PERTMETEMDIR/\${MEM}/\${CFILE}                  " >> $local_script
     my_domain=`expr $my_domain + 1  `
@@ -2515,10 +2549,7 @@ arw_postproc_forecast_noqueue () {
 
  local my_domain=1
  while [ $my_domain -le $MAX_DOM ] ; do
-  if [ $my_domain -lt 10 ] ; then 
-   my_domain=0$my_domain
-  fi
-
+  my_domain=`add_zeros $my_domain 2 `
   local TMPDATE=$IDATE
   while [ $TMPDATE -le $EDATE  ] ; do
    local input_file=`wrfout_file_name $TMPDATE $my_domain `
@@ -2697,10 +2728,7 @@ if [ $ENABLE_UPP -eq 1 ] ; then
 
   local my_domain=1
      while [ $my_domain -le $MAX_DOM ] ; do
-      if [ $my_domain -lt 10 ] ; then 
-         my_domain=0$my_domain
-      fi
-
+      my_domain=` add_zeros $my_domain 2 `
       local TMPDATE=$IDATE
       local TMPDATEWRF=`date_in_wrf_format $TMPDATE `
       
@@ -2797,9 +2825,7 @@ NVERTEXP=$NVERTDB #Set the input number of vertical levels according to db data.
   #Link metgrid for all the domains.
   local my_domain=1
   while [ $my_domain -le $MAX_DOM  ] ; do
-    if [ $my_domain -lt 10  ] ; then
-      my_domain=0$my_domain
-    fi
+    my_domain=` add_zeros $my_domain 2 `
     local met_em_file=` met_em_file_name $my_date $my_domain ` #[We assume that input data is only available for domain 1]
     met_em_file=$INPUTDIR/db_met_em/$met_em_file
     ln -sf $met_em_file $WORKDIR/
@@ -2823,10 +2849,8 @@ NVERTEXP=$NVERTDB #Set the input number of vertical levels according to db data.
   echo "$MPIBIN -np $MAX_RUNNING ./realpps.exe > null.log    " >> $WORKDIR/tmp.sh
   local my_domain=1
   while [ $my_domain -le $MAX_DOM ] ; do
-   if [ $my_domain -lt 10  ] ; then
-    my_domain=0$my_domain
-   fi
-
+   my_domain=` add_zeros $my_domain 2 `
+  
    echo "mv wrfinput_d${my_domain} ${output_data}/ganald${my_domain}_$my_date    " >> $WORKDIR/tmp.sh
    my_domain=`expr $my_domain + 1 `
   done
@@ -2844,10 +2868,7 @@ NVERTEXP=$NVERTDB #Set the input number of vertical levels according to db data.
 
   my_domain=1
   while [ $my_domain -le $MAX_DOM ] ; do
-   if [ $my_domain -lt 10  ] ; then
-    my_domain=0$my_domain
-   fi
-
+   my_domain=` add_zeros $my_domain 2 `
    ln -sf ${output_data}/ganald${my_domain}_$my_date  $WORKDIR/${INPUT_ROOT_NAME}
    ln -sf ${output_data}/plevganald${my_domain}_${my_date}.ctl $WORKDIR/${OUTPUT_ROOT_NAME}.ctl
    ln -sf ${output_data}/plevganald${my_domain}_${my_date}.dat $WORKDIR/${OUTPUT_ROOT_NAME}.dat
@@ -3085,10 +3106,8 @@ if [ $FORECAST -eq 1  ] ; then
 my_domain=1
 while [ $my_domain -le $MAX_DOM ] ; do
 
-
- if [ $my_domain -lt 10 ] ; then
-   my_domain=0$my_domain
- fi
+ my_domain=` add_zeros $my_domain 2 `
+ 
 
  local output_dir=${RESULTDIRG}/obsver_d$my_domain
  mkdir -p $output_dir
@@ -3303,9 +3322,7 @@ fi
 local M=$INIMEMBER
 
 while [ $my_domain -le $MAX_DOM ] ; do
- if [ $my_domain -lt 10 ] ; then
-  my_domain=0$my_domain
- fi
+ my_domain=` add_zeros $my_domain 2 `
  while [ $M -le $ENDMEMBER ] ; do
   local MEM=`ens_member $M `
   if [ $FORECAST -eq 1 -o $ANALYSIS -eq 1 ] ; then

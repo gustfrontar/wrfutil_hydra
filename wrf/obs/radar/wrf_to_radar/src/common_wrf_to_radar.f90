@@ -382,7 +382,40 @@ real(r_size)  :: ss
 
 END SUBROUTINE interp_to_real_radar
 
+SUBROUTINE interp_to_real_radar_member(my_model_file,my_radar_file,my_radar) 
+implicit none
+character(100)  , intent(IN)  :: my_model_file , my_radar_file 
+type(RADAR)     , intent(OUT) :: my_radar 
+real(r_size)  :: my_gues3d(nlon,nlat,nlev,nv3d) , my_gues2d(nlon,nlat,nv2d)
+integer       :: iyyyy,imm,idd,ihh,imn
+real(r_size)  :: ss
 
 
+  CALL read_date_wrf(my_model_file,iyyyy,imm,idd,ihh,imn,ss)
 
-END MODULE common_wrf_to_radar
+  CALL set_common_wrf(my_model_file)
+
+  !Read the model data.
+  CALL read_grd(current_model_file,my_gues3d,my_gues2d)
+  my_gues3d(:,:,:,iv3d_ph)=my_gues3d(:,:,:,iv3d_ph)/gg
+
+
+  my_radar % radar_type =1
+  CALL radar_read_data( my_radar , my_radar_file , endian )
+
+  my_radar%qcflag      = 0
+  my_radar%attenuation = 1.0d0
+
+  CALL radar_georeference( my_radar )
+
+  CALL model_to_radar( my_radar , my_gues3d , my_gues2d )
+
+  my_radar %year  =REAL(iyyyy,r_size)
+  my_radar %month =REAL(imm,  r_size)
+  my_radar %day   =REAL(idd,  r_size)
+  my_radar %hour  =REAL(ihh,  r_size)
+  my_radar %minute=REAL(imn,  r_size)
+  my_radar %second=ss
+
+
+END SUBROUTINE interp_to_real_radar_member

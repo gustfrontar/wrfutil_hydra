@@ -1,7 +1,7 @@
 #!/share/anaconda3/bin/python
 
 """
-Created on 07/11/2017
+    Created on 07/11/2017
 """
 
 import sys
@@ -12,16 +12,16 @@ import datetime as dt
 import binary_io as bio
 import os
 
-basedir='/home/jruiz/salidas/EXPERIMENTS/'
+basedir='/home/jruiz/share/EXPERIMENTS/'
 
-expname = 'ANALYSIS_PARANA_2KM_control_paranafnlinf095_newobs_60m_radar_grib_Hydra'
+expname = 'ANALYSIS_CORDOBA_2KBIS_exprtps09_60m_radar_grib_Hydra'
 
 undef_in=1.0e30
 
 
 #Defini initial and end times using datetime module.
-itime = dt.datetime(2009,11,17,18,5,00)  #Initial time.
-etime = dt.datetime(2009,11,17,23,5,00)  #End time.
+itime = dt.datetime(2014,1,22,17,35,0)  #Initial time.
+etime = dt.datetime(2014,1,22,20,5,0)  #End time.
 
 #Define the delta.
 delta=dt.timedelta(seconds=300)
@@ -67,7 +67,7 @@ for source in ['anal','gues'] :
 		#Compute ensemble mean
 		my_data_mean[ my_data_coun > 0 ]=my_data_mean[ my_data_coun > 0 ] / my_data_coun[ my_data_coun > 0 ]
 		#Compute ensemble spread
-		my_data_sprd[ my_data_coun > 0 ]=np.power( my_data_sprd[ my_data_coun > 0] / my_data_coun[ my_data_coun > 0 ] - np.power(my_data_mean[ my_data_coun > 0 ],2) , 0.5 )
+		my_data_sprd[ my_data_coun > 0 ]= my_data_sprd[ my_data_coun > 0] / my_data_coun[ my_data_coun > 0 ] - np.power(my_data_mean[ my_data_coun > 0 ],2) 
 
 		my_data_mean[ my_data_coun == 0 ]=undef_in
 		my_data_sprd[ my_data_coun == 0 ]=undef_in
