@@ -1,14 +1,14 @@
 #!/bin/sh
 set -ex
 PGM=./wrf_to_radar.exe
-F90=ifort  
+F90=ifort
 
 LIB_NETCDF="-L/usr/local/netcdf4.intel/lib/ -lnetcdff"
 INC_NETCDF="-I/usr/local/netcdf4.intel/include/"
 
 
 OMP=
-F90OPT='-g -traceback ' # -convert big_endian -O3 -openmp'
+F90OPT='-O3' # -convert big_endian -O3 -openmp'
 
 cd ./src
 

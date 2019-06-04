@@ -10,8 +10,8 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 #LIB_NETCDF="-L/usr/local/lib/ -lnetcdff"
 #INC_NETCDF="-I/usr/local/include/ "
 
-LIB_NETCDF="-L//apps/SLES11/opt/netcdf-fortran/4.4.1_intel/lib/ -lnetcdff"
-INC_NETCDF="-I//apps/SLES11/opt/netcdf-fortran/4.4.1_intel/include/"
+LIB_NETCDF="-L/usr/local/lib/ -lnetcdff"
+INC_NETCDF="-I/usr/local/include/"
 
 
 PGM=../compute_pert_metem.exe

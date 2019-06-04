@@ -145,7 +145,7 @@ INTEGER     ,INTENT(OUT) :: method_ref_calc
        method_ref_calc=-9
      ELSEIF( lambda > 7.5 .AND. lambda <= 15)THEN
        method_ref_calc=2
-     ELSEIF( lambda > 2.5 .AND. lambda >= 3.75)THEN
+     ELSEIF( lambda > 2.5 .AND. lambda <= 3.75)THEN
        method_ref_calc=3
      ELSE
        write(6,*)"[Error]: Not recognized radar wave-length"

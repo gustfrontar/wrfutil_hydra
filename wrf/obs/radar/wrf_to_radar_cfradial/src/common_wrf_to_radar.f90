@@ -301,4 +301,33 @@ logical       :: model_split_output
 
 END SUBROUTINE interp_to_real_radar
 
+SUBROUTINE interp_to_real_radar_member(my_model_file,my_radar_file,my_radar,my_time)
+implicit none
+character(100)  , intent(IN)  :: my_model_file , my_radar_file
+integer         , intent(IN)  :: my_time
+type(RADAR)     , intent(OUT) :: my_radar
+real(r_size)                  :: my_gues3d(nlon,nlat,nlev,nv3d) , my_gues2d(nlon,nlat,nv2d)
+integer                       :: iyyyy,imm,idd,ihh,imn
+real(r_size)                  :: ss
+
+
+  CALL read_date_wrf(my_model_file,iyyyy,imm,idd,ihh,imn,ss)
+
+  CALL set_common_wrf(my_model_file)
+
+  !Read the model data.
+  CALL read_grd(current_model_file,my_time,my_gues3d,my_gues2d)
+  my_gues3d(:,:,:,iv3d_ph)=my_gues3d(:,:,:,iv3d_ph)/gg
+
+
+  CALL radar_read_data( my_radar , my_radar_file )
+
+  CALL radar_georeference( my_radar )
+
+  CALL model_to_radar( my_radar , my_gues3d , my_gues2d )
+
+
+END SUBROUTINE interp_to_real_radar_member
+
+
 END MODULE common_wrf_to_radar

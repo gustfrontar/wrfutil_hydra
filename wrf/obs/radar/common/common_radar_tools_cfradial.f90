@@ -59,10 +59,21 @@ MODULE COMMON_RADAR_TOOLS
   INTEGER  ::   nv3d_model = 2
   INTEGER  ::   iv3d_ref_model = 1
   INTEGER  ::   iv3d_rv_model  = 2
-
+  !Ensemble variables
+  INTEGER  ::   iv3d_ref_max_model  = 3
+  INTEGER  ::   iv3d_ref_min_model  = 4
+  INTEGER  ::   iv3d_ref_mean_model = 5
+  INTEGER  ::   iv3d_ref_std_model  = 6
+  INTEGER  ::   iv3d_rv_max_model   = 7
+  INTEGER  ::   iv3d_rv_min_model   = 8
+  INTEGER  ::   iv3d_rv_mean_model  = 9
+  INTEGER  ::   iv3d_rv_std_model   = 10
+  
   CHARACTER(20) :: element(3)=(/'dBZ','V','Vda'/)
 
-  CHARACTER(20) :: element_model(2)=(/'dBZ_model','V_model'/)
+  CHARACTER(20) :: element_model(10)=(/'dBZ_model','V_model',                                               &
+                                      'dBZ_model_max','dBZ_model_min','dBZ_model_mean','dBZ_model_std',    &
+                                      'V_model_max','V_model_min','V_model_mean','V_model_std'/)
  
   END TYPE 
 
@@ -170,7 +181,10 @@ SUBROUTINE radar_write_model( myradar , myfile  )
     CALL check_io(NF90_DEF_VAR(ncid,myradar%element_model(iv),NF90_FLOAT, (/rangedimid,timedimid/),varid))
 
     !Add attributes
-    IF( iv == myradar%iv3d_ref_model )THEN
+    IF( iv == myradar%iv3d_ref_model     .or. iv == myradar%iv3d_ref_max_model   .or.  & 
+        iv == myradar%iv3d_ref_min_model .or. iv == myradar%iv3d_ref_mean_model  .or.  & 
+        iv == myradar%iv3d_ref_std_model )THEN
+
    
       CALL check_io(NF90_PUT_ATT(ncid,varid,'long_name','reflectivity_from_horizontal_polarization'))
       CALL check_io(NF90_PUT_ATT(ncid,varid,'standard_name','equivalent_reflectivity_factor'))
@@ -182,7 +196,9 @@ SUBROUTINE radar_write_model( myradar , myfile  )
       CALL check_io(NF90_PUT_ATT(ncid,varid,'grid_mapping','grid_mapping'))
       CALL check_io(NF90_PUT_ATT(ncid,varid,'coordinates','time range'))
 
-    ELSEIF( iv == myradar%iv3d_rv_model )THEN
+    ELSEIF( iv == myradar%iv3d_rv_model     .or. iv == myradar%iv3d_rv_max_model   .or.  &
+            iv == myradar%iv3d_rv_min_model .or. iv == myradar%iv3d_rv_mean_model  .or.  &
+            iv == myradar%iv3d_rv_std_model )THEN        
 
       CALL check_io(NF90_PUT_ATT(ncid,varid,'long_name','radial_velocity_from_horizontal_polarization'))
       CALL check_io(NF90_PUT_ATT(ncid,varid,'standard_name','radial_velocity_of_scatterers_away_from_instrument'))
@@ -206,7 +222,7 @@ SUBROUTINE radar_write_model( myradar , myfile  )
  !Write the data
  DO iv=1,myradar%nv3d_model
 
-   IF ( iv == myradar%iv3d_ref_model .or.  iv == myradar%iv3d_rv_model )THEN
+   !IF ( iv == myradar%iv3d_ref_model .or.  iv == myradar%iv3d_rv_model )THEN
 
      write(*,*)"Writing ",myradar%element_model(iv)
 
@@ -216,7 +232,7 @@ SUBROUTINE radar_write_model( myradar , myfile  )
      write(*,*)shape(myradar%radarv3d_model) 
      CALL check_io(NF90_PUT_VAR(ncid,varid,myradar%radarv3d_model(:,:,iv),(/1,1/),(/myradar%nr , myradar%nt/)))
 
-   ENDIF
+   !ENDIF
 
  ENDDO
 
