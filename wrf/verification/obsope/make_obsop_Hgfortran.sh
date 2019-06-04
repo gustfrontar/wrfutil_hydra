@@ -1,7 +1,7 @@
 #!/bin/sh
 set -ex
 PGM=obsope.exe
-F90=/home/jruiz/mpich.gfortran/bin/mpif90
+F90=/usr/bin/mpif90
 OMP=
 
 F90OPT='-O3 -fconvert=big-endian' #-convert big_endian -O3 ' # -Hs' -Kfast,parallel

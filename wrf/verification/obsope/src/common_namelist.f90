@@ -14,7 +14,6 @@ MODULE common_namelist
 
   !GENERAL
   INTEGER :: nslots=2 ! number of time slots for 4D-LETKF
-  INTEGER :: nbslot=2 ! basetime slot
   INTEGER :: nbv=40   ! Number of ensemble members
  
   !OBSERVATIONS

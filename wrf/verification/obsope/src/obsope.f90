@@ -66,7 +66,6 @@ PROGRAM obsope
   WRITE(6,'(A)') ' ------------------------------------------- '
   WRITE(6,'(A,I15)')   '  nbv          :',nbv
   WRITE(6,'(A,I15)')   '  nslots       :',nslots
-  WRITE(6,'(A,I15)')   '  nbslot       :',nbslot
   WRITE(6,'(A)') '============================================='
   CALL set_common_wrf('gs0100001')
   CALL set_common_mpi_wrf

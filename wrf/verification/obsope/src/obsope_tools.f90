@@ -425,19 +425,6 @@ IF( nobs + nobsradar .GT. 0)THEN
 
 ENDIF
 
-!
-!PERFORM SUPEROBING ON REQUESTED OBSERVATION TYPES
-!
-
-   CALL superobbing()
-
-
-
-
-! Perform superobbing 
-
-   CALL superobbing()
-
 
 do n=1,nobs+nobsradar
    CALL com_stdev(nbv,tmphdxf(n,:),tmpsprd(n) )
@@ -1278,40 +1265,6 @@ end do
 
 END SUBROUTINE OBSAREA
 
-!Perform data superobbing for selected observation types.
-SUBROUTINE superobbing
-IMPLICIT NONE
-
-
-
-
-
-
-END SUBROUTINE SUPEROBING
-
-=======
-
-SUBROUTINE superobbing()
-IMPLICIT NONE
-TYPE(GRID) :: so_grid
-INTEGER i,j,k,it
-REAL(r_size),ALLOCATABLE :: solon(:,:) , solat(:,:) , solev(:,:), sodep(:,:)
-
-!Lets do a loop over the variables that are going to be superobbed
-DO i = 1,nsovar
-  DO it = 1,nslots
-  
-  !For each variable get the grid.
-  CALL get_grid( so_grid) 
-
-  
-
-
-  ENDDO !End do over times
-ENDDO  !End do over variables that will be superobbed.
-
-
-END SUBROUTINE superobbing
 
 
 !Compute regrid grid.

@@ -1,0 +1,33 @@
+&general
+ nslots=@NSLOTS@ 
+ nbv=60
+/
+ 
+&observations
+ threshold_dz=1000.0d0
+ gross_error=10.0d0
+ minrefdbz=0.0d0
+ rainratio_threshold=0.0d0       
+/
+
+&radar_da      
+ nradar=10
+ use_wt=.true.
+/
+
+&obsgrid
+ narea=1
+ slotstep=1
+ slotoffset=0
+ do_obsgrid=.false.
+ regrid_res=0.1d0
+ regrid_vert_res=100.0d2   !in Pa
+ regrid_vert_zres=1000.0d0 !in m
+ vlon1=-70
+ vlon2=-55
+ vlat1=-40
+vlat2=-22
+/
+
+
+
