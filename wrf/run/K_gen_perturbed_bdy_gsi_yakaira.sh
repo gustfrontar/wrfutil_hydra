@@ -11,8 +11,8 @@
 CDIR=`pwd`
 
 #CONFIGURATION
-CONFIGURATION=scale_boundary_prep             #Define a experiment configuration
-MCONFIGURATION=machine_scale_boundary_prep    #Define a machine configuration (number of nodes, etc)
+CONFIGURATION=gsi_boundary_prep_yakaira             #Define a experiment configuration
+MCONFIGURATION=machine_scale_boundary_prep_yakaira    #Define a machine configuration (number of nodes, etc)
 
 RESTART=0
 RESTARTDATE=20080823060000
@@ -143,13 +143,13 @@ echo " >>"
 
 perturb_met_em_from_grib_noqueue
 
-echo " >>"
-echo " >> GENERATE WRINPUT FROM PERTURBED MET_EM"
-echo " >>"
+#echo " >>"
+#echo " >> GENERATE WRINPUT FROM PERTURBED MET_EM"
+#echo " >>"
 
 #CREATE OUTPUT DIRECTORIES FOR THE CURRENT CYCLE (YYYYMMDDHHNNSS)
 
-get_wrfinput_from_met_em
+#get_wrfinput_from_met_em
 
 
 CDATE=$ADATE

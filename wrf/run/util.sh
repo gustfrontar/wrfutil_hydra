@@ -563,7 +563,7 @@ edit_wrf_wrf () {
 local SCRIPT=$1
 echo "#!/bin/bash                                           "   > $SCRIPT
 echo "set -x                                                "  >> $SCRIPT
-echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH "  >> $SCRIPT
+echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH "  >> $SCRIPT
 echo "WORKDIR=\$1                                           "  >> $SCRIPT
 echo "                                                      "  >> $SCRIPT
 echo "cd \$WORKDIR                                          "  >> $SCRIPT
@@ -581,7 +581,7 @@ edit_wrf_real () {
 local SCRIPT=$1
 echo "#!/bin/bash                                           "   > $SCRIPT
 echo "set -x                                                "  >> $SCRIPT
-echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH "  >> $SCRIPT
+echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH "  >> $SCRIPT
 echo "WORKDIR=\$1                                           "  >> $SCRIPT
 echo "                                                      "  >> $SCRIPT
 echo "cd \$WORKDIR                                          "  >> $SCRIPT
@@ -607,7 +607,7 @@ local SCRIPT=$1
 if [ $FORECAST -eq 1 -a $INTERPANA -eq 1 ] ; then  #Forecast and analysis have different grids.
  echo "#!/bin/bash                                           "  > $SCRIPT
  echo "set -x                                                " >> $SCRIPT
- echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH " >> $SCRIPT
+ echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH " >> $SCRIPT
  echo "WORKDIR=\$1                                           " >> $SCRIPT
  echo "                                                      " >> $SCRIPT
  echo "cd \$WORKDIR                                          " >> $SCRIPT
@@ -637,7 +637,7 @@ edit_wrf_pre () {
 local SCRIPT=$1
 echo "#!/bin/bash                                                         "  > $SCRIPT
 echo "set -x                                                              " >> $SCRIPT
-echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH               " >> $SCRIPT
+echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH               " >> $SCRIPT
 echo "WORKDIR=\$1                                                         " >> $SCRIPT
 echo "MEM=\$2                                                             " >> $SCRIPT
 echo "echo \$WORKDIR                                                      " >> $SCRIPT
@@ -947,6 +947,12 @@ get_node_list() {
 
  #NODELIST is an array containing the name of each avialable node
  #repeated the number of cores available in this node.
+ if [  $SYSTEM -eq 2 ] ; then
+
+  NNODES=1
+  NODELIST[$NNODES]=$PPSSERVER
+
+ fi
 
  if [  $SYSTEM -eq 1 ] ; then
 
@@ -1717,7 +1723,7 @@ run_letkf_noqueue () {
       #will be called by mpiexec. 
       echo "#!/bin/bash                                                                   " >  $TMPDIR/LETKF/run_letkf.sh
       echo "ulimit -s unlimited                                                           " >> $TMPDIR/LETKF/run_letkf.sh
-      echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                         " >> $TMPDIR/LETKF/run_letkf.sh
+      echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH                         " >> $TMPDIR/LETKF/run_letkf.sh
       echo "./letkf.exe                                                                   " >> $TMPDIR/LETKF/run_letkf.sh
       chmod 755 $TMPDIR/LETKF/run_letkf.sh
  
@@ -1884,7 +1890,7 @@ echo "BOUNDARY_DATA_FREQ=$BOUNDARY_DATA_FREQ #Boundary data frequency (seconds) 
 echo "source $TMPDIR/SCRIPTS/util.sh                                            " >> $local_script
 
 echo "ulimit -s unlimited                                                       " >> $local_script
-echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                     " >> $local_script
+echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH                     " >> $local_script
 echo "mkdir -p $WORKDIR                                                         " >> $local_script
 echo "cd $WORKDIR                                                               " >> $local_script
 echo "rm -fr  $WORKDIR/geo_em*                                                  " >> $local_script
@@ -1925,7 +1931,7 @@ if [ $RUN_ONLY_MEAN -eq 1 ] ; then
    local INIMEMBER=$MEANMEMBER  #Run only the last member.
    local ENDMEMBER=$MEANMEMBER
    local INIMEMBER_BDY=$MEANMEMBER_BDY
-   local ENDMEMBER_BYD=$MEANMEMBER_BDY
+   local ENDMEMBER_BDY=$MEANMEMBER_BDY
 else
    local INIMEMBER=1
    local ENDMEMBER=$MEMBER
@@ -1979,7 +1985,7 @@ echo "#!/bin/bash                                                               
 echo "set -x                                                                      " >> $local_script
 echo "source $TMPDIR/SCRIPTS/util.sh                                              " >> $local_script
 echo "ulimit -s unlimited                                                         " >> $local_script
-echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                       " >> $local_script
+echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH                       " >> $local_script
 echo "MEM=\$1                                                                     " >> $local_script
 echo "mkdir -p $METEMDIR/\${MEM}/WORK                                             " >> $local_script
 echo "cd $METEMDIR/\${MEM}/WORK                                                   " >> $local_script
@@ -2058,37 +2064,40 @@ done
 
  chmod 766 $local_script
 
-
- M=$INIMEMBER_BDY
- while [ $M -le $ENDMEMBER_BDY ] ; do
-  MYNODE=1
-  while [ $MYNODE -le $NNODES -a $M -le $ENDMEMBER_BDY ] ; do
-    MEM=`ens_member $M `
-
-    sleep 0.3
-    
-    if [ $SYSTEM -eq 1 ] ; then
-   
-      ssh ${NODELIST[$MYNODE]} "${WORKDIR}/$local_script $MEM  2>&1 " & 
-
-    fi
-
-    if [ $SYSTEM -eq 0 ] ; then
-
-      echo ${NODELIST[$MYNODE]} > ./${WORKDIR}/tmp_machine_file
-
-      $MPIBIN -np 1 -vcoordfile ./${WORKDIR}/tmp_machine_file ${WORKDIR}/$local_script $MEM  2>&1 &
-
-    fi
-    
-    M=`expr $M + 1`
-    MYNODE=`expr $MYNODE + 1`
-
-  done 
-
-  time wait
-
- done
+ if [ $SYSTEM -eq 0 -o  $SYSTEM -eq 1 ] ; then
+   M=$INIMEMBER_BDY
+   while [ $M -le $ENDMEMBER_BDY ] ; do
+     MYNODE=1
+     while [ $MYNODE -le $NNODES -a $M -le $ENDMEMBER_BDY ] ; do
+       MEM=`ens_member $M `
+       sleep 0.3
+       if [ $SYSTEM -eq 1 ] ; then
+         ssh ${NODELIST[$MYNODE]} "${WORKDIR}/$local_script $MEM  2>&1 " & 
+       fi
+       if [ $SYSTEM -eq 0 ] ; then
+         echo ${NODELIST[$MYNODE]} > ./${WORKDIR}/tmp_machine_file
+         $MPIBIN -np 1 -vcoordfile ./${WORKDIR}/tmp_machine_file ${WORKDIR}/$local_script $MEM  2>&1 &
+       fi
+       M=`expr $M + 1`
+       MYNODE=`expr $MYNODE + 1`
+     done
+     time wait
+   done
+ fi
+ if [ $SYSTEM -eq 2 ] ; then
+    M=$INIMEMBER_BDY
+    while [ $M -le $ENDMEMBER_BDY ] ; do
+      RUNNING=0
+      while [ $RUNNING -le $MAX_RUNNING -a $M -le $ENDMEMBER_BDY ] ; do
+         sleep  0.3
+         MEM=`ens_member $M `
+         ssh ${PPSSERVER} "${WORKDIR}/$local_script $MEM  2>&1 " &
+         M=`expr $M + 1`
+         RUNNING=`expr $RUNNING + 1`
+      done
+      time wait
+    done
+ fi
 
 #SO FAR WE HAVE INTERPOLATED BDY CONDITIONS FILES TO THE REQUIRED TIME AND FOR EACH BDY ENSEMBLE MEMBER. 
 #IF THE BDY ENSEMBLE SIZE IS SMALLER THAN THE REQUIRED ENSEMBLE SIZE THEN WE NEED TO MAP THE BDY ENSEMBLE TO THE NESTED 
@@ -2220,7 +2229,7 @@ echo "WORKDIR=$PERTMETEMDIR/\$MEM/WORK  #Temporary work directory               
 echo "source $TMPDIR/SCRIPTS/util.sh                                            " >> $local_script
 
 echo "ulimit -s unlimited                                                       " >> $local_script
-echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                     " >> $local_script
+echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH                     " >> $local_script
 echo "mkdir -p \$WORKDIR                                                        " >> $local_script
 echo "cd \$WORKDIR                                                              " >> $local_script
 
@@ -2384,37 +2393,46 @@ chmod 766 $local_script
 
 
 M=$INIMEMBER
+
+if [ $SYSTEM -eq 0 -o $SYSTEM -eq 1 ] ; then
 while [ $M -le $ENDMEMBER ] ; do
   MYNODE=1
   while [ $MYNODE -le $NNODES -a $M -le $ENDMEMBER ] ; do
     MEM=`ens_member $M `
-
     DATE1=${INI_RANDOM_DATE1[$M]}
     DATE2=${INI_RANDOM_DATE2[$M]}
-   
     sleep 0.3
-
       if [ $SYSTEM -eq 1 ] ; then
-   
         ssh ${NODELIST[$MYNODE]} "$local_script $MEM $DATE1 $DATE2 > $PERTMETEMDIR/perturb_met_em${MEM}.log 2>&1 " & 
-   
       fi
       if [ $SYSTEM -eq 0 ] ; then
-
         echo ${NODELIST[$MYNODE]} > ./tmp_machinefile 
-        
         mpiexec -np 1 -vcoordfile ./tmp_machinefile $local_script $MEM $DATE1 $DATE2 > $PERTMETEMDIR/perturb_met_em${MEM}.log 2>&1 &
-
       fi  
-  
     M=`expr $M + 1`
     MYNODE=`expr $MYNODE + 1`
-
   done 
-
   time wait
-
 done
+fi
+
+if [ $SYSTEM -eq 2 ] ; then
+   while [ $M -le $ENDMEMBER ] ; do
+     RUNNING=0
+     while [ $RUNNING -le $MAX_RUNNING -a $M -le $ENDMEMBER ] ; do
+        sleep  0.3
+        MEM=`ens_member $M `
+        DATE1=${INI_RANDOM_DATE1[$M]}
+        DATE2=${INI_RANDOM_DATE2[$M]}
+        ssh ${PPSSERVER} "${WORKDIR}/$local_script $MEM $DATE1 $DATE2  2>&1 " &
+        M=`expr $M + 1`
+        RUNNING=`expr $RUNNING + 1`
+     done
+     time wait
+   done
+fi
+
+
 
 }
 
@@ -2440,7 +2458,7 @@ arw_postproc_noqueue () {
   cp $TMPDIR/NAMELIST/namelist.ARWpost.template $WORKDIR/namelist.ARWpost
   edit_namelist_arwpost $WORKDIR/namelist.ARWpost $CDATE $CDATE $ARWPOST_FREC
 
-  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
+  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
   fi
@@ -2530,7 +2548,7 @@ arw_postproc_forecast_noqueue () {
 
   ARWPOST_FREC=$WINDOW_FREC
 
-  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
+  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
   echo "source $TMPDIR/SCRIPTS/util.sh                                " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
@@ -2619,7 +2637,7 @@ if [  $ENABLE_UPP -eq 1 ];then
                                          
   local CDATEWRF=`date_in_wrf_format $CDATE `
 
-  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
+  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
   fi
@@ -2717,7 +2735,7 @@ if [ $ENABLE_UPP -eq 1 ] ; then
      local ENDMEMBER=$MEMBER
   fi
 
-  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
+  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH         " >  ${WORKDIR}/tmp.sh
   echo "source $TMPDIR/SCRIPTS/util.sh                                " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                       " >> ${WORKDIR}/tmp.sh
@@ -3141,7 +3159,7 @@ while [ $my_domain -le $MAX_DOM ] ; do
 
   #Create run script
   echo "#!/bin/bash                                                                         " >  ${WORKDIR}/tmp.sh
-  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                               " >> ${WORKDIR}/tmp.sh
+  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH                               " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                                             " >> ${WORKDIR}/tmp.sh
   fi
@@ -3180,7 +3198,7 @@ if [ $ANALYSIS -eq 1  ] ; then
 
   #Create run script
   echo "#!/bin/bash                                                                         " >  ${WORKDIR}/tmp.sh
-  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                               " >> ${WORKDIR}/tmp.sh
+  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH                               " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                                             " >> ${WORKDIR}/tmp.sh
   fi
@@ -3214,7 +3232,7 @@ if [ $ANALYSIS -eq 1  ] ; then
 
   #Create run script
   echo "#!/bin/bash                                                                         " >  ${WORKDIR}/tmp.sh
-  echo "export LD_LIBRARY_PATH=$RUNTIMELIBS:\$LD_LIBRARY_PATH                               " >> ${WORKDIR}/tmp.sh
+  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH                               " >> ${WORKDIR}/tmp.sh
   if [ $SYSTEM -eq  1 ] ; then
      echo " ulimit -s unlimited                                                             " >> ${WORKDIR}/tmp.sh
   fi
@@ -3601,6 +3619,128 @@ else #RESTART = 1
 
 fi #FI over the restart = 0 contion.
 
+
+}
+
+
+
+get_wrfinput_from_met_em () {
+
+#This function generates a wrfinputfile from each perturbed met_em file.
+#This will be used to provide boundary conditions to a scale-letkf experiment.
+
+if [ $RUN_ONLY_MEAN -eq 1 ] ; then
+   local INIMEMBER=$MEANMEMBER  #Run only the last member.
+   local ENDMEMBER=$MEANMEMBER
+else
+   local INIMEMBER=1
+   local ENDMEMBER=$MEMBER
+fi
+
+#Define in which cases perturbation will be applied.
+local perturb_met_em=0
+if [ $PERTURB_BOUNDARY -eq 1 ] ; then
+   perturb_met_em=1
+   echo "[Warning]: Only MOAD will be perturbed"
+fi
+if [ $ANALYSIS -eq 1 -a $ITER -eq 1 ] ; then
+   perturb_met_em=1
+fi
+
+#Only the outermost domain will be processed.
+
+PERTMETEMDIR=$TMPDIR/BOUNDARY/INPUT/
+
+local local_script=$PERTMETEMDIR/get_wrfinput_from_met_em.sh
+
+#Fill some of the variables of the namelist.
+#cp $TMPDIR/NAMELIST/namelist.inpu.template $TMPDIR/ENSINPUT/namelist.input.template
+#edit_namelist_pertmetem $TMPDIR/ENSINPUT/pertmetem.namelist.template
+
+#GENERATE THE SCRIPT TO GET PERTURBED MET_EM FILE FOR THE CURRENT TIME.
+echo "#!/bin/bash                                                               "  > $local_script
+echo "set -x                                                                    " >> $local_script
+#This script perturbs met_em files.
+#To avoid perturbing again the same met_em file for the same ensemble member
+#First the script checks wether the perturbed met_em file exists and if it do not
+#exist the script creates the file.
+echo "MEM=\$1                          #Ensemble member                                                                     " >> $local_script
+echo "WORKDIR=$TMPDIR/BOUNDARY/INPUT/\$MEM/WORK/  #Temporary work directory                                                 " >> $local_script
+echo "ln -sf  $TMPDIR/WRF/*    \$WORKDIR/                                                                                   " >> $local_script
+echo "ln -sf  $TMPDIR/BOUNDARY/INPUT/\$MEM/met_em*    \$WORKDIR/                                                            " >> $local_script
+echo "source $TMPDIR/SCRIPTS/util.sh                                                                                        " >> $local_script
+
+echo "ulimit -s unlimited                                                                                                   " >> $local_script
+echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_ADD:\$LD_LIBRARY_PATH                                                         " >> $local_script
+echo "export PATH=$LD_PATH_ADD:$PATH                                                                                        " >> $local_script
+echo "mkdir -p \$WORKDIR                                                                                                    " >> $local_script
+echo "cd \$WORKDIR                                                                                                          " >> $local_script
+
+#################################################
+#   CYCLE TO CREATE THE PERTURBATIONS
+#################################################
+
+THEDATE=$CDATE
+   #Scales uses a naming convention for the bdy conditions that goes from 0 - 9999
+   echo "MEM2=\`expr \${MEM} + 0 \`                                                                                         " >> $local_script
+   echo "MEM2=\`add_zeros \${MEM2}  4 \`                                                                                    " >> $local_script
+   echo "mkdir -p $TMPDIR/scale_bdy/\${MEM2}                                                                                " >> $local_script
+
+while [ $THEDATE -le $FDATE  ] ; do
+
+   echo "if [ ! -e $TMPDIR/scale_bdy/\${MEM2}/wrfout_${THEDATE}  ] ; then                                                   " >> $local_script
+   echo "CFILE=\`met_em_file_name $THEDATE 01 \`                                                                            " >> $local_script
+   echo "MAX_DOM=1  #Only the outermost domain will be processed                                                            " >> $local_script
+   echo "NVERTEXP=${NVERTEXP}                                                                                               " >> $local_script
+   echo "cp $TMPDIR/NAMELIST/namelist.input.template \$WORKDIR/namelist.input                                               " >> $local_script
+   echo "edit_namelist_input \$WORKDIR/namelist.input  $THEDATE $THEDATE $WINDOW_FREC $BOUNDARY_DATA_FREQ                   " >> $local_script
+   echo "./realpps.exe > ./real.log                                                                                         " >> $local_script
+   #Scale model requires EMISS and ALBEDO fields. These are only included in the wrfout format (not in the wrfinput file)
+   #Perform a fake run with the wrf model to generate the wrfout file corresponding to the initial time.
+   echo "cp $TMPDIR/NAMELIST/namelist.input.template \$WORKDIR/namelist.input                                               " >> $local_script
+   echo "THEDATE2=\`date_edit2 $THEDATE 60 \`                                                                               " >> $local_script
+   echo "edit_namelist_input \$WORKDIR/namelist.input  $THEDATE \$THEDATE2 $WINDOW_FREC $BOUNDARY_DATA_FREQ                 " >> $local_script
+   echo "./wrfpps.exe > ./wrf.log                                                                                           " >> $local_script
+   echo "local_file=\`wrfout_file_name $THEDATE 01 \`                                                                       " >> $local_script
+   echo "mv \$local_file  $TMPDIR/scale_bdy/\$MEM2/wrfout_${THEDATE}                                                        " >> $local_script
+   #The scale model requires longitudes in the range 0-360, but WRF works in the range -180 180 this tool solves this problem.
+   echo "ln -sf $TMPDIR/scale_bdy/\$MEM2/wrfout_${THEDATE} ./input_file.nc                                                  " >> $local_script
+   echo "./change_wrf_longitudes.exe                                                                                        " >> $local_script
+   echo "INPUT_ROOT_NAME=tmpin                                                                                              " >> $local_script
+   echo "OUTPUT_ROOT_NAME=tmpout                                                                                            " >> $local_script
+   echo "OUTLEVS=\"$OUTLEVS\"                                                                                               " >> $local_script
+   echo "OUTVARS=\"$OUTVARS\"                                                                                               " >> $local_script
+   echo "INTERP_METHOD=$INTERP_METHOD                                                                                       " >> $local_script
+   echo "cp ${TMPDIR}/NAMELIST/namelist.ARWpost.template ./namelist.ARWpost                                                 " >> $local_script
+   echo "edit_namelist_arwpost \${WORKDIR}/namelist.ARWpost $THEDATE $THEDATE $ARWPOST_FREC                                 " >> $local_script
+   echo "ln -sf $TMPDIR/scale_bdy/\$MEM2/wrfout_${THEDATE} ./\${INPUT_ROOT_NAME}                                            " >> $local_script
+   echo "ln -sf $TMPDIR/scale_bdy/\$MEM2/wrfout_${THEDATE}.dat ./\${OUTPUT_ROOT_NAME}.dat                                   " >> $local_script
+   echo "ln -sf $TMPDIR/scale_bdy/\$MEM2/wrfout_${THEDATE}.ctl ./\${OUTPUT_ROOT_NAME}.ctl                                   " >> $local_script
+   echo "ln -sf $TMPDIR/WRF/src .                                                                                           " >> $local_script
+   echo "$TMPDIR/WRF/ARWpost.exe > \${WORKDIR}/arwpostd_${THEDATE}.log                                                      " >> $local_script
+   echo "sed -i 's/tmpout/wrfout_${THEDATE}/g' $TMPDIR/scale_bdy/\$MEM2/wrfout_${THEDATE}.ctl                               " >> $local_script
+   echo "fi                                                                                                                 " >> $local_script
+
+  THEDATE=`date_edit2 $THEDATE $METEM_DATA_FREQ `
+
+done
+
+#We are done!
+chmod 766 $local_script
+
+M=$INIMEMBER
+while [ $M -le $ENDMEMBER ] ; do
+
+  RUNNING=0
+  while [ $RUNNING -le $MAX_RUNNING -a $M -le $ENDMEMBER ] ; do
+    sleep  0.3
+    MEM=`ens_member $M `
+    ssh $PPSSERVER " $local_script $MEM > $TMPDIR/BOUNDARY/INPUT/get_wrfinput_from_met_em_${MEM}.log  2>&1 " &
+    RUNNING=`expr $RUNNING + 1 `
+    M=`expr $M + 1 `
+  done
+  time wait
+done
 
 }
 

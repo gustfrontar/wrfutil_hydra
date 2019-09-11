@@ -99,13 +99,13 @@ GRIBDIR=${HOMEDIR}/DATA/GRIB/FNL/HIRES/ARGENTINA/                # Folder where 
 GRIBTABLE="Vtable.GFS"                                                               # Bdy and init data source Vtable name.
 PERTGRIBDIR=${HOMEDIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/00001/                     # Folder where data for perturbing bdy are located.
 PERTGRIBTABLE="Vtable.CFSR2_web"                                                        # Bdy perturbation source vtable name.
-GEOG=/share/GEOG/
+GEOG=/home/jruiz/share/LETKF_WRF/wrf/model/GEOG/
 
 
 #Random dates for boundary perturbations.
 ENDPERTDATE=20091231180000                 
 INIPERTDATE=20060101000000
-PERTREFDATE=20140124120000    #At this date the initial perturbation dates will be taken. This date is used to keep consisntency among the perturbations
+PERTREFDATE=$IDATE            #At this date the initial perturbation dates will be taken. This date is used to keep consisntency among the perturbations
                               #used in forecast and analysis experiments. This date must be previous or equal to IDATE.
 
 INPUT_PERT_DATES_FROM_FILE=0          #0 - generate a new set of random dates, 1 - read random dates from a file. 
@@ -117,10 +117,10 @@ RUNTIMELIBS=${HOMEDIR}/libs_sparc64/lib/
 WRF=${HOMEDIR}/LETKF_WRF/wrf/
 LETKF=$WRF/letkf/letkf.exe                     # LETKF module
 UPDATEBC=$WRF/model/WRFDA/da_update_bc.exe     
-WRFMODEL=$WRF/model/WRFV3.6.1/             # WRF model that run in computing nodes.
-WRFMODELPPS=$WRF/model/WRFV3.6.1/      # WRF model that runs in pps server 
-WPS=$WRF/model/WPS3.6/                # WRF model pre processing utilities (for pps server)
-ARWPOST=$WRF/model/ARWpost/        # WRF model post processing utilities that run in computing nodes.
+WRFMODEL=$WRF/model/WRFV3.9.1_YAKAIRA/             # WRF model that run in computing nodes.
+WRFMODELPPS=$WRF/model/WRFV3.9.1_YAKAIRA/      # WRF model that runs in pps server 
+WPS=$WRF/model/WPS3.9.1_YAKAIRA/                # WRF model pre processing utilities (for pps server)
+ARWPOST=$WRF/model/ARWpost_YAKAIRA/        # WRF model post processing utilities that run in computing nodes.
 SPAWN=$WRF/spawn/
 MPIBIN=mpiexec
 

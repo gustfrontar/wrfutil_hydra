@@ -105,7 +105,7 @@ GEOG=/share/GEOG/
 #Random dates for boundary perturbations.
 ENDPERTDATE=20091231180000                 
 INIPERTDATE=20060101000000
-PERTREFDATE=20140124120000    #At this date the initial perturbation dates will be taken. This date is used to keep consisntency among the perturbations
+PERTREFDATE=$IDATE            #At this date the initial perturbation dates will be taken. This date is used to keep consisntency among the perturbations
                               #used in forecast and analysis experiments. This date must be previous or equal to IDATE.
 
 INPUT_PERT_DATES_FROM_FILE=0          #0 - generate a new set of random dates, 1 - read random dates from a file. 

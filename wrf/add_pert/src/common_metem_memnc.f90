@@ -71,7 +71,7 @@ MODULE common_wrf
 !  REAL(r_size),ALLOCATABLE,SAVE :: fcori(:,:)
   REAL(r_size),ALLOCATABLE,SAVE :: phi0(:,:)
   REAL(r_size),ALLOCATABLE,SAVE :: landmask(:,:)
-  CHARACTER(20),SAVE :: element(nv3d+nv2d)
+  CHARACTER(20),SAVE :: element(nv3d+nv2d+np2d)
   REAL(r_sngl),ALLOCATABLE,SAVE :: dnw(:)
   REAL(r_sngl),ALLOCATABLE,SAVE :: znu(:)
 !  CHARACTER(19),SAVE  :: DATE
@@ -117,8 +117,8 @@ SUBROUTINE set_common_wrf(inputfile)
 
   !2D parameters
   element(nv3d+nv2d+ip2d_hfxfactor)='HFXFACTOR'
-  element(nv3d+nv2d+ip2d_hfxfactor)='QFXFACTOR'
-  element(nv3d+nv2d+ip2d_hfxfactor)='USTFACTOR'
+  element(nv3d+nv2d+ip2d_qfxfactor)='QFXFACTOR'
+  element(nv3d+nv2d+ip2d_ustfactor)='USTFACTOR'
   !
   ! Lon, Lat, F, phi0
   !
