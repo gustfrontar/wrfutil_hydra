@@ -813,15 +813,17 @@ if [ $ANALYSIS -eq 1  ] ; then
    echo "[Warning] $FUNCNAME: '\$DIRNAME' is not set." 
    exit 1
  fi
- if [ -e "$DIRNAME" -a $RESTART -eq 0 ]; then
-    echo "[Error] $DIRNAME exists: Please remove it manually to avoid data loss"
-    exit 1
+ if [ -e "$DIRNAME" ] ; then 
+   if [ $RESTART -eq 0 -a $COLD_START -eq 1 ] ; then
+     echo "[Error] $DIRNAME exists: Please remove it manually to avoid data loss"
+     exit 1
+   fi
  fi
- if [ ! -e "$DIRNAME" -a $RESTART -eq 1 ]; then
+ if [ ! -e "$DIRNAME" -a $RESTART -eq 1 ] ; then
     echo "[Error] $DIRNAME does not exist"
     exit 1
  fi
- if [ -e "$DIRNAME" -a $RESTART -eq 1 ]; then
+ if [ -e "$DIRNAME" -a $RESTART -eq 1 ] ; then
    echo "[Warning] This is a restart experiment -> Using the previous output directory (data can be partially overwritten) " 
  fi
 fi
@@ -1115,7 +1117,6 @@ if [ $ENABLE_UPP -eq 1  ]; then
 fi
 
 
-
 }
 
 
@@ -1151,6 +1152,19 @@ if [ $RESTART -eq 1 ] ; then
  cp -r $OUTPUTDIR/anal/$RESTARTDATE   $TMPDIR/output/anal/
  cp -r $OUTPUTDIR/*.log                $TMPDIR/output/
  cp    $OUTPUTDIR/initial_random_dates $TMPDIR/output/
+fi
+
+if [ -n "$COLD_START" ] ; then 
+   if [ $COLD_START -eq 0 ] ; then
+
+     echo "This is a warm-start run"
+
+     mkdir -p $TMPDIR/output
+     mkdir -p $TMPDIR/output/anal
+
+     cp $INITIAL_ENSEMBLE_DIR/$IDATE/anal*                $TMPDIR/output/anal/
+
+   fi
 fi
 
 #COPY JOB SCRIPT ACCORDING TO JOB TYPE AND SYSTEM TYPE
@@ -1487,6 +1501,10 @@ run_forecast_sub () {
       if [ ! -n "$WORKDIR"  ] ; then
        WORKDIR=$TMPDIR/run/
       fi
+      #Default cold_start option
+      if [ ! -n "$COLD_START" ] ; then
+       COLD_START=1
+      fi
 
       mkdir -p $WORKDIR
 #      local_script=$WORKDIR/$local_script 
@@ -1526,7 +1544,7 @@ run_forecast_sub () {
           do_wrf_pre=1
       fi
       if [ $USE_ANALYSIS_IC -eq 0 -a $ANALYSIS -eq 1 ] ; then
-        if [ $ITER -gt 1 ] ; then
+        if [ $ITER -gt 1 -o $COLD_START -eq 0 ] ; then
           do_wrf_pre=1
         fi
       fi

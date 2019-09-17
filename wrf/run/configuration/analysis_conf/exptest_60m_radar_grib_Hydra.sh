@@ -75,7 +75,7 @@ RADAROBS="/OSSE_20140122_DBZ2.5_VR1.0_SO2KM/"              # Name of radar obser
 EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION}                # name of experiment
 
 ### initial date setting
-IDATE=20140122173000
+IDATE=20140122173500
 EDATE=20140122200000
 
 #### DATA
@@ -89,7 +89,7 @@ GRIBTABLE="Vtable.GFS"                                                          
 PERTGRIBDIR=${DATADIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/00001/                              # Folder where data for perturbing bdy are located.
 PERTGRIBTABLE="Vtable.CFSR2_web"                                                          # Bdy perturbation source vtable name.
 GEOG=/share/GEOG/                                                                         # Folder where WPS GEOG dataset is located.
-INITIAL_ENSEMBLE_DIR=/share/EXPERIMENTS/ANALYSIS_CORDOBA_2KBIS_exprtps09_60m_radar_grib_Hydra/anal/ #Path to the initial ensemble (if COLD_START=0)
+INITIAL_ENSEMBLE_DIR=${DATADIR}/EXPERIMENTS/ANALYSIS_CORDOBA_2KBIS_exprtps09_60m_radar_grib_Hydra/anal/ #Path to the initial ensemble (if COLD_START=0)
 
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
 #INITIAL AND BOUNDARY PERTURBATIONS
