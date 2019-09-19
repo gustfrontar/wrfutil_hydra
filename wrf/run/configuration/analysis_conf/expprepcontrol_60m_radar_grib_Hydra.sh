@@ -75,8 +75,8 @@ RADAROBS="/OSSE_20140122_DBZ2.5_VR1.0_SO2KM/"              # Name of radar obser
 EXP=ANALYSIS_${DOMAINCONF}_${CONFIGURATION}                # name of experiment
 
 ### initial date setting
-IDATE=20140122173500
-EDATE=20140122200000
+IDATE=20140122000000
+EDATE=20140123000000
 
 #### DATA
 OBSDIR=${DATADIR}/DATA/OBS/$OBS/                                                          # Folder where conventional observations are.
@@ -93,8 +93,8 @@ INITIAL_ENSEMBLE_DIR=${DATADIR}/EXPERIMENTS/ANALYSIS_CORDOBA_2KBIS_exprtps09_60m
 
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
 #INITIAL AND BOUNDARY PERTURBATIONS
-AMP_FACTOR="0.05"             #Perturbation scale factor.
-RANDOM_AMP_FACTOR="0.5"       #Random perturbation scale factor.
+AMP_FACTOR="0.1"             #Perturbation scale factor.
+RANDOM_AMP_FACTOR="0.0"       #Random perturbation scale factor.
 PERTURB_BOUNDARY=1            #Wether boundary conditions are going to be perturbed.
 PERTURB_ATMOSPHERE=".true."   #Wether atmospheric conditions will be perturbed (boundary and first cycle)
 PERTURB_SST=".true."          #Wether SST will be perturbed.

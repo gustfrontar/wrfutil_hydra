@@ -1160,9 +1160,9 @@ if [ -n "$COLD_START" ] ; then
      echo "This is a warm-start run"
 
      mkdir -p $TMPDIR/output
-     mkdir -p $TMPDIR/output/anal
+     mkdir -p $TMPDIR/output/anal/$IDATE
 
-     cp $INITIAL_ENSEMBLE_DIR/$IDATE/anal*                $TMPDIR/output/anal/
+     cp $INITIAL_ENSEMBLE_DIR/$IDATE/anal*   $TMPDIR/output/anal/$IDATE/
 
    fi
 fi
@@ -1592,7 +1592,7 @@ run_forecast_sub () {
          local local_dir="$ANALYSIS_SOURCE/anal/${CDATE}/"
       fi
 
-      if [ $ITER -gt 1 -o $FORECAST -eq 1 ] ; then
+      if [ $ITER -gt 1 -o $FORECAST -eq 1 -o $COLD_START -eq 0 ] ; then
         if [ $USE_ANALYSIS_IC -eq 0 ] ; then
         M=$INIMEMBER
         while [ $M -le $ENDMEMBER ] ; do
@@ -1996,6 +1996,15 @@ mkdir -p $METEMDIR
 
 cd $METEMDIR
 
+local TOTAL_PROCS_FORECAST=`expr $TOTAL_NODES_FORECAST \* $PROC_PER_NODE `
+local MAX_SIMULTANEOUS_JOBS=`expr $TOTAL_PROCS_FORECAST \/ $PROC_PER_MEMBER `
+if [ $SYSTEM -eq 1 ] ; then
+   generate_machinefile $METEMDIR $PBS_NODEFILE $MAX_SIMULTANEOUS_JOBS $PROC_PER_MEMBER
+fi
+if [ $SYSTEM -eq 0 ] ; then
+   generate_machinefile $METEMDIR null $MAX_SIMULTANEOUS_JOBS $NODES_PER_MEMBER
+fi
+
 local local_script=$METEMDIR/get_met_em_from_grib.sh
 
 #GENERATE THE SCRIPT TO GET UNPERTURBED MET_EM FILE FOR THE CURRENT TIME.
@@ -2082,26 +2091,46 @@ done
 
  chmod 766 $local_script
 
- if [ $SYSTEM -eq 0 -o  $SYSTEM -eq 1 ] ; then
-   M=$INIMEMBER_BDY
-   while [ $M -le $ENDMEMBER_BDY ] ; do
-     MYNODE=1
-     while [ $MYNODE -le $NNODES -a $M -le $ENDMEMBER_BDY ] ; do
-       MEM=`ens_member $M `
-       sleep 0.3
-       if [ $SYSTEM -eq 1 ] ; then
-         ssh ${NODELIST[$MYNODE]} "${WORKDIR}/$local_script $MEM  2>&1 " & 
-       fi
-       if [ $SYSTEM -eq 0 ] ; then
-         echo ${NODELIST[$MYNODE]} > ./${WORKDIR}/tmp_machine_file
-         $MPIBIN -np 1 -vcoordfile ./${WORKDIR}/tmp_machine_file ${WORKDIR}/$local_script $MEM  2>&1 &
-       fi
-       M=`expr $M + 1`
-       MYNODE=`expr $MYNODE + 1`
-     done
-     time wait
-   done
- fi
+ M=$INIMEMBER_BDY
+ while [  $M -le $ENDMEMBER_BDY ] ; do
+      JOB=1
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER_BDY ] ; do
+      MEM=`ens_member $M `
+         sleep 0.3
+         if [ $SYSTEM -eq 1 ] ; then
+          local current_node=$(head -n 1 machinefile.${JOB})
+          ssh $current_node "$local_script $MEM  > ${METEMDIR}/get_met_em${MEM}.log 2>&1 " &
+         fi
+         if [ $SYSTEM -eq 0 ] ; then
+          $MPIBIN -np 1 --vcoordfile $METEMDIR/machinefile.${JOB} $local_script $MEM  > ${METEMDIR}/get_met_em${MEM}.log 2>&1  &
+         fi
+         JOB=`expr $JOB + 1 `
+         M=`expr $M + 1 `
+      done
+      time wait
+ done
+
+# if [ $SYSTEM -eq 0 -o  $SYSTEM -eq 1 ] ; then
+#   M=$INIMEMBER_BDY
+#   while [ $M -le $ENDMEMBER_BDY ] ; do
+#     MYNODE=1
+#     while [ $MYNODE -le $NNODES -a $M -le $ENDMEMBER_BDY ] ; do
+#       MEM=`ens_member $M `
+#       sleep 0.3
+#       if [ $SYSTEM -eq 1 ] ; then
+#         ssh ${NODELIST[$MYNODE]} "${WORKDIR}/$local_script $MEM  2>&1 " & 
+#       fi
+#       if [ $SYSTEM -eq 0 ] ; then
+#         echo ${NODELIST[$MYNODE]} > ./${WORKDIR}/tmp_machine_file
+#         $MPIBIN -np 1 -vcoordfile ./${WORKDIR}/tmp_machine_file ${WORKDIR}/$local_script $MEM  2>&1 &
+#       fi
+#       M=`expr $M + 1`
+#       MYNODE=`expr $MYNODE + 1`
+#     done
+#     time wait
+#   done
+# fi
+
  if [ $SYSTEM -eq 2 ] ; then
     M=$INIMEMBER_BDY
     while [ $M -le $ENDMEMBER_BDY ] ; do
@@ -2149,7 +2178,7 @@ else
             while [ $my_domain -le $MAX_DOM ] ; do
               my_domain=`add_zeros $my_domain 2 `
               CFILE=`met_em_file_name $TMPDATE $my_domain`
-              cp $METEMDIR/$MEMB/$CFILE $METEMDIR/$MEMM/
+              ln -sf $METEMDIR/$MEMB/$CFILE $METEMDIR/$MEMM/
 
               my_domain=`expr $my_domain + 1 `
             done 
@@ -2222,6 +2251,15 @@ fi
 PERTMETEMDIR=$TMPDIR/BOUNDARY/INPUT/
 
 mkdir -p $PERTMETEMDIR
+
+local TOTAL_PROCS_FORECAST=`expr $TOTAL_NODES_FORECAST \* $PROC_PER_NODE `
+local MAX_SIMULTANEOUS_JOBS=`expr $TOTAL_PROCS_FORECAST \/ $PROC_PER_MEMBER `
+if [ $SYSTEM -eq 1 ] ; then
+   generate_machinefile $PERTMETEMDIR $PBS_NODEFILE $MAX_SIMULTANEOUS_JOBS $PROC_PER_MEMBER
+fi
+if [ $SYSTEM -eq 0 ] ; then
+   generate_machinefile $PERTMETEMDIR null $MAX_SIMULTANEOUS_JOBS $NODES_PER_MEMBER
+fi
 
 PERTMETEMDB=$PERTMETEMDIR/met_em_db/
 
@@ -2409,30 +2447,50 @@ done
 #We are done!
 chmod 766 $local_script
 
+ M=$INIMEMBER
+ while [  $M -le $ENDMEMBER ] ; do
+      JOB=1
+      while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
+         MEM=`ens_member $M `
+         DATE1=${INI_RANDOM_DATE1[$M]}
+         DATE2=${INI_RANDOM_DATE2[$M]}
 
-M=$INIMEMBER
+         sleep 0.3
+         if [ $SYSTEM -eq 1 ] ; then
+            local current_node=$(head -n 1 machinefile.${JOB})
+            ssh $current_node  "$local_script $MEM $DATE1 $DATE2 > $PERTMETEMDIR/perturb_met_em${MEM}.log  2>&1 " &
+         fi
+         if [ $SYSTEM -eq 0 ] ; then
+            $MPIBIN -np 1 --vcoordfile $WORKDIR/machinefile.${JOB} $local_script $MEM $DATE1 $DATE2 > $PERTMETEMDIR/perturb_met_em${MEM}.log  2>&1  &
+         fi
+         JOB=`expr $JOB + 1 `
+         M=`expr $M + 1 `
+      done
+      time wait
+ done
 
-if [ $SYSTEM -eq 0 -o $SYSTEM -eq 1 ] ; then
-while [ $M -le $ENDMEMBER ] ; do
-  MYNODE=1
-  while [ $MYNODE -le $NNODES -a $M -le $ENDMEMBER ] ; do
-    MEM=`ens_member $M `
-    DATE1=${INI_RANDOM_DATE1[$M]}
-    DATE2=${INI_RANDOM_DATE2[$M]}
-    sleep 0.3
-      if [ $SYSTEM -eq 1 ] ; then
-        ssh ${NODELIST[$MYNODE]} "$local_script $MEM $DATE1 $DATE2 > $PERTMETEMDIR/perturb_met_em${MEM}.log 2>&1 " & 
-      fi
-      if [ $SYSTEM -eq 0 ] ; then
-        echo ${NODELIST[$MYNODE]} > ./tmp_machinefile 
-        mpiexec -np 1 -vcoordfile ./tmp_machinefile $local_script $MEM $DATE1 $DATE2 > $PERTMETEMDIR/perturb_met_em${MEM}.log 2>&1 &
-      fi  
-    M=`expr $M + 1`
-    MYNODE=`expr $MYNODE + 1`
-  done 
-  time wait
-done
-fi
+#M=$INIMEMBER
+#if [ $SYSTEM -eq 0 -o $SYSTEM -eq 1 ] ; then
+#while [ $M -le $ENDMEMBER ] ; do
+#  MYNODE=1
+#  while [ $MYNODE -le $NNODES -a $M -le $ENDMEMBER ] ; do
+#    MEM=`ens_member $M `
+#    DATE1=${INI_RANDOM_DATE1[$M]}
+#    DATE2=${INI_RANDOM_DATE2[$M]}
+#    sleep 0.3
+#      if [ $SYSTEM -eq 1 ] ; then
+#        ssh ${NODELIST[$MYNODE]} "$local_script $MEM $DATE1 $DATE2 > $PERTMETEMDIR/perturb_met_em${MEM}.log 2>&1 " & 
+#      fi
+#      if [ $SYSTEM -eq 0 ] ; then
+#        echo ${NODELIST[$MYNODE]} > ./tmp_machinefile 
+#        mpiexec -np 1 -vcoordfile ./tmp_machinefile $local_script $MEM $DATE1 $DATE2 > $PERTMETEMDIR/perturb_met_em${MEM}.log 2>&1 &
+#      fi  
+#    M=`expr $M + 1`
+#    MYNODE=`expr $MYNODE + 1`
+#  done 
+#  time wait
+#done
+#fi
 
 if [ $SYSTEM -eq 2 ] ; then
    while [ $M -le $ENDMEMBER ] ; do
@@ -2449,7 +2507,6 @@ if [ $SYSTEM -eq 2 ] ; then
      time wait
    done
 fi
-
 
 
 }

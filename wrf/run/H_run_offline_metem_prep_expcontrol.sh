@@ -18,7 +18,7 @@
 CDIR=`pwd`
 
 #CONFIGURATION
-CONFIGURATION=exptest_60m_radar_grib_Hydra             #Define a experiment configuration
+CONFIGURATION=expprepcontrol_60m_radar_grib_Hydra             #Define a experiment configuration
 MCONFIGURATION=machine_radar60m_Hydra_multiple           #Define a machine configuration (number of nodes, etc)
 
 RESTART=0
@@ -67,6 +67,7 @@ copy_data_multiplecycles
 
 save_configuration $CDIR/$MYSCRIPT
 
+
 #Generating the domain requires acces to GEOG database.
 echo '>>>'                                           
 echo ">>> GENERATING DOMAIN "          
@@ -74,14 +75,14 @@ echo '>>>'
 
 get_domain
 
-edit_multiplecycle $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh
+edit_multiplecycle $TMPDIR/SCRIPTS/H_run_multiple_cycles_offline_metem_prep.sh
 
 #Run multiple cycles with only one QSUB
-sub_and_wait $TMPDIR/SCRIPTS/H_run_multiple_cycles.sh  
+sub_and_wait $TMPDIR/SCRIPTS/H_run_multiple_cycles_offline_metem_prep.sh
 
 #Move experiment data to OUTPUTDIR
 
-mv $TMPDIR/output/* $OUTPUTDIR
+mv $TMPDIR/BOUNDARY/INPUT $OUTPUTDIR
 
 echo "NORMAL END"
 
