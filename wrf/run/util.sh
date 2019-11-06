@@ -966,6 +966,9 @@ get_node_list() {
   done  <  $PBS_NODEFILE
   NNODES=`expr $NNODES - 1`
 
+  echo "The number of nodes is $NNODES"
+  echo "The node list is $NODELIST"
+
  fi
 
  if [ $SYSTEM -eq 0 ] ; then
@@ -994,6 +997,7 @@ get_node_list() {
   NNODES=`expr $NNODES - 1 `
 
  fi 
+
 
 }
 
@@ -1543,11 +1547,12 @@ run_forecast_sub () {
       if [ $USE_ANALYSIS_IC -eq 0 -a $FORECAST -eq 1 ] ; then
           do_wrf_pre=1
       fi
-      if [ $USE_ANALYSIS_IC -eq 0 -a $ANALYSIS -eq 1 ] ; then
-        if [ $ITER -gt 1 -o $COLD_START -eq 0 ] ; then
+      if [ $USE_ANALYSIS_IC -eq 0 -a $ANALYSIS -eq 1 -a $ITER -eq  1] ; then
           do_wrf_pre=1
-        fi
       fi
+      if [ $ANALYSIS -eq 1 -a $ITER -gt  1] ; then
+	  do_wrf_pre=1
+      fi  
       TOTAL_PROCS_FORECAST=`expr $TOTAL_NODES_FORECAST \* $PROC_PER_NODE ` 
       MAX_SIMULTANEOUS_JOBS=`expr $TOTAL_PROCS_FORECAST \/ $PROC_PER_MEMBER `
 
@@ -2613,6 +2618,14 @@ arw_postproc_forecast_noqueue () {
   local WORKDIR=$TMPDIR/POSTPROC/      #Temporary work directory
   local GUESDIR=$RESULTDIRG
 
+  if [ $SYSTEM -eq 1 ] ; then
+     generate_machinefile $WORKDIR $PBS_NODEFILE $MAX_SIMULTANEOUS_JOBS $PROC_PER_MEMBER
+  fi
+  if [ $SYSTEM -eq 0 ] ; then
+     generate_machinefile $WORKDIR null $MAX_SIMULTANEOUS_JOBS $NODES_PER_MEMBER
+  fi
+
+
   if [ $RUN_ONLY_MEAN -eq 1 ] ; then
      local INIMEMBER=$MEANMEMBER  #Run only the last member.
      local ENDMEMBER=$MEANMEMBER
@@ -2662,32 +2675,54 @@ arw_postproc_forecast_noqueue () {
   my_domain=`expr $my_domain + 1 `
  done
 
- chmod 766 ${WORKDIR}/tmp.sh
+# chmod 766 ${WORKDIR}/tmp.sh
+#
+#  M=$INIMEMBER
+#  while [ $M -le $ENDMEMBER ] ; do
+#    RUNNING=0
+#    while [ $RUNNING -le $MAX_RUNNING -a $M -le $ENDMEMBER ] ; do
+#      MEM=`ens_member $M`
+#
+#        if [ $SYSTEM -eq 1 ] ; then
+#
+#          ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM} 2>&1  " &
+#
+#        fi
+#        if [ $SYSTEM -eq 0 ] ; then
+#
+#          echo ${NODELIST[$MYNODE]} > ./tmp_machinefile
+# 
+#          mpiexec -np 1 -vcoordfile ./tmp_machinefile ${WORKDIR}/tmp.sh ${MEM} 2>&1  &
+#
+#        fi
+#
+#      RUNNING=`expr $RUNNING + 1 `
+#      M=`expr $M + 1 `
+#    done
+#    time wait
+#  done
+
+  #We are done!
+  chmod 766 ${WORKDIR}/tmp.sh
 
   M=$INIMEMBER
-  while [ $M -le $ENDMEMBER ] ; do
-    RUNNING=0
-    while [ $RUNNING -le $MAX_RUNNING -a $M -le $ENDMEMBER ] ; do
-      MEM=`ens_member $M`
-
-        if [ $SYSTEM -eq 1 ] ; then
-
-          ssh ${NODELIST[$MYNODE]} "${WORKDIR}/tmp.sh ${MEM} 2>&1  " &
-
-        fi
-        if [ $SYSTEM -eq 0 ] ; then
-
-          echo ${NODELIST[$MYNODE]} > ./tmp_machinefile
- 
-          mpiexec -np 1 -vcoordfile ./tmp_machinefile ${WORKDIR}/tmp.sh ${MEM} 2>&1  &
-
-        fi
-
-      RUNNING=`expr $RUNNING + 1 `
+  while [  $M -le $ENDMEMBER ] ; do
+    JOB=1
+    while [  $JOB -le $MAX_SIMULTANEOUS_JOBS -a $M -le $ENDMEMBER ] ; do
+      MEM=`ens_member $M `
+      sleep 0.3
+      if [ $SYSTEM -eq 1 ] ; then
+         local current_node=$(head -n 1 machinefile.${JOB})
+         ssh $current_node  " ${WORKDIR}/tmp.sh ${MEM} 2>&1 " &
+      fi
+      if [ $SYSTEM -eq 0 ] ; then
+         $MPIBIN -np 1 --vcoordfile $WORKDIR/machinefile.${JOB}  ${WORKDIR}/tmp.sh ${MEM} 2>&1   &
+      fi
+      JOB=`expr $JOB + 1 `
       M=`expr $M + 1 `
-    done
-    time wait
-  done
+   done
+   time wait
+ done
 
 
 }
@@ -2791,7 +2826,7 @@ fi
 
 }
 
-upp_postproc_forecast_noqueue () {
+upp_pqostproc_forecast_noqueue () {
 
 if [ $ENABLE_UPP -eq 1 ] ; then
 

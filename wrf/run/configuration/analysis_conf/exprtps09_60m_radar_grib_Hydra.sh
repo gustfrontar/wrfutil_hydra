@@ -19,7 +19,7 @@ USE_ANALYSIS_IC=0 #1 - use global analysis as IC, 0 use LETKF analysis as IC
                   #if 0 then profide a LETKF-analysis source (ANALYSIS_SOURCE)
                   #default is 0
 
-COLD_START=0      #1-Initialize from lower resolution model/analysis , 0-Initialize from high resolution analysis / forecast.
+COLD_START=1      #1-Initialize from lower resolution model/analysis , 0-Initialize from high resolution analysis / forecast.
                   #if COLD_START=1 INITIAL_ENSEMBLE_DIR has to be set and this folder should contain a subfolder with the initial date
                   # and inside this folder files analXXXXX in wrfout or wrfinput format and with the same horizontal and vertical discretization.
                   # This folder should also contain the initial_random_dates file to generate boundary perturbations consistent with these initial conditions.
@@ -93,8 +93,8 @@ INITIAL_ENSEMBLE_DIR=/share/EXPERIMENTS/ANALYSIS_CORDOBA_2KBIS_exprtps09_60m_rad
 
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
 #INITIAL AND BOUNDARY PERTURBATIONS
-AMP_FACTOR="0.05"             #Perturbation scale factor.
-RANDOM_AMP_FACTOR="0.5"       #Random perturbation scale factor.
+AMP_FACTOR="0.1"             #Perturbation scale factor.
+RANDOM_AMP_FACTOR="0.0"       #Random perturbation scale factor.
 PERTURB_BOUNDARY=1            #Wether boundary conditions are going to be perturbed.
 PERTURB_ATMOSPHERE=".true."   #Wether atmospheric conditions will be perturbed (boundary and first cycle)
 PERTURB_SST=".true."          #Wether SST will be perturbed.
