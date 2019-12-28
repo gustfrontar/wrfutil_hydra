@@ -814,7 +814,7 @@ if [ $ANALYSIS -eq 1  ] ; then
    exit 1
  fi
  if [ -e "$DIRNAME" ] ; then 
-   if [ $RESTART -eq 0 -a $COLD_START -eq 1 ] ; then
+   if [ $RESTART -eq 0 ] ; then
      echo "[Error] $DIRNAME exists: Please remove it manually to avoid data loss"
      exit 1
    fi
@@ -1158,15 +1158,15 @@ if [ $RESTART -eq 1 ] ; then
  cp    $OUTPUTDIR/initial_random_dates $TMPDIR/output/
 fi
 
-if [ -n "$COLD_START" ] ; then 
-   if [ $COLD_START -eq 0 ] ; then
+if [ -n "$USE_ANALYSIS_IC" ] ; then 
+   if [ $USE_ANALYSIS_IC -eq 0 -a $ANALYSIS -eq 1 ] ; then
 
-     echo "This is a warm-start run"
+     echo "This is a warm-start run Analysis experiment"
 
      mkdir -p $TMPDIR/output
      mkdir -p $TMPDIR/output/anal/$IDATE
 
-     cp $INITIAL_ENSEMBLE_DIR/$IDATE/anal*   $TMPDIR/output/anal/$IDATE/
+     cp $ANALYSIS_SOURCE/$IDATE/anal*   $TMPDIR/output/anal/$IDATE/
 
    fi
 fi
@@ -1506,8 +1506,8 @@ run_forecast_sub () {
        WORKDIR=$TMPDIR/run/
       fi
       #Default cold_start option
-      if [ ! -n "$COLD_START" ] ; then
-       COLD_START=1
+      if [ ! -n "$USE_ANALYSIS_IC" ] ; then
+       USE_ANALYSIS_IC=1
       fi
 
       mkdir -p $WORKDIR
@@ -1566,14 +1566,6 @@ run_forecast_sub () {
        fi
 
 
-      #Prepare run directory.
-      if [ $ANALYSIS -eq 1 ] ; then
-         local local_dir="$OUTPUTDIR/anal/${CDATE}/"
-      fi
-      if [ $FORECAST -eq 1 ] ; then 
-         local local_dir="$ANALYSIS_SOURCE/anal/${CDATE}/"
-      fi
-
       M=$INIMEMBER
       while [ $M -le $ENDMEMBER ] ; do
          MEM=`ens_member $M`
@@ -1592,20 +1584,23 @@ run_forecast_sub () {
       #Link initial conditions
       if [ $ANALYSIS -eq 1 ] ; then
          local local_dir="$OUTPUTDIR/anal/${CDATE}/"
+
+         if [ $USE_ANALYSIS_IC -eq 0 -a $ITER -eq 1 ] ; then
+            #This is a warm start analysis experiment.
+            local local_dir="$ANALYSIS_SOURCE/anal/${CDATE}/"
+         fi
       fi
       if [ $FORECAST -eq 1 ] ; then
          local local_dir="$ANALYSIS_SOURCE/anal/${CDATE}/"
       fi
 
-      if [ $ITER -gt 1 -o $FORECAST -eq 1 -o $COLD_START -eq 0 ] ; then
-        if [ $USE_ANALYSIS_IC -eq 0 ] ; then
+      if [ $ITER -gt 1 -o $FORECAST -eq 1 -o $USE_ANALYSIS_IC -eq 0 ] ; then
         M=$INIMEMBER
         while [ $M -le $ENDMEMBER ] ; do
          MEM=`ens_member $M`
          cp ${local_dir}/anal$MEM  $WORKDIR/WRF$MEM/anal 
          M=`expr $M + 1 `
         done
-       fi
       fi
 
 

@@ -19,13 +19,6 @@ USE_ANALYSIS_IC=0 #1 - use global analysis as IC, 0 use LETKF analysis as IC
                   #if 0 then profide a LETKF-analysis source (ANALYSIS_SOURCE)
                   #default is 0
 
-COLD_START=1      #1-Initialize from lower resolution model/analysis , 0-Initialize from high resolution analysis / forecast.
-                  #if COLD_START=1 INITIAL_ENSEMBLE_DIR has to be set and this folder should contain a subfolder with the initial date
-                  # and inside this folder files analXXXXX in wrfout or wrfinput format and with the same horizontal and vertical discretization.
-                  # This folder should also contain the initial_random_dates file to generate boundary perturbations consistent with these initial conditions.
-                  # It is highly recommended that this the same initial_random_dates distribution as in the INITIAL_ENSEMBLE is used.
-    
-
 NVERTEXP=27  #Number of vertical levels in initial and boundary conditions input grib data.
 NVERTDB=38   #Number of vertical levels in initial and boundary conditions perturbation input grib data.
 
@@ -89,7 +82,6 @@ GRIBTABLE="Vtable.GFS"                                                          
 PERTGRIBDIR=${DATADIR}/DATA/GRIB/CFSR/HIRES/ARGENTINA/00001/                              # Folder where data for perturbing bdy are located.
 PERTGRIBTABLE="Vtable.CFSR2_web"                                                          # Bdy perturbation source vtable name.
 GEOG=/share/GEOG/                                                                         # Folder where WPS GEOG dataset is located.
-INITIAL_ENSEMBLE_DIR=/share/EXPERIMENTS/ANALYSIS_CORDOBA_2KBIS_exprtps09_60m_radar_grib_Hydra/anal/ #Path to the initial ensemble (if COLD_START=0)
 
 #INITIAL AND BOUNDARY RANDOM PERTURBATIONS
 #INITIAL AND BOUNDARY PERTURBATIONS
@@ -111,8 +103,6 @@ PERTURB_WIND_SCLH="40000d0"   #WIND random perturbation horizontal scale
 PERTURB_T_SCLV="5000d0"       #T random perturbation vertical scale
 PERTURB_RH_SCLV="5000d0"      #RH random perturbation vertical scale
 PERTURB_WIND_SCLV="5000d0"    #WIND random perturbation vertical scale
-
-
 
 #Random dates for boundary perturbations.
 INIPERTDATE=20060101000000    #Initial date in grib database (used for perturbing initial and boundary conditions)
