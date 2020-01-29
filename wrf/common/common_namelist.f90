@@ -85,6 +85,14 @@ MODULE common_namelist
   REAL(r_size) :: relax_alpha        = 0.0d0 !Relaxation to prior (Zhang et al 2005)
   REAL(r_size) :: min_infl_mul       = 1.0d0 !Minimum multiplicative covariance inflation.
 
+  !TEMPERING
+  INTEGER      :: n_temp_iter = 1            !Number of tempering iterations.
+  INTEGER      :: temper_type = 1            !1-Tempering applied to all observation types.
+  INTEGER      :: temper_dt_type = 1         !1-Uniform tempering dt
+  INTEGER      :: c_temper_iter = 1          !Current temper iteration.
+  
+
+
   !RADAR DA
   INTEGER            :: interpolation_technique=1
   INTEGER            :: nradar = 1               !Number of assimilated radars
@@ -132,6 +140,8 @@ NAMELIST / INFLATION / cov_infl_mul , sp_infl_add , relax_alpha_spread , relax_a
 NAMELIST / RADAR_DA  / interpolation_technique ,  nradar , use_wt , use_pseudorh , pseudorh_error , minrefdbz , rainratio_threshold
 NAMELIST / OBSGRID / nbv , narea , vlon1 , vlon2 , vlat1 , vlat2 , compute_stat, filter_input , regrid_output, regrid_res ,  &
                      regrid_vert_res
+NAMELIST / TEMPERING / n_temp_iter , temper_type , temper_dt_type , c_temper_iter 
+
 
 
 INQUIRE(FILE=NAMELIST_FILE, EXIST=file_exist)
@@ -177,6 +187,13 @@ IF(IERR /=0)THEN
 WRITE(*,*)"Warning!! Error during namelist reading at RADAR_DA section"
 WRITE(*,*)"Using default values"
 ENDIF
+READ(54,NML=TEMPERING,IOSTAT=IERR)
+IF(IERR /=0)THEN
+WRITE(*,*)"Warning!! Error during namelist reading at RADAR_DA section"
+WRITE(*,*)"Using default values"
+ENDIF
+
+
 REWIND(54)
 
 CLOSE(54)
