@@ -601,7 +601,7 @@ SUBROUTINE obs_local(ij,ilev,nvar,hdxf,rdiag,rloc,dep,nobsl,logpfm,zfm)
   REAL(r_size),INTENT(OUT) :: rdiag(nobstotal)
   REAL(r_size),INTENT(OUT) :: rloc(nobstotal)
   REAL(r_size),INTENT(OUT) :: dep(nobstotal)
-  REAL(r_size)  ::  sigmah , sigmav
+  REAL(r_size)  ::  sigmah , sigmav , dist_zero_tr
   INTEGER,INTENT(OUT) :: nobsl
   REAL(r_size) :: dist,dlev
   INTEGER,ALLOCATABLE:: nobs_use(:)
@@ -657,7 +657,7 @@ SUBROUTINE obs_local(ij,ilev,nvar,hdxf,rdiag,rloc,dep,nobsl,logpfm,zfm)
       ELSE IF( ( ielm == id_ts_obs .or. ielm == id_qs_obs .or. ielm == id_rhs_obs .or. &
                ielm == id_us_obs .or. ielm == id_vs_obs ) )THEN
         dlev= ABS( zfm(ij,1) - zfm(ij,ilev) ) !Vertical localization in Z assuming observation is at the lowest model level.
-        if( dlev > dist_zeroz ) CYCLE   
+        if( dlev > dist_zeroz_surface ) CYCLE   
       ELSE
         dlev = 0.0d0
       END IF
@@ -666,26 +666,32 @@ SUBROUTINE obs_local(ij,ilev,nvar,hdxf,rdiag,rloc,dep,nobsl,logpfm,zfm)
       CASE(id_u_obs,id_v_obs,id_t_obs,id_tv_obs,id_q_obs,id_rh_obs)
         sigmah=sigma_obs
         sigmav=sigma_obsv
+        dist_zero_tr = dist_zero
       CASE(id_ps_obs)
         sigmah=sigma_obs
         sigmav=sigma_obsv
+        dist_zero_tr = dist_zero
       CASE(id_reflectivity_obs,id_radialwind_obs,id_pseudorh_obs)
         sigmah=sigma_obs
         sigmav=sigma_obsz
+        dist_zero_tr = dist_zero
       CASE(id_ts_obs,id_qs_obs,id_rhs_obs,     &
            id_us_obs,id_vs_obs )
+        sigmah=sigma_obs_surface
+        sigmav=sigma_obsz_surface  
+        dist_zero_tr = dist_zero_surface  
+      CASE DEFAULT
         sigmah=sigma_obs
-        sigmav=sigma_obsz     
+        sigmav=sigma_obsv
+        dist_zero_tr = dist_zero
       END SELECT
-
-      
 
       !
       ! horizontal localization
       !
       CALL com_distll_1(obslon(nobs_use(n)),obslat(nobs_use(n)),&
         & lon1(ij),lat1(ij),dist)
-      IF(dist > dist_zero) CYCLE
+      IF(dist > dist_zero_tr ) CYCLE
    
       !
       ! variable localization

@@ -25,6 +25,8 @@ MODULE letkf_obs
   REAL(r_size),SAVE :: dist_zerov
   REAL(r_size),SAVE :: dist_zeroz
   REAL(r_size),SAVE :: dist_zeroij
+  REAL(r_size),SAVE :: dist_zero_surface
+  REAL(r_size),SAVE :: dist_zeroz_surface 
   REAL(r_size),ALLOCATABLE,SAVE :: obselm(:)
   REAL(r_size),ALLOCATABLE,SAVE :: obslon(:)
   REAL(r_size),ALLOCATABLE,SAVE :: obslat(:)
@@ -104,10 +106,14 @@ SUBROUTINE set_letkf_obs
 
   WRITE(6,'(A)') 'Hello from set_letkf_obs'
 
-  dist_zero = sigma_obs * SQRT(10.0d0/3.0d0) * 2.0d0
+  dist_zero = sigma_obs  * SQRT(10.0d0/3.0d0) * 2.0d0
   dist_zerov = sigma_obsv * SQRT(10.0d0/3.0d0) * 2.0d0
-  dist_zeroz= sigma_obsz * SQRT(10.0d0/3.0d0) * 2.0d0
-  dist_zeroij = dist_zero / dx
+  dist_zeroz= sigma_obsz  * SQRT(10.0d0/3.0d0) * 2.0d0
+
+  dist_zero_surface = sigma_obs  * SQRT(10.0d0/3.0d0) * 2.0d0
+  dist_zeroz_surface= sigma_obsz  * SQRT(10.0d0/3.0d0) * 2.0d0
+
+  dist_zeroij = MAX( dist_zero , dist_zero_surface) / dx
 
   nobslots=0
   DO islot=1,nslots

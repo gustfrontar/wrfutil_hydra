@@ -25,6 +25,8 @@ MODULE common_namelist
   REAL(r_size) :: sigma_obsv=0.2d0
   REAL(r_size) :: sigma_obsz=2000.0d0 !To perform vertical localization in Z.
   REAL(r_size) :: sigma_obst=3.0d0
+  REAL(r_size) :: sigma_obs_surface = 10000.0d0
+  REAL(r_size) :: sigma_obsz_surface = 1500.0d0
 
   INTEGER      :: lev_update_q = 40  !Condensate won't be updated for levels over this level. 
 
@@ -126,7 +128,8 @@ LOGICAL :: file_exist
 !Namelist declaration
 
 NAMELIST / GENERAL / nslots , nbslot , nbv
-NAMELIST / LOCALIZATION / sigma_obs , sigma_obsv  , sigma_obsz , sigma_obst ,  &
+NAMELIST / LOCALIZATION / sigma_obs , sigma_obsv , sigma_obsz , sigma_obst ,  &
+ & sigma_obs_surface , sigma_obsz_surface ,                                   &
  & var_local_uv , var_local_t , var_local_tv , var_local_moist , var_local_ps , var_local_ref , var_local_dop , var_local_co , &
  & var_localp_uv , var_localp_t , var_localp_tv , var_localp_moist , var_localp_ps , var_localp_ref , var_localp_dop ,         &
    var_localp_co  

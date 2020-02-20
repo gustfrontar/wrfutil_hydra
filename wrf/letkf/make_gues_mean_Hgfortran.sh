@@ -1,12 +1,15 @@
 #!/bin/sh
 set -ex
 PGM=gues_mean.exe
-F90=/share/libs/mpich-3.2_gnu7/bin/mpif90
+F90=mpif90 #/share/libs/mpich-3.2_gnu7/bin/mpif90
+
 OMP=
 
-F90OPT='-O3 -fconvert=big-endian' #-O3 -convert big_endian' #-Kfast,parallel' # -Hs'
+#F90OPT='-O3 -fconvert=big-endian' #-O3 -convert big_endian' #-Kfast,parallel' # -Hs'
+F90OPT='-O3 -convert big_endian' #-O3 -g -traceback -check-bounds -convert big_endian' #-Kfast,parallel' # -Hs'
 
-source /share/gcc7/gcc7_env.sh
+
+#source /share/gcc7/gcc7_env.sh
 
 BLAS=0 #0: no blas 1: using blas
 BASEDIR=${HOME}/share/Libs/
@@ -29,8 +32,11 @@ cat $COMMONDIR/netlibblas.f >> netlib2.f
 LBLAS=""
 fi
 
-LIB_NETCDF="-L/share/libs/netcdf-4.6.2_gnu/lib/ -lnetcdff"
-INC_NETCDF="-I/share/libs/netcdf-4.6.2_gnu/include/"
+LIB_NETCDF="-L/usr/local/lib/ -lnetcdff"
+INC_NETCDF="-I/usr/local/include/"
+
+#LIB_NETCDF="-L/share/libs/netcdf-4.6.2_gnu/lib/ -lnetcdff"
+#INC_NETCDF="-I/share/libs/netcdf-4.6.2_gnu/include/"
 
 
 COMMONDIR=../../common/

@@ -59,13 +59,16 @@ PROGRAM letkf
   WRITE(6,'(A)') '============================================='
   WRITE(6,'(A)') '              LETKF PARAMETERS               '
   WRITE(6,'(A)') ' ------------------------------------------- '
-  WRITE(6,'(A,I15)')   '  nbv          :',nbv
-  WRITE(6,'(A,I15)')   '  nslots       :',nslots
-  WRITE(6,'(A,I15)')   '  nbslot       :',nbslot
-  WRITE(6,'(A,F15.2)') '  sigma_obs    :',sigma_obs
-  WRITE(6,'(A,F15.2)') '  sigma_obsv   :',sigma_obsv
-  WRITE(6,'(A,F15.2)') '  sigma_obst   :',sigma_obst
-  WRITE(6,'(A,L7)')    '  estpar       :',ESTPAR
+  WRITE(6,'(A,I15)')   '  nbv                   :',nbv
+  WRITE(6,'(A,I15)')   '  nslots                :',nslots
+  WRITE(6,'(A,I15)')   '  nbslot                :',nbslot
+  WRITE(6,'(A,F15.2)') '  sigma_obs             :',sigma_obs
+  WRITE(6,'(A,F15.2)') '  sigma_obsv            :',sigma_obsv
+  WRITE(6,'(A,F15.2)') '  sigma_obsz            :',sigma_obsz
+  WRITE(6,'(A,F15.2)') '  sigma_obs_surface     :',sigma_obs_surface
+  WRITE(6,'(A,F15.2)') '  sigma_obsz_surface    :',sigma_obsz_surface
+  WRITE(6,'(A,F15.2)') '  sigma_obst            :',sigma_obst
+  WRITE(6,'(A,L7)')    '  estpar                :',ESTPAR
   WRITE(6,'(A)') '============================================='
   CALL set_common_wrf('gs0100001')
   CALL set_common_mpi_wrf
