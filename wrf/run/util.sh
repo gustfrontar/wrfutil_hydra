@@ -814,7 +814,7 @@ if [ $ANALYSIS -eq 1  ] ; then
    exit 1
  fi
  if [ -e "$DIRNAME" ] ; then 
-   if [ $RESTART -eq 0 ] ; then
+   if [ $RESTART -eq 0 -a $USE_ANALYSIS_IC -eq 1 ] ; then
      echo "[Error] $DIRNAME exists: Please remove it manually to avoid data loss"
      exit 1
    fi
@@ -874,6 +874,7 @@ fi
 }
 
 set_my_log () {
+ echo "HELLO FROM SET MY LOG"
 
  local cont=1
  while [ $cont -ge 1  ] ; do
@@ -1208,7 +1209,7 @@ cp $CDIR/configuration/machine_conf/${MCONFIGURATION}.sh   $TMPDIR/configuration
 
 #Additional files to copy for forecast.
 
-if [ $FORECAST -eq 1 ] ; then
+if [ $FORECAST -eq 1 -a $USE_ANALYSIS_IC -eq 0 ] ; then
 
    #Create directory to store analysis
    mkdir -p $TMPDIR/input/anal/
@@ -1218,13 +1219,11 @@ if [ $FORECAST -eq 1 ] ; then
    INPUT_PERT_DATES_FROM_FILE=1
 
    CDATE=$IDATE
-
    #Copy the LETKF-WRF initial conditions
-   while [ $CDATE -le $EDATE  ] ; do
+   while [ $CDATE -le $EDATE ] ; do
       cp -r $ANALYSIS_SOURCE/anal/$CDATE $TMPDIR/input/anal/
       CDATE=` date_edit2 $CDATE $WINDOW `
    done   
-
 fi
 
 }
@@ -1547,12 +1546,23 @@ run_forecast_sub () {
       if [ $USE_ANALYSIS_IC -eq 0 -a $FORECAST -eq 1 ] ; then
           do_wrf_pre=1
       fi
-      if [ $USE_ANALYSIS_IC -eq 0 -a $ANALYSIS -eq 1 -a $ITER -eq  1] ; then
+      #if [ $USE_ANALYSIS_IC -eq 0 -a $ANALYSIS -eq 1 -a $ITER -eq  1] ; then
+      #    do_wrf_pre=1
+      #fi
+      #if [ $ANALYSIS -eq 1 -a $ITER -gt  1] ; then
+      #    do_wrf_pre=1
+      #fi  
+
+#PAULA
+      if [  $ITER -eq 1 -a $USE_ANALYSIS_IC -eq 0 -a $ANALYSIS -eq 1 ] ; then
+          do_wrf_pre=0
+      fi
+#PAULA
+      if [ $ITER -gt 1 -a $ANALYSIS -eq 1 ] ; then
           do_wrf_pre=1
       fi
-      if [ $ANALYSIS -eq 1 -a $ITER -gt  1] ; then
-	  do_wrf_pre=1
-      fi  
+
+
       TOTAL_PROCS_FORECAST=`expr $TOTAL_NODES_FORECAST \* $PROC_PER_NODE ` 
       MAX_SIMULTANEOUS_JOBS=`expr $TOTAL_PROCS_FORECAST \/ $PROC_PER_MEMBER `
 
@@ -1585,10 +1595,10 @@ run_forecast_sub () {
       if [ $ANALYSIS -eq 1 ] ; then
          local local_dir="$OUTPUTDIR/anal/${CDATE}/"
 
-         if [ $USE_ANALYSIS_IC -eq 0 -a $ITER -eq 1 ] ; then
-            #This is a warm start analysis experiment.
-            local local_dir="$ANALYSIS_SOURCE/anal/${CDATE}/"
-         fi
+         #if [ $USE_ANALYSIS_IC -eq 0 -a $ITER -eq 1 ] ; then
+         #   #This is a warm start analysis experiment.
+         #   local local_dir="$ANALYSIS_SOURCE/anal/${CDATE}/"
+         #fi
       fi
       if [ $FORECAST -eq 1 ] ; then
          local local_dir="$ANALYSIS_SOURCE/anal/${CDATE}/"
