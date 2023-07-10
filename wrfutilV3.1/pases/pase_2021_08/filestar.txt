@@ -1,0 +1,8 @@
+deterministico/CALIB/viento
+ensamble/CALIB/viento
+CalibGFS/CALIB/viento
+CalibGEFS/CALIB/viento
+deterministico/PostDF/superficie
+ensamble/PostDF/superficie
+CalibGFS/PostDF/superficie
+CalibGEFS/PostDF/superficie

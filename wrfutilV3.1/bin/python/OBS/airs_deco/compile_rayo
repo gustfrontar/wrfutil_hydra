@@ -1,0 +1,14 @@
+#!/bin/bash
+
+F90='ifort'
+
+FFLAGS='-assume underscore'
+
+DIRLIB1=" -L/share/apps/contrib/WRF-3.9.1.1_I16/LIBRARIES/hdfeos5.1.15_I16TH/lib \
+          -L/share/apps/contrib/WRF-3.9.1.1_I16/LIBRARIES/hdf5-1.10.1_I16/lib \
+          -L/share/apps/contrib/WRF-3.9.1.1_I16/LIBRARIES/hdf-4.2.13_I16/lib \
+          -L/share/apps/contrib/WRF-3.9.1.1_I16/LIBRARIES/zlib-1.2.11_I16/lib \
+          -L/share/apps/contrib/WRF-3.9.1.1_I16/LIBRARIES/szlib-2.1.1_I16/lib"
+
+#$F90  $FFLAGS -o binarios_airs dec_airsret_smn_rra.f90   $DIRLIB1 -lhdfeos -lGctp  -lhdf5  -lmfhdf -ldf  -lz -lm -ljpeg  -lsz
+$F90  $FFLAGS -o decoder.airs dec_airsret_smn_rra_select_level.f90   $DIRLIB1 -lhdfeos -lGctp  -lhdf5  -lmfhdf -ldf  -lz -lm -ljpeg  -lsz

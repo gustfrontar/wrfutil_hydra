@@ -1,0 +1,10 @@
+*.log
+RUNs
+*.swp
+temaplate.sh
+viejos
+*.old
+*.ori
+*.tar
+*.SLURM
+bin/MODULOS

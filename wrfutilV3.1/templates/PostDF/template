@@ -1,0 +1,9 @@
+export entorno=wrfutil                            # El entonro conda que debe cargarse para correr el script de python
+export script=$WRFUTILDIR/bin/python/.....        # script the python con el path completo 
+read -r -d '' postscript << "EOF"
+#definier el script que debe correrse luegoo de armar el DF
+EOF
+############
+### Variables Necesarias para Construir el DataFrame 
+###      . . . .  compoletar a discrecion
+############

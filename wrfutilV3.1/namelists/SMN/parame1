@@ -1,0 +1,10 @@
+&control_param
+da_file='./wrfinput_d01'
+wrf_input='./wrfinput_d01.org'
+debug=.true.
+update_lateral_bdy=.false.
+update_low_bdy=.true.
+update_lsm=.true.
+iswater=16
+/
+

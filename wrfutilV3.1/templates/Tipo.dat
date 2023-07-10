@@ -1,0 +1,6 @@
+tipo,descTipo,descID
+ESTACION,Estacion sinoptica de superficie,Codigo de estacion sinoptica de superficie (OMM)
+PIMET,Punto de interes PIMET,Codigo PIMET
+TURISTICA,Punto de interes para el turismo,CIPI
+INTRAMET,Punto de interes para el pronostico de intramet,CIPI
+WEB,Localidades para las figuras de la WEB publica,CIPI
