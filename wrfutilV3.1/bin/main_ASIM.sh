@@ -1,4 +1,13 @@
 #!/bin/bash 
+#######################################################
+# ESTE SCRIPT PUEDE SER ENVIADO DIRECTAMENTE A LA COLA
+# O EJECUTADO DESDE EL HEAD NODE PARA QUE ENCOLE LOS 
+# DIFERENTES PASOS
+#######################################################
+#PBS -j oe 
+#PBS -q larga 
+#PBS -l walltime=01:00:00 
+#PBS -l nodes=8:ppn=24
 
 #############
 # Servicio Meteorologico Nacional
@@ -9,7 +18,8 @@
 #############
 
 ### PARAMETROS
-BASEDIR=$(pwd)/../
+#BASEDIR=$(pwd)/../
+BASEDIR="/home/jruiz/salidas/data_assimilation_exps/TEST/"
 source $BASEDIR/lib/errores.env
 CONFIG=$BASEDIR/conf/config.env
 [ ! -e "$CONFIG" ] && dispararError 4 "Error: No encontre config.env"
@@ -38,7 +48,7 @@ echo "Se hicieron $PASO pasos de asimilacion y resta hacer $PASOS_RESTANTES"
 
 while [ $PASOS_RESTANTES -gt 0 ] ; do
 
-   ###### 1st assimilation cycle
+   ###### 1st assimilation cycle only
    if [[ $PASO -lt 0 ]]; then
       echo "Reinicializando asimilacion"
       exit
@@ -51,7 +61,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
 
       if [ $BDY_PERT -eq 1 ] ; then
 	 echo "Vamos a perturbar los met_em"
-         $BASEDIR/bin/correr_Pert.sh
+         #$BASEDIR/bin/correr_Pert.sh
       else 
          echo "Linking met_em directory"
 	 #ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em
@@ -61,12 +71,12 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
 
    fi
 
-   ##### 2nd-inf assimilation cycle
+   #####  all assimilation cycles
    echo "Ejecutando paso: $PASO"
    echo "  INI  | $FECHA_CICLO |  $(printf "%02d" $PASO)  | $(date +'%s')" >>  $BASEDIR/LOGS/log_cycles.txt
 
    echo "Vamos a ejecutar el real, el da_upbdate_bc y el wrf"
-   #$BASEDIR/bin/correr_Guess.sh
+   $BASEDIR/bin/correr_Guess.sh
 
    echo "Actualizando la fecha "
    FECHA_CICLO=$(date -u --date "$FECHA_INI UTC + $((10#$PASO*10#$ANALISIS_FREC)) seconds " +"%Y-%m-%d %T")

@@ -88,7 +88,7 @@ def create_ens_files( file_list , template_file , conf ) :
         for dname , the_dim in template_ds.dimensions.items():
             my_ds.createDimension(dname, len(the_dim) if not the_dim.isunlimited() else None)
         for v_name, varin in template_ds.variables.items():
-             my_var = my_ds.createVariable(v_name, varin.datatype, varin.dimensions)
+             my_var = my_ds.createVariable(v_name, varin.datatype, varin.dimensions , compression='zlib' )
              my_var.setncatts({k: varin.getncattr(k) for k in varin.ncattrs()})
              my_var[:] = varin[:]
         my_ds.close()

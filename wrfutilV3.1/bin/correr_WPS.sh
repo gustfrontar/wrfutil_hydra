@@ -85,7 +85,7 @@ EOF
 	QTHREADS=$WPSTHREADS
 	QMIEM=01
 	QWALLTIME=$WPSWALLTIME
-	queue
+	queue 01 01 
 	check_proc 01 01
 fi
 
@@ -140,9 +140,7 @@ QWALLTIME=$WPSWALLTIME
 QPROC_NAME=WPS_${PASO}
 
 # Encolar
-for QMIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
-   queue
-done
+queue $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN
 check_proc $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN
 
 #Copiamos los archivos del directorio 

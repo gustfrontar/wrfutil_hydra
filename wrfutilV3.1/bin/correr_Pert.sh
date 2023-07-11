@@ -34,7 +34,7 @@ sed -i -e "s|__VAR_LIST__|$VAR_LIST|g"                              $WPSDIR/main
 read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited
 cd $WPSDIR
-python ./main_perturb_met_em.py 
+python -u ./main_perturb_met_em.py > main_perturb_met_em.out 
 EC=$?
 [[ $EC -ne 0 ]] && dispararError 9 "main_perturb_met_em.py"
 EOF
@@ -45,6 +45,6 @@ TPROC=$WPSTPROC
 QTHREADS=$WPSTHREADS
 QMIEM=01
 QWALLTIME=$WPSWALLTIME
-queue
+queue 01 01
 check_proc 01 01
 

@@ -153,9 +153,7 @@ QWALLTIME=$WRFWALLTIME
 QPROC_NAME=GUESS_${PASO}
 
 # Encolar
-for QMIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-   queue
-done
+queue $MIEMBRO_INI $MIEMBRO_FIN
 check_proc $MIEMBRO_INI $MIEMBRO_FIN
 
 #Copiamos los archivos del Guess al directorio de archivo.
