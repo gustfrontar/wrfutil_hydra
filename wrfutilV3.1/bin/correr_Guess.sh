@@ -147,10 +147,9 @@ cd $WRFDIR
 ## Calculo cuantos miembros hay que correr
 QNODE=$WRFNODE
 QPROC=$WRFPROC
+TPROC=$WRFTPROC
 QTHREADS=$WRFTHREADS
 QWALLTIME=$WRFWALLTIME
-QEXCLU=1
-QMAXCORE=$ICORE
 QPROC_NAME=GUESS_${PASO}
 
 # Encolar
@@ -162,9 +161,9 @@ check_proc $MIEMBRO_INI $MIEMBRO_FIN
 #Copiamos los archivos del Guess al directorio de archivo.
 if [[ ! -z "$GUARDOGUESS" ]] && [[ $GUARDOGUESS -eq 1 ]] ; then
    for QMIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-       OUTPUTPATH="$HISTDIR/GUESS/$(date -u -d "$FECHA_ANALYSIS UTC" +"%Y%m%d%H%M%S")/$QMIEM/"
+       OUTPUTPATH="$HISTDIR/GUESS/$(date -u -d "$FECHA_ANALISIS UTC" +"%Y%m%d%H%M%S")/$QMIEM/"
        mkdir -p $OUTPUTPATH
-       mv $WPSDIR/$QMIEM/wrfout* $OUTPUTPATH
+       mv $WRFDIR/$QMIEM/wrfout* $OUTPUTPATH
    done
    #TODO incorporar una opcion para guardado selectivo que solo guarde el tiempo del analisis. 
 

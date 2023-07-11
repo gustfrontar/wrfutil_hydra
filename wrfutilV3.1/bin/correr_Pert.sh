@@ -6,94 +6,45 @@
 # Fecha: 03/2019
 #############
 
-###  Leyenda de USO
-
-read -r -d '' USO << EOF
-
-	Ud. deberia usar este escript de la siguiente manera:
-		$0 <nombre entorno > 
-	Recuerde exportar la variable de entorno WRFUTILDIR=<directorio de instalacion del wrfutil>
-EOF
-: ${1:?"$USO"}  ${WRFUTILDIR:?"$USO"}
-
-
-### PARAMETROS
-
-export NOMBRE=$1
-
 ### CONFIGURACION
+source $BASEDIR/conf/config.env  #BASEDIR tiene que estar seteado como variable de entorno.
 
-[ ! -f $WRFUTILDIR/lib/errores.env ] && exit 1
-source $WRFUTILDIR/lib/errores.env
-CONFIG=$WRFUTILDIR/config.env
-[ -f $WRFUTILDIR/RUNs/$NOMBRE/config.env ] && CONFIG=$WRFUTILDIR/RUNs/$NOMBRE/config.env
-CONFIG=$(readlink -e ${CONFIG} 2> /dev/null)
-[ -z "$CONFIG" ] && dispararError 4 "config.env"
-source $CONFIG  $NOMBRE
-[ ! -d "$BASEDIR" ] && dispararError 7 "$NOMBRE"
-[ ! -f "$BASEDIR/$EXPCONF" ] && dispararError 4 "$BASEDIR/$EXPCONF"
-source $BASEDIR/$EXPCONF
-[ ! -f "$BASEDIR/$EXPDEP" ] && dispararError 4 "$BASEDIR/$EXPDEP"
-source $BASEDIR/$EXPDEP
+[ ! -f $BASEDIR/lib/errores.env ] && exit 1
+source $BASEDIR/lib/errores.env
+[ ! -f "$BASEDIR/conf/$EXPMACH" ] && dispararError 4 "$BASEDIR/conf/$EXPMACH"
+source $BASEDIR/conf/$EXPMACH
+[ ! -f "$BASEDIR/conf/$EXPCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPCONF"
+source $BASEDIR/conf/$EXPCONF
+[ ! -f "$BASEDIR/conf/$EXPMODELCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPMODELCONF"
+source $BASEDIR/conf/$EXPMODELCONF
 
 ##### FIN INICIALIZACION ######
+cd $WPSDIR 
+cp $BASEDIR/bin/python/main_perturb_met_em.py $WPSDIR/main_perturb_met_em.py
+cp $BASEDIR/bin/python/module_pert_met_em.py  $WPSDIR/module_pert_met_em.py
 
-
-###
-# Creacion y en colamiento del script
-###
-cd $BASEDIR/WPS
-
-### Verifico que esten todos los METGRIDs del DETERMINISTICO
-### ES MUY DIFICL VERIFICAR, porque hay que hacerlo en el script que se encola
-### y se encolan por hora y no por miembro. . . y los 'ls' tardan mucho como para repetirlos
-FECHA_PERT=$(date -u -d "$FECHA_INI UTC +$CICLO hours" +"%Y%m%d_%H%M%S")
-MET_ORI="$BASEDIR/HIST/WPS/$FECHA_PERT/$NOMBRE/originales/"
-MET_PERT="$BASEDIR/HIST/WPS/$FECHA_PERT/$NOMBRE/perturbados/"
-MET_CNT=$((10#$PLAZO * 10#$WPSPROC))
-#cantidad= $(ls $MET_ORI/*|wc -w)
-#[[ $MET_CNT -ge $cantidad ] && dispararError 8 "Se necesitan al menos $MET_CNT archivos en $MET_ORI y hay $cantidad"
-#for MIEM in $(seg -f "%02g" $MIEMBRO_FIN $MIEMBRO_INI)
-#do
-#	cantidad= $(ls $MET_DET/$MIEM/*|wc -w)
-#	[[ $MET_CNT -ge $cantidad ]] && dispararError 8 "Se necesitan al menos $MET_CNT archivos en $MET_DET/$MIEM/ y hay $cantidad"
-
-#Creo los directorios para guardar los perturbados
-eval mkdir -p $MET_PERT/{$MIEMBRO_INI..$MIEMBRO_FIN}
+sed -i -e "s|__BASE_PATH_ORI__|'$HISTDIR/WPS/met_em_ori/'|g"        $WPSDIR/main_perturb_met_em.py
+sed -i -e "s|__BASE_PATH_OUT__|'$HISTDIR/WPS/met_em/'|g"            $WPSDIR/main_perturb_met_em.py
+sed -i -e "s|__TARGET_ENSEMBLE_SIZE__|$TARGET_ENSEMBLE_SIZE|g"      $WPSDIR/main_perturb_met_em.py
+sed -i -e "s|__ACTUAL_ENSEMBLE_SIZE__|$ACTUAL_ENSEMBLE_SIZE|g"      $WPSDIR/main_perturb_met_em.py
+sed -i -e "s|__PERT_AMP__|$PERT_AMP|g"                              $WPSDIR/main_perturb_met_em.py
+sed -i -e "s|__PERT_TYPE__|'$PERT_TYPE'|g"                          $WPSDIR/main_perturb_met_em.py
+sed -i -e "s|__VAR_LIST__|$VAR_LIST|g"                              $WPSDIR/main_perturb_met_em.py
 
 read -r -d '' QSCRIPTCMD << "EOF"
-MIEM=$(printf "%02g" $((10#$MIEMBRO_FIN-10#$MIEMBRO_INI)))
-test $ARRAYID && MIEM=$(printf "%02g" $ARRAYID)
 ulimit -s unlimited
-sleep  $((1*10#$MIEM))
-export FECHA_PERT=$(date -u -d "$FECHA_INI UTC +$CICLO hours" +"%Y%m%d_%H%M%S")
-export MIEMBROS=$((10#$MIEMBRO_FIN-10#$MIEMBRO_INI+1))
-export MET_ORI="$BASEDIR/HIST/WPS/$FECHA_PERT/$NOMBRE/originales/"
-export MET_PERT="$BASEDIR/HIST/WPS/$FECHA_PERT/$NOMBRE/perturbados/"
-export ARRAYCNT=$SLURM_ARRAY_TASK_COUNT
-export ARRAYID=$SLURM_ARRAY_TASK_ID
-PATH=$CONDADIR:$PATH
-
-source $CONDADIR/activate wrfutil || $CONDADIR/conda activate wrfutil
-python $WRFUTILDIR/bin/python/perturbar.py 
+cd $WPSDIR
+python ./main_perturb_met_em.py 
 EC=$?
-[[ $EC -ne 0 ]] && rm  $BASEDIR/HIST/WPS/last/${NOMBRE}_perturbados.txt
-[[ $EC -ne 0 ]] && dispararError 9 "perturbar.py"
-
-echo $FECHA_PERT > $BASEDIR/HIST/WPS/last/${NOMBRE}_perturbados.txt
-
+[[ $EC -ne 0 ]] && dispararError 9 "main_perturb_met_em.py"
 EOF
 
-# Parametros de encolamiento
-QDEPEND_NAME=${DEPPERT}
-QDEPENDTYPE=${TYPEPERT}
-QPROC_NAME="PERT_${NOMBRE}_${PASO}"
-QPROC=${PERTPROC}
-QTHREADS=${PERTTHREADS}
-QARRAY="0-$PLAZO"
-QWALLTIME=${PERTWALLTIME}
-QEXCLU=1
-
-# Encolar
+QPROC_NAME=PERT_$PASO
+QPROC=$WPSPROC
+TPROC=$WPSTPROC
+QTHREADS=$WPSTHREADS
+QMIEM=01
+QWALLTIME=$WPSWALLTIME
 queue
+check_proc 01 01
 

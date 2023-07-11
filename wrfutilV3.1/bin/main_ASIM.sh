@@ -47,14 +47,14 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
       echo "Corriendo primer paso de asimilacion"
       echo " Stage |  Anl Date  | Step | TimeStamp" > $BASEDIR/LOGS/log_cycles.txt
 
-      #DEBUG DEBUG $BASEDIR/bin/correr_WPS.sh
+      #$BASEDIR/bin/correr_WPS.sh
 
-      if [ $PERTURBAR -eq 1 ] ; then
+      if [ $BDY_PERT -eq 1 ] ; then
 	 echo "Vamos a perturbar los met_em"
-         #DEBUG DEBUG TODO $BASEDIR/bin/correr_Pert.sh
+         $BASEDIR/bin/correr_Pert.sh
       else 
-
-	 ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em
+         echo "Linking met_em directory"
+	 #ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em
       fi
 
       #TODO $BASEDIR/bin/correr_OBS.sh  #Armar el script que genera las observaciones para el letkf.
@@ -66,7 +66,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    echo "  INI  | $FECHA_CICLO |  $(printf "%02d" $PASO)  | $(date +'%s')" >>  $BASEDIR/LOGS/log_cycles.txt
 
    echo "Vamos a ejecutar el real, el da_upbdate_bc y el wrf"
-   $BASEDIR/bin/correr_Guess.sh
+   #$BASEDIR/bin/correr_Guess.sh
 
    echo "Actualizando la fecha "
    FECHA_CICLO=$(date -u --date "$FECHA_INI UTC + $((10#$PASO*10#$ANALISIS_FREC)) seconds " +"%Y-%m-%d %T")

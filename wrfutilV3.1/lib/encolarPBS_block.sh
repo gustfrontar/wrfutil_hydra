@@ -3,16 +3,11 @@ queue (){
 	test $QUEUE && 		echo "#PBS -q $QUEUE "                                >> ${QPROC_NAME}_${QMIEM}.pbs                   ## Cola a la que se lo va a encolar
         test $QWALLTIME && 	echo "#PBS -l walltime=${QWALLTIME} "                 >> ${QPROC_NAME}_${QMIEM}.pbs	              ## Tiempo estimado de corrida
 
-	                        if [ ! -z $QEXCLU ] & [ $QEXCLU -eq 1 ] ; then             
-				   echo "#PBS -l nodes=${QNODE}:ppn=${ICORE}"         >> ${QPROC_NAME}_${QMIEM}.pbs                   ## Recursos que seran utilizados (usamos el nodo completo)
-                                else 
-                                   echo "#PBS -l nodes=1:ppn=${QCORE}"                >> ${QPROC_NAME}_${QMIEM}.pbs                   ## Recursos que seran utilizados (usamos menos de 1 nodo)
-				fi
+                                echo "#PBS -l nodes=1:ppn=${QPROC}"                   >> ${QPROC_NAME}_${QMIEM}.pbs                   ## Recursos que seran utilizados (usamos menos de 1 nodo)
         			echo '#PBS -v BASEDIR'                                >> ${QPROC_NAME}_${QMIEM}.pbs		      ## Indica que debe heredar todo el enviroment
 				echo "source $BASEDIR/conf/config.env"                >> ${QPROC_NAME}_${QMIEM}.pbs 
 				echo "source $BASEDIR/conf/experimento.conf"          >> ${QPROC_NAME}_${QMIEM}.pbs 
-                		echo "export MPIEXE=\"$(which mpirun) -np ${QPROC}\" ">> ${QPROC_NAME}_${QMIEM}.pbs                   ## Comando MPIRUN con cantidad de nodos y cores por nodos
-                		echo 'export ARRAYID=$PBS_ARRAYID'                    >> ${QPROC_NAME}_${QMIEM}.pbs      
+                		echo "export MPIEXE=\"$(which mpirun) -np ${TPROC}\" ">> ${QPROC_NAME}_${QMIEM}.pbs                   ## Comando MPIRUN con cantidad de nodos y cores por nodos
 	                        echo "$ENVSET  "                                      >> ${QPROC_NAME}_${QMIEM}.pbs			
 	                        echo "MIEM=$QMIEM "                                   >> ${QPROC_NAME}_${QMIEM}.pbs 			
 	                        echo "${QSCRIPTCMD}"                                  >> ${QPROC_NAME}_${QMIEM}.pbs
@@ -24,15 +19,7 @@ queue (){
 ##########
 ## Encolamiento  condicional
 ##########
-        if [[ $EJECUTAR -ne 0 ]]
-        then
-            ${QSUB_ROOT}qsub ${QPROC_NAME}_${QMIEM}.pbs   
-        else
-            echo "Recuerde encolar de la siguiente manera:"
-            echo "${QSUB_ROOT}qsub ${QPROC_NAME}_${QMIEM}.pbs "
-        fi
-
-
+        ${QSUB_ROOT}qsub ${QPROC_NAME}_${QMIEM}.pbs   
 }
 
 check_proc(){

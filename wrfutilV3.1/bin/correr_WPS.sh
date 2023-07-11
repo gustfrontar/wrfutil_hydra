@@ -39,13 +39,13 @@ if [ ! -e $WPSDIR/code/geogrid.exe ] ; then
    fi
 fi
 
-#Editamos el namelist.wps [Esto es para un experimento asi que asumimos que ya esta todo el GFS disponible]
+#Editamos el namelist.wps [Esto es para un experimento asi que asumimos que ya esta toda la info de los bordes disponibles en formato grib disponible]
 mkdir -p $WPSDIR
 cp $NAMELISTDIR/namelist.wps $WPSDIR/
-#Buscamos la fecha inmediatamente inferior al inicio del experimento en en base a la frecuencia de los archivos del GFS  
-FECHAINIWPS=$(date_floor "$FECHA_INI" $INTERVALO_GFS )
+#Buscamos la fecha inmediatamente inferior al inicio del experimento en en base a la frecuencia de los archivos del ensamble de condiciones de borde.  
+FECHAINIWPS=$(date_floor "$FECHA_INI" $INTERVALO_BDY )
 FECHAINIWPS=$(date -u -d "$FECHAINIWPS UTC" +"%Y-%m-%d_%T" ) #Cambio al formato WPS
-FECHAFINWPS=$(date_ceil  "$FECHA_FIN" $INTERVALO_GFS )
+FECHAFINWPS=$(date_ceil  "$FECHA_FIN" $INTERVALO_BDY )
 FECHAFINWPS=$(date -u -d "$FECHAFINWPS UTC" +"%Y-%m-%d_%T" ) #Cambio al formato WPS
 
 sed -i -e "s|__FECHA_INI__|$FECHAINIWPS|g" $WPSDIR/namelist.wps
@@ -81,10 +81,10 @@ read -r -d '' QSCRIPTCMD << "EOF"
 EOF
         QPROC_NAME=GEOG_$PASO
 	QPROC=$WPSPROC
+	TPROC=$WPSTPROC
 	QTHREADS=$WPSTHREADS
 	QMIEM=01
 	QWALLTIME=$WPSWALLTIME
-	QEXCLU=0
 	queue
 	check_proc 01 01
 fi
@@ -105,24 +105,16 @@ mkdir -p $WPSDIR/$MIEM
 ln -sf $WPSDIR/code/* $WPSDIR/$MIEM
 cp $WPSDIR/namelist.wps $WPSDIR/$MIEM/
 cd $WPSDIR/$MIEM
-OUTPUTPATH="$WPSDIR/$MIEM/"
-sed -i -e "s|__OUTPUTPATH__|\'$OUTPUTPATH\'|g" "$WPSDIR/$MIEM/namelist.wps"
 ln -sf $WPSDIR/geogrid/geo_em* .
-FECHA_INI_GFS=$(date_floor "$FECHA_INI" $INTERVALO_INI_GFS )
-echo FECHA_INI_GFS es $FECHA_INI_GFS
-GFSBASE=$GFSDIR/gefs.$(date -d "$FECHA_INI_GFS" +"%Y%m%d")/$GFS_CICLO_INI/$GFSPREFIX/$MIEM/
-echo "Estoy buscando los archivos del GFS en la carpeta $GFSBASE"
+FECHA_INI_BDY=$(date_floor "$FECHA_INI" $INTERVALO_INI_BDY )
+BDYBASE=$BDYDIR/gefs.$(date -d "$FECHA_INI_BDY" +"%Y%m%d")/$(date -d "$FECHA_INI_BDY" +"%H")/$BDYPREFIX/$MIEM/
+echo "Estoy buscando los archivos del BDY en la carpeta $BDYBASE"
 ## Si el miembro es 00 entonces es deterministico, sino Ensamble
-if [[ $MIEM == "00" ]]
-then
-  ln -sf $WPSDIR/Vtable.DET Vtable
-else
-  ln -sf $WPSDIR/Vtable.ENS Vtable
-fi
-echo "Generando met_em a partir de GFSs en: $WPSDIR/$MIEM"
+ln -sf $WPSDIR/$BDYVTABLE ./Vtable
+echo "Generando met_em a partir de BDYs en: $WPSDIR/$MIEM"
 #Linkeo los gribs
 cd $WPSDIR/$MIEM
-./link_grib.csh $GFSBASE/g*pgrb2f* 
+./link_grib.csh $BDYBASE/$BDYSEARCHSTRING  
 
 [[ $? -ne 0 ]] && dispararError 9 "link_grib.csh "
 
@@ -132,8 +124,6 @@ OMP_NUM_THREADS=1
 [[ $? -ne 0 ]] && dispararError 9 "ungrib.exe"
 
 #Corro el Metgrid en paralelo
-mkdir -vp $OUTPUTPATH
-OMP_NUM_THREADS=$WPSTHREADS
 $MPIEXE ./metgrid.exe
 EC=$?
 [[ $EC -ne 0 ]] && dispararError 9 "metgrid.exe"
@@ -144,19 +134,19 @@ EOF
 ## Calculo cuantos miembros hay que correr
 QNODE=$WPSNODE
 QPROC=$WPSPROC
+TPROC=$WPSTPROC
 QTHREADS=$WPSTHREADS
 QWALLTIME=$WPSWALLTIME
-QEXCLU=0
 QPROC_NAME=WPS_${PASO}
 
 # Encolar
-for QMIEM in $(seq -w $GFS_MIEMBRO_INI $GFS_MIEMBRO_FIN) ; do
+for QMIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
    queue
 done
-check_proc $GFS_MIEMBRO_INI $GFS_MIEMBRO_FIN
+check_proc $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN
 
 #Copiamos los archivos del directorio 
-for QMIEM in $(seq -w $GFS_MIEMBRO_INI $GFS_MIEMBRO_FIN) ; do
+for QMIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
    OUTPUTPATH="$HISTDIR/WPS/met_em_ori/$QMIEM/"
    mkdir -p $OUTPUTPATH
    mv $WPSDIR/$QMIEM/met_em* $OUTPUTPATH
