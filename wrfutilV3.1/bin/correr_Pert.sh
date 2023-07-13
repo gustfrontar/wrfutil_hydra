@@ -20,7 +20,7 @@ source $BASEDIR/conf/$EXPMODELCONF
 
 ##### FIN INICIALIZACION ######
 cd $WPSDIR 
-cp $BASEDIR/bin/python/main_perturb_met_em.py $WPSDIR/main_perturb_met_em.py
+cp $BASEDIR/bin/python/main_perturb_met_em_par.py $WPSDIR/main_perturb_met_em.py
 cp $BASEDIR/bin/python/module_pert_met_em.py  $WPSDIR/module_pert_met_em.py
 
 sed -i -e "s|__BASE_PATH_ORI__|'$HISTDIR/WPS/met_em_ori/'|g"        $WPSDIR/main_perturb_met_em.py
@@ -40,11 +40,10 @@ EC=$?
 EOF
 
 QPROC_NAME=PERT_$PASO
-QPROC=$WPSPROC
-TPROC=$WPSTPROC
-QTHREADS=$WPSTHREADS
+QPROC=$PERTPROC
+QTHREAD=$PERTTHREADS
+echo pertthreads $PERTTHREADS
 QMIEM=01
 QWALLTIME=$WPSWALLTIME
-queue 01 01
-check_proc 01 01
-
+queue 00 00
+check_proc 00 00

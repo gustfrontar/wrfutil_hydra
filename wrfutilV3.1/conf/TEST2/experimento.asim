@@ -1,0 +1,51 @@
+##############	
+# Asimilacion 
+##############
+export PASO=0                                                           # Paso desde donde arranca (0 - inicial , >0 a medida que avanza el experimento)
+export OBSDATA='GDAS' 							# Formato de Observaciones (si se bajan prepbufr-> hay que hacer un obsfrec nuevo)
+export OBSWIN=600        						# Ventana de Observaciones [segundos]
+export OBSFREC=10 							# Frecuencia de Observaciones [segundos]
+export ANALISIS_FREC=300        					# Frecuencia de Analisis [segundos]
+export ANALISIS_WIN_INI=300                                             # Tiempo de inicio de la ventana de asimilacion (respecto de la inicializacion del forecast) [segundos]
+export ANALISIS_WIN_FIN=300                                             # Tiempo de final de la ventana de asimilacion (respecto de la inicializacion del forecast) [segundos]
+export ANALISIS_WIN_STEP=300                                            # Tamanio de los slots dentro de la ventana de asimilacion [segundos]      
+export GUARDOGUESS=1
+#Inflacion
+export COV_INFL_MUL=1.0d0						# Inflacion mutltiplicativa   >1 constante ; <0 Variable
+export SP_INFL_ADD=0.0d0						# Inflacion Aditiva
+export RELAX_ALPHA_SPREAD=0.95d0					# Ralaxation to prior (Hamill & Whitaker 2012)
+export RELAX_ALPHA=0.0d0						# Relaxation to prior (Zhang et al 2005)
+export SIGMA_OBS=50.0d3
+export SIGMA_OBSV=0.4d0
+export SIGMA_OBS_RADAR=7.0d3
+
+##############	
+# Observaciones 
+##############
+#
+export NIVELAIRS=200							# Nivel maximo de datos airs
+export TESPERA=90							# Tiempo de Espera para que la Obs este disponible
+
+export FECHA_OBS='2020/10/07'
+export CICLO_OBS=15
+export CICLO_OBS_MIN=00
+
+									#          LA cantida de slots es : $(($OBSWIN/$OBSFREC+1))
+export DIROBSBASE=$WRFUTILDIR/RUNs/HIST/OBS/				# Direcotrio BAse de las Observaciones
+export DIROBSREPO=$DIROBSBASE/OBSREPO/					# Observaciones en formato original
+export DIROBSBIN=$DIROBSBASE/$NOMBRE/					# Donde se guardan las Observaciones procesadas por cada tipo
+export DIROBSASIM=$BASEDIR/OBS/						# donde se guardan las los archivos de observaciones LISTAS PARA ASIMILIAR
+export SCRIPTDIR=$WRFUTILDIR/bin/python/OBS/				# dir donde se encuentran los script para procesar los distintos tipos de observaciones
+# Radar y superobbing
+export ASIM_RADAR=1
+export RADAR_SLOTSNUM=( 00  06 )                                            # Indices del slot temporal en el que quiero asimilar radar
+export SO_DATAROOT='/data/OBS/qc-radar/asimilacion/'
+export SO_INSTRUMENT_LIST="ANG,RMA1,RMA2,RMA3,RMA4,RMA5,RMA6,RMA7,RMA8,RMA10,RMA11,PAR"
+export SO_GRID='10000,1000,15e3,240e3'                                  #resolucion horizontal, resolucion vertical, altura maxima, distancia horizontal maxima (en metros)
+export SO_VARS='cref'                                                   #Variables corregidas a las que se les aplica el superobbing
+export SO_CREF_OPT='4001,5,-0.1'                                        #Error, valor minimo de la variable
+export SO_WINDOW_LENGTH='10'                                            #Longitud de la ventana del slot (en minutos)
+export SO_MIN_NOBS='10'                                                 #Cantidad minima de observaciones en una caja para calcular el promedio por cajas
+
+export ASIMEXP=1
+

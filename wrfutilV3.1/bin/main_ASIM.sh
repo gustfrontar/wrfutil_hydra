@@ -6,8 +6,9 @@
 #######################################################
 #PBS -j oe 
 #PBS -q larga 
-#PBS -l walltime=01:00:00 
-#PBS -l nodes=8:ppn=24
+#PBS -l walltime=10:00:00 
+#PBS -l nodes=1:ppn=48
+if [ ! -z ${PBS_O_WORKDIR} ]; then cd $PBS_O_WORKDIR;fi
 
 #############
 # Servicio Meteorologico Nacional
@@ -18,8 +19,8 @@
 #############
 
 ### PARAMETROS
-#BASEDIR=$(pwd)/../
-BASEDIR="/home/jruiz/salidas/data_assimilation_exps/TEST/"
+BASEDIR=$(pwd)/../
+#BASEDIR="/home/jruiz/salidas/data_assimilation_exps/TEST2/"
 source $BASEDIR/lib/errores.env
 CONFIG=$BASEDIR/conf/config.env
 [ ! -e "$CONFIG" ] && dispararError 4 "Error: No encontre config.env"
@@ -47,24 +48,24 @@ echo "Se hicieron $PASO pasos de asimilacion y resta hacer $PASOS_RESTANTES"
 
 
 while [ $PASOS_RESTANTES -gt 0 ] ; do
-
+   echo "Corriendo el primer paso de asimilacion"
    ###### 1st assimilation cycle only
    if [[ $PASO -lt 0 ]]; then
       echo "Reinicializando asimilacion"
       exit
    elif [[ $PASO == 0 ]]; then
       rm -f $PROCSDIR/*_ENDOK
-      echo "Corriendo primer paso de asimilacion"
-      echo " Stage |  Anl Date  | Step | TimeStamp" > $BASEDIR/LOGS/log_cycles.txt
+      echo "Corriendo el WPS"
+      echo " Stage |  Anl Date  | Step | TimeStamp" > $LOGDIR/cycles.log
 
-      #$BASEDIR/bin/correr_WPS.sh
+      #time $BASEDIR/bin/correr_WPS.sh > $LOGDIR/log_wps.log
 
       if [ $BDY_PERT -eq 1 ] ; then
 	 echo "Vamos a perturbar los met_em"
-         #$BASEDIR/bin/correr_Pert.sh
+         time $BASEDIR/bin/correr_Pert.sh > $LOGDIR/pert_met_em.log 
       else 
          echo "Linking met_em directory"
-	 #ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em
+	 time ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em > $LOGDIR/pert_met_em.log
       fi
 
       #TODO $BASEDIR/bin/correr_OBS.sh  #Armar el script que genera las observaciones para el letkf.
@@ -73,17 +74,13 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
 
    #####  all assimilation cycles
    echo "Ejecutando paso: $PASO"
-   echo "  INI  | $FECHA_CICLO |  $(printf "%02d" $PASO)  | $(date +'%s')" >>  $BASEDIR/LOGS/log_cycles.txt
+   echo "  INI  | $FECHA_CICLO |  $(printf "%02d" $PASO)  | $(date +'%s')" >>  $LOGDIR/cycles.log
 
    echo "Vamos a ejecutar el real, el da_upbdate_bc y el wrf"
-   $BASEDIR/bin/correr_Guess.sh
+   #time $BASEDIR/bin/correr_Guess.sh > $LOGDIR/guess.log
 
-   echo "Actualizando la fecha "
-   FECHA_CICLO=$(date -u --date "$FECHA_INI UTC + $((10#$PASO*10#$ANALISIS_FREC)) seconds " +"%Y-%m-%d %T")
-
-   #$BASEDIR/bin/correr_LETKF.sh  
-   #echo "LETKF encolado a punto de lanzar el POST:" $(date )
-   #$BASEDIR/bin/correr_LETKFpost.sh  
+   echo "Vamos a ejecutar el LETKF"
+   #time $BASEDIR/bin/correr_LETKF.sh > $LOGDIR/letkf.log
 
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))

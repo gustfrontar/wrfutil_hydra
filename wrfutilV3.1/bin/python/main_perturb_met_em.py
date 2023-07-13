@@ -55,8 +55,6 @@ Tm = mpm.get_pert_matrix( conf )
 #the ensemble perturbations.
 #TODO this loop can be paralelized over EnsFileList (times x procs)
 
-
-
 for  ilist , file_list_in in enumerate( EnsFileList ) :
 
      file_list_out = TargetEnsFileList[ilist]    

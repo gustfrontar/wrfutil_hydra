@@ -54,7 +54,7 @@ sed -i -e "s|__NOMBRE__|$NOMBRE|g" $EXPDIR/conf/experimento.limp
 
 
 ###  Creando Entorno 
-ln -s $GFSPATH $GFSDIR
+ln -s $BDYPATH $BDYDIR
 mkdir -p $LOGDIR
 mkdir -p $WPSDIR
 mkdir -p $PROCSDIR

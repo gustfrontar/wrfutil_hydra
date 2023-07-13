@@ -130,10 +130,6 @@ fi
 echo "Corriendo WRF en Miembro $MIEM"
 export OMP_NUM_THREADS=1
 
-mkdir -p $LOGSDIR/ENSAMBLE/$MIEM
-LOGFILE=$LOGSDIR/ENSAMBLE/$MIEM/historial.txt
-
-comienzoT=$(date +"%s")
 $MPIEXE  $MPIARGS $WRFDIR/$MIEM/wrf.exe
 excod=$?
 res="ERROR"
@@ -156,15 +152,14 @@ QPROC_NAME=GUESS_${PASO}
 queue $MIEMBRO_INI $MIEMBRO_FIN
 check_proc $MIEMBRO_INI $MIEMBRO_FIN
 
-#Copiamos los archivos del Guess al directorio de archivo.
+#Copiamos los archivos del Guess correspondientes a la hora del analisis.
 if [[ ! -z "$GUARDOGUESS" ]] && [[ $GUARDOGUESS -eq 1 ]] ; then
    for QMIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
        OUTPUTPATH="$HISTDIR/GUESS/$(date -u -d "$FECHA_ANALISIS UTC" +"%Y%m%d%H%M%S")/$QMIEM/"
        mkdir -p $OUTPUTPATH
-       mv $WRFDIR/$QMIEM/wrfout* $OUTPUTPATH
+       cp $WRFDIR/$QMIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T") $OUTPUTPATH
+       cp $WRFDIR/$QMIEM/rsl.*.0000 $OUTPUTPATH
    done
-   #TODO incorporar una opcion para guardado selectivo que solo guarde el tiempo del analisis. 
-
 fi
 
 
