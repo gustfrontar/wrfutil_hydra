@@ -19,8 +19,6 @@ source $BASEDIR/conf/$EXPCONF
 source $BASEDIR/conf/$EXPMODELCONF
 ##### FIN INICIALIZACION ######
 
-
-
 cd $WRFDIR
 #Seteamos las fechas de inicio y final de los forecasts.
 FECHA_FORECAST_INI=$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*$PASO)) seconds" +"%Y-%m-%d %T")
@@ -114,17 +112,17 @@ ln -sf $HISTDIR/WPS/met_em/$MIEM/met_em* $WRFDIR/$MIEM/
 OMP_NUM_THREADS=$REALTHREADS
 OMP_STACKSIZE=512M
 $MPIEXE $WRFDIR/$MIEM/real.exe
+mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
 EXCOD=$?
 [[ $EXCOD -ne 0 ]] && dispararError 9 "real.exe"
 
-echo "Corremos el update_bc" 
-if [[ $PASO -gt 0 && $ASIMILACION -ne 0 ]] ; then
-  echo "Asimilando miembro $MIEM"
+if [ $PASO -gt 0 ] ; then
+  echo "Corremos el update_bc"
   cp $NAMELISTDIR/parame* .
   mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
-  cp $HISTDIR/ANA/$(date -u -d "$FECHA_INI UTC +$((10#$CICLO)) seconds" +"%Y%m%d%H%M%S")/$NOMBRE/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
+  cp $HISTDIR/ANAL/$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*$PASO)) seconds" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
   ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
-  $WRFDIR/$MIEM/da_update_bc.exe
+  time $WRFDIR/$MIEM/da_update_bc.exe > ./da_update_bc_${PASO}_${MIEM}.log 
 fi
 
 echo "Corriendo WRF en Miembro $MIEM"
@@ -134,6 +132,7 @@ $MPIEXE  $MPIARGS $WRFDIR/$MIEM/wrf.exe
 excod=$?
 res="ERROR"
 test=$(tail -n1 $WRFDIR/$MIEM/rsl.error.0000 | grep SUCCESS ) && res="OK"
+mv rsl.error.0000 ./wrf_${PASO}_${MIEM}.log
 
 EOF
 
@@ -144,21 +143,24 @@ cd $WRFDIR
 QNODE=$WRFNODE
 QPROC=$WRFPROC
 TPROC=$WRFTPROC
-QTHREADS=$WRFTHREADS
+QTHREAD=$WRFTHREAD
 QWALLTIME=$WRFWALLTIME
 QPROC_NAME=GUESS_${PASO}
 
 # Encolar
-queue $MIEMBRO_INI $MIEMBRO_FIN
-check_proc $MIEMBRO_INI $MIEMBRO_FIN
+echo "Tiempo en correr el real, update bc y wrf"
+queue $MIEMBRO_INI $MIEMBRO_FIN 
+time check_proc $MIEMBRO_INI $MIEMBRO_FIN
 
 #Copiamos los archivos del Guess correspondientes a la hora del analisis.
 if [[ ! -z "$GUARDOGUESS" ]] && [[ $GUARDOGUESS -eq 1 ]] ; then
    for QMIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-       OUTPUTPATH="$HISTDIR/GUESS/$(date -u -d "$FECHA_ANALISIS UTC" +"%Y%m%d%H%M%S")/$QMIEM/"
+       OUTPUTPATH="$HISTDIR/GUES/$(date -u -d "$FECHA_ANALISIS UTC" +"%Y%m%d%H%M%S")/"
        mkdir -p $OUTPUTPATH
-       cp $WRFDIR/$QMIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T") $OUTPUTPATH
-       cp $WRFDIR/$QMIEM/rsl.*.0000 $OUTPUTPATH
+       echo "Copying file $WRFDIR/$QMIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )"
+       cp $WRFDIR/$QMIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/gues$(printf %05d $((10#$QMIEM)))
+       mv $WRFDIR/$QMIEM/*.log                                                         $OUTPUTPATH
+       mv $WRFDIR/$QMIEM/namelist*                                                     $OUTPUTPATH
    done
 fi
 

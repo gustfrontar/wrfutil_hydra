@@ -3,11 +3,13 @@
 # ESTE SCRIPT PUEDE SER ENVIADO DIRECTAMENTE A LA COLA
 # O EJECUTADO DESDE EL HEAD NODE PARA QUE ENCOLE LOS 
 # DIFERENTES PASOS
+# En el primer caso la funcion de encolar debe ser SSH
+# en el segundo caso PBH_block
 #######################################################
 #PBS -j oe 
 #PBS -q larga 
 #PBS -l walltime=10:00:00 
-#PBS -l nodes=1:ppn=48
+#PBS -l nodes=12:ppn=48
 if [ ! -z ${PBS_O_WORKDIR} ]; then cd $PBS_O_WORKDIR;fi
 
 #############
@@ -31,10 +33,6 @@ source $CONFIG
 source $BASEDIR/conf/$EXPMACH   #Cargo las variables de la cola.
 [ ! -f "$BASEDIR/conf/$EXPCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPCONF"
 source $BASEDIR/conf/$EXPCONF   #Cargo la configuracion del experimento.
-[ ! -f "$BASEDIR/conf/$EXPDEP" ] && dispararError 4 "$BASEDIR/conf/$EXPDEP"
-source $BASEDIR/conf/$EXPDEP    #Cargo la dependencia de los scripts.
-[ ! -f "$BASEDIR/conf/$EXPASIM" ] && dispararError 4 "$BASEDIR/conf/$EXPASIM"
-source $BASEDIR/conf/$EXPASIM   #Cargo la configuracion del exp de asimilacion
 
 ####################################
 #Calculamos la cantidad de pasos
@@ -62,10 +60,10 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
 
       if [ $BDY_PERT -eq 1 ] ; then
 	 echo "Vamos a perturbar los met_em"
-         time $BASEDIR/bin/correr_Pert.sh > $LOGDIR/pert_met_em.log 
+         #time $BASEDIR/bin/correr_Pert.sh > $LOGDIR/pert_met_em_${PASO}.log   2>&1
       else 
          echo "Linking met_em directory"
-	 time ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em > $LOGDIR/pert_met_em.log
+	 #time ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em > $LOGDIR/pert_met_em_${PASO}.log  2>&1
       fi
 
       #TODO $BASEDIR/bin/correr_OBS.sh  #Armar el script que genera las observaciones para el letkf.
@@ -77,14 +75,14 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    echo "  INI  | $FECHA_CICLO |  $(printf "%02d" $PASO)  | $(date +'%s')" >>  $LOGDIR/cycles.log
 
    echo "Vamos a ejecutar el real, el da_upbdate_bc y el wrf"
-   #time $BASEDIR/bin/correr_Guess.sh > $LOGDIR/guess.log
-
+   time $BASEDIR/bin/correr_Guess.sh > $LOGDIR/guess_${PASO}.log  2>&1
    echo "Vamos a ejecutar el LETKF"
-   #time $BASEDIR/bin/correr_LETKF.sh > $LOGDIR/letkf.log
-
+   time $BASEDIR/bin/correr_LETKF.sh > $LOGDIR/letkf_${PASO}.log  2>&1
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))
-   #TODO Tengo que actualizar el paso en el archivo de configuracion
+   [[ $PASO -eq 4 ]] && exit  #DEBUG DEBUG TODO
+   #Update PASO in the configuration file.
+   sed -i -e "/export PASO=/c\\export PASO=$PASO" $BASEDIR/conf/experimento.conf
 
 done
 

@@ -30,6 +30,7 @@ sed -i -e "s|__ACTUAL_ENSEMBLE_SIZE__|$ACTUAL_ENSEMBLE_SIZE|g"      $WPSDIR/main
 sed -i -e "s|__PERT_AMP__|$PERT_AMP|g"                              $WPSDIR/main_perturb_met_em.py
 sed -i -e "s|__PERT_TYPE__|'$PERT_TYPE'|g"                          $WPSDIR/main_perturb_met_em.py
 sed -i -e "s|__VAR_LIST__|$VAR_LIST|g"                              $WPSDIR/main_perturb_met_em.py
+sed -i -e "s|__THREADS_NUM__|$PERTTHREADS|g"                        $WPSDIR/main_perturb_met_em.py
 
 read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited
@@ -40,9 +41,9 @@ EC=$?
 EOF
 
 QPROC_NAME=PERT_$PASO
+QNODE=$PERTNODE
 QPROC=$PERTPROC
-QTHREAD=$PERTTHREADS
-echo pertthreads $PERTTHREADS
+QTHREAD=$PERTTHREAD
 QMIEM=01
 QWALLTIME=$WPSWALLTIME
 queue 00 00

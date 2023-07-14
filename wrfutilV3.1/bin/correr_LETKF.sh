@@ -13,10 +13,13 @@ source $BASEDIR/conf/config.env  #BASEDIR tiene que estar seteado como variable 
 source $BASEDIR/lib/errores.env
 [ ! -f "$BASEDIR/conf/$EXPMACH" ] && dispararError 4 "$BASEDIR/conf/$EXPMACH"
 source $BASEDIR/conf/$EXPMACH
+[ ! -f "$BASEDIR/conf/$LETKFCONF" ] && dispararError 4 "$BASEDIR/conf/$LETKFCONF"
+source $BASEDIR/conf/$LETKFCONF
 [ ! -f "$BASEDIR/conf/$EXPCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPCONF"
 source $BASEDIR/conf/$EXPCONF
-[ ! -f "$BASEDIR/conf/$EXPMODELCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPMODELCONF"
-source $BASEDIR/conf/$EXPMODELCONF
+#Additional environment settings
+$ENVSET
+
 ##### FIN INICIALIZACION ######
 
 
@@ -39,7 +42,7 @@ fi
 
 ln -sf $LETKFDIR/code/* $LETKFDIRRUN
 
-#Editamos el namelist.
+echo "Editing namelist"
 cp $NAMELISTDIR/letkf.namelist $LETKFDIRRUN/letkf.namelist
 NAMELISTFILE=$LETKFDIRRUN/letkf.namelist
 NSLOTS=$(( ($ANALISIS_WIN_FIN-$ANALISIS_WIN_INI)/$ANALISIS_WIN_STEP+1))
@@ -61,19 +64,18 @@ sed -i -e "s|__SIGMA_OBSV__|$SIGMA_OBSV|g"                 $NAMELISTFILE
 sed -i -e "s|__SIGMA_OBS_RADAR__|$SIGMA_OBS_RADAR|g"       $NAMELISTFILE
 sed -i -e "s|__N_RADAR__|$N_RADAR|g"                       $NAMELISTFILE
 
-#Linkeamos los archivos necesarios.
+echo "Linking files"
 FECHA_WINDOW_INI=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_WIN_INI)) seconds" +"%Y-%m-%d %T")
 FECHA_ANALISIS=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_FREC)) seconds" +"%Y-%m-%d_%T")
 for IMIEM in $(seq -f "%02g" $MIEMBRO_INI $MIEMBRO_FIN ) ; do
    for ISLOT in $(seq -f "%02g" 0 $(($NSLOTS-1))) ; do
       FECHA_SLOT=$(date -u -d "$FECHA_WINDOW_INI UTC +$(($ISLOT*$ANALISIS_WIN_STEP)) seconds" +"%Y-%m-%d_%T")
-      ln -sf ${WRFDIR}/$IMIEM/wrfout_d01_$FECHA_SLOT ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$IMIEM+1)))
+      ln -sf ${WRFDIR}/$IMIEM/wrfout_d01_$FECHA_SLOT ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$IMIEM)))
    done	   
 done
-cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$FECHA_ANALISIS ${LETKFDIRRUN}/gues$(printf %05d $((10#$MIEMBRO_FIN+2)))
-cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$FECHA_ANALISIS ${LETKFDIRRUN}/anal$(printf %05d $((10#$MIEMBRO_FIN+2)))
+cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$FECHA_ANALISIS ${LETKFDIRRUN}/gues$(printf %05d $((10#$MIEMBRO_FIN+1)))
+cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$FECHA_ANALISIS ${LETKFDIRRUN}/anal$(printf %05d $((10#$MIEMBRO_FIN+1)))
 
-exit
 #Linkeamos las observaciones.
 #DIROBSRAD=$HISTDIR/OBS/${NOMBRE}/$(date -u -d "$FECHA_INI UTC +$((10#$CICLO)) hours +$((10#$CICLO_MIN+$ANALISIS)) minutes" +"%Y%m%d_%H%M%S")/
 #DIROBS=$DIROBSASIM
@@ -120,34 +122,38 @@ EOF
 
 # Parametros de encolamiento
 QPROC_NAME=LETKF_$PASO
+QNODE=$LETKFNODE
 QPROC=$LETKFPROC
-QTHREADS=$LETKFTHREADS
+QTHREAD=$LETKFTHREAD
 QWALLTIME=$LETKFWALLTIME
 QWORKDIR=$LETKFDIR
 
+echo "Sending letkf script to the queue"
 cd $LETKFDIR
 # Encolar
-queue 00 00
-check_proc 00 00
+#queue 00 00
+#check_proc 00 00
 
 
 ##
 # Guaramos los analisis
 ##
+echo "Copying analysis files"
 echo "Guardando analisis $MIEMBRO_INI - $MIEMBRO_FIN"
 DIRANAL=$HISTDIR/ANAL/$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_FREC)) seconds" +"%Y%m%d%H%M%S")
 for MIEM in $(seq -f "%02g" $MIEMBRO_INI $MIEMBRO_FIN ) ; do
         mkdir -p  ${DIRANAL}/
         mv  $WRFDIR/$MIEM/wrfout_d01_$FECHA_ANALISIS $DIRANAL/anal$(printf %05d $((10#$MIEM)))
-        ncatted -h -a 'START_DATE',global,m,c,$FECHA_ANALYSIS            $DIRANAL/anal$(printf %05d $((10#$MIEM+1)))
-        ncatted -h -a 'SIMULATION_START_DATE',global,m,c,$FECHA_ANALISIS $DIRANAL/anal$(printf %05d $((10#$MIEM+1)))
+	echo "ncatted -h -a 'START_DATE',global,m,c,$FECHA_ANALYSIS            $DIRANAL/anal$(printf %05d $((10#$MIEM)))"
+        ncatted -h -a 'START_DATE',global,m,c,$FECHA_ANALYSIS            $DIRANAL/anal$(printf %05d $((10#$MIEM)))
+        ncatted -h -a 'SIMULATION_START_DATE',global,m,c,$FECHA_ANALISIS $DIRANAL/anal$(printf %05d $((10#$MIEM)))
 done
 
-mv $LETKFDIR/*_sp $DIRANAL
-mv $LETKFDIR/gues$(printf %05d $((10#$MIEMBRO_FIN+1))) $DIRANAL   #Guess mean
-mv $LETKFDIR/anal$(printf %05d $((10#$MIEMBRO_FIN+1))) $DIRANAL   #Analysis mean
-ncatted -h -a 'START_DATE',global,m,c,$FECHA_ANALISIS              $DIRANAL/anal$(printf %05d $((10#$MIEMBRO_FIN+2)))
-ncatted -h -a 'SIMULATION_START_DATE',global,m,c,$FECHA_ANALISIS   $DIRANAL/anal$(printf %05d $((10#$MIEMBRO_FIN+2)))
+mv $LETKFDIRRUN/*_sp $DIRANAL
+mv $LETKFDIRRUN/gues$(printf %05d $((10#$MIEMBRO_FIN+1))) $DIRANAL   #Guess mean
+mv $LETKFDIRRUN/anal$(printf %05d $((10#$MIEMBRO_FIN+1))) $DIRANAL   #Analysis mean
+ncatted -h -a 'START_DATE',global,m,c,$FECHA_ANALISIS              $DIRANAL/anal$(printf %05d $((10#$MIEMBRO_FIN+1)))
+ncatted -h -a 'SIMULATION_START_DATE',global,m,c,$FECHA_ANALISIS   $DIRANAL/anal$(printf %05d $((10#$MIEMBRO_FIN+1)))
 
 #Copiamos las observaciones asimiladas.
 cp $LETKFDIR/obs.dat $DIRANAL
@@ -155,6 +161,6 @@ cp $LETKFDIR/obs.dat $DIRANAL
 # Guardamos un NOUT
 mv $LETKFDIR/NOUT-000 $DIRANAL
 
-
+echo "We are done!"
 
 
