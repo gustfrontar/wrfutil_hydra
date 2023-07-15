@@ -18,7 +18,7 @@ source $BASEDIR/conf/$LETKFCONF
 [ ! -f "$BASEDIR/conf/$EXPCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPCONF"
 source $BASEDIR/conf/$EXPCONF
 #Additional environment settings
-$ENVSET
+eval "$ENVSET"
 
 ##### FIN INICIALIZACION ######
 
@@ -73,8 +73,8 @@ for IMIEM in $(seq -f "%02g" $MIEMBRO_INI $MIEMBRO_FIN ) ; do
       ln -sf ${WRFDIR}/$IMIEM/wrfout_d01_$FECHA_SLOT ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$IMIEM)))
    done	   
 done
-cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$FECHA_ANALISIS ${LETKFDIRRUN}/gues$(printf %05d $((10#$MIEMBRO_FIN+1)))
-cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$FECHA_ANALISIS ${LETKFDIRRUN}/anal$(printf %05d $((10#$MIEMBRO_FIN+1)))
+cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$FECHA_ANALISIS ${LETKFDIRRUN}/guesemean
+cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$FECHA_ANALISIS ${LETKFDIRRUN}/analemean
 
 #Linkeamos las observaciones.
 #DIROBSRAD=$HISTDIR/OBS/${NOMBRE}/$(date -u -d "$FECHA_INI UTC +$((10#$CICLO)) hours +$((10#$CICLO_MIN+$ANALISIS)) minutes" +"%Y%m%d_%H%M%S")/
@@ -101,24 +101,20 @@ cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$FECHA_ANALISIS ${LETKFDIRRUN}/anal$(printf 
 #        fi
 #done
 
-
-
 #script de ejecucion
 read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited
 ulimit -l unlimited
 res='OK'
-# Run LETKF
 cd $LETKFDIR/00/
 OMP_NUM_THREADS=$LETKFTHREADS
 OMP_STACKSIZE=512M
-$MPIEXE  ./letkf.exe
+time $MPIEXE  ./letkf.exe
 LETKF_ERROR=$?
 if [[ $LETKF_ERROR != 0 ]] ; then
    res='ERROR'
 fi
 EOF
-
 
 # Parametros de encolamiento
 QPROC_NAME=LETKF_$PASO
@@ -131,8 +127,10 @@ QWORKDIR=$LETKFDIR
 echo "Sending letkf script to the queue"
 cd $LETKFDIR
 # Encolar
-#queue 00 00
-#check_proc 00 00
+if [ $PASO -gt $SPIN_UP_LENGTH ] ; then
+  queue 00 00
+  check_proc 00 00
+fi
 
 
 ##
@@ -149,17 +147,17 @@ for MIEM in $(seq -f "%02g" $MIEMBRO_INI $MIEMBRO_FIN ) ; do
         ncatted -h -a 'SIMULATION_START_DATE',global,m,c,$FECHA_ANALISIS $DIRANAL/anal$(printf %05d $((10#$MIEM)))
 done
 
-mv $LETKFDIRRUN/*_sp $DIRANAL
-mv $LETKFDIRRUN/gues$(printf %05d $((10#$MIEMBRO_FIN+1))) $DIRANAL   #Guess mean
-mv $LETKFDIRRUN/anal$(printf %05d $((10#$MIEMBRO_FIN+1))) $DIRANAL   #Analysis mean
-ncatted -h -a 'START_DATE',global,m,c,$FECHA_ANALISIS              $DIRANAL/anal$(printf %05d $((10#$MIEMBRO_FIN+1)))
-ncatted -h -a 'SIMULATION_START_DATE',global,m,c,$FECHA_ANALISIS   $DIRANAL/anal$(printf %05d $((10#$MIEMBRO_FIN+1)))
+#mv $LETKFDIRRUN/*_sp $DIRANAL
+mv $LETKFDIRRUN/guesemean $DIRANAL   #Guess mean
+mv $LETKFDIRRUN/analemean $DIRANAL   #Analysis mean
+ncatted -h -a 'START_DATE',global,m,c,$FECHA_ANALISIS              $DIRANAL/analemean
+ncatted -h -a 'SIMULATION_START_DATE',global,m,c,$FECHA_ANALISIS   $DIRANAL/analemean
 
 #Copiamos las observaciones asimiladas.
-cp $LETKFDIR/obs.dat $DIRANAL
+cp $LETKFDIRRUN/obs.dat $DIRANAL
 
 # Guardamos un NOUT
-mv $LETKFDIR/NOUT-000 $DIRANAL
+mv $LETKFDIRRUN/NOUT-000 $DIRANAL
 
 echo "We are done!"
 

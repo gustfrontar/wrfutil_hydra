@@ -1,0 +1,119 @@
+El experimento abarca desde 2018-11-20 00:00:00 hasta 2018-11-20 06:00:00
+Se hicieron 0 pasos de asimilacion y resta hacer 72
+Corriendo el primer paso de asimilacion
+Corriendo el WPS
+Vamos a perturbar los met_em
+Ejecutando paso: 0
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m28.207s
+user	81m18.443s
+sys	1m41.971s
+
+real	0m0.008s
+user	0m0.004s
+sys	0m0.000s
+
+real	3m42.071s
+user	81m20.530s
+sys	1m52.085s
+Vamos a ejecutar el LETKF
+
+real	0m4.133s
+user	0m0.167s
+sys	0m0.479s
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 1
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	1m0.878s
+user	35m9.527s
+sys	1m30.495s
+
+real	0m0.006s
+user	0m0.002s
+sys	0m0.001s
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/00/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/01/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/02/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/03/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/04/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/05/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/06/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/07/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/08/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/09/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/10/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/11/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/12/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/13/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/14/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/15/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/16/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/17/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/18/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/19/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/20/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/21/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/22/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/23/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+
+real	1m24.402s
+user	35m11.754s
+sys	1m32.108s
+Vamos a ejecutar el LETKF
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/23/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/23/wrfout_d01_2018-11-20_00:10:00': No such file or directory
+
+real	0m0.743s
+user	0m0.157s
+sys	0m0.149s
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 2
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	0m44.856s
+user	17m29.248s
+sys	1m21.914s
+
+real	0m0.008s
+user	0m0.001s
+sys	0m0.003s
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/00/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/01/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/02/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/03/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/04/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/05/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/06/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/07/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/08/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/09/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/10/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/11/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/12/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/13/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/14/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/15/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/16/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/17/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/18/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/19/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/20/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/21/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/22/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/23/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+
+real	1m1.881s
+user	17m31.377s
+sys	1m23.446s
+Vamos a ejecutar el LETKF
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/23/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+cp: cannot stat '/home/jruiz/salidas/data_assimilation_exps/TEST2//WRF/23/wrfout_d01_2018-11-20_00:15:00': No such file or directory
+
+real	0m0.621s
+user	0m0.154s
+sys	0m0.098s
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 3
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf

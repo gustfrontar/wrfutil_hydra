@@ -44,35 +44,37 @@ PASOS_RESTANTES=$((10#$PASOS_RESTANTES-10#$PASO))
 echo "El experimento abarca desde $FECHA_INI hasta $FECHA_FIN"
 echo "Se hicieron $PASO pasos de asimilacion y resta hacer $PASOS_RESTANTES"
 
+rm -f $PROCSDIR/*_ENDOK
 
 while [ $PASOS_RESTANTES -gt 0 ] ; do
    echo "Corriendo el primer paso de asimilacion"
    ###### 1st assimilation cycle only
    if [[ $PASO -lt 0 ]]; then
       echo "Reinicializando asimilacion"
+      echo "Sorry this option is not coded yet"
       exit
    elif [[ $PASO == 0 ]]; then
-      rm -f $PROCSDIR/*_ENDOK
-      echo "Corriendo el WPS"
-      echo " Stage |  Anl Date  | Step | TimeStamp" > $LOGDIR/cycles.log
-
-      #time $BASEDIR/bin/correr_WPS.sh > $LOGDIR/log_wps.log
-
-      if [ $BDY_PERT -eq 1 ] ; then
+      echo " Step | TimeStamp" > $LOGDIR/cycles.log
+      if [ $RUN_WPS -eq 1 ] ; then 
+         echo "Corriendo el WPS"
+         #time $BASEDIR/bin/correr_WPS.sh > $LOGDIR/log_wps.log
+      fi
+      if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
 	 echo "Vamos a perturbar los met_em"
          #time $BASEDIR/bin/correr_Pert.sh > $LOGDIR/pert_met_em_${PASO}.log   2>&1
-      else 
+      elif [ $BDY_PERT -eq 0 ] ; then
          echo "Linking met_em directory"
 	 #time ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em > $LOGDIR/pert_met_em_${PASO}.log  2>&1
       fi
-
-      #TODO $BASEDIR/bin/correr_OBS.sh  #Armar el script que genera las observaciones para el letkf.
-
+      if [ $RUN_OBS -eq 1 ] ; then 
+	 echo "Preparing the observations"
+         #TODO $BASEDIR/bin/correr_OBS.sh  #Armar el script que genera las observaciones para el letkf.
+      fi 
    fi
 
    #####  all assimilation cycles
-   echo "Ejecutando paso: $PASO"
-   echo "  INI  | $FECHA_CICLO |  $(printf "%02d" $PASO)  | $(date +'%s')" >>  $LOGDIR/cycles.log
+   echo "Running cycle: $PASO"
+   echo "$(printf "%02d" $PASO)  | $(date +'%s')" >>  $LOGDIR/cycles.log
 
    echo "Vamos a ejecutar el real, el da_upbdate_bc y el wrf"
    time $BASEDIR/bin/correr_Guess.sh > $LOGDIR/guess_${PASO}.log  2>&1
@@ -80,7 +82,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    time $BASEDIR/bin/correr_LETKF.sh > $LOGDIR/letkf_${PASO}.log  2>&1
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))
-   [[ $PASO -eq 4 ]] && exit  #DEBUG DEBUG TODO
+   exit ; [[ $PASO -eq 4 ]] && exit  #DEBUG DEBUG TODO
    #Update PASO in the configuration file.
    sed -i -e "/export PASO=/c\\export PASO=$PASO" $BASEDIR/conf/experimento.conf
 

@@ -764,7 +764,7 @@ SUBROUTINE write_ensp_mpi(file,member,vp2d)
       IF(member > 1)THEN
       WRITE(filename(1:9),'(A4,I5.5)') file,im
       ELSE
-      WRITE(filename(1:9),'(A4,I5.5)') file,nbv+1
+      WRITE(filename(1:9),'(A4,A5)') file,'emean'
       ENDIF
       !OPEN NC FILE
       CALL open_wrf_file(filename,'rw',ncid(im))
@@ -825,7 +825,7 @@ SUBROUTINE write_ens_mpi(file,member,v3d,v2d)
       IF(member > 1)THEN
         WRITE(filename(1:9),'(A4,I5.5)')file,im
       ELSE
-        WRITE(filename(1:9),'(A4,I5.5)')file,nbv+1
+        WRITE(filename(1:9),'(A4,A5)')file,'emean'
       ENDIF
       !OPEN NC FILE
       CALL open_wrf_file(filename,'rw',ncid(im))

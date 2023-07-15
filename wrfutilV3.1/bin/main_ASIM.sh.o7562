@@ -1,0 +1,359 @@
+El experimento abarca desde 2018-11-20 00:00:00 hasta 2018-11-20 06:00:00
+Se hicieron 0 pasos de asimilacion y resta hacer 72
+Corriendo el primer paso de asimilacion
+Corriendo el WPS
+Vamos a perturbar los met_em
+Ejecutando paso: 0
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m21.987s
+user	80m39.780s
+sys	1m38.830s
+
+real	0m0.008s
+user	0m0.002s
+sys	0m0.002s
+
+real	3m34.150s
+user	80m41.889s
+sys	1m48.918s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 1
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m32.345s
+user	107m55.487s
+sys	1m35.575s
+
+real	0m0.005s
+user	0m0.003s
+sys	0m0.000s
+
+real	3m46.398s
+user	107m57.559s
+sys	1m45.383s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 2
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m27.474s
+user	72m24.213s
+sys	1m39.221s
+
+real	0m0.008s
+user	0m0.003s
+sys	0m0.002s
+
+real	3m44.818s
+user	72m26.256s
+sys	1m48.773s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 3
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m31.934s
+user	83m1.342s
+sys	1m40.337s
+
+real	0m0.007s
+user	0m0.003s
+sys	0m0.001s
+
+real	3m48.134s
+user	83m3.292s
+sys	1m50.235s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 4
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m26.506s
+user	88m4.325s
+sys	1m43.210s
+
+real	0m0.008s
+user	0m0.000s
+sys	0m0.004s
+
+real	3m39.436s
+user	88m6.402s
+sys	1m53.161s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 5
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m25.197s
+user	71m14.818s
+sys	1m35.426s
+
+real	0m0.009s
+user	0m0.002s
+sys	0m0.002s
+
+real	3m37.889s
+user	71m16.898s
+sys	1m44.910s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 6
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m25.559s
+user	80m34.025s
+sys	1m39.821s
+
+real	0m0.009s
+user	0m0.002s
+sys	0m0.003s
+
+real	3m47.654s
+user	80m36.169s
+sys	1m49.357s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 7
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m29.904s
+user	89m13.307s
+sys	1m38.249s
+
+real	0m0.010s
+user	0m0.001s
+sys	0m0.004s
+
+real	3m42.283s
+user	89m15.269s
+sys	1m48.185s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 8
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m28.158s
+user	81m41.341s
+sys	1m44.631s
+
+real	0m0.007s
+user	0m0.003s
+sys	0m0.001s
+
+real	3m44.130s
+user	81m43.453s
+sys	1m53.988s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 9
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m29.323s
+user	101m21.953s
+sys	1m45.227s
+
+real	0m0.007s
+user	0m0.000s
+sys	0m0.004s
+
+real	3m44.986s
+user	101m23.969s
+sys	1m55.176s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 10
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m39.594s
+user	108m7.058s
+sys	1m45.392s
+
+real	0m0.008s
+user	0m0.004s
+sys	0m0.000s
+
+real	3m50.393s
+user	108m9.077s
+sys	1m55.372s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 11
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m27.679s
+user	105m40.257s
+sys	1m49.802s
+
+real	0m0.006s
+user	0m0.002s
+sys	0m0.001s
+
+real	3m44.275s
+user	105m42.310s
+sys	1m59.750s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 12
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m27.688s
+user	95m47.568s
+sys	1m41.243s
+
+real	0m0.011s
+user	0m0.000s
+sys	0m0.005s
+
+real	3m40.280s
+user	95m49.426s
+sys	1m51.220s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 13
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m36.132s
+user	79m35.305s
+sys	1m52.083s
+
+real	0m0.011s
+user	0m0.003s
+sys	0m0.002s
+
+real	3m56.670s
+user	79m37.278s
+sys	2m1.948s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 14
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m29.202s
+user	80m37.096s
+sys	1m40.397s
+
+real	0m0.009s
+user	0m0.004s
+sys	0m0.001s
+
+real	3m40.757s
+user	80m39.264s
+sys	1m50.099s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 15
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m33.670s
+user	92m28.479s
+sys	1m47.480s
+
+real	0m0.010s
+user	0m0.002s
+sys	0m0.002s
+
+real	3m51.554s
+user	92m30.554s
+sys	1m56.942s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 16
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m27.645s
+user	97m15.843s
+sys	1m42.341s
+
+real	0m0.008s
+user	0m0.002s
+sys	0m0.002s
+
+real	3m42.613s
+user	97m17.891s
+sys	1m52.032s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 17
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m33.680s
+user	105m40.480s
+sys	1m36.535s
+
+real	0m0.009s
+user	0m0.002s
+sys	0m0.002s
+
+real	3m44.466s
+user	105m42.594s
+sys	1m46.182s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 18
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m40.022s
+user	106m25.412s
+sys	1m42.919s
+
+real	0m0.009s
+user	0m0.000s
+sys	0m0.005s
+
+real	3m54.751s
+user	106m27.462s
+sys	1m52.624s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 19
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m25.881s
+user	102m59.737s
+sys	1m41.303s
+
+real	0m0.005s
+user	0m0.001s
+sys	0m0.002s
+
+real	3m45.620s
+user	103m1.790s
+sys	1m50.607s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 20
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m32.989s
+user	73m23.591s
+sys	1m43.754s
+
+real	0m0.006s
+user	0m0.002s
+sys	0m0.002s
+
+real	3m50.280s
+user	73m25.647s
+sys	1m53.073s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 21
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m28.274s
+user	77m46.260s
+sys	1m39.102s
+
+real	0m0.008s
+user	0m0.003s
+sys	0m0.001s
+
+real	3m41.802s
+user	77m48.346s
+sys	1m48.745s
+Vamos a ejecutar el LETKF
+Corriendo el primer paso de asimilacion
+Ejecutando paso: 22
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf

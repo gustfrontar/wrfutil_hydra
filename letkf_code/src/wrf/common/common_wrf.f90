@@ -945,8 +945,8 @@ SUBROUTINE ensmean_grd(member,nij,v3d,v2d,v3dm,v2dm)
   IMPLICIT NONE
   INTEGER,INTENT(IN) :: member
   INTEGER,INTENT(IN) :: nij
-  REAL(r_size),INTENT(IN) :: v3d(nij,nlev,member,nv3d)
-  REAL(r_size),INTENT(IN) :: v2d(nij,member,nv2d)
+  REAL(r_size),INTENT(IN)  :: v3d(nij,nlev,member,nv3d)
+  REAL(r_size),INTENT(IN)  :: v2d(nij,member,nv2d)
   REAL(r_size),INTENT(OUT) :: v3dm(nij,nlev,nv3d)
   REAL(r_size),INTENT(OUT) :: v2dm(nij,nv2d)
   INTEGER :: i,k,m,n

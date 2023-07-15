@@ -1,0 +1,15 @@
+El experimento abarca desde 2018-11-20 00:00:00 hasta 2018-11-20 06:00:00
+Se hicieron 0 pasos de asimilacion y resta hacer 72
+Corriendo el primer paso de asimilacion
+Corriendo el WPS
+Vamos a perturbar los met_em
+Ejecutando paso: 0
+Vamos a ejecutar el real, el da_upbdate_bc y el wrf
+
+real	2m19.181s
+user	79m49.001s
+sys	1m38.908s
+
+real	1m40.213s
+user	63m25.296s
+sys	1m14.436s

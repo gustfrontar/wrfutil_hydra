@@ -881,7 +881,7 @@ SUBROUTINE write_ensp_mpi(file,member,vp2d)
       IF(member > 1)THEN
       WRITE(filename(1:9),'(A4,I5.5)') file,im
       ELSE
-      WRITE(filename(1:9),'(A4,I5.5)') file,nbv+1
+      WRITE(filename(1:9),'(A4,A5)') file,'emean'
       ENDIF
       !OPEN NC FILE
       CALL open_wrf_file(filename,'rw',ncid(im))
@@ -943,7 +943,7 @@ SUBROUTINE write_ens_mpi(file,member,v3d,v2d)
       IF(member > 1)THEN
         WRITE(filename(1:9),'(A4,I5.5)')file,im
       ELSE
-        WRITE(filename(1:9),'(A4,I5.5)')file,nbv+1
+        WRITE(filename(1:9),'(A4,A5)')file,'emean'
       ENDIF
       !OPEN NC FILE
       WRITE(6,'(A,I3.3,2A)')'MYRANK ',myrank,' is writing a file ',filename
@@ -1131,7 +1131,7 @@ SUBROUTINE write_ens_mpi_fast(file,member,v3d,v2d)
       IF(member > 1)THEN
         WRITE(filename(1:9),'(A4,I5.5)')file,im
       ELSE
-        WRITE(filename(1:9),'(A4,I5.5)')file,nbv+1
+        WRITE(filename(1:9),'(A4,A5)')file,'emean'
       ENDIF
       !OPEN NC FILE
       WRITE(6,'(A,I3.3,2A)')'MYRANK ',myrank,' is writing a file ',filename
@@ -1306,7 +1306,7 @@ SUBROUTINE write_ens_mpi_alltoall(file,member,v3d,v2d)
       IF(member > 1)THEN
         WRITE(filename(1:9),'(A4,I5.5)')file,im
       ELSE
-        WRITE(filename(1:9),'(A4,I5.5)')file,nbv+1
+        WRITE(filename(1:9),'(A4,A5)')file,'emean'
       ENDIF
       !OPEN NC FILE
       WRITE(6,'(A,I3.3,2A)')'MYRANK ',myrank,' is writing a file ',filename
@@ -1507,55 +1507,54 @@ SUBROUTINE write_ensmspr_mpi(file,member,v3d,v2d)
   CHARACTER(20) :: filename='           '
 
   !COMPUTE AND WRITE ENSEMBLE MEAN (IN NETCDF FORMAT)
-  CALL ensmean_grd(member,nij1,v3d,v2d,v3dm,v2dm)
-  tmpv3dm(:,:,1,:)=v3dm
-  tmpv2dm(:,1,:)=v2dm
-  CALL write_ens_mpi(file,1,tmpv3dm,tmpv2dm)
+  tmpv3dm(:,:,1,:)=SUM( v3d , DIM=3 ) / REAL( member , r_size )
+  tmpv2dm(:,1,:)=SUM( v2d , DIM=2 ) / REAL( member , r_size )
+  CALL write_ens_mpi_alltoall(file,1,tmpv3dm,tmpv2dm)
 
-  !COMPUTE AND WRITE ENSEMBLE SPREAD (IN BINARY FORMAT).
-  DO n=1,nv3d
+  !!COMPUTE AND WRITE ENSEMBLE SPREAD (IN BINARY FORMAT).
+  !DO n=1,nv3d
 !!$OMP PARALLEL DO PRIVATE(i,k,m)
-    DO k=1,nlev
-      DO i=1,nij1
-        v3ds(i,k,n) = (v3d(i,k,1,n)-v3dm(i,k,n))**2
-        DO m=2,member
-          v3ds(i,k,n) = v3ds(i,k,n) + (v3d(i,k,m,n)-v3dm(i,k,n))**2
-        END DO
-        v3ds(i,k,n) = SQRT(v3ds(i,k,n) / REAL(member-1,r_size))
-      END DO
-    END DO
+  !  DO k=1,nlev
+  !    DO i=1,nij1
+  !      v3ds(i,k,n) = (v3d(i,k,1,n)-v3dm(i,k,n))**2
+  !      DO m=2,member
+  !        v3ds(i,k,n) = v3ds(i,k,n) + (v3d(i,k,m,n)-v3dm(i,k,n))**2
+  !      END DO
+  !      v3ds(i,k,n) = SQRT(v3ds(i,k,n) / REAL(member-1,r_size))
+  !    END DO
+  !  END DO
 !!$OMP END PARALLEL DO
-  END DO
-  DO n=1,nv2d
+  !END DO
+  !DO n=1,nv2d
 !!$OMP PARALLEL DO PRIVATE(i,k,m)
-    DO i=1,nij1
-      v2ds(i,n) = (v2d(i,1,n)-v2dm(i,n))**2
-      DO m=2,member
-        v2ds(i,n) = v2ds(i,n) + (v2d(i,m,n)-v2dm(i,n))**2
-      END DO
-      v2ds(i,n) = SQRT(v2ds(i,n) / REAL(member-1,r_size))
-    END DO
+  !  DO i=1,nij1
+  !    v2ds(i,n) = (v2d(i,1,n)-v2dm(i,n))**2
+  !    DO m=2,member
+  !      v2ds(i,n) = v2ds(i,n) + (v2d(i,m,n)-v2dm(i,n))**2
+  !    END DO
+  !    v2ds(i,n) = SQRT(v2ds(i,n) / REAL(member-1,r_size))
+  !  END DO
 !!$OMP END PARALLEL DO
-  END DO
+  !END DO
 
-  IF(myrank .EQ. 0)THEN
-    iunit=33
-    WRITE(filename(1:9),'(A4,A3)') file,'_sp  '
-    WRITE(6,'(A,I3.3,2A)') 'MYRANK ',myrank,' is writing a file ',filename
-    OPEN(unit=iunit,file=filename,form='unformatted',access='sequential')
-  ENDIF
+  !IF(myrank .EQ. 0)THEN
+  !  iunit=33
+  !  WRITE(filename(1:9),'(A4,A3)') file,'_sp  '
+  !  WRITE(6,'(A,I3.3,2A)') 'MYRANK ',myrank,' is writing a file ',filename
+  !  OPEN(unit=iunit,file=filename,form='unformatted',access='sequential')
+  !ENDIF
   
-  DO n=1,nv3d
-    DO k=1,nlev
-      CALL gather_ngrd_mpi(0,v3ds(:,k,n),fieldg,1)
-      IF(myrank .EQ. 0) WRITE(iunit)fieldg
-    ENDDO
-  ENDDO
-  DO n=1,nv2d
-      CALL gather_ngrd_mpi(0,v2ds(:,n),fieldg,1)
-      IF(myrank .EQ. 0)WRITE(iunit)fieldg
-  ENDDO
-  IF(myrank .EQ. 0)CLOSE(iunit)
+  !DO n=1,nv3d
+  !  DO k=1,nlev
+  !    CALL gather_ngrd_mpi(0,v3ds(:,k,n),fieldg,1)
+  !    IF(myrank .EQ. 0) WRITE(iunit)fieldg
+  !  ENDDO
+  !ENDDO
+  !DO n=1,nv2d
+  !    CALL gather_ngrd_mpi(0,v2ds(:,n),fieldg,1)
+  !    IF(myrank .EQ. 0)WRITE(iunit)fieldg
+  !ENDDO
+  !IF(myrank .EQ. 0)CLOSE(iunit)
 
   RETURN
 END SUBROUTINE write_ensmspr_mpi
