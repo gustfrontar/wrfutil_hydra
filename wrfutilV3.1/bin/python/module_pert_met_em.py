@@ -20,7 +20,7 @@ def get_file_lists ( conf ) :
     FileSearchString = conf['FileSearchString']
 
     #Get the list of met_em files.
-    FileList = glob.glob( BasePathOri + '/00/' + FileSearchString )
+    FileList = glob.glob( BasePathOri + '/01/' + FileSearchString )
     FileList.sort()
 
     #Generate the list of original met_ems
@@ -28,9 +28,9 @@ def get_file_lists ( conf ) :
     for my_file in FileList :
         my_list = []
         for iens in range(Ne) :
-           file_path = BasePathOri + '/'+ "{:02d}".format(iens)  +'/' + os.path.basename(my_file)
+           file_path = BasePathOri + '/'+ "{:02d}".format(iens+1)  +'/' + os.path.basename(my_file)
            if os.path.isfile( file_path ) :
-              my_list.append( BasePathOri + '/'+ "{:02d}".format(iens)  +'/' + os.path.basename(my_file) )
+              my_list.append( file_path )
            else : 
               print('Error: File not found ' + file_path )
               sys.exit(1)
@@ -42,7 +42,7 @@ def get_file_lists ( conf ) :
     for my_file in FileList :
         my_list = []
         for iens in range(Nt) :
-           my_list.append( BasePathOut + '/'+ "{:02d}".format(iens)  +'/' + os.path.basename(my_file) )
+           my_list.append( BasePathOut + '/'+ "{:02d}".format(iens+1)  +'/' + os.path.basename(my_file) )
         TargetEnsFileList.append( my_list )
         
     return EnsFileList , TargetEnsFileList 

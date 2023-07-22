@@ -46,7 +46,7 @@ queue (){
         #2 - Create the scripts
         for QMIEM in $(seq -w $ini_mem $end_mem) ; do
 		echo "source $BASEDIR/conf/config.env"                                         > ${QPROC_NAME}_${QMIEM}.pbs 
-         	echo "source $BASEDIR/conf/experimento.conf"                                  >> ${QPROC_NAME}_${QMIEM}.pbs 
+         	echo "source $BASEDIR/conf/$EXPCONF"                                          >> ${QPROC_NAME}_${QMIEM}.pbs 
 		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                    >> ${QPROC_NAME}_${QMIEM}.pbs
 		echo "$ENVSET  "                                                              >> ${QPROC_NAME}_${QMIEM}.pbs
                 echo "MIEM=$QMIEM "                                                           >> ${QPROC_NAME}_${QMIEM}.pbs

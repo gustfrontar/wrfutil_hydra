@@ -38,7 +38,7 @@ source $BASEDIR/conf/$EXPCONF   #Cargo la configuracion del experimento.
 #Calculamos la cantidad de pasos
 ####################################
 
-PASOS_RESTANTES=$((($(date -d "$FECHA_FIN" +%s) - $(date -d "$FECHA_INI" +%s))/$ANALISIS_FREC))
+PASOS_RESTANTES=$((($(date -d "$FECHA_FIN" +%s) - $(date -d "$FECHA_INI" +%s))/$ANALISIS_FREC ))
 PASOS_RESTANTES=$((10#$PASOS_RESTANTES-10#$PASO))
 
 echo "El experimento abarca desde $FECHA_INI hasta $FECHA_FIN"
@@ -82,12 +82,10 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    time $BASEDIR/bin/correr_LETKF.sh > $LOGDIR/letkf_${PASO}.log  2>&1
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))
-   exit ; [[ $PASO -eq 4 ]] && exit  #DEBUG DEBUG TODO
    #Update PASO in the configuration file.
-   sed -i -e "/export PASO=/c\\export PASO=$PASO" $BASEDIR/conf/experimento.conf
+   sed -i -e "/export PASO=/c\\export PASO=$PASO" $BASEDIR/conf/$EXPCONF
 
 done
-
 
 #echo 'LETKF MONIT'
 #$WRFUTILDIR/bin/correr_LETKFmonit.sh 12

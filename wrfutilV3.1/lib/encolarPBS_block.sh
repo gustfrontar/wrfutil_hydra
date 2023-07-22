@@ -13,7 +13,7 @@ queue (){
         			echo '#PBS -v BASEDIR'                                >> ${QPROC_NAME}_${QMIEM}.pbs		      ## Indica que debe heredar todo el enviroment
 	test $QTHREAD   &&	echo "export OMP_NUM_THREADS=$QTHREAD"                >> ${QPROC_NAME}_${QMIEM}.pbs		
 				echo "source $BASEDIR/conf/config.env"                >> ${QPROC_NAME}_${QMIEM}.pbs 
-				echo "source $BASEDIR/conf/experimento.conf"          >> ${QPROC_NAME}_${QMIEM}.pbs 
+				echo "source $BASEDIR/conf/$EXPCONF"                  >> ${QPROC_NAME}_${QMIEM}.pbs 
                 		echo "export MPIEXE=\"$(which mpirun) -np ${TPROC}\" ">> ${QPROC_NAME}_${QMIEM}.pbs                   ## Comando MPIRUN con cantidad de nodos y cores por nodos
 	                        echo "$ENVSET  "                                      >> ${QPROC_NAME}_${QMIEM}.pbs			
 	                        echo "MIEM=$QMIEM "                                   >> ${QPROC_NAME}_${QMIEM}.pbs 			

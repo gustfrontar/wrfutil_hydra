@@ -30,11 +30,11 @@
  step_to_output_time                 = .true.
  target_cfl                          = 1.2
  max_step_increase_pct               = 5
- starting_time_step                  = 12
+ starting_time_step                  = __DT__
  max_time_step                       = 50
  min_time_step                       = 10
  smooth_cg_topo                      = .false.
- time_step                           = 24,
+ time_step                           = __DT__,
  time_step_fract_num                 = 0,
  time_step_fract_den                 = 1,
  max_dom                             = 1,
