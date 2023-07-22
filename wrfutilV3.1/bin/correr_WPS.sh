@@ -43,13 +43,16 @@ fi
 mkdir -p $WPSDIR
 cp $NAMELISTDIR/namelist.wps $WPSDIR/
 #Buscamos la fecha inmediatamente inferior al inicio del experimento en en base a la frecuencia de los archivos del ensamble de condiciones de borde.  
-FECHAINIWPS=$(date_floor "$FECHA_INI" $INTERVALO_BDY )
-FECHAINIWPS=$(date -u -d "$FECHAINIWPS UTC" +"%Y-%m-%d_%T" ) #Cambio al formato WPS
-FECHAFINWPS=$(date_ceil  "$FECHA_FIN" $INTERVALO_BDY )
-FECHAFINWPS=$(date -u -d "$FECHAFINWPS UTC" +"%Y-%m-%d_%T" ) #Cambio al formato WPS
+FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($WPS_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
+FECHA_END_PASO=$(date -u -d "$FECHA_INI UTC +$((($WPS_INI_FREQ*$PASO)+$WPS_LEAD_TIME )) seconds" +"%Y-%m-%d %T")
 
-sed -i -e "s|__FECHA_INI__|$FECHAINIWPS|g" $WPSDIR/namelist.wps
-sed -i -e "s|__FECHA_FIN__|$FECHAFINWPS|g" $WPSDIR/namelist.wps
+FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_BDY )    #Get the closest prior date in which BDY data is available.
+FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY UTC" +"%Y-%m-%d_%T" ) #Cambio al formato WPS
+FECHA_END_BDY=$(date_ceil  "$FECHA_END_PASO" $INTERVALO_BDY )    #Get the closest posterior date in which BDY data is available. 
+FECHA_END_BDY=$(date -u -d "$FECHA_END_BDY UTC" +"%Y-%m-%d_%T" ) #Cambio al formato WPS
+
+sed -i -e "s|__FECHA_INI__|$FECHA_INI_BDY|g" $WPSDIR/namelist.wps
+sed -i -e "s|__FECHA_FIN__|$FECHA_END_BDY|g" $WPSDIR/namelist.wps
 sed -i -e "s|__INTERVALO__|$INTERVALO_WPS|g"  $WPSDIR/namelist.wps
 sed -i -e "s|__E_WE__|$E_WE|g" $WPSDIR/namelist.wps
 sed -i -e "s|__E_SN__|$E_SN|g" $WPSDIR/namelist.wps
@@ -106,7 +109,8 @@ ln -sf $WPSDIR/code/* $WPSDIR/$MIEM
 cp $WPSDIR/namelist.wps $WPSDIR/$MIEM/
 cd $WPSDIR/$MIEM
 ln -sf $WPSDIR/geogrid/geo_em* .
-FECHA_INI_BDY=$(date_floor "$FECHA_INI" $INTERVALO_INI_BDY )
+FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($WPS_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
+FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )
 BDYBASE=$BDYDIR/gefs.$(date -d "$FECHA_INI_BDY" +"%Y%m%d")/$(date -d "$FECHA_INI_BDY" +"%H")/$BDYPREFIX/$MIEM/
 echo "Estoy buscando los archivos del BDY en la carpeta $BDYBASE"
 ## Si el miembro es 00 entonces es deterministico, sino Ensamble
@@ -144,12 +148,10 @@ check_proc $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN
 
 #Copiamos los archivos del directorio 
 for QMIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
-   OUTPUTPATH="$HISTDIR/WPS/met_em_ori/$QMIEM/"
+   OUTPUTPATH="$HISTDIR/WPS/met_em_ori/${FECHA_INI_BDY}/$QMIEM/"
    mkdir -p $OUTPUTPATH
    mv $WPSDIR/$QMIEM/met_em* $OUTPUTPATH
 done
-
-
 
 echo "Termine de correr el WPS"
 

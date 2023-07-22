@@ -1,4 +1,8 @@
 #!/bin/bash 
+#The main pourpose of this script is to run forecasts nested in the GFS or a global model.
+
+
+
 #######################################################
 # ESTE SCRIPT PUEDE SER ENVIADO DIRECTAMENTE A LA COLA
 # O EJECUTADO DESDE EL HEAD NODE PARA QUE ENCOLE LOS 
@@ -22,7 +26,6 @@ if [ ! -z ${PBS_O_WORKDIR} ]; then cd $PBS_O_WORKDIR;fi
 
 ### PARAMETROS
 BASEDIR=$(pwd)/../
-#BASEDIR="/home/jruiz/salidas/data_assimilation_exps/TEST2/"
 source $BASEDIR/lib/errores.env
 CONFIG=$BASEDIR/conf/config.env
 [ ! -e "$CONFIG" ] && dispararError 4 "Error: No encontre config.env"
@@ -51,22 +54,23 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    ###### 1st assimilation cycle only
    if [[ $PASO == 0 ]]; then
       echo " Step | TimeStamp" > $LOGDIR/cycles.log
-      if [ $RUN_WPS -eq 1 ] ; then 
-         echo "Corriendo el WPS"
-         time $BASEDIR/bin/correr_WPS.sh > $LOGDIR/log_wps.log
-      fi
-      if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
-	 echo "Vamos a perturbar los met_em"
-         time $BASEDIR/bin/correr_Pert.sh > $LOGDIR/pert_met_em_${PASO}.log   2>&1
-      elif [ $BDY_PERT -eq 0 ] ; then
-         echo "Linking met_em directory"
-	 time ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em > $LOGDIR/pert_met_em_${PASO}.log  2>&1
-      fi
    fi
 
-   #####  all assimilation cycles
+   #####  all forecasts cycles
    echo "Running forecast for initialization: $PASO"
-   echo "$(printf "%02d" $PASO)  | $(date +'%s')" >>  $LOGDIR/inits.log
+   echo "$(printf "%02d" $PASO)  | $(date +'%s')" >>  $LOGDIR/cycles.log
+
+   if [ $RUN_WPS -eq 1 ] ; then
+      echo "Corriendo el WPS"
+      time $BASEDIR/bin/correr_WPS.sh > $LOGDIR/log_wps.log
+   fi
+   if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
+      echo "Vamos a perturbar los met_em"
+      time $BASEDIR/bin/correr_Pert.sh > $LOGDIR/pert_met_em_${PASO}.log   2>&1
+   elif [ $BDY_PERT -eq 0 ] ; then
+      echo "Linking met_em directory"
+      time ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em > $LOGDIR/pert_met_em_${PASO}.log  2>&1
+   fi
 
    echo "Running the model"
    time $BASEDIR/bin/correr_Fcst.sh > $LOGDIR/fcst_${PASO}.log  2>&1

@@ -103,7 +103,10 @@ fi
 cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
 
 ln -sf $WRFDIR/code/* . 
-ln -sf $HISTDIR/WPS/met_em/$MIEM/met_em* $WRFDIR/$MIEM/
+FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
+FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )
+
+ln -sf $HISTDIR/WPS/met_em/${FECHA_INI_BDY}/$MIEM/met_em* $WRFDIR/$MIEM/
 OMP_NUM_THREADS=$REALTHREADS
 OMP_STACKSIZE=512M
 $MPIEXE $WRFDIR/$MIEM/real.exe
