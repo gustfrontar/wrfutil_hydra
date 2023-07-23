@@ -103,9 +103,14 @@ fi
 cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
 
 ln -sf $WRFDIR/code/* . 
-FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
-FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )
-FECHA_INI_BDY=$(date -u -d "$FECHA_INI_PASO" +"%Y%m%d%H%M%S")
+if [ $WPS_CYCLE -eq 1 ] ; then
+   FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
+   FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )
+   FECHA_INI_BDY=$(date -u -d "$FECHA_INI_PASO" +"%Y%m%d%H%M%S")
+else
+   FECHA_INI_BDY=$(date_floor "$FECHA_INI" $INTERVALO_INI_BDY )
+   FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY" +"%Y%m%d%H%M%S")
+fi
 
 ln -sf $HISTDIR/WPS/met_em/${FECHA_INI_BDY}/$MIEM/met_em* $WRFDIR/$MIEM/
 OMP_NUM_THREADS=$REALTHREADS

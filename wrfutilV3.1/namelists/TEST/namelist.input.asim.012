@@ -24,12 +24,11 @@
  numtiles                            = __NUMTILE__,
  !nproc_x 
  !nproc_y  
-
  use_adaptive_time_step              = .true.
  step_to_output_time                 = .true.
  target_cfl                          = 1.2
  max_step_increase_pct               = 5
- starting_time_step                  = 12
+ starting_time_step                  = __DT__
  max_time_step                       = 50
  min_time_step                       = 10
  smooth_cg_topo                      = .false.
@@ -39,7 +38,7 @@
  max_dom                             = 1,
  e_we                                = __E_WE__,
  e_sn                                = __E_SN__,
- e_vert                              = 45,  
+ e_vert                              = __DT__,  
  p_top_requested                     = 1000,
  num_metgrid_levels                  = __METLEV__,
  num_metgrid_soil_levels             = 4,

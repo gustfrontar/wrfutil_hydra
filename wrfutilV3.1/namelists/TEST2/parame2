@@ -1,9 +1,0 @@
-&control_param
-da_file='./wrfinput_d01'
-wrf_bdy_file='./wrfbdy_d01'
-debug=.true.
-update_lateral_bdy=.true.
-update_low_bdy=.false.
-iswater=16
-/
-
