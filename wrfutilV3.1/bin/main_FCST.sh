@@ -1,8 +1,6 @@
 #!/bin/bash 
 #The main pourpose of this script is to run forecasts nested in the GFS or a global model.
 
-
-
 #######################################################
 # ESTE SCRIPT PUEDE SER ENVIADO DIRECTAMENTE A LA COLA
 # O EJECUTADO DESDE EL HEAD NODE PARA QUE ENCOLE LOS 
@@ -13,7 +11,7 @@
 #PBS -j oe 
 #PBS -q larga 
 ##PBS -l walltime=10:00:00 
-#PBS -l nodes=8:ppn=48
+#PBS -l nodes=1:ppn=48
 if [ ! -z ${PBS_O_WORKDIR} ]; then cd $PBS_O_WORKDIR;fi
 
 #############
@@ -47,7 +45,11 @@ PASOS_RESTANTES=$((10#$PASOS_RESTANTES-10#$PASO))
 echo "El experimento abarca desde $FECHA_INI hasta $FECHA_FIN"
 echo "Se hicieron $PASO pronosticos y resta hacer $PASOS_RESTANTES"
 
-rm -f $PROCSDIR/*_ENDOK
+rm -f $PROCSDIR/*_ENDOK #Remove control files from previous runs.
+
+####################################
+#Main loop over steps (forecast initialization)
+####################################
 
 while [ $PASOS_RESTANTES -gt 0 ] ; do
    echo "Inicializando el primer pronostico"
@@ -55,7 +57,6 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    if [[ $PASO == 0 ]]; then
       echo " Step | TimeStamp" > $LOGDIR/cycles.log
    fi
-
    #####  all forecasts cycles
    echo "Running forecast for initialization: $PASO"
    echo "$(printf "%02d" $PASO)  | $(date +'%s')" >>  $LOGDIR/cycles.log
@@ -82,7 +83,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
 done
 
 echo "Saliendo. . .  . hasta la proxima!"
-echo "Termiamos de correr a:"$(date )
+echo "Termiamos de correr a: "$(date )
 exit 0
 
 

@@ -25,6 +25,7 @@ cp $BASEDIR/bin/python/module_pert_met_em.py  $WPSDIR/module_pert_met_em.py
 
 FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($WPS_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
 FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_BDY )
+FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY" +"%Y%m%d%H%M%S")
 
 sed -i -e "s|__BASE_PATH_ORI__|'$HISTDIR/WPS/met_em_ori/${FECHA_INI_BDY}/'|g"   $WPSDIR/main_perturb_met_em.py
 sed -i -e "s|__BASE_PATH_OUT__|'$HISTDIR/WPS/met_em/${FECHA_INI_BDY}'|g"        $WPSDIR/main_perturb_met_em.py
