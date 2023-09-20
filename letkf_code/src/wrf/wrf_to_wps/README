@@ -1,0 +1,6 @@
+
+En esta carpeta se encuentran los siguentes codigos fuentes:
+
+-WRF_TO_WPS.f90 
+Este codigo lee un archivo binario generado por el LETKF en niveles sigma. El programa escribe esas mismas salidas en el formato intermedio que genera el ungrib de forma tal que pueda ser utilizado como input por el programa metgrid.
+

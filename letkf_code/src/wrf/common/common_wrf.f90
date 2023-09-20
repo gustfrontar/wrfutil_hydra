@@ -23,8 +23,9 @@ MODULE common_wrf
 
   !MODULE VARIABLES (NOT READ FROM NAMELIST) 
   INTEGER, PARAMETER :: nv3d=15
-  INTEGER, PARAMETER :: nv2d=5
+  INTEGER, PARAMETER :: nv2d=11
   INTEGER, PARAMETER :: np2d=3
+  INTEGER, PARAMETER :: ns3d=2  !Soil variables
   INTEGER, PARAMETER :: nid_obs=10
 
   REAL(r_sngl) :: tmpatt
@@ -33,6 +34,7 @@ MODULE common_wrf
   INTEGER,SAVE :: nlon
   INTEGER,SAVE :: nlat
   INTEGER,SAVE :: nlev
+  INTEGER,SAVE :: nlev_soil
   INTEGER,SAVE :: ntime  !Number of times in file.
   !3D VARIABLES
   INTEGER,PARAMETER :: iv3d_u=1
@@ -57,6 +59,13 @@ MODULE common_wrf
   INTEGER,PARAMETER :: iv2d_q2=3
   INTEGER,PARAMETER :: iv2d_u10=4
   INTEGER,PARAMETER :: iv2d_v10=5
+  INTEGER,PARAMETER :: iv2d_ls=6
+  INTEGER,PARAMETER :: iv2d_st=7
+  INTEGER,PARAMETER :: iv2d_sn=8
+  INTEGER,PARAMETER :: iv2d_sh=9
+  INTEGER,PARAMETER :: iv2d_si=10
+  INTEGER,PARAMETER :: iv2d_cw=11
+
   !SPECIAL VARIABLES
   INTEGER,PARAMETER :: iv3d_tv=100
   INTEGER,PARAMETER :: iv2d_mu=200
@@ -64,6 +73,9 @@ MODULE common_wrf
   INTEGER,PARAMETER :: ip2d_hfx=1
   INTEGER,PARAMETER :: ip2d_qfx=2
   INTEGER,PARAMETER :: ip2d_ust=3
+  !3D SOIL PARAMETERS
+  INTEGER,PARAMETER :: is3d_sm=1
+  INTEGER,PARAMETER :: is3d_st=2
 
   REAL(4),SAVE      :: p0 != 1.0e+5
   REAL(4),PARAMETER :: t0 = 300.0
@@ -83,7 +95,7 @@ MODULE common_wrf
   REAL(r_size),ALLOCATABLE,SAVE :: phi0(:,:)
   REAL(r_size),ALLOCATABLE,SAVE :: sinalpha(:,:),cosalpha(:,:)
   REAL(r_size),ALLOCATABLE,SAVE :: landmask(:,:)
-  CHARACTER(20),SAVE :: element(nv3d+nv2d+np2d)
+  CHARACTER(20),SAVE :: element(nv3d+nv2d+np2d+ns3d)
   REAL(r_sngl),ALLOCATABLE,SAVE :: dnw(:)
   REAL(r_sngl),ALLOCATABLE,SAVE :: znu(:)
   REAL(r_size) :: plat1, plon1, pstdlon , ptruelat1 , ptruelat2
@@ -91,13 +103,15 @@ MODULE common_wrf
 
   CHARACTER(19) :: hdate !Date in input files.
 
-  LOGICAL, PARAMETER :: OPTIONAL_VARIABLE(nv3d+nv2d+np2d)= &  !Some input variables are optional (eg. condensates)
+  LOGICAL, PARAMETER :: OPTIONAL_VARIABLE(nv3d+nv2d+np2d+ns3d)= &  !Some input variables are optional (eg. condensates)
   &(/ .false. , .false. , .true. , .false. , .false. , .false. , .true. , .true. , &
   !   U          V         W         T         P         PH      QV        QC        
   & .true. , .true. , .true. , .true. , .true. , .true. , .true. , .false. , .true. , .true. , .true. , .true. ,&
   !   QR       QCI      QS       QG     CO_ANT  CO_BCK    CO_BBU     PS        T2M     Q2M       U10M    V10M
-  & .true. , .true. , .true.  /)
-  !  HFX_F    QFX_F   UST_F 
+  & .true. , .true. , .true. , .true. , .true. , .true. , &
+  ! LANDSEA  TSK SNOW     SNOWH    SEAICE   CANWAT
+  & .true. , .true. , .true.  , .true. , .true. /)
+  !  HFX_F    QFX_F   UST_F     SMOIS    TSLB
 
   LOGICAL :: PRESENT_VARIABLE(nv3d+nv2d+np2d) = .false.  !For checking input variables.
 
@@ -144,9 +158,17 @@ SUBROUTINE set_common_wrf(inputfile)
   element(nv3d+iv2d_q2)   = 'Q2  '
   element(nv3d+iv2d_u10)   = 'U10  '
   element(nv3d+iv2d_v10)   = 'V10  '
+  element(nv3d+iv2d_ls)   = 'LANDMASK' 
+  element(nv3d+iv2d_st)   = 'TSK' 
+  element(nv3d+iv2d_sn)   = 'SNOW'
+  element(nv3d+iv2d_sh)   = 'SNOWH'
+  element(nv3d+iv2d_si)   = 'SEAICE'
+  element(nv3d+iv2d_cw)   = 'CANWAT'
   element(nv3d+nv2d+ip2d_hfx)   = 'HFX_FACTOR'
   element(nv3d+nv2d+ip2d_qfx)   = 'QFX_FACTOR'
   element(nv3d+nv2d+ip2d_ust)   = 'UST_FACTOR'
+  element(nv3d+nv2d+np2d+is3d_sm)   = 'SMOIS'
+  element(nv3d+nv2d+np2d+is3d_st)   = 'TSLB'
   
 
   !
@@ -163,8 +185,17 @@ SUBROUTINE set_common_wrf(inputfile)
   nlat = shape(2) + 1
   nlev = shape(3) + 1
   ntime= shape(4)
+
+  CALL check_io(NF90_INQ_VARID(ncid,'SMOIS',varid))
+  CALL check_io(NF90_INQUIRE_VARIABLE(ncid,varid,dimids=dimids) )
+  DO i=1,4
+    CALL check_io(NF90_INQUIRE_DIMENSION(ncid,dimids(i),len=shape(i)))
+  END DO
+  nlev_soil = shape(3) 
+
+
   WRITE(6,'(A)') '*** grid information ***'
-  WRITE(6,'(3(2X,A,I5))') 'nlon =',nlon,'nlat =',nlat,'nlev =',nlev
+  WRITE(6,'(3(2X,A,I5))') 'nlon =',nlon,'nlat =',nlat,'nlev =',nlev,'nlev_soil=',nlev_soil
   nij0=nlon*nlat
   nlevall=nlev*nv3d+nv2d
   ngpv=nij0*nlevall
@@ -477,6 +508,7 @@ IF ( flag .EQ. '3d' )THEN
        RETURN
   END SELECT
 
+
  IF( readvar )THEN
 
    IF( slev > nzvar )RETURN
@@ -530,11 +562,54 @@ IF ( flag .EQ. '3d' )THEN
  END IF  ! [PRESENT_VARIABLE]
 END IF ! [3DVARIABLE]
 
+
+IF ( flag .EQ. 'so' )THEN
+
+   IF(iv <= ns3d) varname=element(nv3d+nv2d+np2d+iv)
+   SELECT CASE (iv)
+      CASE(is3d_sm)
+       nxvar=nlon-1
+       nyvar=nlat-1
+       nzvar=nlev_soil
+       readvar=present_variable(iv)
+      CASE(is3d_st)
+       nxvar=nlon-1
+       nyvar=nlat-1
+       nzvar=nlev_soil
+       readvar=present_variable(iv)
+      CASE DEFAULT
+       WRITE(6,*)"3D Soil variable non-recognized, retrieve none: ",iv
+       RETURN
+  END SELECT
+
+ IF( readvar )THEN
+
+   IF( slev > nzvar )RETURN
+   IF( elev > nzvar )THEN
+     elev2=nzvar
+   ELSE
+     elev2=elev
+   END IF
+   ALLOCATE(start(4),count(4))
+   start = (/ 1,1,slev,itime /)
+   count = (/ nxvar,nyvar,elev2-slev+1,1 /)
+
+   !READ VARIABLE
+   CALL check_io(NF90_INQ_VARID(ncid,TRIM(varname),varid))
+   CALL check_io(NF90_GET_VAR(ncid,varid,fieldg(1:nxvar,1:nyvar,1:elev2-slev+1),start,count))
+
+   DEALLOCATE(start,count)
+ ELSE
+   fieldg=undefs
+ END IF  ! [PRESENT_VARIABLE]
+END IF ! [3DSOILVARIABLE]
+
+
 IF ( flag .EQ. '2d' )THEN
    IF(iv <= nv2d)varname=element(nv3d+iv)
    ALLOCATE(start(3),count(3))
       SELECT CASE (iv)
-      CASE(iv2d_ps,iv2d_t2,iv2d_q2)
+      CASE(iv2d_ps,iv2d_t2,iv2d_q2,iv2d_ls,iv2d_st,iv2d_sn,iv2d_sh,iv2d_si,iv2d_cw)
        nxvar=nlon-1
        nyvar=nlat-1 
        readvar=present_variable(nv3d+iv)
