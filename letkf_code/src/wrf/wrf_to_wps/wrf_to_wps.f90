@@ -89,8 +89,8 @@ PROGRAM wrf_to_wps
   output_data % stdlon   = pstdlon
   output_data % hdate =  hdate ! WRF INPUT/OUTPUT FORMAT
   output_data % xfcst = 0.0
-  DO k=1,nlev
-  output_data % xlvl(k) = znu(k) !1e5-REAL(k)   !Tengo que ver que hay que poner aca.
+  DO k=1,nlev_ns
+  output_data % xlvl(k) = k !znu(k) !1e5-REAL(k)   !Tengo que ver que hay que poner aca.
   ENDDO
   output_data % version = 5  !WPS
   output_data % map_source = 'WRF MODEL OUTPUT'
@@ -567,7 +567,7 @@ PROGRAM wrf_to_wps
 
 
   !SOILT000
-  output_data % field ='SOILTM000'
+  output_data % field ='SOILT000'
   output_data % units ='K'
   output_data % desc ='none'
   output_data % slab(:,:,1) =  tslb(:,:,1)
@@ -576,7 +576,7 @@ PROGRAM wrf_to_wps
   CALL WRITE_SLAB(grdfid)
 
   !SOILT005
-  output_data % field ='SOILTM005'
+  output_data % field ='SOILT005'
   output_data % units ='K'
   output_data % desc ='none'
   output_data % slab(:,:,1) =  tslb(:,:,1)
