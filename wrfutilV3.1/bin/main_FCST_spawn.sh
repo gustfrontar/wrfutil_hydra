@@ -10,6 +10,7 @@
 #######################################################
 if [ ! -z ${PBS_O_WORKDIR} ]; then cd $PBS_O_WORKDIR;fi
 if [ ! -z ${PJM_O_WORKDIR} ]; then cd $PJM_O_WORKDIR;fi
+
 #############
 # Servicio Meteorologico Nacional
 # Autor: Maximiliano A. Sacco y tantos otros! (Yani, Maru, Cyn, Juan)
@@ -59,18 +60,18 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
 
    if [ $RUN_WPS -eq 1 ] ; then
       echo "Corriendo el WPS"
-      time $BASEDIR/bin/correr_WPS.sh > $LOGDIR/log_wps.log
+      time $BASEDIR/bin/correr_WPS_spawn.sh > $LOGDIR/log_wps.log
    fi
    if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
       echo "Vamos a perturbar los met_em"
-      time $BASEDIR/bin/correr_Pert.sh > $LOGDIR/pert_met_em_${PASO}.log   2>&1
+      time $BASEDIR/bin/correr_Pert_spawn.sh > $LOGDIR/pert_met_em_${PASO}.log   2>&1
    elif [ $BDY_PERT -eq 0 ] ; then
       echo "Linking met_em directory"
       time ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em > $LOGDIR/pert_met_em_${PASO}.log  2>&1
    fi
 
    echo "Running the model"
-   time $BASEDIR/bin/correr_Fcst.sh > $LOGDIR/fcst_${PASO}.log  2>&1
+   time $BASEDIR/bin/correr_Fcst_spawn.sh > $LOGDIR/fcst_${PASO}.log  2>&1
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))
    #Update PASO in the configuration file.

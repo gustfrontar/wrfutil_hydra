@@ -34,10 +34,18 @@ echo "Ending   at " $FECHA_FORECAST_END
 read -r IY IM ID IH Im Is  <<< $(date -u -d "$FECHA_FORECAST_INI UTC" +"%Y %m %d %H %M %S")
 read -r FY FM FD FH Fm Fs  <<< $(date -u -d "$FECHA_FORECAST_END UTC" +"%Y %m %d %H %M %S")
 
+#Obtenemos el numero total de procesadores a usar por cada WRF
+WRFTPROC=$(( $WRFNODE * $WRFPROC )) #Total number of cores to be used by each ensemble member.
+TCORES=$(( $ICORES * INODES ))   #Total number of cores available to run the ensemble.
+MAX_SIM_MEM=$(( $TCORES / $WRFTPROC ))  #Floor rounding (bash default) Maximumu number of simultaneous members
+if [ $MAX_SIM_MEM -gt $MIEMBRO_FIN ] ; then
+   MAX_SIM_MEM=$MIEMBRO_FIN
+fi
+
 
 # Editamos el namelist.
 if [ $MULTIMODEL -eq 0 ] ; then  
-   MULTIMODEL_CONF_INI=0;MULTIMODEL_CONF_FIN=0
+   MULTIMODEL_CONF_INI=$MODEL_CONF;MULTIMODEL_CONF_FIN=$MODEL_CONF
    echo "We will run a single configuration ensemble"
 else 
    echo "We will run a multimodel configuration ensemble with $NCONF configurations"
@@ -45,7 +53,7 @@ else
 fi
 
 for ICONF in $(seq -w $MULTIMODEL_CONF_INI $MULTIMODEL_CONF_FIN) ; do
-   WRFCONF=$(printf '%03d' $((10#$ICONF % 10#$MULTIMODEL_CONF_FIN)))
+   WRFCONF=$(printf '%03d' $((10#$ICONF)))
    cp $NAMELISTDIR/namelist.input.asim.${WRFCONF} $WRFDIR/namelist.input.${WRFCONF}
    sed -i -e "s|__START_YEAR__|$IY|g"                               $WRFDIR/namelist.input.${WRFCONF}
    sed -i -e "s|__START_MONTH__|$IM|g"                              $WRFDIR/namelist.input.${WRFCONF}
@@ -77,6 +85,7 @@ done
 if [ ! -e $WRFDIR/code/real.exe ] ; then
    echo "Descomprimiendo WRF"
    mkdir -p $WRFDIR/code
+   cd $WRFDIR
    tar -xf wrf.tar -C $WRFDIR/code
    #Si existe el namelist.input lo borramos para que no interfiera
    #con los que crea el sistema de asimilacion
@@ -90,6 +99,14 @@ if [ ! -e $WRFDIR/code/da_update_bc.exe ] ; then
    mkdir -p $WRFDIR/code
    tar -xf wrfda.tar -C $WRFDIR/code
 fi
+#Descomprimimos el spawn.tar (si es que no fue descomprimido)
+if [ ! -e $WRFDIR/code/spawn.exe ] ; then
+   echo "Descomprimiendo SPAWN"
+   mkdir -p $WRFDIR/code
+   cd $WRFDIR
+   tar -xf spawn.tar -C $WRFDIR/code
+fi
+
 
 ulimit -s unlimited
 OMP_NUM_THREADS=$REALTHREADS
@@ -100,22 +117,41 @@ for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
    [[ -d $WRFDIR/$MIEM ]] && rm -r $WRFDIR/$MIEM
    cd $WRFDIR/$MIEM
    if [ $MULTIMODEL -eq 0 ] ; then
-      NLCONF=000
+      NLCONF=$(printf '%03d' $((10#$MODEL_CONF)) )
    else
-      NLCONF=$(printf '%03d' $((10#$MIEM % 10#$NCONF)))
+      NLCONF=$(printf '%03d' $(( ( (10#$MIEM-1) % 10#$NCONF) + 1 )))
    fi
    cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
    ln -sf $WRFDIR/code/* .
    ln -sf $HISTDIR/WPS/met_em/$MIEM/met_em* $WRFDIR/$MIEM/
 done
 
-$MPIEXE $WRFDIR/$MIEM/real.exe  ####TODO Aca hay que reemplazar por el spawner. 
+ini_mem=1
+end_mem=$MAX_SIM_MEM
+cd $WRFDIR
+ln -sf $WRFDIR/code/spawn.exe .
 
-do MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
+#Run several instances of real.exe using the spawner.
+while [ $ini_mem -lt $MIEMBRO_FIN ] ; do
+
+   ./spawn.exe real.exe $WRFTPROC $WRFDIR $ini_mem $end_mem 
+
+   #Set ini_mem and end_mem for the next round.
+   ini_mem=$(( $ini_mem + $MAX_SIM_MEM ))
+   end_mem=$(( $end_mem + $MAX_SIM_MEM ))
+   if [ $end_mem -eq $MIEMBRO_FIN ] ; then 
+      end_mem=$MIEMBRO_FIN
+   fi
+
+done
+
+
+for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
    cd $WRFDIR/$MIEM
    mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
-   EXCOD=$?
-   [[ $EXCOD -ne 0 ]] && dispararError 9 "real.exe"
+   if [! $(tail -n1 $WRFDIR/$MIEM/rsl.error.0000 | grep SUCCESS ) ] ; then
+      dispararError 9 "real.exe"
+   fi
 
    if [ $PASO -gt 0 ] ; then
       echo "Corremos el update_bc"
@@ -130,32 +166,27 @@ time wait  #Wait for the different instances of da_update_bc.
 
 export OMP_NUM_THREADS=1
 
-$MPIEXE  $MPIARGS $WRFDIR/$MIEM/wrf.exe  ####TODO Aca hay que reemplazar por el spawner
+#Run several instances of wrf.exe using the spawner.
+while [ $ini_mem -lt $MIEMBRO_FIN ] ; do
 
-do MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
+   ./spawn.exe wrf.exe $WRFTPROC $WRFDIR $ini_mem $end_mem 
+
+   #Set ini_mem and end_mem for the next round.
+   ini_mem=$(( $ini_mem + $MAX_SIM_MEM ))
+   end_mem=$(( $end_mem + $MAX_SIM_MEM ))
+   if [ $end_mem -eq $MIEMBRO_FIN ] ; then
+      end_mem=$MIEMBRO_FIN
+   fi
+
+done
+
+for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
    cd $WRFDIR/$MIEM
+   mv rsl.error.0000 ./wrf_${PASO}_${MIEM}.log
    if [! $(tail -n1 $WRFDIR/$MIEM/rsl.error.0000 | grep SUCCESS ) ] ; then
       dispararError 9 "wrf.exe"
    fi
-   mv rsl.error.0000 ./wrf_${PASO}_${MIEM}.log
 done
-
-
-#cd $WRFDIR
-
-# Parametros de encolamiento
-## Calculo cuantos miembros hay que correr
-#QNODE=$WRFNODE
-#QPROC=$WRFPROC
-#TPROC=$WRFTPROC
-#QTHREAD=$WRFTHREAD
-#QWALLTIME=$WRFWALLTIME
-#QPROC_NAME=GUESS_${PASO}
-
-## Encolar
-#echo "Tiempo en correr el real, update bc y wrf"
-#queue $MIEMBRO_INI $MIEMBRO_FIN 
-#time check_proc $MIEMBRO_INI $MIEMBRO_FIN
 
 #Copiamos los archivos del Guess correspondientes a la hora del analisis.
 if [[ ! -z "$GUARDOGUESS" ]] && [[ $GUARDOGUESS -eq 1 ]] ; then

@@ -1,0 +1,15 @@
+COMMAND=$1  #The script to be submitted to the queue.
+
+source ../conf/machine.conf  #Load information about the requested number of nodes 
+                             #and the requested number of processors per node. 
+
+#Hydra 
+if [ $MACHINE -eq HYDRA ] ; then
+
+   qsub -l nodes=${INODES}:ppn=${ICORES} -q ${QUEUE} ${COMMAND}
+
+fi
+
+
+
+

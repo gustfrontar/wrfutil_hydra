@@ -29,15 +29,22 @@ source $BASEDIR/conf/$EXPMODELCONF
 if [ ! -e $WPSDIR/code/geogrid.exe ] ; then
    echo "Descomprimiendo WPS"
    mkdir -p $WPSDIR/code
-   mv $WPSDIR/wps.tar $WPSDIR/code
-   cd $WPSDIR/code 
-   tar -xf wps.tar
+   cd $WPSDIR
+   tar -xf wps.tar -C $WPSDIR/code
    #Si existe el namelist.wps lo borramos para que no interfiera
    #con los que crea el sistema de asimilacion
    if [ -e namelist.wps ] ; then
       rm -f namelist.wps 
    fi
 fi
+#Descomprimimos el spawn.tar (si es que no fue descomprimido)
+if [ ! -e $WRFDIR/code/spawn.exe ] ; then
+   echo "Descomprimiendo SPAWN"
+   mkdir -p $WPSDIR/code
+   cd $WPSDIR
+   tar -xf spawn.tar -C $WPSDIR/code
+fi
+
 
 #Editamos el namelist.wps [Esto es para un experimento asi que asumimos que ya esta toda la info de los bordes disponibles en formato grib disponible]
 mkdir -p $WPSDIR
@@ -136,27 +143,32 @@ for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
    #[[ $? -ne 0 ]] && dispararError 9 "ungrib.exe"
 done
 time wait  #Wait for multiple instances of ungrib to finish.
-#TODO Does it make sense to include ungrib in the spawner?
+#TODO Does it make sense to include ungrib in the spawner? Spawner may require a MPI call.
 
-#Corro el Metgrid en paralelo
-$MPIEXE ./metgrid.exe   #TODO include metgrid in the spawner.
-EC=$?
-[[ $EC -ne 0 ]] && dispararError 9 "metgrid.exe"
+#Run several instances of metgrid.exe using the spawner.
+while [ $ini_mem -lt $MIEMBRO_FIN ] ; do
+
+   ./spawn.exe metgrid.exe $WPSTPROC $WPSDIR $ini_mem $end_mem 
+
+   #Set ini_mem and end_mem for the next round.
+   ini_mem=$(( $ini_mem + $MAX_SIM_MEM ))
+   end_mem=$(( $end_mem + $MAX_SIM_MEM ))
+   if [ $end_mem -eq $MIEMBRO_FIN ] ; then
+      end_mem=$MIEMBRO_FIN
+   fi
+
+done
+
+#Check if metgrid was successfull
+for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
+   if [ ! $(tail -n1 $WRFDIR/$MIEM/metgrid.log | grep SUCCESS ) ] ; then
+      dispararError 9 "metgrid.exe"
+   fi
+done
 
 
-## Parametros de encolamiento
-## Calculo cuantos miembros hay que correr
-#QNODE=$WPSNODE
-#QPROC=$WPSPROC
-#QTHREAD=$WPSTHREAD
-#QWALLTIME=$WPSWALLTIME
-#QPROC_NAME=WPS_${PASO}
 
-# Encolar
-#queue $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN
-#check_proc $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN
-
-FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_BDY )    #Get the closest prior date in which BDY data is available.
+FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_BDY )     #Get the closest prior date in which BDY data is available.
 FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY UTC" +"%Y%m%d%H%M%S" ) #Cambio al formato WPS
 #Copiamos los archivos del directorio 
 for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
@@ -166,4 +178,3 @@ for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
 done
 
 echo "Termine de correr el WPS"
-

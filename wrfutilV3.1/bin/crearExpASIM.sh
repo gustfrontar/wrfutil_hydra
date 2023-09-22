@@ -50,8 +50,6 @@ cd $TMPDIR
 mkdir $EXPDIR/conf 
 cp $WRFUTILDIR/conf/${NOMBRE}/*  $EXPDIR/conf/ 
 
-sed -i -e "s|__NOMBRE__|$NOMBRE|g" $EXPDIR/conf/experimento.limp
-
 
 ###  Creando Entorno 
 ln -s $BDYPATH $BDYDIR
@@ -59,10 +57,12 @@ mkdir -p $LOGDIR
 mkdir -p $WPSDIR
 mkdir -p $PROCSDIR
 cp    $WPSPATH $WPSDIR/wps.tar
+cp    $SPAWNPATH $WPSDIR/spawn.tar
 cp    $WRFUTILDIR/vtables/* $WPSDIR/
 mkdir -p $WRFDIR
 cp    $WRFPATH $WRFDIR/wrf.tar
 cp    $WRFDAPATH $WRFDIR/wrfda.tar
+cp    $SPAWNPATH $WRFDIR/spawn.tar
 mkdir -p $LETKFDIR
 mkdir -p $OBSDIR
 cp    $LETKFPATH $LETKFDIR/letkf.tar

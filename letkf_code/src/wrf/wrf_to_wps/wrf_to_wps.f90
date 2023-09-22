@@ -511,9 +511,9 @@ PROGRAM wrf_to_wps
   !los niveles nativos del WRF. Ensayo una interpolacion muy rudimentaria.
   !quiza esto se pueda mejorar.
    
-  !SOILM000
-  output_data % field ='SOILM000'
-  output_data % units ='kg m-3'
+  !SM000010
+  output_data % field ='SM000010'
+  output_data % units ='m3 m-3'
   output_data % desc ='none'
   output_data % slab(:,:,1) =  smois(:,:,1)
   output_data % nlev =  1
@@ -521,53 +521,34 @@ PROGRAM wrf_to_wps
   CALL WRITE_SLAB(grdfid)
 
   !SOILM005
-  output_data % field ='SOILM005'
-  output_data % units ='kg m-3'
+  output_data % field ='SM010040'
+  output_data % units ='m3 m-3'
   output_data % desc ='none'
-  output_data % slab(:,:,1) =  smois(:,:,1)
+  output_data % slab(:,:,1) =  smois(:,:,2)
   output_data % nlev =  1
   output_data % xlvl(1) = 200100
   CALL WRITE_SLAB(grdfid)
 
   !SOILM020
-  output_data % field ='SOILM020'
-  output_data % units ='kg m-3'
+  output_data % field ='SM040100'
+  output_data % units ='m3 m-3'
   output_data % desc ='none'
-  output_data % slab(:,:,1) = smois(:,:,2) 
+  output_data % slab(:,:,1) = smois(:,:,3) 
   output_data % nlev =  1
   output_data % xlvl(1) = 200100
   CALL WRITE_SLAB(grdfid)
 
   !SOILM040
-  output_data % field ='SOILM040'
+  output_data % field ='SM100200'
   output_data % units ='kg m-3'
   output_data % desc ='none'
-  output_data % slab(:,:,1) = 0.5 * ( smois(:,:,2) + smois(:,:,3) )
+  output_data % slab(:,:,1) = smois(:,:,4) 
   output_data % nlev =  1
   output_data % xlvl(1) = 200100
   CALL WRITE_SLAB(grdfid)
 
-  !SOILM160
-  output_data % field ='SOILM160'
-  output_data % units ='kg m-3'
-  output_data % desc ='none'
-  output_data % slab(:,:,1) = smois(:,:,4)
-  output_data % nlev =  1
-  output_data % xlvl(1) = 200100
-  CALL WRITE_SLAB(grdfid)
-
-  !SOILM300
-  output_data % field ='SOILM300'
-  output_data % units ='kg m-3'
-  output_data % desc ='none'
-  output_data % slab(:,:,1) = smois(:,:,4)
-  output_data % nlev =  1
-  output_data % xlvl(1) = 200100
-  CALL WRITE_SLAB(grdfid)
-
-
-  !SOILT000
-  output_data % field ='SOILT000'
+  !ST000010
+  output_data % field ='ST000010'
   output_data % units ='K'
   output_data % desc ='none'
   output_data % slab(:,:,1) =  tslb(:,:,1)
@@ -575,44 +556,26 @@ PROGRAM wrf_to_wps
   output_data % xlvl(1) = 200100
   CALL WRITE_SLAB(grdfid)
 
-  !SOILT005
-  output_data % field ='SOILT005'
+  !ST010040
+  output_data % field ='ST010040'
   output_data % units ='K'
   output_data % desc ='none'
-  output_data % slab(:,:,1) =  tslb(:,:,1)
+  output_data % slab(:,:,1) =  tslb(:,:,2)
   output_data % nlev =  1
   output_data % xlvl(1) = 200100
   CALL WRITE_SLAB(grdfid)
 
-  !SOILT020
-  output_data % field ='SOILT020'
+  !ST040100
+  output_data % field ='ST040100'
   output_data % units ='K'
   output_data % desc ='none'
-  output_data % slab(:,:,1) = tslb(:,:,2) 
+  output_data % slab(:,:,1) = tslb(:,:,3) 
   output_data % nlev =  1
   output_data % xlvl(1) = 200100
   CALL WRITE_SLAB(grdfid)
 
-  !SOILT040
-  output_data % field ='SOILT040'
-  output_data % units ='K'
-  output_data % desc ='none'
-  output_data % slab(:,:,1) = 0.5 * ( tslb(:,:,2) + tslb(:,:,3) )
-  output_data % nlev =  1
-  output_data % xlvl(1) = 200100
-  CALL WRITE_SLAB(grdfid)
-
-  !SOILT160
-  output_data % field ='SOILT160'
-  output_data % units ='K'
-  output_data % desc ='none'
-  output_data % slab(:,:,1) = tslb(:,:,4)
-  output_data % nlev =  1
-  output_data % xlvl(1) = 200100
-  CALL WRITE_SLAB(grdfid)
-
-  !SOILT300
-  output_data % field ='SOILT300'
+  !ST100200
+  output_data % field ='ST100200'
   output_data % units ='K'
   output_data % desc ='none'
   output_data % slab(:,:,1) = tslb(:,:,4)

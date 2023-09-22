@@ -56,9 +56,11 @@ mkdir -p $LOGDIR
 mkdir -p $WPSDIR
 mkdir -p $PROCSDIR
 cp    $WPSPATH $WPSDIR/wps.tar
+cp    $SPAWNPATH $WPSDIR/spawn.tar
 cp    $WRFUTILDIR/vtables/* $WPSDIR/
 mkdir -p $WRFDIR
 cp    $WRFPATH $WRFDIR/wrf.tar
+cp    $SPAWNPATH $WRFDIR/spawn.tar
 cp -r $WRFUTILDIR/bin $EXPDIR
 cp -r $WRFUTILDIR/lib $EXPDIR
 mkdir -p $NAMELISTDIR
