@@ -11,27 +11,24 @@
 # Fecha: 01/2018
 # Readaptado a hydra
 # Fecha: 07/2023
-#############
+
+#Get the working directory
 if [ ! -z ${PBS_O_WORKDIR} ]; then cd $PBS_O_WORKDIR;fi
 if [ ! -z ${PJM_O_WORKDIR} ]; then cd $PJM_O_WORKDIR;fi
-### PARAMETROS
-BASEDIR=$(pwd)/../
-#BASEDIR="/home/jruiz/salidas/data_assimilation_exps/TEST2/"
-source $BASEDIR/lib/errores.env
-CONFIG=$BASEDIR/conf/config.env
-[ ! -e "$CONFIG" ] && dispararError 4 "Error: No encontre config.env"
-source $CONFIG
 
-### CONFIGURACION
-[ ! -f "$BASEDIR/conf/$EXPMACH" ] && dispararError 4 "$BASEDIR/conf/$EXPMACH"
-source $BASEDIR/conf/$EXPMACH   #Cargo las variables de la cola.
-[ ! -f "$BASEDIR/conf/$EXPCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPCONF"
-source $BASEDIR/conf/$EXPCONF   #Cargo la configuracion del experimento.
+#Load experiment configuration
+BASEDIR=$(pwd)/../
+source $BASEDIR/lib/errores.env
+source $BASEDIR/conf/config.env
+source $BASEDIR/conf/forecast.conf
+source $BASEDIR/conf/assimilation.conf
+source $BASEDIR/conf/machine.conf 
+#Set some environmental parameters
+eval "$ENVSET"
 
 ####################################
 #Calculamos la cantidad de pasos
 ####################################
-
 PASOS_RESTANTES=$((($(date -d "$FECHA_FIN" +%s) - $(date -d "$FECHA_INI" +%s))/$ANALISIS_FREC ))
 PASOS_RESTANTES=$((10#$PASOS_RESTANTES-10#$PASO))
 
@@ -51,7 +48,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
       echo " Step | TimeStamp" > $LOGDIR/cycles.log
       if [ $RUN_WPS -eq 1 ] ; then 
          echo "Corriendo el WPS"
-         time $BASEDIR/bin/correr_WPS_spawn.sh > $LOGDIR/log_wps.log
+         #time $BASEDIR/bin/correr_WPS_spawn.sh > $LOGDIR/log_wps.log
       fi
       if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
 	 echo "Vamos a perturbar los met_em"
@@ -65,14 +62,14 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
          #TODO $BASEDIR/bin/correr_OBS.sh  #Armar el script que genera las observaciones para el letkf.
       fi 
    fi
-
+   
    #####  all assimilation cycles
    echo "Running cycle: $PASO"
    echo "$(printf "%02d" $PASO)  | $(date +'%s')" >>  $LOGDIR/cycles.log
-
    echo "Vamos a ejecutar el real, el da_upbdate_bc y el wrf"
    time $BASEDIR/bin/correr_Guess_spawn.sh > $LOGDIR/guess_${PASO}.log  2>&1
    echo "Vamos a ejecutar el LETKF"
+   exit
    time $BASEDIR/bin/correr_LETKF.sh > $LOGDIR/letkf_${PASO}.log  2>&1
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))

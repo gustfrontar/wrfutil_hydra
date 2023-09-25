@@ -10,6 +10,7 @@
 #######################################################
 if [ ! -z ${PBS_O_WORKDIR} ]; then cd $PBS_O_WORKDIR;fi
 if [ ! -z ${PJM_O_WORKDIR} ]; then cd $PJM_O_WORKDIR;fi
+
 #############
 # Servicio Meteorologico Nacional
 # Autor: Maximiliano A. Sacco y tantos otros! (Yani, Maru, Cyn, Juan)
@@ -18,18 +19,15 @@ if [ ! -z ${PJM_O_WORKDIR} ]; then cd $PJM_O_WORKDIR;fi
 # Fecha: 07/2023
 #############
 
-### PARAMETROS
+#Load experiment configuration
 BASEDIR=$(pwd)/../
 source $BASEDIR/lib/errores.env
-CONFIG=$BASEDIR/conf/config.env
-[ ! -e "$CONFIG" ] && dispararError 4 "Error: No encontre config.env"
-source $CONFIG
+source $BASEDIR/conf/config.env
+source $BASEDIR/conf/forecast.conf
+source $BASEDIR/conf/assimilation.conf
+source $BASEDIR/conf/machine.conf
 
-### CONFIGURACION
-[ ! -f "$BASEDIR/conf/$EXPMACH" ] && dispararError 4 "$BASEDIR/conf/$EXPMACH"
-source $BASEDIR/conf/$EXPMACH   #Cargo las variables de la cola.
-[ ! -f "$BASEDIR/conf/$EXPCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPCONF"
-source $BASEDIR/conf/$EXPCONF   #Cargo la configuracion del experimento.
+
 
 ####################################
 #Calculamos la cantidad de pasos

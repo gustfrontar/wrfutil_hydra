@@ -46,24 +46,25 @@ nchilds=endmem-inimem+1
 
 DO i=1,nchilds
 
-    WRITE(*,*) "MEMBER", i
+    WRITE(*,*) "JOB", i
     call MPI_Info_create(info,ierr)
-    WRITE(ensmember,'(I5.5)')i+inimem-1
-    tmpdir=TRIM(ibasepath)//'/WRF'//ensmember
+    WRITE(ensmember,'(I2.2)')i+inimem-1
+    tmpdir=TRIM(ibasepath)//'/'//ensmember
+    WRITE(*,*)tmpdir
     call MPI_Info_set(info,"wdir",tmpdir,ierr)
-
-    WRITE(*,*) errcode
     Call MPI_Comm_spawn(icommand,MPI_ARGV_NULL,nprocs,info,0,MPI_COMM_WORLD, &
     &      intercomm, errcode, ierr)
     WRITE(*,*) "IERR", ierr
     if (ierr /= 0) then
        WRITE(*,*) "MPI_Comm_spawn failure",i
-       STOP
+       STOP 1
     endif
 
 ENDDO
 
 call MPI_COMM_FREE(intercomm,ierr)
 Call MPI_Finalize(ierr)
+
+STOP 0
 
 End Program spawn

@@ -6,17 +6,14 @@
 # Fecha: 03/2019
 #############
 
-### CONFIGURACION
-source $BASEDIR/conf/config.env  #BASEDIR tiene que estar seteado como variable de entorno.
-
-[ ! -f $BASEDIR/lib/errores.env ] && exit 1
+#Load experiment configuration
+BASEDIR=$(pwd)/../
 source $BASEDIR/lib/errores.env
-[ ! -f "$BASEDIR/conf/$EXPMACH" ] && dispararError 4 "$BASEDIR/conf/$EXPMACH"
-source $BASEDIR/conf/$EXPMACH
-[ ! -f "$BASEDIR/conf/$EXPCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPCONF"
-source $BASEDIR/conf/$EXPCONF
-[ ! -f "$BASEDIR/conf/$EXPMODELCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPMODELCONF"
-source $BASEDIR/conf/$EXPMODELCONF
+source $BASEDIR/conf/config.env
+source $BASEDIR/conf/forecast.conf
+source $BASEDIR/conf/assimilation.conf
+source $BASEDIR/conf/machine.conf
+source $BASEDIR/conf/model.conf
 
 ##### FIN INICIALIZACION ######
 

@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #############
 # Servicio Meteorologico Nacional
 # Autores: Maximiliano A. Sacco; Yanina Garcia Skabar; Maria Eugenia Dillon; Cynthia Mariana Matsudo
@@ -7,16 +6,14 @@
 #############
 
 ### CONFIGURACION
-source $BASEDIR/conf/config.env  #BASEDIR tiene que estar seteado como variable de entorno.
-
-[ ! -f $BASEDIR/lib/errores.env ] && exit 1
+#Load experiment configuration
 source $BASEDIR/lib/errores.env
-[ ! -f "$BASEDIR/conf/$EXPMACH" ] && dispararError 4 "$BASEDIR/conf/$EXPMACH"
-source $BASEDIR/conf/$EXPMACH
-[ ! -f "$BASEDIR/conf/$EXPCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPCONF"
-source $BASEDIR/conf/$EXPCONF
-[ ! -f "$BASEDIR/conf/$EXPMODELCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPMODELCONF"
-source $BASEDIR/conf/$EXPMODELCONF
+source $BASEDIR/conf/config.env
+source $BASEDIR/conf/forecast.conf
+source $BASEDIR/conf/assimilation.conf
+source $BASEDIR/conf/machine.conf
+source $BASEDIR/conf/model.conf
+
 ##### FIN INICIALIZACION ######
 
 cd $WRFDIR
@@ -36,7 +33,7 @@ read -r FY FM FD FH Fm Fs  <<< $(date -u -d "$FECHA_FORECAST_END UTC" +"%Y %m %d
 
 #Obtenemos el numero total de procesadores a usar por cada WRF
 WRFTPROC=$(( $WRFNODE * $WRFPROC )) #Total number of cores to be used by each ensemble member.
-TCORES=$(( $ICORES * INODES ))   #Total number of cores available to run the ensemble.
+TCORES=$(( $ICORE * INODE ))   #Total number of cores available to run the ensemble.
 MAX_SIM_MEM=$(( $TCORES / $WRFTPROC ))  #Floor rounding (bash default) Maximumu number of simultaneous members
 if [ $MAX_SIM_MEM -gt $MIEMBRO_FIN ] ; then
    MAX_SIM_MEM=$MIEMBRO_FIN
@@ -112,9 +109,22 @@ ulimit -s unlimited
 OMP_NUM_THREADS=$REALTHREADS
 OMP_STACKSIZE=512M
 
+#Get the date corresponding to the met_em folder.
+if [ $WPS_CYCLE -eq 1 ] ; then
+   #Met_em source is updated periodicaly (as in a long DA cycling experiment)
+   INI_STEP_DATE=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
+   INI_BDY_DATE=$(date_floor "$INI_STEP_DATE" $INTERVALO_INI_BDY )
+   INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
+else
+   #Met_em source is fixed (e.g. a single GFS or WRF forecast). Usually for a short DA cycling experiment. 
+   INI_BDY_DATE=$(date_floor "$FECHA_INI" $INTERVALO_INI_BDY )
+   INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
+fi
+
 for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
    cd $WRFDIR
    [[ -d $WRFDIR/$MIEM ]] && rm -r $WRFDIR/$MIEM
+   mkdir $WRFDIR/$MIEM
    cd $WRFDIR/$MIEM
    if [ $MULTIMODEL -eq 0 ] ; then
       NLCONF=$(printf '%03d' $((10#$MODEL_CONF)) )
@@ -123,38 +133,47 @@ for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
    fi
    cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
    ln -sf $WRFDIR/code/* .
-   ln -sf $HISTDIR/WPS/met_em/$MIEM/met_em* $WRFDIR/$MIEM/
+   ln -sf $HISTDIR/WPS/met_em/$FECHA_INI_BDY/$MIEM/met_em* $WRFDIR/$MIEM/
 done
 
-ini_mem=1
-end_mem=$MAX_SIM_MEM
+
+#Run REAL.EXE
 cd $WRFDIR
-ln -sf $WRFDIR/code/spawn.exe .
-
+ini_mem=$(( $MIEMBRO_INI ))
+end_mem=$(( $MIEMBRO_INI + $MAX_SIM_MEM - 1 ))
+exe_group=1
 #Run several instances of real.exe using the spawner.
-while [ $ini_mem -lt $MIEMBRO_FIN ] ; do
-
-   ./spawn.exe real.exe $WRFTPROC $WRFDIR $ini_mem $end_mem 
-
+while [ $ini_mem -le $MIEMBRO_FIN ] ; do
+   echo "Executing group number " $exe_group "Ini member = "$ini_mem " End member = "$end_mem
+   ./spawn.exe ./real.exe $WRFTPROC $WRFDIR $ini_mem $end_mem
    #Set ini_mem and end_mem for the next round.
    ini_mem=$(( $ini_mem + $MAX_SIM_MEM ))
    end_mem=$(( $end_mem + $MAX_SIM_MEM ))
-   if [ $end_mem -eq $MIEMBRO_FIN ] ; then 
+   if [ $end_mem -gt $MIEMBRO_FIN ] ; then
       end_mem=$MIEMBRO_FIN
    fi
-
+   exe_group=$(( $exe_group + 1 )) #This is just to count the number of cycles performed. 
 done
 
-
+#Check if real was successfull
 for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-   cd $WRFDIR/$MIEM
-   mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
-   if [! $(tail -n1 $WRFDIR/$MIEM/rsl.error.0000 | grep SUCCESS ) ] ; then
+   if [ -f $WRFDIR/$MIEM/rsl.error.0000 ] ; then
+      mv $WRFDIR/$MIEM/rsl.error.0000 $WRFDIR/$MIEM/real.log
+   fi
+   grep SUCCESSFUL $WRFDIR/$MIEM/real.log
+   if [ $? -ne 0 ] ; then
+      echo "$MIEM"
       dispararError 9 "real.exe"
    fi
+done
 
+#RUN DA_UPDATE_BC.EXE
+#TODO: DA_UPDATE_BC is a serial program, but we can include a dummy call to MPI_INITIALIZE / FINALIZE to launche it with the spawn.exe utility.
+#En los scripts de la K computer habia un dummy.f90 que solo llamaba a MPI_INIT y MPI_FINALIZE quiza se pueda armar un script que ejecute primero el dummy.f90 y luego el programa serial desado. 
+echo "Running da_update_bc"
+for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
+   cd $WRFDIR/$MIEM
    if [ $PASO -gt 0 ] ; then
-      echo "Corremos el update_bc"
       cp $NAMELISTDIR/parame* .
       mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
       cp $HISTDIR/ANAL/$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*$PASO)) seconds" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
@@ -165,28 +184,36 @@ done
 time wait  #Wait for the different instances of da_update_bc.
 
 export OMP_NUM_THREADS=1
-
+#Run WRF.EXE
+cd $WRFDIR
+ini_mem=$(( $MIEMBRO_INI ))
+end_mem=$(( $MIEMBRO_INI + $MAX_SIM_MEM - 1 ))
+exe_group=1
 #Run several instances of wrf.exe using the spawner.
-while [ $ini_mem -lt $MIEMBRO_FIN ] ; do
-
-   ./spawn.exe wrf.exe $WRFTPROC $WRFDIR $ini_mem $end_mem 
-
+while [ $ini_mem -le $MIEMBRO_FIN ] ; do
+   echo "Executing group number " $exe_group "Ini member = "$ini_mem " End member = "$end_mem
+   ./spawn.exe ./wrf.exe $WRFTPROC $WRFDIR $ini_mem $end_mem
    #Set ini_mem and end_mem for the next round.
    ini_mem=$(( $ini_mem + $MAX_SIM_MEM ))
    end_mem=$(( $end_mem + $MAX_SIM_MEM ))
-   if [ $end_mem -eq $MIEMBRO_FIN ] ; then
+   if [ $end_mem -gt $MIEMBRO_FIN ] ; then
       end_mem=$MIEMBRO_FIN
    fi
-
+   exe_group=$(( $exe_group + 1 )) #This is just to count the number of cycles performed. 
 done
 
+#Check if real was successfull
 for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-   cd $WRFDIR/$MIEM
-   mv rsl.error.0000 ./wrf_${PASO}_${MIEM}.log
-   if [! $(tail -n1 $WRFDIR/$MIEM/rsl.error.0000 | grep SUCCESS ) ] ; then
+   if [ -f $WRFDIR/$MIEM/rsl.error.0000 ] ; then
+      mv $WRFDIR/$MIEM/rsl.error.0000 $WRFDIR/$MIEM/wrf.log
+   fi
+   grep SUCCESSFUL $WRFDIR/$MIEM/wrf.log
+   if [ $? -ne 0 ] ; then
+      echo "$MIEM"
       dispararError 9 "wrf.exe"
    fi
 done
+
 
 #Copiamos los archivos del Guess correspondientes a la hora del analisis.
 if [[ ! -z "$GUARDOGUESS" ]] && [[ $GUARDOGUESS -eq 1 ]] ; then

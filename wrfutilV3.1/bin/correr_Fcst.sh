@@ -106,7 +106,7 @@ ln -sf $WRFDIR/code/* .
 if [ $WPS_CYCLE -eq 1 ] ; then
    FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
    FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )
-   FECHA_INI_BDY=$(date -u -d "$FECHA_INI_PASO" +"%Y%m%d%H%M%S")
+   FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY" +"%Y%m%d%H%M%S")
 else
    FECHA_INI_BDY=$(date_floor "$FECHA_INI" $INTERVALO_INI_BDY )
    FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY" +"%Y%m%d%H%M%S")

@@ -7,16 +7,13 @@
 #############
 
 ### CONFIGURACION
-source $BASEDIR/conf/config.env  #BASEDIR tiene que estar seteado como variable de entorno.
-
-[ ! -f $BASEDIR/lib/errores.env ] && exit 1
+#Load experiment configuration
 source $BASEDIR/lib/errores.env
-[ ! -f "$BASEDIR/conf/$EXPMACH" ] && dispararError 4 "$BASEDIR/conf/$EXPMACH"
-source $BASEDIR/conf/$EXPMACH
-[ ! -f "$BASEDIR/conf/$EXPCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPCONF"
-source $BASEDIR/conf/$EXPCONF
-[ ! -f "$BASEDIR/conf/$EXPMODELCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPMODELCONF"
-source $BASEDIR/conf/$EXPMODELCONF
+source $BASEDIR/conf/config.env
+source $BASEDIR/conf/forecast.conf
+source $BASEDIR/conf/assimilation.conf
+source $BASEDIR/conf/machine.conf
+source $BASEDIR/conf/model.conf
 
 ##### FIN INICIALIZACION ######
 
@@ -49,6 +46,14 @@ fi
 #Editamos el namelist.wps [Esto es para un experimento asi que asumimos que ya esta toda la info de los bordes disponibles en formato grib disponible]
 mkdir -p $WPSDIR
 cp $NAMELISTDIR/namelist.wps $WPSDIR/
+
+#Obtenemos el numero total de procesadores a usar por cada WRF
+WPSTPROC=$(( $WPSNODE * $WPSPROC )) #Total number of cores to be used by each ensemble member.
+TCORES=$(( $ICORE * $INODE ))   #Total number of cores available to run the ensemble.
+MAX_SIM_MEM=$(( $TCORES / $WPSTPROC ))  #Floor rounding (bash default) Maximumu number of simultaneous members
+if [ $MAX_SIM_MEM -gt $MIEMBRO_FIN ] ; then
+   MAX_SIM_MEM=$MIEMBRO_FIN
+fi
 
 #Buscamos la fecha inmediatamente inferior al inicio del experimento en en base a la frecuencia de los archivos del ensamble de condiciones de borde.  
 
@@ -134,47 +139,53 @@ for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
    ln -sf $WPSDIR/$BDYVTABLE ./Vtable
    echo "Generando met_em a partir de BDYs en: $WPSDIR/$MIEM"
    #Linkeo los gribs
-   cd $WPSDIR/$MIEM
-   ./link_grib.csh $BDYBASE/$BDYSEARCHSTRING  
+   ./link_grib.csh $BDYBASE/$BDYSEARCHSTRING 
    [[ $? -ne 0 ]] && dispararError 9 "link_grib.csh "
 
    #Corro el Ungrib 
    ./ungrib.exe > ungrib.log  &
-   #[[ $? -ne 0 ]] && dispararError 9 "ungrib.exe"
 done
 time wait  #Wait for multiple instances of ungrib to finish.
-#TODO Does it make sense to include ungrib in the spawner? Spawner may require a MPI call.
+#TODO Does it make sense to include ungrib in the spawner? Spawner may require a MPI call. We can add a dummy MPI call in ungrib.
 
+#Run METGRID
+ini_mem=$(( $BDY_MIEMBRO_INI ))
+end_mem=$(( $BDY_MIEMBRO_INI + $MAX_SIM_MEM - 1 ))
+exe_group=1
 #Run several instances of metgrid.exe using the spawner.
-while [ $ini_mem -lt $MIEMBRO_FIN ] ; do
-
-   ./spawn.exe metgrid.exe $WPSTPROC $WPSDIR $ini_mem $end_mem 
-
+while [ $ini_mem -le $BDY_MIEMBRO_FIN ] ; do
+   echo "Executing group number " $exe_group "Ini member = "$ini_mem " End member = "$end_mem
+   ./spawn.exe ./metgrid.exe $WPSTPROC $WPSDIR $ini_mem $end_mem 
    #Set ini_mem and end_mem for the next round.
    ini_mem=$(( $ini_mem + $MAX_SIM_MEM ))
    end_mem=$(( $end_mem + $MAX_SIM_MEM ))
-   if [ $end_mem -eq $MIEMBRO_FIN ] ; then
-      end_mem=$MIEMBRO_FIN
+   if [ $end_mem -gt $BDY_MIEMBRO_FIN ] ; then
+      end_mem=$BDY_MIEMBRO_FIN
    fi
-
+   exe_group=$(( $exe_group + 1 )) #This is just to count the number of cycles performed. 
 done
 
 #Check if metgrid was successfull
-for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-   if [ ! $(tail -n1 $WRFDIR/$MIEM/metgrid.log | grep SUCCESS ) ] ; then
+for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
+   if [ -f $WPSDIR/$MIEM/metgrid.log.0000 ] ; then
+      mv $WPSDIR/$MIEM/metgrid.log.0000 $WPSDIR/$MIEM/metgrid.log
+   fi
+   grep Successful $WPSDIR/$MIEM/metgrid.log
+   if [ $? -ne 0 ] ; then 
+      echo "$MIEM"
       dispararError 9 "metgrid.exe"
    fi
 done
 
 
-
+#Copy data to its final destination
 FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_BDY )     #Get the closest prior date in which BDY data is available.
 FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY UTC" +"%Y%m%d%H%M%S" ) #Cambio al formato WPS
-#Copiamos los archivos del directorio 
+mkdir $HISTDIR/WPS/met_em_ori/${FECHA_INI_BDY}
 for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
    OUTPUTPATH="$HISTDIR/WPS/met_em_ori/${FECHA_INI_BDY}/$MIEM/"
    mkdir -p $OUTPUTPATH
    mv $WPSDIR/$MIEM/met_em* $OUTPUTPATH
 done
 
-echo "Termine de correr el WPS"
+echo "Successfully finish WPS"

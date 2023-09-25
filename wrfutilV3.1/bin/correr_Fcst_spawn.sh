@@ -7,16 +7,15 @@
 #############
 
 ### CONFIGURACION
-source $BASEDIR/conf/config.env  #BASEDIR tiene que estar seteado como variable de entorno.
-
-[ ! -f $BASEDIR/lib/errores.env ] && exit 1
+#Load experiment configuration
+BASEDIR=$(pwd)/../
 source $BASEDIR/lib/errores.env
-[ ! -f "$BASEDIR/conf/$EXPMACH" ] && dispararError 4 "$BASEDIR/conf/$EXPMACH"
-source $BASEDIR/conf/$EXPMACH
-[ ! -f "$BASEDIR/conf/$EXPCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPCONF"
-source $BASEDIR/conf/$EXPCONF
-[ ! -f "$BASEDIR/conf/$EXPMODELCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPMODELCONF"
-source $BASEDIR/conf/$EXPMODELCONF
+source $BASEDIR/conf/config.env
+source $BASEDIR/conf/forecast.conf
+source $BASEDIR/conf/assimilation.conf
+source $BASEDIR/conf/machine.conf
+source $BASEDIR/conf/model.conf
+
 ##### FIN INICIALIZACION ######
 
 cd $WRFDIR
@@ -35,7 +34,7 @@ read -r FY FM FD FH Fm Fs  <<< $(date -u -d "$FECHA_FORECAST_END UTC" +"%Y %m %d
 
 #Obtenemos el numero total de procesadores a usar por cada WRF
 WRFTPROC=$(( $WRFNODE * $WRFPROC )) #Total number of cores to be used by each ensemble member.
-TCORES=$(( $ICORES * INODES ))   #Total number of cores available to run the ensemble.
+TCORES=$(( $ICORE * INODE ))   #Total number of cores available to run the ensemble.
 MAX_SIM_MEM=$(( $TCORES / $WRFTPROC ))  #Floor rounding (bash default) Maximumu number of simultaneous members
 if [ $MAX_SIM_MEM -gt $MIEMBRO_FIN ] ; then
    MAX_SIM_MEM=$MIEMBRO_FIN
@@ -132,12 +131,12 @@ for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
    ln -sf $HISTDIR/WPS/met_em/${FECHA_INI_BDY}/$MIEM/met_em* $WRFDIR/$MIEM/
 done 
 
-ini_mem=1
-end_mem=$MAX_SIM_MEM
 cd $WRFDIR
 ln -sf $WRFDIR/code/spawn.exe .
 
 #Run several instances of real.exe using the spawner.
+ini_mem=$MIEMBRO_INI
+end_mem=$(( $MIEMBRO_INI + $MAX_SIM_MEM - 1 ))
 while [ $ini_mem -lt $MIEMBRO_FIN ] ; do
 
    ./spawn.exe real.exe $WRFTPROC $WRFDIR $ini_mem $end_mem 
@@ -162,6 +161,8 @@ echo "Corriendo WRF"
 export OMP_NUM_THREADS=1
 
 #Run several instances of wrf.exe using the spawner.
+ini_mem=$MIEMBRO_INI
+end_mem=$(( $MIEMBRO_INI + $MAX_SIM_MEM - 1 ))
 while [ $ini_mem -lt $MIEMBRO_FIN ] ; do
 
    ./spawn.exe wrf.exe $WRFTPROC $WRFDIR $ini_mem $end_mem 

@@ -4,9 +4,9 @@ source ../conf/machine.conf  #Load information about the requested number of nod
                              #and the requested number of processors per node. 
 
 #Hydra 
-if [ $MACHINE -eq HYDRA ] ; then
+if [ "$MACHINE" = "HYDRA" ] ; then
 
-   qsub -l nodes=${INODES}:ppn=${ICORES} -q ${QUEUE} ${COMMAND}
+   qsub -l nodes=${INODE}:ppn=${ICORE} -q ${QUEUE} ${COMMAND}
 
 fi
 
