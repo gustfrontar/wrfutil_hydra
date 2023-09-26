@@ -10,7 +10,7 @@ include 'mpif.h'
 
 Integer,allocatable ::  errcode(:)
 Character(len=100)  ::  arg
-Character(len=100)  ::  icommand
+Character(len=100)  ::  command
 Character(len=100)  ::  ibasepath
 Character(len=100)  ::  tmpdir
 Character(len=5)    ::  ensmember
@@ -22,20 +22,15 @@ Integer      :: intercomm
 !---------------------------------------------------------------------
 
 CALL GETARG ( 1, arg )
-WRITE(*,*)arg
-icommand=arg
+command=arg               !MPI program to be executed.
 CALL GETARG ( 2, arg )
-WRITE(*,*)arg
-READ(arg,*)nprocs
+READ(arg,*)nprocs         !Number of procs assigned to each program.
 CALL GETARG ( 3, arg )
-WRITE(*,*)arg
-ibasepath=arg
+ibasepath=arg             !Basepath where the program is.
 CALL GETARG ( 4, arg )
-WRITE(*,*)arg
-READ(arg,*)inimem
+READ(arg,*)inimem         !Initial ensemble member for this job range
 CALL GETARG ( 5, arg )
-WRITE(*,*)arg
-READ(arg,*)endmem
+READ(arg,*)endmem         !Final ensemble member for this job range
 
 Call MPI_Init(ierr)
 
@@ -52,7 +47,7 @@ DO i=1,nchilds
     tmpdir=TRIM(ibasepath)//'/'//ensmember
     WRITE(*,*)tmpdir
     call MPI_Info_set(info,"wdir",tmpdir,ierr)
-    Call MPI_Comm_spawn(icommand,MPI_ARGV_NULL,nprocs,info,0,MPI_COMM_WORLD, &
+    Call MPI_Comm_spawn(command,MPI_ARGV_NULL,nprocs,info,0,MPI_COMM_WORLD, &
     &      intercomm, errcode, ierr)
     WRITE(*,*) "IERR", ierr
     if (ierr /= 0) then
