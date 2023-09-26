@@ -120,15 +120,15 @@ for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
    cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
    ln -sf $WRFDIR/code/* . 
    if [ $WPS_CYCLE -eq 1 ] ; then
-      FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
-      FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )
-      FECHA_INI_BDY=$(date -u -d "$FECHA_INI_PASO" +"%Y%m%d%H%M%S")
+      INI_STEP_DATE=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
+      INI_BDY_DATE=$(date_floor "$INI_STEP_DATE" $INTERVALO_INI_BDY )
+      INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
    else
-      FECHA_INI_BDY=$(date_floor "$FECHA_INI" $INTERVALO_INI_BDY )
-      FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY" +"%Y%m%d%H%M%S")
+      INI_BDY_DATE=$(date_floor "$FECHA_INI" $INTERVALO_INI_BDY )
+      INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
    fi
 
-   ln -sf $HISTDIR/WPS/met_em/${FECHA_INI_BDY}/$MIEM/met_em* $WRFDIR/$MIEM/
+   ln -sf $HISTDIR/WPS/met_em/${INI_BDY_DATE}/$MIEM/met_em* $WRFDIR/$MIEM/
 done 
 
 cd $WRFDIR

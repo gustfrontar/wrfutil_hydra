@@ -10,11 +10,12 @@
 #Load experiment configuration
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
-source $BASEDIR/conf/forecast.conf
 source $BASEDIR/conf/assimilation.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
-
+source $BASEDIR/lib/spawn_utils.sh
+#Set some environmental parameters
+eval "$ENVSET"
 ##### FIN INICIALIZACION ######
 
 ####
@@ -46,14 +47,6 @@ fi
 #Editamos el namelist.wps [Esto es para un experimento asi que asumimos que ya esta toda la info de los bordes disponibles en formato grib disponible]
 mkdir -p $WPSDIR
 cp $NAMELISTDIR/namelist.wps $WPSDIR/
-
-#Obtenemos el numero total de procesadores a usar por cada WRF
-WPSTPROC=$(( $WPSNODE * $WPSPROC )) #Total number of cores to be used by each ensemble member.
-TCORES=$(( $ICORE * $INODE ))   #Total number of cores available to run the ensemble.
-MAX_SIM_MEM=$(( $TCORES / $WPSTPROC ))  #Floor rounding (bash default) Maximumu number of simultaneous members
-if [ $MAX_SIM_MEM -gt $MIEMBRO_FIN ] ; then
-   MAX_SIM_MEM=$MIEMBRO_FIN
-fi
 
 #Buscamos la fecha inmediatamente inferior al inicio del experimento en en base a la frecuencia de los archivos del ensamble de condiciones de borde.  
 
@@ -142,40 +135,15 @@ for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
    ./link_grib.csh $BDYBASE/$BDYSEARCHSTRING 
    [[ $? -ne 0 ]] && dispararError 9 "link_grib.csh "
 
-   #Corro el Ungrib 
-   ./ungrib.exe > ungrib.log  &
-done
-time wait  #Wait for multiple instances of ungrib to finish.
-#TODO Does it make sense to include ungrib in the spawner? Spawner may require a MPI call. We can add a dummy MPI call in ungrib.
-
-#Run METGRID
-ini_mem=$(( $BDY_MIEMBRO_INI ))
-end_mem=$(( $BDY_MIEMBRO_INI + $MAX_SIM_MEM - 1 ))
-exe_group=1
-#Run several instances of metgrid.exe using the spawner.
-while [ $ini_mem -le $BDY_MIEMBRO_FIN ] ; do
-   echo "Executing group number " $exe_group "Ini member = "$ini_mem " End member = "$end_mem
-   ./spawn.exe ./metgrid.exe $WPSTPROC $WPSDIR $ini_mem $end_mem 
-   #Set ini_mem and end_mem for the next round.
-   ini_mem=$(( $ini_mem + $MAX_SIM_MEM ))
-   end_mem=$(( $end_mem + $MAX_SIM_MEM ))
-   if [ $end_mem -gt $BDY_MIEMBRO_FIN ] ; then
-      end_mem=$BDY_MIEMBRO_FIN
-   fi
-   exe_group=$(( $exe_group + 1 )) #This is just to count the number of cycles performed. 
 done
 
-#Check if metgrid was successfull
-for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
-   if [ -f $WPSDIR/$MIEM/metgrid.log.0000 ] ; then
-      mv $WPSDIR/$MIEM/metgrid.log.0000 $WPSDIR/$MIEM/metgrid.log
-   fi
-   grep Successful $WPSDIR/$MIEM/metgrid.log
-   if [ $? -ne 0 ] ; then 
-      echo "$MIEM"
-      dispararError 9 "metgrid.exe"
-   fi
-done
+#Run Ungrib using the spawn for serial programs
+IS_SERIAL=1
+spawn ./ungrib.exe $WPSDIR $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN $WPSNODE $WPSPROC $IS_SERIAL
+
+#Run Metgrid using the spawn for parallel programs
+IS_SERIAL=0
+spawn ./metgrid.exe $WPSDIR $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN $WPSNODE $WPSPROC $IS_SERIAL
 
 
 #Copy data to its final destination

@@ -17,9 +17,9 @@ source $BASEDIR/conf/model.conf
 ##### FIN INICIALIZACION ######
 
 
-LETKFDIRRUN=$LETKFDIR/00/   #We need to add 00 in order to be consistent with the paralelization lib.
-rm -fr $LETKFDIRRUN
-mkdir -p $LETKFDIRRUN
+LETKFDIRRUN=$LETKFDIR/run/
+#rm -fr $LETKFDIR
+#mkdir -p $LETKFDIR
 
 
 #Descomprimimos el archivo .tar (si es que no fue descomprimido)
@@ -34,7 +34,7 @@ if [ ! -e $LETKFDIR/code/letkf.exe ] ; then
    fi
 fi
 
-ln -sf $LETKFDIR/code/* $LETKFDIRRUN
+ln -sf $LETKFDIR/code/* $LETKFDIRUN
 
 echo "Editing namelist"
 cp $NAMELISTDIR/letkf.namelist $LETKFDIRRUN/letkf.namelist
@@ -95,37 +95,17 @@ cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$FECHA_ANALISIS ${LETKFDIRRUN}/analemean
 #        fi
 #done
 
-#script de ejecucion
-read -r -d '' QSCRIPTCMD << "EOF"
+#Ejecutamos el LETKF
 ulimit -s unlimited
 ulimit -l unlimited
-res='OK'
-cd $LETKFDIR/00/
+cd $LETKFDIRRUN
 OMP_NUM_THREADS=$LETKFTHREADS
 OMP_STACKSIZE=512M
-time $MPIEXE  ./letkf.exe
-LETKF_ERROR=$?
-if [[ $LETKF_ERROR != 0 ]] ; then
-   res='ERROR'
+TCORES=$(( $LETKFNODE * $LETKFPROC ))
+mpiexec -np $TCORES  ./letkf.exe
+if [ $? != 0 ] ; then
+   dispararError 9 letkf.exe
 fi
-EOF
-
-# Parametros de encolamiento
-QPROC_NAME=LETKF_$PASO
-QNODE=$LETKFNODE
-QPROC=$LETKFPROC
-QTHREAD=$LETKFTHREAD
-QWALLTIME=$LETKFWALLTIME
-QWORKDIR=$LETKFDIR
-
-echo "Sending letkf script to the queue"
-cd $LETKFDIR
-# Encolar
-if [ $PASO -gt $SPIN_UP_LENGTH ] ; then
-  queue 00 00
-  check_proc 00 00
-fi
-
 
 ##
 # Guaramos los analisis

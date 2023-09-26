@@ -1,7 +1,8 @@
 COMMAND=$1  #The script to be submitted to the queue.
 
-source ../conf/machine.conf  #Load information about the requested number of nodes 
-                             #and the requested number of processors per node. 
+BASEDIR=$(pwd)/../
+source $BASEDIR/conf/machine.conf  #Load information about the requested number of nodes 
+                              #and the requested number of processors per node. 
 
 #Hydra 
 if [ "$MACHINE" = "HYDRA" ] ; then

@@ -10,7 +10,6 @@
 BASEDIR=$(pwd)/../
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
-source $BASEDIR/conf/forecast.conf
 source $BASEDIR/conf/assimilation.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf

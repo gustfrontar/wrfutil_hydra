@@ -9,11 +9,12 @@
 #Load experiment configuration
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
-source $BASEDIR/conf/forecast.conf
 source $BASEDIR/conf/assimilation.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
-
+source $BASEDIR/lib/spawn_utils.sh
+#Set some environmental parameters
+eval "$ENVSET"
 ##### FIN INICIALIZACION ######
 
 cd $WRFDIR
@@ -30,15 +31,6 @@ echo "Ending   at " $FECHA_FORECAST_END
 #Desglozamos las fechas
 read -r IY IM ID IH Im Is  <<< $(date -u -d "$FECHA_FORECAST_INI UTC" +"%Y %m %d %H %M %S")
 read -r FY FM FD FH Fm Fs  <<< $(date -u -d "$FECHA_FORECAST_END UTC" +"%Y %m %d %H %M %S")
-
-#Obtenemos el numero total de procesadores a usar por cada WRF
-WRFTPROC=$(( $WRFNODE * $WRFPROC )) #Total number of cores to be used by each ensemble member.
-TCORES=$(( $ICORE * INODE ))   #Total number of cores available to run the ensemble.
-MAX_SIM_MEM=$(( $TCORES / $WRFTPROC ))  #Floor rounding (bash default) Maximumu number of simultaneous members
-if [ $MAX_SIM_MEM -gt $MIEMBRO_FIN ] ; then
-   MAX_SIM_MEM=$MIEMBRO_FIN
-fi
-
 
 # Editamos el namelist.
 if [ $MULTIMODEL -eq 0 ] ; then  
@@ -133,96 +125,48 @@ for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
    fi
    cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
    ln -sf $WRFDIR/code/* .
-   ln -sf $HISTDIR/WPS/met_em/$FECHA_INI_BDY/$MIEM/met_em* $WRFDIR/$MIEM/
+   ln -sf $HISTDIR/WPS/met_em/$INI_BDY_DATE/$MIEM/met_em* $WRFDIR/$MIEM/
 done
 
+#Run real.exe using the spawn for parallel programs
+IS_SERIAL=0
+cd $WRFDIR/code/
+echo "Running real.exe"
+spawn ./real.exe $WRFDIR $MIEMBRO_INI $MIEMBRO_FIN $WRFNODE $WRFPROC $IS_SERIAL
 
-#Run REAL.EXE
-cd $WRFDIR
-ini_mem=$(( $MIEMBRO_INI ))
-end_mem=$(( $MIEMBRO_INI + $MAX_SIM_MEM - 1 ))
-exe_group=1
-#Run several instances of real.exe using the spawner.
-while [ $ini_mem -le $MIEMBRO_FIN ] ; do
-   echo "Executing group number " $exe_group "Ini member = "$ini_mem " End member = "$end_mem
-   ./spawn.exe ./real.exe $WRFTPROC $WRFDIR $ini_mem $end_mem
-   #Set ini_mem and end_mem for the next round.
-   ini_mem=$(( $ini_mem + $MAX_SIM_MEM ))
-   end_mem=$(( $end_mem + $MAX_SIM_MEM ))
-   if [ $end_mem -gt $MIEMBRO_FIN ] ; then
-      end_mem=$MIEMBRO_FIN
-   fi
-   exe_group=$(( $exe_group + 1 )) #This is just to count the number of cycles performed. 
-done
-
-#Check if real was successfull
-for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-   if [ -f $WRFDIR/$MIEM/rsl.error.0000 ] ; then
-      mv $WRFDIR/$MIEM/rsl.error.0000 $WRFDIR/$MIEM/real.log
-   fi
-   grep SUCCESSFUL $WRFDIR/$MIEM/real.log
-   if [ $? -ne 0 ] ; then
-      echo "$MIEM"
-      dispararError 9 "real.exe"
-   fi
-done
 
 #RUN DA_UPDATE_BC.EXE
-#TODO: DA_UPDATE_BC is a serial program, but we can include a dummy call to MPI_INITIALIZE / FINALIZE to launche it with the spawn.exe utility.
-#En los scripts de la K computer habia un dummy.f90 que solo llamaba a MPI_INIT y MPI_FINALIZE quiza se pueda armar un script que ejecute primero el dummy.f90 y luego el programa serial desado. 
-echo "Running da_update_bc"
-for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-   cd $WRFDIR/$MIEM
-   if [ $PASO -gt 0 ] ; then
+if [ $PASO -gt 0 ] ; then
+   echo "Running da_update_bc"
+   for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
+      cd $WRFDIR/$MIEM
       cp $NAMELISTDIR/parame* .
       mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
       cp $HISTDIR/ANAL/$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*$PASO)) seconds" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
       ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
-      time $WRFDIR/$MIEM/da_update_bc.exe > ./da_update_bc_${PASO}_${MIEM}.log  &
-   fi
-done
-time wait  #Wait for the different instances of da_update_bc.
+      #time $WRFDIR/$MIEM/da_update_bc.exe > ./da_update_bc_${PASO}_${MIEM}.log  &
+   done
+   #Run da_update_bc.exe using the spawn for serial programs
+   cd $WRFDIR/code/
+   IS_SERIAL=1
+   spawn ./da_update_bc.exe $WRFDIR $MIEMBRO_INI $MIEMBRO_FIN $WRFNODE $WRFPROC $IS_SERIAL
+fi
 
 export OMP_NUM_THREADS=1
-#Run WRF.EXE
-cd $WRFDIR
-ini_mem=$(( $MIEMBRO_INI ))
-end_mem=$(( $MIEMBRO_INI + $MAX_SIM_MEM - 1 ))
-exe_group=1
-#Run several instances of wrf.exe using the spawner.
-while [ $ini_mem -le $MIEMBRO_FIN ] ; do
-   echo "Executing group number " $exe_group "Ini member = "$ini_mem " End member = "$end_mem
-   ./spawn.exe ./wrf.exe $WRFTPROC $WRFDIR $ini_mem $end_mem
-   #Set ini_mem and end_mem for the next round.
-   ini_mem=$(( $ini_mem + $MAX_SIM_MEM ))
-   end_mem=$(( $end_mem + $MAX_SIM_MEM ))
-   if [ $end_mem -gt $MIEMBRO_FIN ] ; then
-      end_mem=$MIEMBRO_FIN
-   fi
-   exe_group=$(( $exe_group + 1 )) #This is just to count the number of cycles performed. 
-done
+#Run wrf.exe using the spawn for parallel programs
+cd $WRFDIR/code
+IS_SERIAL=0
+echo "Running wrf.exe" 
+spawn ./wrf.exe $WRFDIR $MIEMBRO_INI $MIEMBRO_FIN $WRFNODE $WRFPROC $IS_SERIAL
 
-#Check if real was successfull
-for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-   if [ -f $WRFDIR/$MIEM/rsl.error.0000 ] ; then
-      mv $WRFDIR/$MIEM/rsl.error.0000 $WRFDIR/$MIEM/wrf.log
-   fi
-   grep SUCCESSFUL $WRFDIR/$MIEM/wrf.log
-   if [ $? -ne 0 ] ; then
-      echo "$MIEM"
-      dispararError 9 "wrf.exe"
-   fi
-done
-
-
-#Copiamos los archivos del Guess correspondientes a la hora del analisis.
+#Copy wrfout files corresponding to the analysis time to the history folder.
 if [[ ! -z "$GUARDOGUESS" ]] && [[ $GUARDOGUESS -eq 1 ]] ; then
    for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
        OUTPUTPATH="$HISTDIR/GUES/$(date -u -d "$FECHA_ANALISIS UTC" +"%Y%m%d%H%M%S")/"
        mkdir -p $OUTPUTPATH
        echo "Copying file $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )"
        cp $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/gues$(printf %05d $((10#$MIEM)))
-       mv $WRFDIR/$MIEM/*.log                                                         $OUTPUTPATH
+       mv $WRFDIR/$MIEM/rsl.error.0000                                                $OUTPUTPATH/wrf.log
        mv $WRFDIR/$MIEM/namelist*                                                     $OUTPUTPATH
    done
 fi
