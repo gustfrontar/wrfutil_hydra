@@ -6,7 +6,7 @@ import os
 import wget
 
 RemoteServer = "https://noaa-gefs-pds.s3.amazonaws.com"
-LocalDataDir = '/home/jruiz/salidas/GFSDATA/'
+LocalDataDir = '/home/ra000007/a04037/data/GFSDATA/'
 DataType = 'ENS'  #ENS o DET
 
 Members = ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20']
