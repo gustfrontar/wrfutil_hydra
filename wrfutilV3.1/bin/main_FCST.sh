@@ -8,8 +8,10 @@
 # En el primer caso la funcion de encolar debe ser SSH
 # en el segundo caso PBH_block
 #######################################################
-if [ ! -z ${PBS_O_WORKDIR} ]; then cd $PBS_O_WORKDIR;fi
-if [ ! -z ${PJM_O_WORKDIR} ]; then cd $PJM_O_WORKDIR;fi
+if [ ! -z ${PBS_O_WORKDIR}    ]; then cd ${PBS_O_WORKDIR}   ;fi
+if [ ! -z ${PJM_O_WORKDIR}    ]; then cd ${PJM_O_WORKDIR}   ;fi
+if [ ! -z ${SLURM_SUBMIT_DIR} ]; then cd ${SLURM_SUBMIT_DIR};fi
+
 
 #############
 # Servicio Meteorologico Nacional

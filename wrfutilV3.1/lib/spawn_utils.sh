@@ -1,4 +1,6 @@
 spawn () {
+        export I_MPI_SPAWN=on
+
         if [ $# -lt 3 ]; then
                 echo "Usage : spawn_serial" 
                 echo "spawn_serial serial_program base_dir ini_member end_member node core is_serial"
@@ -47,12 +49,14 @@ spawn () {
             echo "Executing group number " $exe_group "Ini member = "$ini_mem " End member = "$end_mem
             tot_group_cores=$(( $PTCORE * ( $end_mem - $ini_mem + 1 ) ))
             if [ $IS_SERIAL -eq 1 ] ; then
-               mpiexec -np $tot_group_cores ./spawn_serial.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem
+	       echo $MPIEXEC -np $tot_group_cores ./spawn_serial.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem
+               $MPIEXEC -np $tot_group_cores ./spawn_serial.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem
                if [ $? -ne 0 ] ; then
                   dispararError 9 $COMMAND
                fi
             else 
-               mpiexec -np $tot_group_cores ./spawn.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem
+	       echo $MPIEXEC -np $tot_group_cores ./spawn_serial.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem
+               $MPIEXEC -np $tot_group_cores ./spawn.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem
                if [ $? -ne 0 ] ; then
                   dispararError 9 $COMMAND
                fi

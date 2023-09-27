@@ -102,7 +102,7 @@ cd $LETKFDIRRUN
 OMP_NUM_THREADS=$LETKFTHREADS
 OMP_STACKSIZE=512M
 TCORES=$(( $LETKFNODE * $LETKFPROC ))
-mpiexec -np $TCORES  ./letkf.exe
+$MPIEXEC -np $TCORES  ./letkf.exe
 if [ $? != 0 ] ; then
    dispararError 9 letkf.exe
 fi

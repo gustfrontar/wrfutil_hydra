@@ -4,12 +4,21 @@ BASEDIR=$(pwd)/../
 source $BASEDIR/conf/machine.conf  #Load information about the requested number of nodes 
                               #and the requested number of processors per node. 
 
-#Hydra 
-if [ "$MACHINE" = "HYDRA" ] ; then
+#PBS and PBSpro
+if [ "$QUEUESYS" = "PBS" ] ; then
 
    qsub -l nodes=${INODE}:ppn=${ICORE} -q ${QUEUE} ${COMMAND}
 
 fi
+
+#SLURM
+if [ "$QUEUESYS" = "SLURM" ] ; then
+
+   sbatch -N $INODE -n $ICORE -p mem1 ${COMMAND}
+
+fi
+
+
 
 
 

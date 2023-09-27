@@ -12,8 +12,10 @@
 # Readaptado a hydra
 # Fecha: 07/2023
 #############
-if [ ! -z ${PBS_O_WORKDIR} ]; then cd $PBS_O_WORKDIR;fi
-if [ ! -z ${PJM_O_WORKDIR} ]; then cd $PJM_O_WORKDIR;fi
+if [ ! -z ${PBS_O_WORKDIR}    ]; then cd ${PBS_O_WORKDIR}   ;fi
+if [ ! -z ${PJM_O_WORKDIR}    ]; then cd ${PJM_O_WORKDIR}   ;fi
+if [ ! -z ${SLURM_SUBMIT_DIR} ]; then cd ${SLURM_SUBMIT_DIR};fi
+
 
 #Load experiment configuration
 BASEDIR=$(pwd)/../

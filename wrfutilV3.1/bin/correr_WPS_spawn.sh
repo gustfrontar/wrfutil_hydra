@@ -113,13 +113,15 @@ OMP_NUM_THREADS=1
 for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
 
    echo "Procesando Miembro $MIEM"
-   cd $WPSDIR
-   rm -r $WPSDIR/$MIEM
+   if [ -e $WPSDIR/$MIEM ] ; then
+      rm -r $WPSDIR/$MIEM
+   fi 
    mkdir -p $WPSDIR/$MIEM
    ln -sf $WPSDIR/code/* $WPSDIR/$MIEM
    cp $WPSDIR/namelist.wps $WPSDIR/$MIEM/
-   cd $WPSDIR/$MIEM
-   ln -sf $WPSDIR/geogrid/geo_em* .
+   ln -sf $WPSDIR/geogrid/geo_em* $WPSDIR/$MIEM
+   ln -sf $WPSDIR/$BDYVTABLE $WPSDIR/$MIEM/Vtable
+
    if [ $WPS_CYCLE -eq 1 ] ; then
       FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($WPS_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
    else 
@@ -128,10 +130,8 @@ for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
    FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )
    BDYBASE=$BDYDIR/gefs.$(date -d "$FECHA_INI_BDY" +"%Y%m%d")/$(date -d "$FECHA_INI_BDY" +"%H")/$BDYPREFIX/$MIEM/
    echo "Estoy buscando los archivos del BDY en la carpeta $BDYBASE"
-   ## Si el miembro es 00 entonces es deterministico, sino Ensamble
-   ln -sf $WPSDIR/$BDYVTABLE ./Vtable
-   echo "Generando met_em a partir de BDYs en: $WPSDIR/$MIEM"
    #Linkeo los gribs
+   cd $WPSDIR/$MIEM
    ./link_grib.csh $BDYBASE/$BDYSEARCHSTRING 
    [[ $? -ne 0 ]] && dispararError 9 "link_grib.csh "
 
@@ -149,7 +149,6 @@ spawn ./metgrid.exe $WPSDIR $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN $WPSNODE $WPSPROC 
 #Copy data to its final destination
 FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_BDY )     #Get the closest prior date in which BDY data is available.
 FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY UTC" +"%Y%m%d%H%M%S" ) #Cambio al formato WPS
-mkdir $HISTDIR/WPS/met_em_ori/${FECHA_INI_BDY}
 for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
    OUTPUTPATH="$HISTDIR/WPS/met_em_ori/${FECHA_INI_BDY}/$MIEM/"
    mkdir -p $OUTPUTPATH
