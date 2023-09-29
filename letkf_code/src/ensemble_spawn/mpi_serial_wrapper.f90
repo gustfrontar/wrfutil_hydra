@@ -18,11 +18,8 @@ Program  mpi_serial_wrapper
   
   !Get the serial command to be executed
   CALL GETARG ( 1, command )    !Command to be executed.
-  CALL GETARG ( 2, workdir1 )   !Working directory to run the command (part1)
+  CALL GETARG ( 2, workdir )   !Working directory to run the command (part1)
   CALL GETARG ( 3, workdir2 )   !Working directory to run the command (part2)
-  !Join the work directory all together.
-  workdir = TRIM(workdir1)//TRIM(workdir2) 
-
   Call MPI_Init(ierr)
 
   Call MPI_COMM_SIZE(MPI_COMM_WORLD,nranks,ierr)
@@ -36,7 +33,6 @@ Program  mpi_serial_wrapper
      Call system( command )
   Endif
   Call MPI_Finalize(ierr)
-  STOP 0 
 
 End Program mpi_serial_wrapper
 

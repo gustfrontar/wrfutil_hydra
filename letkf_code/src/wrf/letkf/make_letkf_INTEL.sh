@@ -102,6 +102,6 @@ rm common_namelist.f90
 
 #rm *.o
 
-tar -cvf ../../../letkf.tar ./*.exe ./letkf.namelist
+tar -cvf ../../../letkf_INTEL.tar ./*.exe ./letkf.namelist
 
 echo "NORMAL END"

@@ -33,7 +33,7 @@ PASOS_RESTANTES=$((($(date -d "$FECHA_FIN" +%s) - $(date -d "$FECHA_INI" +%s))/$
 PASOS_RESTANTES=$((10#$PASOS_RESTANTES-10#$PASO))
 
 echo "El experimento abarca desde $FECHA_INI hasta $FECHA_FIN"
-echo "Se hicieron $PASO pasos de asimilacion y resta hacer $PASOS_RESTANTES"
+#echo "Se hicieron $PASO pasos de asimilacion y resta hacer $PASOS_RESTANTES"
 
 rm -f $PROCSDIR/*_ENDOK
 

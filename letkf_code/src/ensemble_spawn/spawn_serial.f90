@@ -10,9 +10,11 @@ include 'mpif.h'
 
 Integer,allocatable ::  errcode(:)
 Character(len=100)  ::  arg
-Character(len=50) , dimension(3) :: args_to_wrapper !The size of this string is limited to 50 
+!Character(len=10) , dimension(3) :: args_to_wrapper !The size of this string is limited to 50 
                                                     !setting it to higher values results in 
                                                     !segmentation fault (with ifort)
+character(len=20)   :: args_to_wrapper(1) = [character(len=20) :: ""]
+character(len=100)  ::  command
 Character(len=100)  ::  ibasepath
 Character(len=100)  ::  tmpdir
 Character(len=5)    ::  ensmember
@@ -25,7 +27,7 @@ Integer      :: intercomm
 !---------------------------------------------------------------------
 
 CALL GETARG ( 1, arg )
-args_to_wrapper(1)=arg            !The serial command to be executed.
+command=TRIM(arg)    !The serial command to be executed.
 CALL GETARG ( 2, arg )
 READ(arg,*)nprocs         !The number of procs to be allocated (serial command will use only one of those)
 CALL GETARG ( 3, arg )
@@ -40,27 +42,29 @@ Call MPI_COMM_SIZE(MPI_COMM_WORLD,nranks,ierr)
 Call MPI_COMM_RANK(MPI_COMM_WORLD,myrank,ierr)
 
 allocate(errcode(nprocs))
-errcode=0
 
 nchilds=endmem-inimem+1
-
-If ( myrank == 0 ) then
-   WRITE(*,*)'c ',args_to_wrapper(1),inimem,endmem,nchilds
-endif
 
 DO i=1,nchilds
     if ( myrank == 0 ) then
        WRITE(*,*) "JOB", i
-    endif 
-    call MPI_Info_create(info,ierr)
-    WRITE(ensmember,'(I2.2)')i+inimem-1
-    tmpdir=TRIM(ibasepath)//'/'//TRIM(ensmember)//'/'
+       call MPI_Info_create(info,ierr)
+       WRITE(ensmember,'(I2.2)')i+inimem-1
+       tmpdir=TRIM(ibasepath)//'/'//TRIM(ensmember)//'/'
 
-    call MPI_Info_set(info,"wdir",tmpdir,ierr)
-    args_to_wrapper(2)=tmpdir(1:50)  !I split tmpdir into two due to the limited size of command 
-    args_to_wrapper(3)=tmpdir(51:100)
-    Call MPI_Comm_spawn('./mpi_serial_wrapper.exe',args_to_wrapper,nprocs,info,0,MPI_COMM_WORLD, &
+       call MPI_Info_set(info,"wdir",tmpdir,ierr)
+       !args_to_wrapper(2)=TRIM(tmpdir) 
+       args_to_wrapper(1) = TRIM(command) 
+       !args_to_wrapper(2) = TRIM(tmpdir)
+       !args_to_wrapper=[ TRIM(command) , TRIM(tmpdir) , '' ]
+    endif   
+    !WRITE(*,*)intercomm
+   
+    Call MPI_Comm_spawn('./mpi_serial_wrapper.exe',command,nprocs,info,0,MPI_COMM_WORLD, &
     &      intercomm, errcode, ierr)
+ 
+    !Call MPI_Comm_spawn('./mpi_serial_wrapper.exe',MPI_ARGV_NULL,nprocs,info,0,MPI_COMM_WORLD, &
+    !&      intercomm, errcode, ierr)
 
 !    Call MPI_Comm_spawn('./mpi_serial_wrapper.exe',command,nprocs,info,0,MPI_COMM_WORLD, &
 !    &      intercomm, errcode, ierr)

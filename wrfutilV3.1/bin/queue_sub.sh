@@ -13,10 +13,22 @@ fi
 
 #SLURM
 if [ "$QUEUESYS" = "SLURM" ] ; then
-
-   sbatch -N $INODE -n $ICORE -p mem1 ${COMMAND}
+   #NOTA: I could not make this run in batch mode in Fugaku PPS. 
+   #It only runs in interactive mode (with srun) but it hangs at
+   #the mpirun call in the non interactive mode. 
+   #Is this something related to the use of MPI_SPAWN?
+   #To do this less interactive this script can be called with nohup. 
+   srun --export=ALL -c $ICORE --mem 30G -e error.log -p mem1 ${COMMAND}
+   #sbatch -N 1 --cpus-per-task 4 -t 00:10:00 -p mem1  ${COMMAND}
 
 fi
+
+#PJM  FUGAKU / FX100 / FX10 
+if [ "$QUEUESYS" = "PJM" ] ; then
+
+   pjsub --interact -L vnode=$INODE vnode-core=$ICORE --no-stging  ${COMMAND}
+
+fi 
 
 
 

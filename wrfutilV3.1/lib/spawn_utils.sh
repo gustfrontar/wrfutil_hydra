@@ -1,9 +1,12 @@
 spawn () {
-        export I_MPI_SPAWN=on
+	export I_MPI_SPAWN=1
+	export FI_MLX_NS_ENABLE=1
+	ulimit -s unlimited
+	ulimit -l unlimited
 
         if [ $# -lt 3 ]; then
-                echo "Usage : spawn_serial" 
-                echo "spawn_serial serial_program base_dir ini_member end_member node core is_serial"
+                echo "Usage : spawn" 
+                echo "spawn_serial serial_program base_dir ini_member end_member node core"
                 exit 1
         fi
         COMMAND=$1      #The command to be executed
@@ -12,7 +15,6 @@ spawn () {
         END_MEMBER=$4   #The last ensemble member in the ensemble.
         PNODE=$5        #Number of nodes allocated to each task.
         PCORE=$6        #Number of cores allocated to each task.
-        IS_SERIAL=$7    # 1- means serial application , 0 - mean mpi application
 
         echo "This is spawn_serial function"
         echo "COMMAND=$COMMAND"
@@ -21,7 +23,6 @@ spawn () {
         echo "END_MEMBER=$END_MEMBER"
         echo "PNODE=$PNODE"
         echo "PCORE=$PCORE"
-        echo "IS_SERIAL=$IS_SERIAL"
 
         #Get the total number of cores to be used for each instance of the process
         #Note that serial processes will be executed in one core only, the rest of them will be idle.
@@ -30,6 +31,9 @@ spawn () {
         PTCORE=$(( $PNODE * $PCORE )) #Total number of cores to be used by each ensemble member.
         TCORES=$(( $INODE * $ICORE ))   #Total number of cores available to run the ensemble. (from machine.conf)
         MAX_SIM_MEM=$(( $TCORES / $PTCORE ))  #Floor rounding (bash default) Maximumu number of simultaneous members
+	if [ $MAX_SIM_MEM -eq 0 ] ; then 
+	   MAX_SIM_MEM=1
+	fi
         echo "INODE=$INODE"
         echo "ICORE=$ICORE"
         echo "MAX_SIM_MEM=$MAX_SIM_MEM"
@@ -47,19 +51,13 @@ spawn () {
         #running at the same time in the first node and to better distribute them among the available nodes
         while [ $ini_mem -le $END_MEMBER ] ; do
             echo "Executing group number " $exe_group "Ini member = "$ini_mem " End member = "$end_mem
-            tot_group_cores=$(( $PTCORE * ( $end_mem - $ini_mem + 1 ) ))
-            if [ $IS_SERIAL -eq 1 ] ; then
-	       echo $MPIEXEC -np $tot_group_cores ./spawn_serial.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem
-               $MPIEXEC -np $tot_group_cores ./spawn_serial.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem
-               if [ $? -ne 0 ] ; then
-                  dispararError 9 $COMMAND
-               fi
-            else 
-	       echo $MPIEXEC -np $tot_group_cores ./spawn_serial.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem
-               $MPIEXEC -np $tot_group_cores ./spawn.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem
-               if [ $? -ne 0 ] ; then
-                  dispararError 9 $COMMAND
-               fi
+            #tot_group_cores=$(( $PTCORE * ( $end_mem - $ini_mem + 1 ) ))
+            echo $MPIEXEC -np 1 ./spawn.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem
+            $MPIEXEC -np 1 ./spawn.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem
+	    #echo $MPIEXEC -np $tot_group_cores ./spawn.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem
+            #$MPIEXEC -np $tot_group_cores ./spawn.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem
+            if [ $? -ne 0 ] ; then
+               dispararError 9 $COMMAND
             fi
             #Set ini_mem and end_mem for the next round.
             ini_mem=$(( $ini_mem + $MAX_SIM_MEM ))
