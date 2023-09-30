@@ -33,7 +33,7 @@ MODULE common_mpi_wrf
 
 CONTAINS
 SUBROUTINE set_common_mpi_wrf
-  REAL(r_size),ALLOCATABLE :: ri(:,:),rj(:,:)
+  REAL(r_size),ALLOCATABLE :: ri(:,:,:),rj(:,:,:)
   INTEGER :: i,j,n,ierr
 
   WRITE(6,'(A)') 'Hello from set_common_mpi_wrf'
@@ -74,12 +74,12 @@ SUBROUTINE set_common_mpi_wrf
   ALLOCATE(rj1(nij1))
 
   IF(myrank .eq. 0)THEN
-  ALLOCATE(ri(nlon,nlat))
-  ALLOCATE(rj(nlon,nlat))
+  ALLOCATE(ri(nlon,nlat,1))
+  ALLOCATE(rj(nlon,nlat,1))
   DO j=1,nlat
     DO i=1,nlon
-      ri(i,j) = REAL(i,r_sngl)
-      rj(i,j) = REAL(j,r_sngl)
+      ri(i,j,1) = REAL(i,r_sngl)
+      rj(i,j,1) = REAL(j,r_sngl)
     END DO
   END DO
   ENDIF

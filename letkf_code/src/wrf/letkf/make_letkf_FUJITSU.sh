@@ -8,9 +8,9 @@ set -ex
 PGM=letkf.exe
 F90=mpifrtpx
 #OMP=''
-OMP='-Kopenmp'
+OMP='' #'-Kopenmp'
 
-F90OPT='-O3 -Kfast,parallel' #-convert big_endian' #-O3 -convert big_endian' #-Kfast,parallel' # -Hs'
+F90OPT='-O3 -Nalloc_assign' #-convert big_endian' #-O3 -convert big_endian' #-Kfast,parallel' # -Hs'
 
 
 BLAS=1 #0: no blas 1: using blas

@@ -41,7 +41,7 @@ cp $NAMELISTDIR/letkf.namelist $LETKFDIRRUN/letkf.namelist
 NAMELISTFILE=$LETKFDIRRUN/letkf.namelist
 NSLOTS=$(( ($ANALISIS_WIN_FIN-$ANALISIS_WIN_INI)/$ANALISIS_WIN_STEP+1))
 NBSLOT=$(( ($ANALISIS_FREC-$ANALISIS_WIN_INI)/$ANALISIS_WIN_STEP+1))
-NBV=$((10#$MIEMBRO_FIN-10#$MIEMBRO_INI+1))
+NBV=$(( 10#$MIEMBRO_FIN - 10#$MIEMBRO_INI + 1 ))
 
 #N_RADAR=($(echo $SO_INSTRUMENT_LIST | sed 's/,/\n/g') )
 N_RADAR=0 #${#N_RADAR[@]}
@@ -61,10 +61,10 @@ sed -i -e "s|__N_RADAR__|$N_RADAR|g"                       $NAMELISTFILE
 echo "Linking files"
 FECHA_WINDOW_INI=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_WIN_INI)) seconds" +"%Y-%m-%d %T")
 FECHA_ANALISIS=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_FREC)) seconds" +"%Y-%m-%d_%T")
-for IMIEM in $(seq -f "%02g" $MIEMBRO_INI $MIEMBRO_FIN ) ; do
+for MIEM in $(seq -f "%02g" $MIEMBRO_INI $MIEMBRO_FIN ) ; do
    for ISLOT in $(seq -f "%02g" 0 $(($NSLOTS-1))) ; do
       FECHA_SLOT=$(date -u -d "$FECHA_WINDOW_INI UTC +$(($ISLOT*$ANALISIS_WIN_STEP)) seconds" +"%Y-%m-%d_%T")
-      ln -sf ${WRFDIR}/$IMIEM/wrfout_d01_$FECHA_SLOT ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$IMIEM)))
+      ln -sf ${WRFDIR}/$MIEM/wrfout_d01_$FECHA_SLOT ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$MIEM)))
    done	   
 done
 cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$FECHA_ANALISIS ${LETKFDIRRUN}/guesemean
@@ -97,17 +97,13 @@ cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$FECHA_ANALISIS ${LETKFDIRRUN}/analemean
 
 #script de ejecucion
 read -r -d '' QSCRIPTCMD << "EOF"
-ulimit -s unlimited
-ulimit -l unlimited
-res='OK'
-cd $LETKFDIR/00/
-OMP_NUM_THREADS=$LETKFTHREADS
-OMP_STACKSIZE=512M
-time $MPIEXE  ./letkf.exe
-LETKF_ERROR=$?
-if [[ $LETKF_ERROR != 0 ]] ; then
+  res='OK'
+  cd $LETKFDIR/00/
+  time $MPIEXE  ./letkf.exe
+  LETKF_ERROR=$?
+  if [[ $LETKF_ERROR != 0 ]] ; then
    res='ERROR'
-fi
+  fi
 EOF
 
 # Parametros de encolamiento
@@ -121,11 +117,12 @@ QWORKDIR=$LETKFDIR
 echo "Sending letkf script to the queue"
 cd $LETKFDIR
 # Encolar
-if [ $PASO -gt $SPIN_UP_LENGTH ] ; then
+if [ $PASO -ge $SPIN_UP_LENGTH ] ; then
   queue 00 00
   check_proc 00 00
 fi
 
+exit
 
 ##
 # Guaramos los analisis

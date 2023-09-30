@@ -365,7 +365,7 @@ SUBROUTINE set_common_wrf(inputfile)
        if( OPTIONAL_VARIABLE(i) )THEN
         WRITE(6,*)"Warning: Variable ",element(i)," is not present in input file."
        else
-        WRITE(6,*)"Error: Non optioanl variable ",element(i)," is not present in input file -> Aborting execution"
+        WRITE(6,*)"Error: Non optional variable ",element(i)," is not present in input file -> Aborting execution"
         STOP
        endif
       ENDIF
