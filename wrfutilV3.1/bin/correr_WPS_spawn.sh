@@ -31,8 +31,8 @@ if [ ! -e $WPSDIR/code/geogrid.exe ] ; then
    tar -xf wps.tar -C $WPSDIR/code
    #Si existe el namelist.wps lo borramos para que no interfiera
    #con los que crea el sistema de asimilacion
-   if [ -e namelist.wps ] ; then
-      rm -f namelist.wps 
+   if [ -e $WPSDIR/code/namelist.wps ] ; then
+      rm -f $WPSDIR/code/namelist.wps 
    fi
 fi
 #Descomprimimos el spawn.tar (si es que no fue descomprimido)
@@ -138,12 +138,10 @@ for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
 done
 
 #Run Ungrib using the spawn for serial programs
-IS_SERIAL=1
-spawn ./ungrib.exe $WPSDIR $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN $WPSNODE $WPSPROC $IS_SERIAL
+spawn ./mpi_ungrib_wrapper.exe $WPSDIR $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN $WPSNODE $WPSPROC  NULL
 
 #Run Metgrid using the spawn for parallel programs
-IS_SERIAL=0
-spawn ./metgrid.exe $WPSDIR $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN $WPSNODE $WPSPROC $IS_SERIAL
+spawn ./metgrid.exe $WPSDIR $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN $WPSNODE $WPSPROC NULL
 
 
 #Copy data to its final destination

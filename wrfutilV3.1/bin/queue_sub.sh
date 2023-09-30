@@ -26,12 +26,9 @@ fi
 #PJM  FUGAKU / FX100 / FX10 
 if [ "$QUEUESYS" = "PJM" ] ; then
 
-   pjsub --interact -L vnode=$INODE vnode-core=$ICORE --no-stging  ${COMMAND}
+   pjsub --interact -g ${FUGAKU_GROUP} -L "node=${INODE}" --mpi "max-proc-per-node=${ICORE}" -x PJM_LLIO_GFSCACHE=${LLIO_VOL} -L "elapse=${TOTAL_TIME_LIMIT}" -j -s --no-stging --sparam wait-time=1200  ${COMMAND}
 
 fi 
-
-
-
 
 
 

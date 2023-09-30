@@ -78,8 +78,8 @@ if [ ! -e $WRFDIR/code/real.exe ] ; then
    tar -xf wrf.tar -C $WRFDIR/code
    #Si existe el namelist.input lo borramos para que no interfiera
    #con los que crea el sistema de asimilacion
-   if [ -e namelist.input ] ; then
-      rm -f namelist.input
+   if [ -e $WRFDIR/code/namelist.input ] ; then
+      rm -f $WRFDIR/code/namelist.input
    fi
 fi
 #Descomprimimos el wrfda.tar (si es que no fue descomprimido)
@@ -132,7 +132,7 @@ done
 IS_SERIAL=0
 cd $WRFDIR/code/
 echo "Running real.exe"
-spawn ./real.exe $WRFDIR $MIEMBRO_INI $MIEMBRO_FIN $WRFNODE $WRFPROC $IS_SERIAL
+spawn ./real.exe $WRFDIR $MIEMBRO_INI $MIEMBRO_FIN $WRFNODE $WRFPROC $WRF_RUNTIME_FLAGS
 
 
 #RUN DA_UPDATE_BC.EXE
@@ -148,8 +148,7 @@ if [ $PASO -gt 0 ] ; then
    done
    #Run da_update_bc.exe using the spawn for serial programs
    cd $WRFDIR/code/
-   IS_SERIAL=1
-   spawn ./da_update_bc.exe $WRFDIR $MIEMBRO_INI $MIEMBRO_FIN $WRFNODE $WRFPROC $IS_SERIAL
+   spawn ./mpi_updatebc_wrapper.exe $WRFDIR $MIEMBRO_INI $MIEMBRO_FIN $WRFNODE $WRFPROC $WRF_RUNTIME_FLAGS
 fi
 
 export OMP_NUM_THREADS=1
@@ -157,7 +156,7 @@ export OMP_NUM_THREADS=1
 cd $WRFDIR/code
 IS_SERIAL=0
 echo "Running wrf.exe" 
-spawn ./wrf.exe $WRFDIR $MIEMBRO_INI $MIEMBRO_FIN $WRFNODE $WRFPROC $IS_SERIAL
+spawn ./wrf.exe $WRFDIR $MIEMBRO_INI $MIEMBRO_FIN $WRFNODE $WRFPROC $WRF_RUNTIME_FLAGS
 
 #Copy wrfout files corresponding to the analysis time to the history folder.
 if [[ ! -z "$GUARDOGUESS" ]] && [[ $GUARDOGUESS -eq 1 ]] ; then

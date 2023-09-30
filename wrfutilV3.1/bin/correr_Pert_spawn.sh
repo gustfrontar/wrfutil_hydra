@@ -7,16 +7,12 @@
 #############
 
 ### CONFIGURACION
-source $BASEDIR/conf/config.env  #BASEDIR tiene que estar seteado como variable de entorno.
-
-[ ! -f $BASEDIR/lib/errores.env ] && exit 1
 source $BASEDIR/lib/errores.env
-[ ! -f "$BASEDIR/conf/$EXPMACH" ] && dispararError 4 "$BASEDIR/conf/$EXPMACH"
-source $BASEDIR/conf/$EXPMACH
-[ ! -f "$BASEDIR/conf/$EXPCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPCONF"
-source $BASEDIR/conf/$EXPCONF
-[ ! -f "$BASEDIR/conf/$EXPMODELCONF" ] && dispararError 4 "$BASEDIR/conf/$EXPMODELCONF"
-source $BASEDIR/conf/$EXPMODELCONF
+source $BASEDIR/conf/config.env
+source $BASEDIR/conf/assimilation.conf
+source $BASEDIR/conf/machine.conf
+source $BASEDIR/conf/model.conf
+source $BASEDIR/lib/spawn_utils.sh
 
 ##### FIN INICIALIZACION ######
 cd $WPSDIR 
@@ -42,13 +38,4 @@ cd $WPSDIR
 python -u ./main_perturb_met_em.py > main_perturb_met_em.out 
 EC=$?
 [[ $EC -ne 0 ]] && dispararError 9 "main_perturb_met_em.py"
-#EOF
 
-#QPROC_NAME=PERT_$PASO
-#QNODE=$PERTNODE
-#QPROC=$PERTPROC
-#QTHREAD=$PERTTHREAD
-#QMIEM=01
-#QWALLTIME=$WPSWALLTIME
-#queue 00 00
-#check_proc 00 00

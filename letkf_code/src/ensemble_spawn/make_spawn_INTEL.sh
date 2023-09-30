@@ -6,7 +6,7 @@ source /opt/intel/oneapi/setvars.sh intel64 #Fugaku
 
 F90="mpif90 -f90=ifort"
 
-FLAGS='-g' #"-traceback"
+FLAGS='' #"-traceback"
 
 
 #Build  the program
@@ -33,6 +33,13 @@ echo "Building ungrib_wrapper"
 $F90 $FLAGS -c mpi_ungrib_wrapper.f90
 $F90 $FLAGS -o mpi_ungrib_wrapper.exe *.o
 rm *.o
+
+#Build the program
+echo "Building ungrib_wrapper"
+$F90 $FLAGS -c mpi_updatebc_wrapper.f90
+$F90 $FLAGS -o mpi_updatebc_wrapper.exe *.o
+rm *.o
+
 
 
 tar -cvf ../../spawn_INTEL.tar ./*.exe

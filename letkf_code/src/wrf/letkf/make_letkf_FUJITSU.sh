@@ -33,7 +33,7 @@ fi
 NETCDF=/home/ra000007/a04037/data/comp_libs_fujitsu/netcdf/
 
 
-LIB_NETCDF="-L$NETCDF/lib/ -lnetcdff -lnetcdf -lhdf5_fortran -lhdf5_hl -lhdf5  -L/lib -lm -lz"
+LIB_NETCDF="-L$NETCDF/lib/ -lnetcdff -lnetcdf -lhdf5_fortran -lhdf5_hl -lhdf5  -lfjprofmpi -lmpi_cxx"
 INC_NETCDF="-I$NETCDF/include/"
 
 
@@ -68,6 +68,18 @@ $F90 $OMP $F90OPT $INC_NETCDF -c letkf_obs.f90
 $F90 $OMP $F90OPT $INC_NETCDF -c letkf_tools.f90
 $F90 $OMP $F90OPT $INC_NETCDF -c letkf.f90
 $F90 $OMP $F90OPT $INC_NETCDF -o ${PGM} *.o $LBLAS $LIB_NETCDF
+
+rm -f *.mod
+rm -f *.o
+rm -f netlib.f
+
+#Build update_wrf_time.f90
+$F90 $OMP $F90OPT -c SFMT.f90
+$F90 $OMP $F90OPT -c common.f90
+$F90 $OMP $F90OPT -c module_map_utils.f90
+$F90 $OMP $F90OPT $INC_NETCDF -c common_wrf.f90
+$F90 $OMP $F90OPT $INC_NETCDF -c update_wrf_time.f90
+$F90 $OMP $F90OPT $INC_NETCDF -o update_wrf_time.exe *.o $LBLAS $LIB_NETCDF
 
 rm -f *.mod
 rm -f *.o

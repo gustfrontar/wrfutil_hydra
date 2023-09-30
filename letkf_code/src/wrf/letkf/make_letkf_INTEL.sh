@@ -4,6 +4,8 @@
 # Nota: Correr el source envars.sh , ppor ejemplo del /share/apps/Build_WRF_INTEL -- primncipalemte para setear el path de los compiladore y porque NECESITA !!!!!! Setear la variable NETCDF con el path al netcdf.
 # Note2: Como debe tomar del entorno la variable NETCDF, hay que correr este script con source 
 #######
+. /opt/intel/oneapi/setvars.sh intel64  #FUGAKU Load intel libraries
+
 set -ex
 PGM=letkf.exe
 F90=mpiifort
@@ -71,6 +73,18 @@ $F90 $OMP $F90OPT $INC_NETCDF -c letkf_obs.f90
 $F90 $OMP $F90OPT $INC_NETCDF -c letkf_tools.f90
 $F90 $OMP $F90OPT $INC_NETCDF -c letkf.f90
 $F90 $OMP $F90OPT $INC_NETCDF -o ${PGM} *.o $LBLAS $LIB_NETCDF
+
+rm -f *.mod
+rm -f *.o
+rm -f netlib.f
+
+#Build update_wrf_time.f90
+$F90 $OMP $F90OPT -c SFMT.f90
+$F90 $OMP $F90OPT -c common.f90
+$F90 $OMP $F90OPT -c module_map_utils.f90
+$F90 $OMP $F90OPT $INC_NETCDF -c common_wrf.f90
+$F90 $OMP $F90OPT $INC_NETCDF -c update_wrf_time.f90
+$F90 $OMP $F90OPT $INC_NETCDF -o update_wrf_time.exe *.o $LBLAS $LIB_NETCDF
 
 rm -f *.mod
 rm -f *.o

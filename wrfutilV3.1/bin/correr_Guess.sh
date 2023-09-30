@@ -8,12 +8,13 @@
 
 ### CONFIGURACION
 #Load experiment configuration
-BASEDIR=$(pwd)/../
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
 source $BASEDIR/conf/assimilation.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
+source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
+
 ##### FIN INICIALIZACION ######
 
 cd $WRFDIR
@@ -77,8 +78,8 @@ if [ ! -e $WRFDIR/code/real.exe ] ; then
    tar -xf wrf.tar -C $WRFDIR/code
    #Si existe el namelist.input lo borramos para que no interfiera
    #con los que crea el sistema de asimilacion
-   if [ -e namelist.input ] ; then
-      rm -f namelist.input
+   if [ -e $WRFDIR/code/namelist.input ] ; then
+      rm -f $WRFDIR/code/namelist.input
    fi
 fi
 #Descomprimimos el wrfda.tar (si es que no fue descomprimido)

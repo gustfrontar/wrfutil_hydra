@@ -411,11 +411,10 @@ integer :: varid , tmpsec
 
 END SUBROUTINE read_date_wrf
 
-SUBROUTINE write_date_wrf(inputfile,iyyyy,imm,idd,ihh,imn,ss)
+SUBROUTINE write_date_wrf(inputfile,new_date)
 IMPLICIT NONE
-character(*) , intent(in)  :: inputfile
-integer , intent(in) :: iyyyy , imm , idd , ihh , imn
-real(r_size) , intent(in) :: ss
+character(*)  , intent(in)  :: inputfile
+character(19) , intent(in)  :: new_date
 integer :: start(2) , count(2) , ncid
 character(19) :: tmpdate
 integer :: varid
@@ -426,19 +425,12 @@ integer :: varid
   count = (/ 19,1 /)
   !Read the current date in file to get the date format.
   CALL check_io(NF90_GET_VAR(ncid,varid,tmpdate,start,count))
-
-  WRITE(tmpdate(1:4  ),'(I4.4)' )iyyyy
-  WRITE(tmpdate(6:7  ),'(I2.2)' )imm
-  WRITE(tmpdate(9:10 ),'(I2.2)' )idd
-  WRITE(tmpdate(12:13),'(I2.2)' )ihh
-  WRITE(tmpdate(15:16),'(I2.2)' )imn
-  WRITE(tmpdate(18:19),'(I2.2)')INT(ss)
+  WRITE(*,*)'Previous date was ',tmpdate,' new date is ',new_date
 
   !Write the new date in the file.
-  CALL check_io(NF90_PUT_VAR(ncid,varid,tmpdate,start,count))
-
-  CALL check_io(NF90_PUT_ATT(ncid,NF90_GLOBAL,'START_DATE',tmpdate))
-  CALL check_io(NF90_PUT_ATT(ncid,NF90_GLOBAL,'SIMULATION_START_DATE',tmpdate))
+  CALL check_io(NF90_PUT_VAR(ncid,varid,new_date,start,count))
+  CALL check_io(NF90_PUT_ATT(ncid,NF90_GLOBAL,'START_DATE',new_date))
+  CALL check_io(NF90_PUT_ATT(ncid,NF90_GLOBAL,'SIMULATION_START_DATE',new_date))
 
   CALL close_wrf_file(ncid)
 

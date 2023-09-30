@@ -13,6 +13,7 @@ Character(len=100)  ::  arg
 Character(len=100)  ::  command
 Character(len=100)  ::  ibasepath
 Character(len=100)  ::  tmpdir
+Character(len=10)   ::  runtime_flags(1)
 Character(len=5)    ::  ensmember
 Integer             ::  nprocs , nchilds , inimem , endmem
 Integer             ::  ierr , i
@@ -31,6 +32,9 @@ CALL GETARG ( 4, arg )
 READ(arg,*)inimem         !Initial ensemble member for this job range
 CALL GETARG ( 5, arg )
 READ(arg,*)endmem         !Final ensemble member for this job range
+CALL GETARG ( 6, arg )    
+runtime_flags(1) = arg    !Runtime flags to be passed to the spawned executable.
+
 
 Call MPI_Init(ierr)
 
@@ -47,8 +51,14 @@ DO i=1,nchilds
     tmpdir=TRIM(ibasepath)//'/'//ensmember
     WRITE(*,*)tmpdir
     call MPI_Info_set(info,"wdir",tmpdir,ierr)
-    Call MPI_Comm_spawn(command,MPI_ARGV_NULL,nprocs,info,0,MPI_COMM_WORLD, &
+    if ( TRIM( runtime_flags(1)) == 'NULL' )then
+       Call MPI_Comm_spawn(command,MPI_ARGV_NULL,nprocs,info,0,MPI_COMM_WORLD, &
     &      intercomm, errcode, ierr)
+    else 
+       Call MPI_Comm_spawn(command,runtime_flags,nprocs,info,0,MPI_COMM_WORLD, &
+    &      intercomm, errcode, ierr)
+    endif
+
     WRITE(*,*) "IERR", ierr
     if (ierr /= 0) then
        WRITE(*,*) "MPI_Comm_spawn failure",i
@@ -59,7 +69,5 @@ ENDDO
 
 call MPI_COMM_FREE(intercomm,ierr)
 Call MPI_Finalize(ierr)
-
-STOP 0
 
 End Program spawn

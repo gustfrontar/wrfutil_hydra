@@ -8,7 +8,6 @@
 
 ### CONFIGURACION
 #Load experiment configuration
-BASEDIR=$(pwd)/../
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
 source $BASEDIR/conf/forecast.conf
