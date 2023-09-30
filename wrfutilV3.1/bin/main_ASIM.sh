@@ -48,7 +48,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
       echo " Step | TimeStamp" > $LOGDIR/cycles.log
       if [ $RUN_WPS -eq 1 ] ; then 
          echo "Corriendo el WPS"
-         time $BASEDIR/bin/correr_WPS.sh > $LOGDIR/log_wps.log
+         time $BASEDIR/bin/correr_WPS.sh > $LOGDIR/log_wps_${PASO}.log
       fi
       if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
 	 echo "Vamos a perturbar los met_em"
@@ -71,10 +71,11 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    time $BASEDIR/bin/correr_Guess.sh > $LOGDIR/guess_${PASO}.log  2>&1
    echo "Vamos a ejecutar el LETKF"
    time $BASEDIR/bin/correr_LETKF.sh > $LOGDIR/letkf_${PASO}.log  2>&1
+   exit
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))
-   Update PASO in the configuration file.
-   sed -i -e "/export PASO=/c\\export PASO=$PASO" $BASEDIR/conf/$EXPCONF
+   #Update PASO in the configuration file.
+   sed -i -e "/export PASO=/c\\export PASO=$PASO" $BASEDIR/conf/assimilation.conf
 
 done
 

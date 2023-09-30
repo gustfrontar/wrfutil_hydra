@@ -71,6 +71,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    time $BASEDIR/bin/correr_Guess_spawn.sh > $LOGDIR/guess_${PASO}.log  2>&1
    echo "Vamos a ejecutar el LETKF"
    time $BASEDIR/bin/correr_LETKF_spawn.sh > $LOGDIR/letkf_${PASO}.log  2>&1
+   exit
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))
    #Update PASO in the configuration file.

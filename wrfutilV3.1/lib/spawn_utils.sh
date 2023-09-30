@@ -30,8 +30,14 @@ spawn () {
         #Note that serial processes will be executed in one core only, the rest of them will be idle.
         #This may be useful to avoid overloading the first node and to better distribute the compuational load
         #among nodes for serial processes. 
+        if [ $PCORE -gt $ICORE ] ; then
+           SPCORE=$ICORE
+        else
+           SPCORE=$PCORE
+        fi
+
         PTCORE=$(( $PNODE * $PCORE ))           #Total number of cores to be used by each ensemble member.
-        TCORES=$(( $INODE * $ICORE -$PCORE ))   #Total number of cores available to run the ensemble. (from machine.conf)
+        TCORES=$(( $INODE * $ICORE -$SPCORE ))  #Total number of cores available to run the ensemble. (from machine.conf)
         MAX_SIM_MEM=$(( $TCORES / $PTCORE ))    #Floor rounding (bash default) Maximumu number of simultaneous members
 	                                        #Note: when spawn is run, we need cores for the spawned processes and
 						#at least 1 core for the spawn itself. In this script we allocate 
@@ -64,7 +70,7 @@ spawn () {
                echo $MPIEXEC -np 1 ./spawn.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem $RUNTIME_FLAGS
                $MPIEXEC -np 1 ./spawn.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem $RUNTIME_FLAGS
             else #There is only one instance to run. Then call mpi directly without using the spawner.
-	       cd $BASE_DIR/$ini_mem
+	       cd $BASE_DIR/$(printf "%02d" $ini_mem)
                echo $MPIEXEC -np $PCORE ./$COMMAND 
 	    fi
             if [ $? -ne 0 ] ; then

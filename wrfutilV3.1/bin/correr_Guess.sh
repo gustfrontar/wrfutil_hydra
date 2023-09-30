@@ -35,7 +35,7 @@ read -r FY FM FD FH Fm Fs  <<< $(date -u -d "$FECHA_FORECAST_END UTC" +"%Y %m %d
 
 # Editamos el namelist.
 if [ $MULTIMODEL -eq 0 ] ; then  
-   MULTIMODEL_CONF_INI=0;MULTIMODEL_CONF_FIN=0
+   MULTIMODEL_CONF_INI=$MODEL_CONF;MULTIMODEL_CONF_FIN=$MODEL_CONF
    echo "We will run a single configuration ensemble"
 else 
    echo "We will run a multimodel configuration ensemble with $NCONF configurations"
@@ -43,7 +43,7 @@ else
 fi
 
 for ICONF in $(seq -w $MULTIMODEL_CONF_INI $MULTIMODEL_CONF_FIN) ; do
-   WRFCONF=$(printf '%03d' $((10#$ICONF % 10#$MULTIMODEL_CONF_FIN)))
+   WRFCONF=$(printf '%03d' $((10#$ICONF)))
    cp $NAMELISTDIR/namelist.input.asim.${WRFCONF} $WRFDIR/namelist.input.${WRFCONF}
    sed -i -e "s|__START_YEAR__|$IY|g"                               $WRFDIR/namelist.input.${WRFCONF}
    sed -i -e "s|__START_MONTH__|$IM|g"                              $WRFDIR/namelist.input.${WRFCONF}
@@ -75,6 +75,7 @@ done
 if [ ! -e $WRFDIR/code/real.exe ] ; then
    echo "Descomprimiendo WRF"
    mkdir -p $WRFDIR/code
+   cd $WRFDIR
    tar -xf wrf.tar -C $WRFDIR/code
    #Si existe el namelist.input lo borramos para que no interfiera
    #con los que crea el sistema de asimilacion
@@ -92,7 +93,7 @@ fi
 #script de ejecucion
 read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited
-source $BASEDIR/conf/$EXPMODELCONF
+source $BASEDIR/conf/model.conf
 echo "Procesando Miembro $MIEM" 
 cd $WRFDIR
 [[ -d $WRFDIR/$MIEM ]] && rm -r $WRFDIR/$MIEM
@@ -100,7 +101,7 @@ mkdir -p $WRFDIR/$MIEM
 cd $WRFDIR/$MIEM
 
 if [ $MULTIMODEL -eq 0 ] ; then
-   NLCONF=000
+   NLCONF=$(printf '%03d' ${MODEL_CONF} )
 else 
    NLCONF=$(printf '%03d' $((10#$MIEM % 10#$NCONF)))
 fi
@@ -108,15 +109,15 @@ cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
 
 ln -sf $WRFDIR/code/* . 
 if [ $WPS_CYCLE -eq 1 ] ; then
-   FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
-   FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )
-   FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY" +"%Y%m%d%H%M%S")
+   INI_STEP_DATE=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
+   INI_BDY_DATE=$(date_floor "$INI_STEP_DATE" $INTERVALO_INI_BDY )
+   INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
 else
-   FECHA_INI_BDY=$(date_floor "$FECHA_INI" $INTERVALO_INI_BDY )
-   FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY" +"%Y%m%d%H%M%S")
+   INI_BDY_DATE=$(date_floor "$FECHA_INI" $INTERVALO_INI_BDY )
+   INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
 fi
 
-ln -sf $HISTDIR/WPS/met_em/${FECHA_INI_BDY}/$MIEM/met_em* $WRFDIR/$MIEM/
+ln -sf $HISTDIR/WPS/met_em/${INI_BDY_DATE}/$MIEM/met_em* $WRFDIR/$MIEM/
 
 OMP_NUM_THREADS=$REALTHREADS
 OMP_STACKSIZE=512M
@@ -137,7 +138,7 @@ fi
 echo "Corriendo WRF en Miembro $MIEM"
 export OMP_NUM_THREADS=1
 
-$MPIEXE  $MPIARGS $WRFDIR/$MIEM/wrf.exe
+$MPIEXE $WRFDIR/$MIEM/wrf.exe $WRF_RUNTIME_FLAGS 
 excod=$?
 res="ERROR"
 test=$(tail -n1 $WRFDIR/$MIEM/rsl.error.0000 | grep SUCCESS ) && res="OK"
@@ -163,13 +164,13 @@ time check_proc $MIEMBRO_INI $MIEMBRO_FIN
 
 #Copiamos los archivos del Guess correspondientes a la hora del analisis.
 if [[ ! -z "$GUARDOGUESS" ]] && [[ $GUARDOGUESS -eq 1 ]] ; then
-   for QMIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
+   for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
        OUTPUTPATH="$HISTDIR/GUES/$(date -u -d "$FECHA_ANALISIS UTC" +"%Y%m%d%H%M%S")/"
        mkdir -p $OUTPUTPATH
-       echo "Copying file $WRFDIR/$QMIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )"
-       cp $WRFDIR/$QMIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/gues$(printf %05d $((10#$QMIEM)))
-       mv $WRFDIR/$QMIEM/*.log                                                         $OUTPUTPATH
-       mv $WRFDIR/$QMIEM/namelist*                                                     $OUTPUTPATH
+       echo "Copying file $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )"
+       cp $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/gues$(printf %05d $((10#$QMIEM)))
+       mv $WRFDIR/$MIEM/*.log                                                         $OUTPUTPATH
+       mv $WRFDIR/$MIEM/namelist*                                                     $OUTPUTPATH
    done
 fi
 
