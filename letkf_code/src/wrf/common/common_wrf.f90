@@ -93,6 +93,7 @@ MODULE common_wrf
   REAL(r_size),ALLOCATABLE,SAVE :: latv(:,:)
 !  REAL(r_size),ALLOCATABLE,SAVE :: fcori(:,:)
   REAL(r_size),ALLOCATABLE,SAVE :: phi0(:,:)
+  REAL(r_size),ALLOCATABLE,SAVE :: ri(:,:) , rj(:,:) 
   REAL(r_size),ALLOCATABLE,SAVE :: sinalpha(:,:),cosalpha(:,:)
   REAL(r_size),ALLOCATABLE,SAVE :: landmask(:,:)
   CHARACTER(20),SAVE :: element(nv3d+nv2d+np2d+ns3d)
@@ -125,7 +126,7 @@ SUBROUTINE set_common_wrf(inputfile)
   IMPLICIT NONE
   REAL(r_sngl),ALLOCATABLE :: buf4(:,:)
   REAL(r_sngl) :: buf41d
-  INTEGER :: i
+  INTEGER :: i , j 
   INTEGER(4) :: ncid,varid,dimids(4),shape(4)
   INTEGER(4),ALLOCATABLE :: start(:),count(:)
   CHARACTER(*)           :: inputfile
@@ -373,6 +374,16 @@ SUBROUTINE set_common_wrf(inputfile)
 
 
   CALL check_io(NF90_CLOSE(ncid))
+
+  !Generate the indices for the matrix
+  ALLOCATE(ri(nlon,nlat))
+  ALLOCATE(rj(nlon,nlat))
+  DO j=1,nlat
+    DO i=1,nlon
+      ri(i,j) = REAL(i,r_sngl)
+      rj(i,j) = REAL(j,r_sngl)
+    END DO
+  END DO
 
 
 

@@ -33,7 +33,6 @@ MODULE common_mpi_wrf
 
 CONTAINS
 SUBROUTINE set_common_mpi_wrf
-  REAL(r_size),ALLOCATABLE :: ri(:,:,:),rj(:,:,:)
   INTEGER :: i,j,n,ierr
 
   WRITE(6,'(A)') 'Hello from set_common_mpi_wrf'
@@ -73,26 +72,16 @@ SUBROUTINE set_common_mpi_wrf
   ALLOCATE(ri1(nij1))
   ALLOCATE(rj1(nij1))
 
-  IF(myrank .eq. 0)THEN
-  ALLOCATE(ri(nlon,nlat,1))
-  ALLOCATE(rj(nlon,nlat,1))
-  DO j=1,nlat
-    DO i=1,nlon
-      ri(i,j,1) = REAL(i,r_sngl)
-      rj(i,j,1) = REAL(j,r_sngl)
-    END DO
-  END DO
-  ENDIF
-  CALL scatter_ngrd_mpi(0,SNGL(lon),lon1,1)
-  CALL scatter_ngrd_mpi(0,SNGL(lat),lat1,1)
-  CALL scatter_ngrd_mpi(0,SNGL(lonu),lonu1,1)
-  CALL scatter_ngrd_mpi(0,SNGL(latu),latu1,1)
-  CALL scatter_ngrd_mpi(0,SNGL(lonv),lonv1,1)
-  CALL scatter_ngrd_mpi(0,SNGL(latv),latv1,1)
-  CALL scatter_ngrd_mpi(0,SNGL(ri),ri1,1)
-  CALL scatter_ngrd_mpi(0,SNGL(rj),rj1,1)
-  CALL scatter_ngrd_mpi(0,SNGL(phi0),phi1,1)
-  CALL scatter_ngrd_mpi(0,SNGL(landmask),landmask1,1)
+  CALL scatter_sgrd_mpi(0,SNGL(lon),lon1)
+  CALL scatter_sgrd_mpi(0,SNGL(lat),lat1)
+  CALL scatter_sgrd_mpi(0,SNGL(lonu),lonu1)
+  CALL scatter_sgrd_mpi(0,SNGL(latu),latu1)
+  CALL scatter_sgrd_mpi(0,SNGL(lonv),lonv1)
+  CALL scatter_sgrd_mpi(0,SNGL(latv),latv1)
+  CALL scatter_sgrd_mpi(0,SNGL(ri),ri1)
+  CALL scatter_sgrd_mpi(0,SNGL(rj),rj1)
+  CALL scatter_sgrd_mpi(0,SNGL(phi0),phi1)
+  CALL scatter_sgrd_mpi(0,SNGL(landmask),landmask1)
 
   IF(myrank.eq.0)DEALLOCATE(ri,rj)  
 
@@ -395,37 +384,6 @@ SUBROUTINE scatter_ngrd_mpi(nrank,vg,v,ndim)
   bufs=0.0e0
   bufr=0.0e0
 
-
-!SAFE
-!  ns = mpibufsize
-!  nr = ns
-!  niter = CEILING(REAL(nij1max)/REAL(mpibufsize))
-!
-!  DO n=1,ndim
-!    IF(myrank == nrank) CALL grd_to_buf(vg(:,:,n),tmp)
-!    DO iter=1,niter
-!      IF(myrank == nrank) THEN
-!        i = mpibufsize * (iter-1)
-!        DO j=1,mpibufsize
-!          i=i+1
-!          IF(i > nij1max) EXIT
-!          bufs(j,:) = tmp(i,:)
-!        END DO
-!      END IF
-!      CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-!      CALL MPI_SCATTER(bufs,ns,MPI_REAL,&
-!                     & bufr,nr,MPI_REAL,nrank,MPI_COMM_WORLD,ierr)
-!      i = mpibufsize * (iter-1)
-!      DO j=1,mpibufsize
-!        i=i+1
-!        IF(i > nij1) EXIT
-!        v(i,n) = REAL(bufr(j),r_size)
-!      END DO
-!    END DO
-!  END DO
-!
-!  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-
 !FAST
   ns = nij1max * ndim
   nr = ns
@@ -446,6 +404,39 @@ SUBROUTINE scatter_ngrd_mpi(nrank,vg,v,ndim)
 
   RETURN
 END SUBROUTINE scatter_ngrd_mpi
+
+
+!-----------------------------------------------------------------------
+!Scatter_sgrd_mpi to scatter 1 field with the safe scatter
+!-----------------------------------------------------------------------
+!This routine can be used to improve memory performance.
+SUBROUTINE scatter_sgrd_mpi(nrank,vg,v)
+  INTEGER,INTENT(IN) :: nrank
+  REAL(r_sngl),INTENT(IN) :: vg(nlon,nlat)
+  REAL(r_size),INTENT(OUT) :: v(nij1)
+  REAL(r_sngl) :: tmp(nij1max,nprocs)
+  REAL(r_sngl) :: bufs(nij1max,nprocs)
+  REAL(r_sngl) :: bufr(nij1max)
+  INTEGER :: i,j,k,n,ierr,ns,nr
+  INTEGER :: iter,niter
+
+  v=0.0d0
+  bufs=0.0e0
+  bufr=0.0e0
+
+  ns = nij1max 
+  nr = ns
+  IF(myrank == nrank) THEN
+    CALL grd_to_buf(vg(:,:),bufs(:,:))
+  END IF
+
+  CALL MPI_SCATTER(bufs,ns,MPI_REAL,&
+                 & bufr,nr,MPI_REAL,nrank,MPI_COMM_WORLD,ierr)
+  v(1:nij1) = REAL(bufr(1:nij1),r_size)
+
+  RETURN
+END SUBROUTINE scatter_sgrd_mpi
+
 
 !==========================================
 !Gather n fields using mpi safe
