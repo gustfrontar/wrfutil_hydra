@@ -116,16 +116,14 @@ DIRANAL=$HISTDIR/ANAL/$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$A
 for MIEM in $(seq -f "%02g" $MIEMBRO_INI $MIEMBRO_FIN ) ; do
         mkdir -p  ${DIRANAL}/
         mv  $WRFDIR/$MIEM/wrfout_d01_$FECHA_ANALISIS $DIRANAL/anal$(printf %05d $((10#$MIEM)))
-	echo "ncatted -h -a 'START_DATE',global,m,c,$FECHA_ANALYSIS            $DIRANAL/anal$(printf %05d $((10#$MIEM)))"
-        ncatted -h -a 'START_DATE',global,m,c,$FECHA_ANALYSIS            $DIRANAL/anal$(printf %05d $((10#$MIEM)))
-        ncatted -h -a 'SIMULATION_START_DATE',global,m,c,$FECHA_ANALISIS $DIRANAL/anal$(printf %05d $((10#$MIEM)))
+	echo "Updating the date in the analysis file " $WRFDIR/code/update_wrf_time.exe $DIRANAL/anal$(printf %05d $((10#$MIEM))) $FECHA_ANALYSIS
+	$WRFDIR/code/update_wrf_time.exe $DIRANAL/anal$(printf %05d $((10#$MIEM))) $FECHA_ANALYSIS
 done
 
 #mv $LETKFDIRRUN/*_sp $DIRANAL
 mv $LETKFDIRRUN/guesemean $DIRANAL   #Guess mean
 mv $LETKFDIRRUN/analemean $DIRANAL   #Analysis mean
-ncatted -h -a 'START_DATE',global,m,c,$FECHA_ANALISIS              $DIRANAL/analemean
-ncatted -h -a 'SIMULATION_START_DATE',global,m,c,$FECHA_ANALISIS   $DIRANAL/analemean
+$WRFDIR/code/update_wrf_time.exe $DIRANAL/analemean $FECHA_ANALISIS
 
 #Copiamos las observaciones asimiladas.
 cp $LETKFDIRRUN/obs.dat $DIRANAL
