@@ -15,6 +15,7 @@ source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
 source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
 ##### FIN INICIALIZACION ######
+eval $ENVSET  #Ejecutamos el entorno
 
 
 LETKFDIRRUN=$LETKFDIR/00/   #We need to add 00 in order to be consistent with the paralelization lib.
@@ -60,15 +61,17 @@ sed -i -e "s|__N_RADAR__|$N_RADAR|g"                       $NAMELISTFILE
 
 echo "Linking files"
 FECHA_WINDOW_INI=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_WIN_INI)) seconds" +"%Y-%m-%d %T")
-FECHA_ANALISIS=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_FREC)) seconds" +"%Y-%m-%d_%T")
+ANALYSIS_DATE_WFMT=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_FREC)) seconds" +"%Y-%m-%d_%T")   #WRF format
+ANALYSIS_DATE_PFMT=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_FREC)) seconds" +"%Y%m%d%H%M%S")  #Path/folder format
+
 for MIEM in $(seq -f "%02g" $MIEMBRO_INI $MIEMBRO_FIN ) ; do
    for ISLOT in $(seq -f "%02g" 0 $(($NSLOTS-1))) ; do
       FECHA_SLOT=$(date -u -d "$FECHA_WINDOW_INI UTC +$(($ISLOT*$ANALISIS_WIN_STEP)) seconds" +"%Y-%m-%d_%T")
       ln -sf ${WRFDIR}/$MIEM/wrfout_d01_$FECHA_SLOT ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$MIEM)))
    done	   
 done
-cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$FECHA_ANALISIS ${LETKFDIRRUN}/guesemean
-cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$FECHA_ANALISIS ${LETKFDIRRUN}/analemean
+cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/guesemean
+cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/analemean
 
 #Linkeamos las observaciones.
 #DIROBSRAD=$HISTDIR/OBS/${NOMBRE}/$(date -u -d "$FECHA_INI UTC +$((10#$CICLO)) hours +$((10#$CICLO_MIN+$ANALISIS)) minutes" +"%Y%m%d_%H%M%S")/
@@ -122,25 +125,23 @@ if [ $PASO -ge $SPIN_UP_LENGTH ] ; then
   check_proc 00 00
 fi
 
-exit
-
 ##
 # Guaramos los analisis
 ##
 echo "Copying analysis files"
 echo "Guardando analisis $MIEMBRO_INI - $MIEMBRO_FIN"
-DIRANAL=$HISTDIR/ANAL/$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_FREC)) seconds" +"%Y%m%d%H%M%S")
+DIRANAL=$HISTDIR/ANAL/$ANALYSIS_DATE_PFMT
 for MIEM in $(seq -f "%02g" $MIEMBRO_INI $MIEMBRO_FIN ) ; do
         mkdir -p  ${DIRANAL}/
-        mv  $WRFDIR/$MIEM/wrfout_d01_$FECHA_ANALISIS $DIRANAL/anal$(printf %05d $((10#$MIEM)))
-	echo "Updating the date in the analysis file " $WRFDIR/code/update_wrf_time.exe $DIRANAL/anal$(printf %05d $((10#$MIEM))) $FECHA_ANALYSIS
-	$WRFDIR/code/update_wrf_time.exe $DIRANAL/anal$(printf %05d $((10#$MIEM))) $FECHA_ANALYSIS
+	echo "Updating the date in the analysis file " $WRFDIR/$MIEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT
+	$LETKFDIR/code/update_wrf_time.exe $WRFDIR/$MIEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT
+        mv  $WRFDIR/$MIEM/wrfout_d01_$ANALYSIS_DATE $DIRANAL/anal$(printf %05d $((10#$MIEM)))
 done
 
 #mv $LETKFDIRRUN/*_sp $DIRANAL
+$LETKFDIR/code/update_wrf_time.exe $LETKFDIRRUN/analemean $ANALYSIS_DATE_WFMT
 mv $LETKFDIRRUN/guesemean $DIRANAL   #Guess mean
 mv $LETKFDIRRUN/analemean $DIRANAL   #Analysis mean
-$WRFDIR/code/update_wrf_time.exe $DIRANAL/analemean $FECHA_ANALISIS
 
 #Copiamos las observaciones asimiladas.
 cp $LETKFDIRRUN/obs.dat $DIRANAL

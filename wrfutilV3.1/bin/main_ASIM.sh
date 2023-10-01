@@ -68,13 +68,12 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    echo "$(printf "%02d" $PASO)  | $(date +'%s')" >>  $LOGDIR/cycles.log
 
    echo "Vamos a ejecutar el real, el da_upbdate_bc y el wrf"
-   #time $BASEDIR/bin/correr_Guess.sh > $LOGDIR/guess_${PASO}.log  2>&1
+   time $BASEDIR/bin/correr_Guess.sh > $LOGDIR/guess_${PASO}.log  2>&1
    echo "Vamos a ejecutar el LETKF"
    time $BASEDIR/bin/correr_LETKF.sh > $LOGDIR/letkf_${PASO}.log  2>&1
-   exit
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))
-   #Update PASO in the configuration file.
+   echo "Update PASO in the configuration file."
    sed -i -e "/export PASO=/c\\export PASO=$PASO" $BASEDIR/conf/assimilation.conf
 
 done

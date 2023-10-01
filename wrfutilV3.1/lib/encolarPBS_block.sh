@@ -15,7 +15,7 @@ queue (){
 				echo "source $BASEDIR/conf/config.env"                >> ${QPROC_NAME}_${QMIEM}.pbs 
 				echo "source $BASEDIR/conf/$EXPCONF"                  >> ${QPROC_NAME}_${QMIEM}.pbs 
                 		echo "export MPIEXE=\"$(which mpirun) -np ${TPROC}\" ">> ${QPROC_NAME}_${QMIEM}.pbs                   ## Comando MPIRUN con cantidad de nodos y cores por nodos
-	                        echo "$ENVSET  "                                      >> ${QPROC_NAME}_${QMIEM}.pbs			
+	                        echo "eval $ENVSET  "                                 >> ${QPROC_NAME}_${QMIEM}.pbs			
 	                        echo "MIEM=$QMIEM "                                   >> ${QPROC_NAME}_${QMIEM}.pbs 			
 	                        echo "${QSCRIPTCMD}"                                  >> ${QPROC_NAME}_${QMIEM}.pbs
 				echo "if [[ -z \${res} ]] || [[ \${res} -eq "OK" ]] ; then" >> ${QPROC_NAME}_${QMIEM}.pbs

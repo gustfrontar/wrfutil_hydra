@@ -784,7 +784,8 @@ SUBROUTINE monit_mean(file,depout)
   iref= 0
   ivr = 0
 
-  WRITE(filename(1:9),'(A4,I5.5)') file,nbv+1
+  WRITE(filename(1:9),'(A4,A5)')file,'emean'
+  !WRITE(filename(1:9),'(A4,I5.5)') file,nbv+1
   WRITE(6,*)"I will read ", filename
   CALL read_grd(filename,1,v3d,v2d)
   z3d=v3d(:,:,:,iv3d_ph)/gg

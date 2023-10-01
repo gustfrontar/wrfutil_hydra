@@ -12,9 +12,9 @@ PROGRAM update_wrf_datetime
 
   IMPLICIT NONE
   INTEGER :: ierr
-  CHARACTER(100) ::wrf_file
+  CHARACTER(200) ::wrf_file
   CHARACTER(19) :: new_date
-  CHARACTER(100) ::arg
+  CHARACTER(200) ::arg
 !-----------------------------------------------------------------------
 ! Updating the date
 !-----------------------------------------------------------------------
