@@ -4,18 +4,20 @@
 # O EJECUTADO DESDE EL HEAD NODE PARA QUE ENCOLE LOS 
 # DIFERENTES PASOS
 # En el primer caso la funcion de encolar debe ser SSH
-# en el segundo caso PBH_block
-#############
+# en el segundo caso PBS_block
+#######################################################
 # Servicio Meteorologico Nacional
 # Autor: Maximiliano A. Sacco y tantos otros! (Yani, Maru, Cyn, Juan)
 # Fecha: 01/2018
 # Readaptado a hydra
 # Fecha: 07/2023
-#############
+# Portado a Fugaku
+# Fecha: 10/2023
+#######################################################
+
 if [ ! -z ${PBS_O_WORKDIR}    ]; then cd ${PBS_O_WORKDIR}   ;fi
 if [ ! -z ${PJM_O_WORKDIR}    ]; then cd ${PJM_O_WORKDIR}   ;fi
 if [ ! -z ${SLURM_SUBMIT_DIR} ]; then cd ${SLURM_SUBMIT_DIR};fi
-
 
 #Load experiment configuration
 BASEDIR=$(pwd)/../
@@ -57,10 +59,6 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
          echo "Linking met_em directory"
 	 time ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em > $LOGDIR/pert_met_em_${PASO}.log  2>&1
       fi
-      if [ $RUN_OBS -eq 1 ] ; then 
-	 echo "Preparing the observations"
-         #TODO $BASEDIR/bin/correr_OBS.sh  #Armar el script que genera las observaciones para el letkf.
-      fi 
    fi
 
    #####  all assimilation cycles
@@ -78,8 +76,8 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
 
 done
 
-echo "Saliendo. . .  . hasta la proxima!"
-echo "Termiamos de correr a:"$(date )
+echo "Exiting. . .  . hasta la proxima!"
+echo "We finished running @:"$(date )
 exit 0
 
 
