@@ -1,9 +1,6 @@
 #!/bin/bash
-
-#####
-# Nota: Correr el source envars.sh , ppor ejemplo del /share/apps/Build_WRF_INTEL -- primncipalemte para setear el path de los compiladore y porque NECESITA !!!!!! Setear la variable NETCDF con el path al netcdf.
-# Note2: Como debe tomar del entorno la variable NETCDF, hay que correr este script con source 
 #######
+source /opt/load-libs.sh 1              #HYDRA  Load intel libraries
 . /opt/intel/oneapi/setvars.sh intel64  #FUGAKU Load intel libraries
 
 set -ex
