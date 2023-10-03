@@ -32,5 +32,4 @@ stand_lon = __STAND_LON__,
 &metgrid
  fg_name = 'FILE'
  io_form_metgrid = __IOTYPE__,
- opt_output_from_metgrid_path = __OUTPUTPATH__,
 /

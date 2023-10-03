@@ -10,13 +10,10 @@
 #Load experiment configuration
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
-source $BASEDIR/conf/assimilation.conf
+source $BASEDIR/conf/${EXPTYPE}.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
 source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
-##### FIN INICIALIZACION ######
-eval $ENVSET  #Ejecutamos el entorno
-
 
 LETKFDIRRUN=$LETKFDIR/00/   #We need to add 00 in order to be consistent with the paralelization lib.
 rm -fr $LETKFDIRRUN
@@ -116,6 +113,7 @@ QPROC=$LETKFPROC
 QTHREAD=$LETKFTHREAD
 QWALLTIME=$LETKFWALLTIME
 QWORKDIR=$LETKFDIR
+QCONF=${EXPTYPE}.conf
 
 echo "Sending letkf script to the queue"
 cd $LETKFDIR

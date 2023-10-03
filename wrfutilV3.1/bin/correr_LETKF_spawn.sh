@@ -10,11 +10,9 @@
 #Load experiment configuration
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
-source $BASEDIR/conf/assimilation.conf
+source $BASEDIR/conf/${EXPTYPE}.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
-##### FIN INICIALIZACION ######
-eval $ENVSET  #Ejecutamos el entorno
 
 #Define and create run directory.
 LETKFDIRRUN=$LETKFDIR/run/

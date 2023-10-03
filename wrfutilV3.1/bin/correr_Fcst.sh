@@ -9,7 +9,7 @@
 ### CONFIGURACION
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
-source $BASEDIR/conf/assimilation.conf
+source $BASEDIR/conf/$EXPTYPE.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
 source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
@@ -137,6 +137,7 @@ TPROC=$WRFTPROC
 QTHREAD=$WRFTHREAD
 QWALLTIME=$WRFWALLTIME
 QPROC_NAME=FCST_${PASO}
+QCONF=$EXPTYPE.conf
 
 # Encolar
 echo "Tiempo en correr el real y  wrf"

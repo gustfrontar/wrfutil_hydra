@@ -9,11 +9,10 @@
 ### CONFIGURACION
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
-source $BASEDIR/conf/assimilation.conf
+source $BASEDIR/conf/${EXPTYPE}.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
 source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
-
 
 ##### FIN INICIALIZACION ######
 cd $WPSDIR 
@@ -47,5 +46,6 @@ QPROC=$PERTPROC
 QTHREAD=$PERTTHREAD
 QMIEM=01
 QWALLTIME=$WPSWALLTIME
+QCONF=${EXPTYPE}.conf
 queue 00 00
 check_proc 00 00

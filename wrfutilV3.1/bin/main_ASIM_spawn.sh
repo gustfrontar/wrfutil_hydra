@@ -22,10 +22,8 @@ if [ ! -z ${SLURM_SUBMIT_DIR} ]; then cd ${SLURM_SUBMIT_DIR};fi
 BASEDIR=$(pwd)/../
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
-source $BASEDIR/conf/assimilation.conf
+source $BASEDIR/conf/$EXPTYPE.conf
 source $BASEDIR/conf/machine.conf 
-#Set some environmental parameters
-eval "$ENVSET"
 
 ####################################
 #Calculamos la cantidad de pasos

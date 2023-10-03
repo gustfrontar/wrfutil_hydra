@@ -23,8 +23,7 @@ if [ ! -z ${SLURM_SUBMIT_DIR} ]; then cd ${SLURM_SUBMIT_DIR};fi
 BASEDIR=$(pwd)/../
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
-source $BASEDIR/conf/forecast.conf
-source $BASEDIR/conf/assimilation.conf
+source $BASEDIR/conf/$EXPTYPE.conf
 source $BASEDIR/conf/machine.conf
 
 ####################################
@@ -61,6 +60,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
       fi
    fi
 
+   exit
    #####  all assimilation cycles
    echo "Running cycle: $PASO"
    echo "$(printf "%02d" $PASO)  | $(date +'%s')" >>  $LOGDIR/cycles.log

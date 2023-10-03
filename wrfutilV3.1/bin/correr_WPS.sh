@@ -9,11 +9,10 @@
 #Load experiment configuration
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
-source $BASEDIR/conf/assimilation.conf
+source $BASEDIR/conf/${EXPTYPE}.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
 source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
-
 
 ##### FIN INICIALIZACION ######
 
@@ -99,6 +98,7 @@ EOF
 	QTHREADS=$WPSTHREAD
 	QMIEM=00
 	QWALLTIME=$WPSWALLTIME
+        QCONF=${EXPTYPE}.conf
 	queue 00 00 
 	check_proc 00 00
 fi
@@ -156,6 +156,7 @@ QPROC=$WPSPROC
 QTHREAD=$WPSTHREAD
 QWALLTIME=$WPSWALLTIME
 QPROC_NAME=WPS_${PASO}
+QCONF=${EXPTYPE}.conf
 
 # Encolar
 queue $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN

@@ -64,6 +64,6 @@ cp    $SPAWNPATH $WRFDIR/spawn.tar
 cp -r $WRFUTILDIR/bin $EXPDIR
 cp -r $WRFUTILDIR/lib $EXPDIR
 mkdir -p $NAMELISTDIR
-cp    $WRFUTILDIR/namelists/$NOMBRE/* $NAMELISTDIR/
+cp    $WRFUTILDIR/namelists/$MODEL_CONF_SET/* $NAMELISTDIR/
 mkdir -p $HISTDIR
 

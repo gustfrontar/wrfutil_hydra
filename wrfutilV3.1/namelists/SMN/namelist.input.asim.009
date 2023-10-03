@@ -1,32 +1,23 @@
  &time_control
- run_days                 = 00,
- run_hours                = __RUN_HOURS__,
- run_minutes              = __RUN_MINUTES__,
- run_seconds              = 00,
  start_year               = __START_YEAR__,
  start_month              = __START_MONTH__,
  start_day                = __START_DAY__,
  start_hour               = __START_HOUR__,
  start_minute             = __START_MINUTE__,
- start_second             = 00,
+ start_second             = __START_SECOND__,
  end_year                 = __END_YEAR__,
  end_month                = __END_MONTH__,  
  end_day                  = __END_DAY__,  
  end_hour                 = __END_HOUR__,  
  end_minute               = __END_MINUTE__,  
- end_second               = 00,  
+ end_second               = __END_SECOND__,  
  interval_seconds                    = __INTERVALO_WPS__
  input_from_file                     = .true.,
  history_interval                    = __INTERVALO_WRF__,  
  frames_per_outfile                  = 1, 1000, 1000,
  restart                             = .false.,
  restart_interval                    = 5000,
- io_form_history                     = 11
- io_form_restart                     = 11
- io_form_input                       = 11
  io_form_auxinput1                   = __IOTYPE__,
- io_form_boundary                    = 11, 
- history_outname                     = "./WRFOUT/wrfout_d<domain>_<date>",
  debug_level                         = 1
  /
  &domains
@@ -37,11 +28,11 @@
  step_to_output_time                 = .true.
  target_cfl                          = 1.2
  max_step_increase_pct               = 5
- starting_time_step                  = 20
+ starting_time_step                  = __DT__
  max_time_step                       = 50
  min_time_step                       = 10
  smooth_cg_topo                      = .false.
- time_step                           = 24,
+ time_step                           = __DT__,
  time_step_fract_num                 = 0,
  time_step_fract_den                 = 1,
  max_dom                             = 1,
