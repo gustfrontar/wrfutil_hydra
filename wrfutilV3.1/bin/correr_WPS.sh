@@ -90,7 +90,7 @@ if [ ! -e $WPSDIR/geogrid/geo_em.d01.nc ] ; then
 read -r -d '' QSCRIPTCMD << "EOF"
         cd $WPSDIR/geogrid
 	ulimit -s unlimited
-        $MPIEXE ./geogrid.exe
+        $MPIEXE ./geogrid.exe $WPS_RUNTIME_FLAGS
 EOF
         QPROC_NAME=GEOG_$PASO
 	QPROC=$WPSPROC
@@ -139,11 +139,11 @@ cd $WPSDIR/$MIEM
 
 #Corro el Ungrib 
 OMP_NUM_THREADS=1
-./ungrib.exe > ungrib.log
+./ungrib.exe $WPS_RUNTIME_FLAGS > ungrib.log
 [[ $? -ne 0 ]] && dispararError 9 "ungrib.exe"
 
 #Corro el Metgrid en paralelo
-$MPIEXE ./metgrid.exe
+$MPIEXE ./metgrid.exe $WPS_RUNTIME_FLAGS
 EC=$?
 [[ $EC -ne 0 ]] && dispararError 9 "metgrid.exe"
 

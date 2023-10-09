@@ -90,7 +90,7 @@ if [ ! -e $WRFDIR/code/da_update_bc.exe ] ; then
    tar -xf wrfda.tar -C $WRFDIR/code
 fi
 
-#script de ejecucion
+#Build the script to run REAL/DA-UPDATE-BC/WRF
 read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited
 source $BASEDIR/conf/model.conf
@@ -121,7 +121,7 @@ ln -sf $HISTDIR/WPS/met_em/${INI_BDY_DATE}/$MIEM/met_em* $WRFDIR/$MIEM/
 
 OMP_NUM_THREADS=$REALTHREADS
 OMP_STACKSIZE=512M
-$MPIEXE $WRFDIR/$MIEM/real.exe
+$MPIEXE $WRFDIR/$MIEM/real.exe $WRF_RUNTIME_FLAGS
 mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
 EXCOD=$?
 [[ $EXCOD -ne 0 ]] && dispararError 9 "real.exe"
@@ -132,7 +132,7 @@ if [ $PASO -gt 0 ] ; then
   mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
   cp $HISTDIR/ANAL/$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*$PASO)) seconds" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
   ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
-  time $WRFDIR/$MIEM/da_update_bc.exe > ./da_update_bc_${PASO}_${MIEM}.log 
+  time $WRFDIR/$MIEM/da_update_bc.exe $WRF_RUNTIME_FLAGS > ./da_update_bc_${PASO}_${MIEM}.log 
 fi
 
 echo "Corriendo WRF en Miembro $MIEM"
@@ -148,8 +148,7 @@ EOF
 
 cd $WRFDIR
 
-# Parametros de encolamiento
-## Calculo cuantos miembros hay que correr
+#Node / core distribution parameters
 QNODE=$WRFNODE
 QPROC=$WRFPROC
 TPROC=$WRFTPROC
@@ -158,12 +157,12 @@ QWALLTIME=$WRFWALLTIME
 QPROC_NAME=GUESS_${PASO}
 QCONF=${EXPTYPE}.conf
 
-# Encolar
+#Execute the job 
 echo "Tiempo en correr el real, update bc y wrf"
 queue $MIEMBRO_INI $MIEMBRO_FIN 
 time check_proc $MIEMBRO_INI $MIEMBRO_FIN
 
-#Copiamos los archivos del Guess correspondientes a la hora del analisis.
+#Copy the guess files corresponding to the analysis time.
 if [[ ! -z "$GUARDOGUESS" ]] && [[ $GUARDOGUESS -eq 1 ]] ; then
    for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
        OUTPUTPATH="$HISTDIR/GUES/$(date -u -d "$FECHA_ANALISIS UTC" +"%Y%m%d%H%M%S")/"

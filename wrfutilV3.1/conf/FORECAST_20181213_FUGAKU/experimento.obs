@@ -1,0 +1,13 @@
+
+export DIROBSREPO=$BASEDIR"/tmp/OBSREPO/"
+export OBSprocesados=$BASEDIR"/tmp/OBSBIN/"
+export BOBSASIM=$BASEDIR"/tmp/OBSASIM/"
+
+export TESPERA=90
+export TASIM=60
+export OBSFREC=10
+export NIVELAIRS=200
+
+
+export FECHA_INI="2019/08/22"
+export CICLO=12

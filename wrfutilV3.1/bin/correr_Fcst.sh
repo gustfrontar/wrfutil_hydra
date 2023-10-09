@@ -9,7 +9,7 @@
 ### CONFIGURACION
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
-source $BASEDIR/conf/$EXPTYPE.conf
+source $BASEDIR/conf/${EXPTYPE}.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
 source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
@@ -76,15 +76,15 @@ if [ ! -e $WRFDIR/code/real.exe ] ; then
    tar -xf wrf.tar -C $WRFDIR/code
    #Si existe el namelist.input lo borramos para que no interfiera
    #con los que crea el sistema de asimilacion
-   if [ -e namelist.input ] ; then
-      rm -f namelist.input
+   if [ -e $WRFDIR/code/namelist.input ] ; then
+      rm -f $WRFDIR/code/namelist.input
    fi
 fi
 
-#script de ejecucion
+#Build the script to run REAL/DA-UPDATE-BC/WRF
 read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited
-source $BASEDIR/conf/$EXPMODELCONF
+source $BASEDIR/conf/model.conf
 echo "Procesando Miembro $MIEM" 
 cd $WRFDIR
 [[ -d $WRFDIR/$MIEM ]] && rm -r $WRFDIR/$MIEM
@@ -92,26 +92,26 @@ mkdir -p $WRFDIR/$MIEM
 cd $WRFDIR/$MIEM
 
 if [ $MULTIMODEL -eq 0 ] ; then
-   NLCONF=$(printf '%03d' $((10#$MODEL_CONF)) )
-else
-   NLCONF=$(printf '%03d' $(( ( (10#$MIEM-1) % 10#$NCONF) + 1 )))
+   NLCONF=$(printf '%03d' ${MODEL_CONF} )
+else 
+   NLCONF=$(printf '%03d' $((10#$MIEM % 10#$NCONF)))
 fi
 cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
 
 ln -sf $WRFDIR/code/* . 
 if [ $WPS_CYCLE -eq 1 ] ; then
-   FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
-   FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )
-   FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY" +"%Y%m%d%H%M%S")
+   INI_STEP_DATE=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
+   INI_BDY_DATE=$(date_floor "$INI_STEP_DATE" $INTERVALO_INI_BDY )
+   INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
 else
-   FECHA_INI_BDY=$(date_floor "$FECHA_INI" $INTERVALO_INI_BDY )
-   FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY" +"%Y%m%d%H%M%S")
+   INI_BDY_DATE=$(date_floor "$FECHA_INI" $INTERVALO_INI_BDY )
+   INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
 fi
 
-ln -sf $HISTDIR/WPS/met_em/${FECHA_INI_BDY}/$MIEM/met_em* $WRFDIR/$MIEM/
+ln -sf $HISTDIR/WPS/met_em/${INI_BDY_DATE}/$MIEM/met_em* $WRFDIR/$MIEM/
 OMP_NUM_THREADS=$REALTHREADS
 OMP_STACKSIZE=512M
-$MPIEXE $WRFDIR/$MIEM/real.exe
+$MPIEXE $WRFDIR/$MIEM/real.exe $WRF_RUNTIME_FLAGS
 mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
 EXCOD=$?
 [[ $EXCOD -ne 0 ]] && dispararError 9 "real.exe"
@@ -119,7 +119,7 @@ EXCOD=$?
 echo "Corriendo WRF en Miembro $MIEM"
 export OMP_NUM_THREADS=1
 
-$MPIEXE  $MPIARGS $WRFDIR/$MIEM/wrf.exe
+$MPIEXE $WRFDIR/$MIEM/wrf.exe $WRF_RUNTIME_FLAGS 
 excod=$?
 res="ERROR"
 test=$(tail -n1 $WRFDIR/$MIEM/rsl.error.0000 | grep SUCCESS ) && res="OK"
@@ -129,22 +129,21 @@ EOF
 
 cd $WRFDIR
 
-# Parametros de encolamiento
-## Calculo cuantos miembros hay que correr
+#Node / core distribution parameters
 QNODE=$WRFNODE
 QPROC=$WRFPROC
 TPROC=$WRFTPROC
 QTHREAD=$WRFTHREAD
 QWALLTIME=$WRFWALLTIME
 QPROC_NAME=FCST_${PASO}
-QCONF=$EXPTYPE.conf
+QCONF=${EXPTYPE}.conf
 
-# Encolar
+#Execute the job 
 echo "Tiempo en correr el real y  wrf"
 queue $MIEMBRO_INI $MIEMBRO_FIN 
 time check_proc $MIEMBRO_INI $MIEMBRO_FIN
 
-#Copiamos los archivos del Guess correspondientes a la hora del analisis.
+#Copy wrfout files to its final destionation.
 for QMIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
     OUTPUTPATH="$HISTDIR/FCST/$(date -u -d "$FECHA_FORECAST_INI UTC" +"%Y%m%d%H%M%S")/${QMIEM}/"
     mkdir -p $OUTPUTPATH
