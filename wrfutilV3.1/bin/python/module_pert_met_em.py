@@ -47,6 +47,14 @@ def get_file_lists ( conf ) :
         
     return EnsFileList , TargetEnsFileList 
 
+def get_netcdf_type( conf , TestFile ) :
+
+    my_ds = nc.Dataset( TestFile , 'r' )
+
+    conf['DataModel'] = my_ds.data_model
+
+    return conf
+
 def read_ens( file_list , variable , conf ) :
     #file_list a list containing the full path to the files belonging to the ensemble for a particular time.
     #variable is the variable to be accessed
@@ -83,12 +91,19 @@ def create_ens_files( file_list , template_file , conf ) :
         #Create the file directory if it does not exist.
         os.makedirs( os.path.dirname( my_file ) , exist_ok=True)
         #Create the file and transfer template information into the file.
-        my_ds = nc.Dataset( my_file , 'w' , format='NETCDF4' )
+        if conf['NetCDF4'] :
+           my_ds = nc.Dataset( my_file , 'w' , format='NETCDF4' )            #Force NETCDF4 Output (independent of input data format)
+        else               :
+           my_ds = nc.Dataset( my_file , 'w' , format=conf['DataModel'] )    #Use the input data format as output data format.
+
         my_ds.setncatts( template_ds.__dict__)
         for dname , the_dim in template_ds.dimensions.items():
             my_ds.createDimension(dname, len(the_dim) if not the_dim.isunlimited() else None)
         for v_name, varin in template_ds.variables.items():
-             my_var = my_ds.createVariable(v_name, varin.datatype, varin.dimensions , compression='zlib' )
+             if conf['NetCDF4'] or conf['DataModel'] == 'NETCDF4' :
+                my_var = my_ds.createVariable(v_name, varin.datatype, varin.dimensions , compression='zlib' )
+             else                                                 :
+                my_var = my_ds.createVariable(v_name, varin.datatype, varin.dimensions )
              my_var.setncatts({k: varin.getncattr(k) for k in varin.ncattrs()})
              my_var[:] = varin[:]
         my_ds.close()

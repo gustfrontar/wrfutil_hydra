@@ -31,6 +31,7 @@ sed -i -e "s|__PERT_AMP__|$PERT_AMP|g"                                          
 sed -i -e "s|__PERT_TYPE__|'$PERT_TYPE'|g"                                      $WPSDIR/main_perturb_met_em.py
 sed -i -e "s|__VAR_LIST__|$VAR_LIST|g"                                          $WPSDIR/main_perturb_met_em.py
 sed -i -e "s|__THREADS_NUM__|$PERTTHREADS|g"                                    $WPSDIR/main_perturb_met_em.py
+sed -i -e "s|__NETCDF4__|$NETCDF4|g"                                            $WPSDIR/main_perturb_met_em.py
 
 read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited

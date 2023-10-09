@@ -31,8 +31,8 @@ cat $COMMONDIR/netlibblas.f >> netlib2.f
 LBLAS=""
 fi
 
-NETCDF=/opt/netcdf/netcdf_c-4.8.1_fortran-4.5.3/intel/2021.4.0/   #Hydra
-#NETCDF=/home/ra000007/a04037/data/comp_libs/netcdf/                #Fugaku - intel
+#NETCDF=/opt/netcdf/netcdf_c-4.8.1_fortran-4.5.3/intel/2021.4.0/   #Hydra
+NETCDF=/home/ra000007/a04037/data/comp_libs/netcdf/                #Fugaku - intel
 
 
 LIB_NETCDF="-L$NETCDF/lib/ -lnetcdff -lnetcdf"

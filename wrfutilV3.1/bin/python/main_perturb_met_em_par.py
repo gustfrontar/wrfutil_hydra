@@ -16,27 +16,15 @@ np.random.seed(10) #Fix the random seed (generated perturbation weigths are fixe
 
 conf = dict()
 #Get value of environment variables. 
-#The base path for the original ensemble member met_em files.
-conf['BasePathOri'] = __BASE_PATH_ORI__
-
+conf['BasePathOri'] = __BASE_PATH_ORI__                  #The base path for the original ensemble member met_em files.
 conf['BasePathOut'] = __BASE_PATH_OUT__
-
-#The number of ensemble member in the target ensemble.
-conf['TargetEnsembleSize']= __TARGET_ENSEMBLE_SIZE__
-#The number of ensemble members in the original ensemble.
-conf['ActualEnsembleSize']= __ACTUAL_ENSEMBLE_SIZE__
-#The perturbation randomization amplitud (for RejuGauss and RejuUniform )
-conf['PertAmp']= __PERT_AMP__
-#The type of perturbation transformation (RejuGauss , RejuUniform , Specular )
-conf['PertType'] = __PERT_TYPE__
-#TODO check variable list.
-#The list of variables that whose perturbations will be transformed.
-conf['VarList'] = __VAR_LIST__
-
-#["PRES", "SM", "ST", "GHT", "SKINTEMP",
-#           "ST100200", "ST040100", "ST010040", "ST000010",
-#           "SM100200", "SM040100", "SM010040", "SM000010",
-#           "PSFC", "RH", "UU", "VV", "TT", "PMSL" ]
+conf['TargetEnsembleSize']= __TARGET_ENSEMBLE_SIZE__     #The number of ensemble member in the target ensemble.
+conf['ActualEnsembleSize']= __ACTUAL_ENSEMBLE_SIZE__     #The number of ensemble members in the original ensemble.
+conf['PertAmp']= __PERT_AMP__                            #The perturbation randomization amplitud (for RejuGauss and RejuUniform )
+conf['PertType'] = __PERT_TYPE__                         #The type of perturbation transformation (RejuGauss , RejuUniform , Specular 
+conf['VarList'] = __VAR_LIST__                           #List containing the variable names to be perturbed. 
+conf['NetCDF4'] = __NETCDF4__                            #If TRUE, NETCDF4 output will be forced independently of the input format.
+                                                         #if FALSE, then the output format will be the same as the input format.
 
 conf['FileSearchString'] = 'met_em*.nc*'
 
@@ -48,13 +36,15 @@ conf['FileSearchString'] = 'met_em*.nc*'
 #target ensemble. This files will be created later.  
 EnsFileList , TargetEnsFileList = mpm.get_file_lists( conf )
 
+conf = mpm.get_netcdf_type( conf , EnsFileList[0][0] )
+print( 'The base data model is ',conf['DataModel'] )
+
 
 #Get the perturbation trnasform matrix
 Tm = mpm.get_pert_matrix( conf )
     
 #For each met_em file (this includes times and eventually procs) read, transform and expand, and write
 #the ensemble perturbations.
-#TODO this loop can be paralelized over EnsFileList (times x procs)
 def pert_file_type( my_ens_file_list , my_target_ens_file_list , my_Tm , conf ) :
      #Create ensemble files for the output ensemble
      print('Processing file type: ', my_ens_file_list[0] )

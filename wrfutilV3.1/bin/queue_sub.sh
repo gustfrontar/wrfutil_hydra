@@ -2,7 +2,7 @@ COMMAND=$1  #The script to be submitted to the queue.
 
 BASEDIR=$(pwd)/../
 source $BASEDIR/conf/machine.conf  #Load information about the requested number of nodes 
-                              #and the requested number of processors per node. 
+                                   #and the requested number of processors per node. 
 
 #PBSSSH - the main script is submitted to the queue.
 if [ "$QUEUESYS" = "PBSSSH" ] ; then
@@ -10,15 +10,8 @@ if [ "$QUEUESYS" = "PBSSSH" ] ; then
 fi
 
 #SLURM
-if [ "$QUEUESYS" = "SLURM" ] ; then
-   #NOTA: I could not make this run in batch mode in Fugaku PPS. 
-   #It only runs in interactive mode (with srun) but it hangs at
-   #the mpirun call in the non interactive mode. 
-   #Is this something related to the use of MPI_SPAWN?
-   #To do this less interactive this script can be called with nohup. 
-   srun --export=ALL -c $ICORE --mem 30G -e error.log -p mem1 ${COMMAND}
-   #sbatch -N 1 --cpus-per-task 4 -t 00:10:00 -p mem1  ${COMMAND}
-
+if [ "$QUEUESYS" = "SLURMSSH" ] ; then
+   sbatch -N $INODE -c $ICORE -e error.log -p mem1 ${COMMAND}
 fi
 
 #PJM  FUGAKU / FX100 / FX10 
