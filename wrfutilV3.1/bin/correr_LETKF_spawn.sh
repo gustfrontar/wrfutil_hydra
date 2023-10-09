@@ -13,7 +13,7 @@ source $BASEDIR/conf/config.env
 source $BASEDIR/conf/${EXPTYPE}.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
-
+source $BASEDIR/conf/letkf.conf
 #Define and create run directory.
 LETKFDIRRUN=$LETKFDIR/run/
 rm -fr $LETKFDIRRUN
