@@ -139,7 +139,7 @@ cd $WPSDIR/$MIEM
 
 #Corro el Ungrib 
 OMP_NUM_THREADS=1
-./ungrib.exe $WPS_RUNTIME_FLAGS > ungrib.log
+$MPIEXESERIAL ./ungrib.exe $WPS_RUNTIME_FLAGS > ungrib.log
 [[ $? -ne 0 ]] && dispararError 9 "ungrib.exe"
 
 #Corro el Metgrid en paralelo

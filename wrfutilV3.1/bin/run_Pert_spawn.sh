@@ -12,7 +12,7 @@ source $BASEDIR/conf/config.env
 source $BASEDIR/conf/${EXPTYPE}.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
-source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
+source $BASEDIR/lib/spawn_utils.sh
 
 ##### FIN INICIALIZACION ######
 cd $WPSDIR 
@@ -31,22 +31,11 @@ sed -i -e "s|__PERT_AMP__|$PERT_AMP|g"                                          
 sed -i -e "s|__PERT_TYPE__|'$PERT_TYPE'|g"                                      $WPSDIR/main_perturb_met_em.py
 sed -i -e "s|__VAR_LIST__|$VAR_LIST|g"                                          $WPSDIR/main_perturb_met_em.py
 sed -i -e "s|__THREADS_NUM__|$PERTTHREADS|g"                                    $WPSDIR/main_perturb_met_em.py
-sed -i -e "s|__NETCDF4__|$NETCDF4|g"                                            $WPSDIR/main_perturb_met_em.py
 
-read -r -d '' QSCRIPTCMD << "EOF"
+#read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited
 cd $WPSDIR
-python -u ./main_perturb_met_em.py > main_perturb_met_em.out 
+$PYTHON -u ./main_perturb_met_em.py > main_perturb_met_em.out 
 EC=$?
 [[ $EC -ne 0 ]] && dispararError 9 "main_perturb_met_em.py"
-EOF
 
-QPROC_NAME=PERT_$PASO
-QNODE=$PERTNODE
-QPROC=$PERTPROC
-QTHREAD=$PERTTHREAD
-QMIEM=01
-QWALLTIME=$WPSWALLTIME
-QCONF=${EXPTYPE}.conf
-queue 00 00
-check_proc 00 00

@@ -132,7 +132,7 @@ if [ $PASO -gt 0 ] ; then
   mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
   cp $HISTDIR/ANAL/$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*$PASO)) seconds" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
   ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
-  time $WRFDIR/$MIEM/da_update_bc.exe $WRF_RUNTIME_FLAGS > ./da_update_bc_${PASO}_${MIEM}.log 
+  time $MPIEXESERIAL $WRFDIR/$MIEM/da_update_bc.exe $WRF_RUNTIME_FLAGS > ./da_update_bc_${PASO}_${MIEM}.log 
 fi
 
 echo "Corriendo WRF en Miembro $MIEM"

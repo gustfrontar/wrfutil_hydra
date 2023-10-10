@@ -49,11 +49,11 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
       echo " Step | TimeStamp" > $LOGDIR/cycles.log
       if [ $RUN_WPS -eq 1 ] ; then 
          echo "Corriendo el WPS"
-         time $BASEDIR/bin/correr_WPS.sh > $LOGDIR/log_wps_${PASO}.log
+         time $BASEDIR/bin/run_WPS.sh > $LOGDIR/log_wps_${PASO}.log
       fi
       if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
 	 echo "Vamos a perturbar los met_em"
-         time $BASEDIR/bin/correr_Pert.sh > $LOGDIR/pert_met_em_${PASO}.log   2>&1
+         time $BASEDIR/bin/run_Pert.sh > $LOGDIR/pert_met_em_${PASO}.log   2>&1
       elif [ $BDY_PERT -eq 0 ] ; then
          echo "Linking met_em directory"
 	 time ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em > $LOGDIR/pert_met_em_${PASO}.log  2>&1
@@ -66,9 +66,9 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    echo "$(printf "%02d" $PASO)  | $(date +'%s')" >>  $LOGDIR/cycles.log
 
    echo "Vamos a ejecutar el real, el da_upbdate_bc y el wrf"
-   time $BASEDIR/bin/correr_Guess.sh > $LOGDIR/guess_${PASO}.log  2>&1
+   time $BASEDIR/bin/run_Guess.sh > $LOGDIR/guess_${PASO}.log  2>&1
    echo "Vamos a ejecutar el LETKF"
-   time $BASEDIR/bin/correr_LETKF.sh > $LOGDIR/letkf_${PASO}.log  2>&1
+   time $BASEDIR/bin/run_LETKF.sh > $LOGDIR/letkf_${PASO}.log  2>&1
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))
    echo "Update PASO in the configuration file."

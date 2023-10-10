@@ -1,0 +1,132 @@
+Code compilation:
+
+Step 0
+======
+
+The follwing code should be installed before hand
+WRF, WPS, WRFDA
+
+WRF, WRFDA and WPS code is available from the following git repositories.
+https://github.com/wrf-model/WRF
+https://github.com/wrf-model/WPS
+
+This guide provide information on how to compile WRF, WPS and WRFDA from scratch
+https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compilation_tutorial.php
+
+Also the geographycal statical data has to be downloaded from this location
+https://www2.mmm.ucar.edu/wrf/users/download/get_sources_wps_geog.html
+
+Additionally to WRF code, the following programs needs to be compiled.
+There are a couple of compilation scripts available for some compilers and 
+computer environments. If these do not correspond to your environment you will
+have to edit the compilation scripts before runing a successfull compilation.
+
+LETKF -> /letkf_code/src/wrf/letkf/make_letkf_$COMPILER.sh 
+ENSEMBLE SPAWNER -> /letkf_code/src/ensemble_spawn/make_spawner_$COMPILER.sh [ Only required to run the scripts that use spawn to distribute the ensemble members ]
+WRF_TO_WPS -> /letkf_code/src/wrf/wrf_to_wps/make_wrf_to_wps_$COMPILER.sh 
+
+
+Step 1
+======
+
+Edit and run the script>
+/wrf_code/create_tar_$COMPILER
+
+This will create tar files with the executables and required files to run
+WRF, WPS and WRFDA. This tar files will be used to create experiments using the
+scripts under the wrfutil folder.
+
+
+Step 2
+======
+
+Go to the /wrfutilv$VERSION  folder.
+
+Under the "conf" folder you will find subfolders containing configuration files templates. 
+
+Copy or modify one of these templates according to your environment and your experiment settings.
+
+config.env -> contains the experiment name and the location of the "tar" files containing the compiled code. 
+
+machine.conf -> contains the machine characteristics and the resources to be required by the experiment.
+                It also contain some machine dependent variables that need to be set to run the experiments.
+                If your system is not listed you will have to find out which additional settings are required
+                by your system in order to run the different steps. 
+
+model.conf   -> contains the basic settings of the WRF model domain. Size, location, resolution, etc. 
+                All other configurations will be taken from the namelist templates located in the "namelists" folder.
+          
+
+assimilation.conf -> in an assimilation experiment (this is defined in the config.env file) this file controls the assimilation frequency
+                     the start date, end date, etc. 
+
+forecast.conf     -> in a forecast experiment (this is defined in the config.env file) this file controls the forecast initialization frequency
+                     , forecast lead time, etc.
+
+letkf.conf        -> in an assimilation experiment this file controls some aspects of the Local Ensemble Transform Based assimilation as
+                     localization scales, type of observation assimilated, inflation factors, etc.
+
+
+Some detail about the meaning of different flags defined in the configuration files are provided in the configuration files.
+
+
+Step 3
+======
+
+To create a experiment use the scripts located in  /wrfutilv$VERSION/bin/
+
+createExpASIM.sh $EXP_NAME -> creates a data assimilation experiment
+createExpFCST.sh $EXP_NAME -> creates a forecast experiment
+
+$EXP_NAME is the experiment name. Note that a folder named $EXP_NAME should exist
+in /wrfutil$VERSION/conf/ containing all the configuration files described above. 
+
+Also $EXP_NAME should be consistent with the value of the variable $EXP_NAME in the corresponding config.env file. 
+
+When running the experiment creation scripts a new folder will be created at the location 
+indicated by the variable BASEDIR in the config.env file. 
+
+A copy of the bash scripts and the tar files will be done so all the required information will be 
+copyed to the new folder. The only data that is not copied to the experiment folder is the GFS boundary conditions data
+and the WRF static geographycal data (mainly because of their size). 
+
+
+Step 4
+======
+
+Prepare boundary conditions data for your experiments. For the moment the outhermost boundary conditions for the experiment
+came from the Global Ensemble Forecasting System (NCEP). Data is freely available through the Amazon Web Services repository.
+The script located in wrfutil$VERSION/bin/python/get_archived_gefs_data.py can be used to downlad this data for a particular
+time. 
+More information about this dataset can be found here:
+https://aws.amazon.com/marketplace/pp/prodview-qumzmkzc2acri#resources
+
+Step 5
+======
+
+Run a simple forecast experiment. 
+
+Runing an ensemble forecast experiment initialized from the GEFS using the WRF model. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

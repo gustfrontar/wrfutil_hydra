@@ -45,17 +45,18 @@ queue (){
 
         #2 - Create the scripts
         for QMIEM in $(seq -w $ini_mem $end_mem) ; do
-		echo "source $BASEDIR/conf/config.env"                                         > ${QPROC_NAME}_${QMIEM}.pbs 
-                echo "source $BASEDIR/conf/machine.conf"                                      >> ${QPROC_NAME}_${QMIEM}.pbs
-                echo "source $BASEDIR/conf/$QCONF"                                            >> ${QPROC_NAME}_${QMIEM}.pbs
-		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                    >> ${QPROC_NAME}_${QMIEM}.pbs
-                echo "MIEM=$QMIEM "                                                           >> ${QPROC_NAME}_${QMIEM}.pbs
-         	echo "export MPIEXE=\"mpiexec -np ${QPROC} -machinefile ../machine.$QMIEM \" ">> ${QPROC_NAME}_${QMIEM}.pbs                   ## Comando MPIRUN con cantidad de nodos y cores por nodos           
-	       	test $QWORKDIR &&  echo "cd ${QWORKDIR}/${QMIEM}"                             >> ${QPROC_NAME}_${QMIEM}.pbs
-	        echo "${QSCRIPTCMD}"                                                          >> ${QPROC_NAME}_${QMIEM}.pbs
-	        echo "if [[ -z \${res} ]] || [[ \${res} -eq "OK" ]] ; then"                   >> ${QPROC_NAME}_${QMIEM}.pbs
-	        echo "touch $PROCSDIR/${QPROC_NAME}_${QMIEM}_ENDOK  "                         >> ${QPROC_NAME}_${QMIEM}.pbs  #Si existe la variable RES en el script la usamos
-	        echo "fi                                            "                         >> ${QPROC_NAME}_${QMIEM}.pbs
+		echo "source $BASEDIR/conf/config.env"                                             > ${QPROC_NAME}_${QMIEM}.pbs 
+                echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}_${QMIEM}.pbs
+                echo "source $BASEDIR/conf/$QCONF"                                                >> ${QPROC_NAME}_${QMIEM}.pbs
+		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                        >> ${QPROC_NAME}_${QMIEM}.pbs
+                echo "MIEM=$QMIEM "                                                               >> ${QPROC_NAME}_${QMIEM}.pbs
+                echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -machinefile ../machine.$QMIEM \"  "  >> ${QPROC_NAME}_${QMIEM}.pbs
+         	echo "export MPIEXE=\"mpiexec -np ${QPROC} -machinefile ../machine.$QMIEM \" "    >> ${QPROC_NAME}_${QMIEM}.pbs                   ## Comando MPIRUN con cantidad de nodos y cores por nodos           
+	       	test $QWORKDIR &&  echo "cd ${QWORKDIR}/${QMIEM}"                                 >> ${QPROC_NAME}_${QMIEM}.pbs
+	        echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}_${QMIEM}.pbs
+	        echo "if [[ -z \${res} ]] || [[ \${res} -eq "OK" ]] ; then"                       >> ${QPROC_NAME}_${QMIEM}.pbs
+	        echo "touch $PROCSDIR/${QPROC_NAME}_${QMIEM}_ENDOK  "                             >> ${QPROC_NAME}_${QMIEM}.pbs  #Si existe la variable RES en el script la usamos
+	        echo "fi                                            "                             >> ${QPROC_NAME}_${QMIEM}.pbs
         done
 
         #3 - Run the scripts

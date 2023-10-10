@@ -51,6 +51,7 @@ queue (){
                 echo "source $BASEDIR/conf/$QCONF      "                                          >> ${QPROC_NAME}_${QMIEM}.pbs
 		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                        >> ${QPROC_NAME}_${QMIEM}.pbs
                 echo "MIEM=$QMIEM "                                                               >> ${QPROC_NAME}_${QMIEM}.pbs
+                echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -vcoordfile ../machine.$QMIEM \"  "   >> ${QPROC_NAME}_${QMIEM}.pbs
          	echo "export MPIEXE=\"\$MPIEXEC                -vcoordfile ../machine.$QMIEM \"  ">> ${QPROC_NAME}_${QMIEM}.pbs ## Comando MPIRUN con cantidad de nodos y cores por nodos           
 	       	test $QWORKDIR &&  echo "cd ${QWORKDIR}/${QMIEM}"                                 >> ${QPROC_NAME}_${QMIEM}.pbs
 	        echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}_${QMIEM}.pbs

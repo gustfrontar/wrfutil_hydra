@@ -27,7 +27,14 @@ source $BASEDIR/conf/machine.conf
 ####################################
 #Calculamos la cantidad de pasos
 ####################################
-PASOS_RESTANTES=$((($(date -d "$FECHA_FIN" +%s) - $(date -d "$FECHA_INI" +%s))/$ANALISIS_FREC ))
+if [ $EXPTYPE == 'assimilation' ] ; then
+   PASOS_RESTANTES=$((($(date -d "$FECHA_FIN" +%s) - $(date -d "$FECHA_INI" +%s)) / $ANALISIS_FREC ))
+elif [ $EXPTYPE == 'forecast' ]  ; then
+   PASOS_RESTANTES=$((( ($(date -d "$FECHA_FIN" +%s) - $(date -d "$FECHA_INI" +%s)) - $FORECAST_LEAD_TIME ) / $FORECAST_INI_FREQ + 1 ))
+else
+   echo "Error: Not recognized experiment type."
+   exit
+fi
 PASOS_RESTANTES=$((10#$PASOS_RESTANTES-10#$PASO))
 
 echo "El experimento abarca desde $FECHA_INI hasta $FECHA_FIN"
@@ -39,11 +46,11 @@ rm -f $PROCSDIR/*_ENDOK
 echo " Step | TimeStamp" > $LOGDIR/cycles.log
 if [ $RUN_WPS -eq 1 ] ; then 
    echo "Corriendo el WPS"
-   time $BASEDIR/bin/correr_WPS_spawn.sh > $LOGDIR/log_wps_${PASO}.log
+   time $BASEDIR/bin/run_WPS_spawn.sh > $LOGDIR/log_wps_${PASO}.log
 fi
 if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
    echo "Vamos a perturbar los met_em"
-   time $BASEDIR/bin/correr_Pert_spawn.sh > $LOGDIR/pert_met_em_${PASO}.log   2>&1
+   time $BASEDIR/bin/run_Pert_spawn.sh > $LOGDIR/pert_met_em_${PASO}.log   2>&1
 elif [ $BDY_PERT -eq 0 ] ; then
    echo "Linking met_em directory"
    time ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em > $LOGDIR/pert_met_em_${PASO}.log  2>&1
