@@ -126,7 +126,7 @@ for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
       FECHA_INI_PASO=$FECHA_INI
    fi
    FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )
-   BDYBASE=$BDYDIR/gefs.$(date -d "$FECHA_INI_BDY" +"%Y%m%d")/$(date -d "$FECHA_INI_BDY" +"%H")/$BDYPREFIX/$MIEM/
+   BDYBASE=$BDYPATH/gefs.$(date -d "$FECHA_INI_BDY" +"%Y%m%d")/$(date -d "$FECHA_INI_BDY" +"%H")/$BDYPREFIX/$MIEM/
    echo "Estoy buscando los archivos del BDY en la carpeta $BDYBASE"
    #Linkeo los gribs
    cd $WPSDIR/$MIEM

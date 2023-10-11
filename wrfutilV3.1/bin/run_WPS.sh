@@ -12,38 +12,39 @@ source $BASEDIR/conf/config.env
 source $BASEDIR/conf/${EXPTYPE}.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
-source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
+source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                    
 
 ##### FIN INICIALIZACION ######
 
-####
-## Configuracion del namelist.wps
-## 1era Parte
-###
-
-#Descomprimimos el archivo .tar (si es que no fue descomprimido)
+#Decompress tar files
 if [ ! -e $WPSDIR/code/geogrid.exe ] ; then
    echo "Descomprimiendo WPS"
    mkdir -p $WPSDIR/code
-   mv $WPSDIR/wps.tar $WPSDIR/code
-   cd $WPSDIR/code 
-   tar -xf wps.tar
-   #Si existe el namelist.wps lo borramos para que no interfiera
-   #con los que crea el sistema de asimilacion
-   if [ -e namelist.wps ] ; then
-      rm -f namelist.wps 
+   tar -xf $WPSDIR/wps.tar -C $WPSDIR/code
+   #Remove namelist.wps (it will be created later from the templates)
+   if [ -e $WPSDIR/code/namelist.wps ] ; then
+      rm -f $WPSDIR/code/namelist.wps 
    fi
 fi
 
-#Editamos el namelist.wps [Esto es para un experimento asi que asumimos que ya esta toda la info de los bordes disponibles en formato grib disponible]
+if [ ! -e $WPSDIR/code/wrf_to_wps.exe ] ; then
+   echo "Descomprimiendo WRF_TO_WPS"
+   mkdir -p $WPSDIR/code
+   tar -xf $WPSDIR/wrf_to_wps.tar -C $WPSDIR/code
+fi
+
+
 mkdir -p $WPSDIR
 cp $NAMELISTDIR/namelist.wps $WPSDIR/
 
-#Buscamos la fecha inmediatamente inferior al inicio del experimento en en base a la frecuencia de los archivos del ensamble de condiciones de borde.  
+#We found the closests dates in the boundary data to the initial and final times of the forecast. 
 
 if [ $WPS_CYCLE -eq 1 ] ; then 
+   #WPS_CYCLE = 1 means that boundary data will be taken from forecasts initialized at different times. 
+   #so there is a bdy forecast initialization frequency and a bdy data output frequency. 
    #Find the prior bdy data initialization date closest to the current step date 
    FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($WPS_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
+   #Find the posterior bdy data initialization date closest to the forecast end date
    FECHA_END_PASO=$(date -u -d "$FECHA_INI UTC +$((($WPS_INI_FREQ*$PASO)+$WPS_LEAD_TIME )) seconds" +"%Y-%m-%d %T")
 else 
    #Asume that bdy data for the entire experiment is available in the same folder (eg using analysis as bdy or for short experiments that use a single forecasts as bdy)	
@@ -56,32 +57,32 @@ else
    FECHA_END_PASO=$FECHA_FIN
 fi
 
-FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_BDY )    #Get the closest prior date in which BDY data is available.
-FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY UTC" +"%Y-%m-%d_%T" ) #Cambio al formato WPS
-FECHA_END_BDY=$(date_ceil  "$FECHA_END_PASO" $INTERVALO_BDY )    #Get the closest posterior date in which BDY data is available. 
-FECHA_END_BDY=$(date -u -d "$FECHA_END_BDY UTC" +"%Y-%m-%d_%T" ) #Cambio al formato WPS
+DATE_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_BDY )   #Get the closest prior date in which BDY data is available.
+DATE_INI_BDY=$(date -u -d "$DATE_INI_BDY UTC" +"%Y-%m-%d_%T" ) #Cambio al formato WPS
+DATE_END_BDY=$(date_ceil  "$FECHA_END_PASO" $INTERVALO_BDY )   #Get the closest posterior date in which BDY data is available. 
+DATE_END_BDY=$(date -u -d "$DATE_END_BDY UTC" +"%Y-%m-%d_%T" ) #Cambio al formato WPS
 
-sed -i -e "s|__FECHA_INI__|$FECHA_INI_BDY|g" $WPSDIR/namelist.wps
-sed -i -e "s|__FECHA_FIN__|$FECHA_END_BDY|g" $WPSDIR/namelist.wps
+#Edit the namelist from the template
+sed -i -e "s|__FECHA_INI__|$DATE_INI_BDY|g"   $WPSDIR/namelist.wps
+sed -i -e "s|__FECHA_FIN__|$DATE_END_BDY|g"   $WPSDIR/namelist.wps
 sed -i -e "s|__INTERVALO__|$INTERVALO_WPS|g"  $WPSDIR/namelist.wps
-sed -i -e "s|__E_WE__|$E_WE|g" $WPSDIR/namelist.wps
-sed -i -e "s|__E_SN__|$E_SN|g" $WPSDIR/namelist.wps
-sed -i -e "s|__DX__|$DX|g" $WPSDIR/namelist.wps
-sed -i -e "s|__DY__|$DY|g" $WPSDIR/namelist.wps
-sed -i -e "s|__MAP_PROJ__|$MAP_PROJ|g" $WPSDIR/namelist.wps
-sed -i -e "s|__REF_LAT__|$REF_LAT|g" $WPSDIR/namelist.wps
-sed -i -e "s|__REF_LON__|$REF_LON|g" $WPSDIR/namelist.wps
-sed -i -e "s|__TRUELAT1__|$TRUELAT1|g" $WPSDIR/namelist.wps
-sed -i -e "s|__TRUELAT2__|$TRUELAT2|g" $WPSDIR/namelist.wps
-sed -i -e "s|__STAND_LON__|$STAND_LON|g" $WPSDIR/namelist.wps
-sed -i -e "s|__GEOG__|$GEOG|g" $WPSDIR/namelist.wps
-sed -i -e "s|__IOTYPE__|$IOTYPE|g" $WPSDIR/namelist.wps
+sed -i -e "s|__E_WE__|$E_WE|g"                $WPSDIR/namelist.wps
+sed -i -e "s|__E_SN__|$E_SN|g"                $WPSDIR/namelist.wps
+sed -i -e "s|__DX__|$DX|g"                    $WPSDIR/namelist.wps
+sed -i -e "s|__DY__|$DY|g"                    $WPSDIR/namelist.wps
+sed -i -e "s|__MAP_PROJ__|$MAP_PROJ|g"        $WPSDIR/namelist.wps
+sed -i -e "s|__REF_LAT__|$REF_LAT|g"          $WPSDIR/namelist.wps
+sed -i -e "s|__REF_LON__|$REF_LON|g"          $WPSDIR/namelist.wps
+sed -i -e "s|__TRUELAT1__|$TRUELAT1|g"        $WPSDIR/namelist.wps
+sed -i -e "s|__TRUELAT2__|$TRUELAT2|g"        $WPSDIR/namelist.wps
+sed -i -e "s|__STAND_LON__|$STAND_LON|g"      $WPSDIR/namelist.wps
+sed -i -e "s|__GEOG__|$GEOG|g"                $WPSDIR/namelist.wps
+sed -i -e "s|__IOTYPE__|$IOTYPE|g"            $WPSDIR/namelist.wps
 
 
 ####
 ## Corremos geogrid (si es que no fue corrido)
 ###
-cd $WPSDIR
 if [ ! -e $WPSDIR/geogrid/geo_em.d01.nc ] ; then
    echo "Ejecutando geogrid"
    mkdir -p $WPSDIR/geogrid
@@ -104,15 +105,13 @@ EOF
 fi
 
 ###
-# Creacion y en colamiento del script
+# Create the script that will run WPS for each ensemble member.
 ###
 echo "Corriendo el WPS para el paso " $PASO
-cd $WPSDIR
-mkdir -p $HISTDIR/WPS
 
 read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited
-echo "Procesando Miembro $MIEM"
+echo "Processing member $MIEM"
 cd $WPSDIR
 rm -r $WPSDIR/$MIEM
 mkdir -p $WPSDIR/$MIEM
@@ -125,22 +124,48 @@ if [ $WPS_CYCLE -eq 1 ] ; then
 else 
    FECHA_INI_PASO=$FECHA_INI
 fi
-FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )
-BDYBASE=$BDYDIR/gefs.$(date -d "$FECHA_INI_BDY" +"%Y%m%d")/$(date -d "$FECHA_INI_BDY" +"%H")/$BDYPREFIX/$MIEM/
-echo "Estoy buscando los archivos del BDY en la carpeta $BDYBASE"
-## Si el miembro es 00 entonces es deterministico, sino Ensamble
-ln -sf $WPSDIR/$BDYVTABLE ./Vtable
-echo "Generando met_em a partir de BDYs en: $WPSDIR/$MIEM"
-#Linkeo los gribs
-cd $WPSDIR/$MIEM
-./link_grib.csh $BDYBASE/$BDYSEARCHSTRING  
+DATE_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )  #Get the closest prior date in which BDY data is available.
+DATE_END_BDY=$(date_ceil  "$FECHA_END_PASO" $INTERVALO_BDY )      #Get the closest posterior date in which BDY data is available.
 
-[[ $? -ne 0 ]] && dispararError 9 "link_grib.csh "
 
-#Corro el Ungrib 
-OMP_NUM_THREADS=1
-$MPIEXESERIAL ./ungrib.exe $WPS_RUNTIME_FLAGS > ungrib.log
-[[ $? -ne 0 ]] && dispararError 9 "ungrib.exe"
+if [ $WPS_DATA_SOURCE == 'GFS' ] ; then 
+   BDYBASE=$BDYPATH/gefs.$(date -d "$DATE_INI_BDY" +"%Y%m%d")/$(date -d "$DATE_INI_BDY" +"%H")/$BDYPREFIX/$MIEM/
+   echo "Selected data source is GFS, we will run ungrib to decode the data"
+   echo "I'm lloking for the BDY files in the folder  $BDYBASE"
+   ln -sf $WPSDIR/$BDYVTABLE ./Vtable
+   echo "Decoding gribs in : $WPSDIR/$MIEM"
+   #Linkeo los gribs
+   cd $WPSDIR/$MIEM
+   ./link_grib.csh $BDYBASE/$BDYSEARCHSTRING  
+
+   [[ $? -ne 0 ]] && dispararError 9 "link_grib.csh "
+
+   #Corro el Ungrib 
+   OMP_NUM_THREADS=1
+   $MPIEXESERIAL ./ungrib.exe $WPS_RUNTIME_FLAGS > ungrib.log
+   [[ $? -ne 0 ]] && dispararError 9 "ungrib.exe"
+
+elif[ $WPS_DATA_SOURCE == 'WRF' ] ; then 
+
+   BDYBASE=$BDYPATH/$(date -d "$DATE_INI_BDY" +"%Y%m%d%H%M%S")/$MIEM/
+   echo "Selected data source is WRF, we will use wrf_to_wps tool to decode the data"
+   echo "I'm lloking for the BDY files in the folder $BDYBASE"
+   echo "Decoding wrfouts in : $WPSDIR/$MIEM" 
+   #Need to loop over wrfout files.
+   CDATE=$DATE_INI_BDY 
+   while [ $CDATE -le $DATE_END_BDY ] ; do 
+      WRFFILE=BDYBASE/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )
+      WPSFILE=$WPSDIR/$MIEM/FILE:$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%H" )
+      $MPIEXESERIAL ./wrf_to_wps.exe $WRFFILE $WPSFILE
+      #Update CDATE
+      CDATE=$(date -u -d "$CDATE + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
+   done
+else 
+  echo "Not recognized WPS_DATA_SOURCE option: "$WPS_DATA_SOURCE
+  echo "I can do nothing"
+  disparaError 9 "run_wps.sh"
+
+fi
 
 #Corro el Metgrid en paralelo
 $MPIEXE ./metgrid.exe $WPS_RUNTIME_FLAGS

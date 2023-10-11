@@ -12,52 +12,40 @@
 
 read -r -d '' USO << EOF
 
-        Ud. deberia usar este escript de la siguiente manera:
-                $0 < nuevo nombre entorno >
+Use: createExpFCST.sh  "TEMPLATE_NAME" "BASEDIR"
+
 EOF
-: ${1?"$USO"}  
+: ${2?"$USO"}
 
 WRFUTILDIR=$(pwd)/../
 
 ### PARAMETROS
 
-export NOMBRE=$1
-
-### CONFIGURACION
+export TEMPLATE_NAME=$1    #Which template will be used to create the experiment (see folders in /conf )
+export BASEDIR=$2          #Which is the root directory of the experiment.
 
 source $WRFUTILDIR/lib/errores.env
-CONFIG=$WRFUTILDIR/conf/${NOMBRE}/config.env
-[ ! -e "$CONFIG" ] && dispararError 4 "Error: No encontre config.env"
-source $CONFIG
-
-[ -f $WPSPATH ] || dispararError 7 "$WPSPATH ; Error: No se encontro el WPS en el path indicado" 
-[ -f $WRFPATH ] || dispararError 7 "$WRFPATH ; Error: No se encontro el WRF en el path indicado"
-[ -f $WRFDAPATH ] || dispararError 7 "$WRFDAPATH ; Error: No se encontro el WRFDA en el path indicado"
-
-
 ##### FIN INICIALIZACION ######
 
 EXPDIR=$BASEDIR
-[ -d "$EXPDIR" ]  && dispararError 6 "$EXPDIR"
-mkdir -p $EXPDIR || dispararError 5 "$EXPDIR"
-cd $EXPDIR
-[ -d "$TMPDIR" ]  && dispararError 6 "$TMPDIR"
-mkdir -p $TMPDIR || dispararError 5 "$TMPDIR"
-cd $TMPDIR
+[ -d "$BASEDIR" ]  && dispararError 6 "$BASEDIR"
+mkdir -p $BASEDIR || dispararError 5 "$BASEDIR"
 
 
-### Copio la configuracion y genero los archivos de configuracion para el experimento. 
-mkdir $EXPDIR/conf 
-cp $WRFUTILDIR/conf/${NOMBRE}/*  $EXPDIR/conf/ 
+### Copio la configuracion y genero los archivos de configuracion para el experimento.
+mkdir $BASEDIR/conf
+cp $WRFUTILDIR/conf/${TEMPLATE_NAME}/* $BASEDIR/conf/
+sed -i -e "s|__BASEDIR__|$BASEDIR|g"   $BASEDIR/conf/config.env
+source $BASEDIR/conf/config.env
 
 
 ###  Creando Entorno 
-ln -s $BDYPATH $BDYDIR
 mkdir -p $LOGDIR
 mkdir -p $WPSDIR
 mkdir -p $PROCSDIR
 cp    $WPSPATH $WPSDIR/wps.tar
 cp    $SPAWNPATH $WPSDIR/spawn.tar
+cp    $WRFTOWPSPATH $WPSDIR/wrf_to_wps.tar
 cp    $WRFUTILDIR/vtables/* $WPSDIR/
 mkdir -p $WRFDIR
 cp    $WRFPATH $WRFDIR/wrf.tar
