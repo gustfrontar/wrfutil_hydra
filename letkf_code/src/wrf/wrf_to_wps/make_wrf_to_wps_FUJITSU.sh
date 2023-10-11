@@ -1,19 +1,12 @@
 #!/bin/bash
-source /opt/load-libs.sh 1              #HYDRA  Load intel libraries and paths
-. /opt/intel/oneapi/setvars.sh intel64  #Fugaku Load intel libraries and paths
-
-
 PGM=wrf_to_wps.exe
-F90=ifort
-
-FLAGS="-convert big_endian -FR"
+F90=mpifrtpx
+FLAGS='-O3 -Nalloc_assign' 
 
 #NETCDF=/opt/netcdf/netcdf-4/intel/2021.4.0/            #Netcdf HYDRA
-NETCDF=/home/ra000007/a04037/data/comp_libs/netcdf4/    #Fugaku - intel
-
-LIB_NETCDF="-L${NETCDF}/lib -lnetcdff -lnetcdf"
+NETCDF=/home/ra000007/a04037/data/comp_libs_fujitsu/netcdf/    #Fugaku - FUJITSU
+LIB_NETCDF="-L${NETCDF}/lib -lnetcdff -lnetcdf -lhdf5_fortran -lhdf5_hl -lhdf5 "
 INC_NETCDF="-I${NETCDF}/include/"
-
 
 #Build wrf_to_wps
 ln -sf ../../common/SFMT.f90       ./SFMT.f90
@@ -50,6 +43,6 @@ rm ./SFMT.f90
 rm ./common.f90 
 rm *.o *.mod
 
-tar -cvf ../../../wrf_to_wps_FUJITSU.tar ./*.exe
+tar -cvf ../../../wrf_to_wps_FUJITSU.tar ./*.exe 
 
 echo "NORMAL END"

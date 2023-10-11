@@ -50,16 +50,21 @@ PROGRAM wrf_to_wps
   REAL(r_sngl),ALLOCATABLE :: slp(:,:)
 
   REAL(r_sngl),ALLOCATABLE :: AUX(:,:,:)
-  CHARACTER(9) :: grdin = 'input.nc'       !Meteorological fields input.
-  CHARACTER(10) :: grdout= 'output.grd'
+  !CHARACTER(9) :: grdin = 'input.nc'       !Meteorological fields input.
+  !CHARACTER(10) :: grdout= 'output.grd'
+  CHARACTER(500) :: grdin , grdout 
 
   include 'netcdf.inc'
+
+  !Get input and output file names.
+  CALL GETARG ( 1, grdin  ) !Input file name (with complete path)
+  CALL GETARG ( 2, grdout ) !Output file name (with complete path)
 
 !
 ! On input nlon,nlat,nlev are the same as nx,ny,nz in namelist.wps and namelist.input. Internally the size
 ! of the arrays is referenced to nlon-1, nlat-1 and nlev-1 (to be consistent with ncio routines)
 !
-  call set_common_wrf(grdin)
+  call set_common_wrf(trim(grdin))
 
 ! Get non-staggered dimensions
 
@@ -82,11 +87,11 @@ PROGRAM wrf_to_wps
   endif
   output_data % deltalat = 0e0
   output_data % deltalon = 0e0
-  output_data % dx = pdx !20
-  output_data % dy = pdy !20
+  output_data % dx = pdx / 1000.0d0 !DX in Kilometers
+  output_data % dy = pdy / 1000.0d0 !DY in Kilometers
   output_data % truelat1 = ptruelat1 !22.5
   output_data % truelat2 = ptruelat2 
-  output_data % stdlon   = pstdlon
+  output_data % stdlon   = pstdlon   
   output_data % hdate =  hdate ! WRF INPUT/OUTPUT FORMAT
   output_data % xfcst = 0.0
   DO k=1,nlev_ns
@@ -96,9 +101,9 @@ PROGRAM wrf_to_wps
   output_data % map_source = 'WRF MODEL OUTPUT'
   output_data % earth_radius =  6371.229004
   output_data % startloc = 'SWCORNER'
-  output_data % is_wind_grid_rel = .TRUE.
+  output_data % is_wind_grid_rel = .TRUE. 
   output_data % startlat = lat(1,1)
-  output_data % startlon = lon(1,1)
+  output_data % startlon = lon(1,1) 
 
   ALLOCATE(output_data % slab (nlon_ns,nlat_ns,nlev_ns))
 
@@ -142,12 +147,12 @@ PROGRAM wrf_to_wps
 ! READ WRF DATA AND DE-STAGGER DATA
 !
   WRITE(6,'(A)') 'READING: ', grdin
-  CALL check_io(NF_OPEN(grdin,NF_NOWRITE,ncid))
+  CALL check_io(NF_OPEN(trim(grdin),NF_NOWRITE,ncid))
 
   !!! U
   write(*,*)'Reading U'
   call read_var_wrf(ncid,iv3d_u,1,nlev,1,AUX,'3d')
-  u=(AUX(1:nlon_ns,1:nlat_ns,1:nlev_ns)+AUX(2:nlon_ns+1,1:nlat_ns,1:nlev_ns))*0.5
+  u=(AUX(1:nlon_ns,1:nlat_ns,1:nlev_ns)+AUX(2:nlon_ns+1,1:nlat_ns,1:nlev_ns))*0.5 
 
   !!! V
   write(*,*)'Reading V'
@@ -187,7 +192,7 @@ PROGRAM wrf_to_wps
   !!! QRAIN
   write(*,*)'Reading QRAIN'
   call read_var_wrf(ncid,iv3d_qr,1,nlev,1,AUX,'3d')
-  qr=AUX(1:nlon_ns,1:nlat_ns,1:nlev_ns)
+  qr=AUX(1:nlon_ns,1:nlat_ns,1:nlev_ns)  
 
   !!! QICE
   write(*,*)'Reading QICE'
@@ -281,14 +286,13 @@ PROGRAM wrf_to_wps
  
   !WRITE IN WPS FORMAT
   open(unit=grdfid, file=trim(grdout), status='unknown', form='unformatted')
-  !OPEN(grdfid,FILE=grdout,FORM='unformatted',ACCESS='sequential')
 
 
   !UU
   output_data % field ='UU'
   output_data % units ='m s-1'
   output_data % desc ='U'
-  output_data % slab =  u
+  output_data % slab =  u  
   output_data % nlev = nlev_ns
   CALL WRITE_SLAB(grdfid)
 

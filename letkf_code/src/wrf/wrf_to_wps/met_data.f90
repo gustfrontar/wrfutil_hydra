@@ -26,7 +26,7 @@ subroutine WRITE_SLAB(imt_grd)
   INTEGER            :: i,j,k
   INTEGER,INTENT(IN) :: imt_grd
 
-  DO k=1,output_data % nlev
+  DO k= 1,output_data % nlev 
   WRITE(imt_grd)output_data % version
   WRITE(imt_grd)output_data % hdate,     &
                 output_data % xfcst,     &
@@ -105,17 +105,17 @@ subroutine READ_SLAB(imt_grd)
 
 
   WRITE(*,*)'Header for record =',k
-  WRITE(*,*)output_data % version
-  WRITE(*,*)output_data % hdate
-  WRITE(*,*)output_data % xfcst
-  WRITE(*,*)output_data % map_source
-  WRITE(*,*)output_data % field
-  WRITE(*,*)output_data % units
-  WRITE(*,*)output_data % desc
-  WRITE(*,*)output_data % level
-  WRITE(*,*)output_data % nx
-  WRITE(*,*)output_data % ny
-  WRITE(*,*)output_data % iproj
+  WRITE(*,*)'WPSVersion=',output_data % version
+  WRITE(*,*)'Date=',output_data % hdate
+  WRITE(*,*)'FCST=',output_data % xfcst
+  WRITE(*,*)'Map source=',output_data % map_source
+  WRITE(*,*)'Field=',output_data % field
+  WRITE(*,*)'Units=',output_data % units
+  WRITE(*,*)'Desc=',output_data % desc
+  WRITE(*,*)'Level=',output_data % level
+  WRITE(*,*)'Nx=',output_data % nx
+  WRITE(*,*)'Ny=',output_data % ny
+  WRITE(*,*)'Proj type =',output_data % iproj
 
   IF(output_data % iproj == 1)THEN !MERCATOR
                              READ(imt_grd) output_data % startloc, &
@@ -138,7 +138,7 @@ subroutine READ_SLAB(imt_grd)
 
   ENDIF
 
-  IF( output_data % iproj == 4)THEN !LATLON
+  IF( output_data % iproj == 0 )THEN !LATLON
                              READ(imt_grd) output_data % startloc, &
                                             output_data % startlat, &
                                             output_data % startlon, &

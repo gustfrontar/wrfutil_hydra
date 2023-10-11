@@ -7,14 +7,19 @@ PROGRAM read_intermediate
   IMPLICIT NONE
   INTEGER(r_sngl),PARAMETER :: grdfid = 50
 
-  CHARACTER(10) :: grdout= 'output.grd'
+  CHARACTER(500) :: grdin
+
+  !Get input file name
+  CALL GETARG ( 1, grdin  ) !Input file name (with complete path)
+
 
 
   !WRITE IN WPS FORMAT
-  open(unit=grdfid, file=trim(grdout), status='old', form='unformatted')
-  !OPEN(grdfid,FILE=grdout,FORM='unformatted',ACCESS='sequential')
+  open(unit=grdfid, file=trim(grdin), status='old', form='unformatted')
 
   CALL READ_SLAB(grdfid)
+
+
 
   CLOSE(grdfid)
 
