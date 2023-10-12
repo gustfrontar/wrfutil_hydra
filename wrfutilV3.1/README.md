@@ -44,7 +44,7 @@ Go to the /wrfutilv$VERSION  folder.
 
 Under the "conf" folder you will find subfolders containing configuration files templates. 
 
-Copy or modify one of these templates according to your environment and your experiment settings.
+Copy or modify one of these templates according to your environment.
 
 config.env -> contains the experiment name and the location of the "tar" files containing the compiled code. 
 
@@ -75,19 +75,17 @@ Step 3
 
 To create a experiment use the scripts located in  /wrfutilv$VERSION/bin/
 
-createExpASIM.sh $EXP_NAME -> creates a data assimilation experiment
-createExpFCST.sh $EXP_NAME -> creates a forecast experiment
+createExpASIM.sh $CONF_TEMPLATE $EXP_PATH -> creates a data assimilation experiment
+createExpFCST.sh $CONF_TEMPLATE $EXP_PATH -> creates a forecast experiment
 
-$EXP_NAME is the experiment name. Note that a folder named $EXP_NAME should exist
-in /wrfutil$VERSION/conf/ containing all the configuration files described above. 
+$EXP_PATH is the absolute PATH where your experiment will be created (e.g. /home/user/my_experiments/my_experiment_name/). 
+This PATH will be "stored" in the file /conf/config.env within your experiment path.
 
-Also $EXP_NAME should be consistent with the value of the variable $EXP_NAME in the corresponding config.env file. 
+$CONF_TEMPLATE should be the name of one of the folders under /wrfutil$VERSION/conf/ you can create as many configuration
+templates as you whish, or you can use the ones provided in this repository.
 
-When running the experiment creation scripts a new folder will be created at the location 
-indicated by the variable BASEDIR in the config.env file. 
-
-A copy of the bash scripts and the tar files will be done so all the required information will be 
-copyed to the new folder. The only data that is not copied to the experiment folder is the GFS boundary conditions data
+Once th folder $EXP_PATH is created, a copy of the bash scripts and the tar files will be done so all the required information will be 
+copyed to the new folder. The only data that is not copied to the experiment folder is the GFS/WRF boundary conditions data
 and the WRF static geographycal data (mainly because of their size). 
 
 
