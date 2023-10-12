@@ -23,7 +23,7 @@
  &domains
  numtiles                            = __NUMTILE__,
  !nproc_x 
- !nproc_y  
+ !nproc_y
  use_adaptive_time_step              = .true.
  step_to_output_time                 = .true.
  target_cfl                          = 1.2
@@ -38,8 +38,8 @@
  max_dom                             = 1,
  e_we                                = __E_WE__,
  e_sn                                = __E_SN__,
- e_vert                              = 45,  
- p_top_requested                     = 1000,
+ e_vert                              = __E_VERT__,  
+ p_top_requested                     = __P_TOP__,
  num_metgrid_levels                  = __METLEV__,
  num_metgrid_soil_levels             = 4,
  dx                                  = __DX__,
@@ -56,8 +56,8 @@
 
  &physics
  mp_physics                          = 2,
- bl_pbl_physics                      = 2,
- sf_sfclay_physics                   = 2,
+ bl_pbl_physics                      = 11,
+ sf_sfclay_physics                   = 1,
  ra_lw_physics                       = 4,
  ra_sw_physics                       = 4,
  radt                                = 10,
@@ -71,6 +71,7 @@
  surface_input_source                = 1,
  num_soil_layers                     = 4,
  sf_urban_physics                    = 0, 
+ shinhong_tke_diag                   = 1,
  /
 
  &fdda
