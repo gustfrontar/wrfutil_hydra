@@ -122,14 +122,17 @@ cd $WPSDIR/$MIEM
 ln -sf $WPSDIR/geogrid/geo_em* .
 if [ $WPS_CYCLE -eq 1 ] ; then
    FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($WPS_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
+   FECHA_END_PASO=$(date -u -d "$FECHA_INI UTC +$((($WPS_INI_FREQ*$PASO)+$WPS_LEAD_TIME )) seconds" +"%Y-%m-%d %T")
 else 
    FECHA_INI_PASO=$FECHA_INI
+   FECHA_END_PASO=$FECHA_FIN
 fi
 DATE_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )  #Get the closest prior date in which BDY data is available.
 DATE_END_BDY=$(date_ceil  "$FECHA_END_PASO" $INTERVALO_BDY )      #Get the closest posterior date in which BDY data is available.
 
 
 if [ $WPS_DATA_SOURCE == 'GFS' ] ; then 
+
    BDYBASE=$BDYPATH/gefs.$(date -d "$DATE_INI_BDY" +"%Y%m%d")/$(date -d "$DATE_INI_BDY" +"%H")/$BDYPREFIX/$MIEM/
    echo "Selected data source is GFS, we will run ungrib to decode the data"
    echo "I'm lloking for the BDY files in the folder  $BDYBASE"
@@ -146,7 +149,7 @@ if [ $WPS_DATA_SOURCE == 'GFS' ] ; then
    $MPIEXESERIAL ./ungrib.exe $WPS_RUNTIME_FLAGS > ungrib.log
    [[ $? -ne 0 ]] && dispararError 9 "ungrib.exe"
 
-elif [ $WPS_DATA_SOURCE == 'WRF' ] ; then 
+elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
 
    BDYBASE=$BDYPATH/$(date -d "$DATE_INI_BDY" +"%Y%m%d%H%M%S")/$MIEM/
    echo "Selected data source is WRF, we will use wrf_to_wps tool to decode the data"
@@ -154,15 +157,46 @@ elif [ $WPS_DATA_SOURCE == 'WRF' ] ; then
    echo "Decoding wrfouts in : $WPSDIR/$MIEM" 
    #Need to loop over wrfout files.
    CDATE=$DATE_INI_BDY 
-   while [ $CDATE -le $DATE_END_BDY ] ; do 
-      WRFFILE=BDYBASE/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )
-      WPSFILE=$WPSDIR/$MIEM/FILE:$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )
+   while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$DATE_END_BDY" +"%Y%m%d%H%M%S") ] ; do 
+      WRFFILE=$BDYBASE/wrfout_d01_$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
+      WPSFILE=$WPSDIR/$MIEM/FILE:$(date -u -d  "$CDATE UTC" +"%Y-%m-%d_%T" )
       $MPIEXESERIAL ./wrf_to_wps.exe $WRFFILE $WPSFILE
       #Update CDATE
-      CDATE=$(date -u -d "$CDATE + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
+      CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
    done
-   #TODO> we need to add an intermediat file time interpolation tool as in ungrib.
+  
+   if [ $INTERVALO_WPS -lt $INTERVALO_BDY ] ; then 
+      echo "Interpolating files in time to reach $INTERVALO_WPS time frequency."
+      CDATE=$DATE_INI_BDY
+      while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -lt $(date -d "$DATE_END_BDY" +"%Y%m%d%H%M%S") ] ; do
+         #First we look for the BDY dates inmediatelly above and below $CDATE
+         DATE_1=$(date_floor "$CDATE" $INTERVALO_BDY )
+         DATE_2=$(date -u -d "$DATE_1 UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
+
+         #Define the names corresponding to each file
+         WPSFILE_1=$WPSDIR/$MIEM/FILE:$(date -u -d "$DATE_1 UTC" +"%Y-%m-%d_%T" )
+         WPSFILE_2=$WPSDIR/$MIEM/FILE:$(date -u -d "$DATE_2 UTC" +"%Y-%m-%d_%T" )
+         WPSFILE_INT=$WPSDIR/$MIEM/FILE:$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
+         echo "First file will be : $WPSFILE_1"
+         echo "Scnd  file will be : $WPSFILE_2"
+         echo "Itpl  file will be : $WPSFILE_INT"
+
+         #Compute the relative times corresponding to each file [seconds]
+         DATE_1_SEC=0
+         DATE_2_SEC=$INTERVALO_BDY
+         TARGET_SEC=$((($(date -d "$CDATE" +%s) - $(date -d "$DATE_1" +%s))))
+
+         echo "Target_SEC = $TARGET_SEC "
+
+         $MPIEXESERIAL ./interpolate_intermediate.exe $WPSFILE_1 $WPSFILE_2 $WPSFILE_INT $DATE_1_SEC $DATE_2_SEC $TARGET_SEC
+
+         #Update CDATE
+         CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_WPS seconds" +"%Y-%m-%d %T")
+      done
+   fi
+
 else 
+
   echo "Not recognized WPS_DATA_SOURCE option: "$WPS_DATA_SOURCE
   echo "I can do nothing"
   disparaError 9 "run_wps.sh"

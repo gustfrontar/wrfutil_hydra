@@ -83,15 +83,19 @@ subroutine READ_SLAB(imt_grd)
   INTEGER            :: i,j,k
   INTEGER,INTENT(IN) :: imt_grd
   REAL(r_sngl)       :: level
+  INTEGER            :: reading_ierror
 
   !WRITE IN WPS FORMAT
 
-  OPEN(imt_grd,FILE='output.grd',FORM='unformatted',ACCESS='sequential')
   k=0
   DO 
   k=k+1
   WRITE(*,*)' Going to read record ',k
-  READ(imt_grd)output_data % version
+  READ(imt_grd, iostat = reading_ierror )output_data % version
+  IF ( reading_ierror /= 0 )THEN
+     WRITE(*,*)'It seems that we reached the end of the file ...'
+     RETURN
+  ENDIF
   READ(imt_grd)output_data % hdate,     &
                output_data % xfcst,     &
                output_data % map_source,&
@@ -103,19 +107,18 @@ subroutine READ_SLAB(imt_grd)
                output_data % ny,        &
                output_data % iproj
 
-
-  WRITE(*,*)'Header for record =',k
-  WRITE(*,*)'WPSVersion=',output_data % version
-  WRITE(*,*)'Date=',output_data % hdate
-  WRITE(*,*)'FCST=',output_data % xfcst
-  WRITE(*,*)'Map source=',output_data % map_source
-  WRITE(*,*)'Field=',output_data % field
-  WRITE(*,*)'Units=',output_data % units
-  WRITE(*,*)'Desc=',output_data % desc
-  WRITE(*,*)'Level=',output_data % level
-  WRITE(*,*)'Nx=',output_data % nx
-  WRITE(*,*)'Ny=',output_data % ny
-  WRITE(*,*)'Proj type =',output_data % iproj
+     WRITE(*,*)'Header for record =',k
+     WRITE(*,*)'WPSVersion=',output_data % version
+     WRITE(*,*)'Date=',output_data % hdate
+     WRITE(*,*)'FCST=',output_data % xfcst
+     WRITE(*,*)'Map source=',output_data % map_source
+     WRITE(*,*)'Field=',output_data % field
+     WRITE(*,*)'Units=',output_data % units
+     WRITE(*,*)'Desc=',output_data % desc
+     WRITE(*,*)'Level=',output_data % level
+     WRITE(*,*)'Nx=',output_data % nx
+     WRITE(*,*)'Ny=',output_data % ny
+     WRITE(*,*)'Proj type =',output_data % iproj
 
   IF(output_data % iproj == 1)THEN !MERCATOR
                              READ(imt_grd) output_data % startloc, &
@@ -196,6 +199,127 @@ subroutine READ_SLAB(imt_grd)
 
 
 end subroutine READ_SLAB
+
+subroutine GET_SLAB_RECORD( imt_grd , slab_data , reading_ierr )
+  IMPLICIT NONE
+  INTEGER            :: i,j,k
+  INTEGER,INTENT(IN) :: imt_grd     !An already opened file in WPS intermediate format
+  REAL(r_sngl)       :: level
+  TYPE(met_data), INTENT(OUT)      :: slab_data
+  INTEGER       , INTENT(OUT)      :: reading_ierr
+
+  !WRITE IN WPS FORMAT
+
+  READ(imt_grd, iostat = reading_ierr )slab_data % version
+  READ(imt_grd, iostat = reading_ierr )slab_data % hdate,     &
+               slab_data % xfcst,     &
+               slab_data % map_source,&
+               slab_data % field,     &
+               slab_data % units,     &
+               slab_data % desc,      &
+               slab_data % level,     &
+               slab_data % nx,        &
+               slab_data % ny,        &
+               slab_data % iproj
+
+  IF(slab_data % iproj == 1)THEN !MERCATOR
+                             READ(imt_grd , iostat = reading_ierr )  slab_data % startloc, &
+                                            slab_data % startlat, &
+                                            slab_data % startlon, &
+                                            slab_data % dx,       &
+                                            slab_data % dy,       &
+                                            slab_data % truelat1, &
+                                            slab_data % earth_radius
+  ENDIF
+
+    IF( slab_data % iproj == 0 )THEN !LATLON
+                             READ(imt_grd , iostat = reading_ierr ) slab_data % startloc, &
+                                            slab_data % startlat, &
+                                            slab_data % startlon, &
+                                            slab_data % deltalat, &
+                                            slab_data % deltalon, &
+                                            slab_data % earth_radius
+  ENDIF
+
+  IF( slab_data % iproj == 3)THEN !LAMBERT
+                             READ(imt_grd , iostat = reading_ierr ) slab_data % startloc, &
+                                            slab_data % startlat, &
+                                            slab_data % startlon, &
+                                            slab_data % dx,       &
+                                            slab_data % dy,       &
+                                            slab_data % stdlon,   &
+                                            slab_data % truelat1, &
+                                            slab_data % truelat2, &
+                                            slab_data % earth_radius
+  ENDIF
+
+  READ(imt_grd , iostat = reading_ierr )slab_data % is_wind_grid_rel
+  ALLOCATE( slab_data % slab( slab_data % nx , slab_data % ny , 1 ) )
+  READ(imt_grd , iostat = reading_ierr ) slab_data % slab
+
+  ALLOCATE( slab_data % xlvl( 1 ) )
+  slab_data % xlvl = slab_data % level
+
+
+end subroutine GET_SLAB_RECORD
+
+
+subroutine PUT_SLAB_RECORD(imt_grd , slab_data )
+  IMPLICIT NONE
+  INTEGER            :: i,j,k
+  INTEGER,INTENT(IN) :: imt_grd
+  TYPE(met_data), INTENT(IN)      :: slab_data
+
+  DO k= 1,slab_data % nlev
+  WRITE(imt_grd)slab_data % version
+  WRITE(imt_grd)slab_data % hdate,     &
+                slab_data % xfcst,     &
+                slab_data % map_source,&
+                slab_data % field,     &
+                slab_data % units,     &
+                slab_data % desc,      &
+                slab_data % xlvl(k),   &
+                slab_data % nx,        &
+                slab_data % ny,        &
+                slab_data % iproj
+  IF(slab_data % iproj == 1)THEN !MERCATOR
+                             WRITE(imt_grd) slab_data % startloc, &
+                                            slab_data % startlat, &
+                                            slab_data % startlon, &
+                                            slab_data % dx,       &
+                                            slab_data % dy,       &
+                                            slab_data % truelat1, &
+                                            slab_data % earth_radius
+  ENDIF
+
+  IF( slab_data % iproj == 4)THEN !LATLON
+                             WRITE(imt_grd) slab_data % startloc, &
+                                            slab_data % startlat, &
+                                            slab_data % startlon, &
+                                            slab_data % deltalat, &
+                                            slab_data % deltalon, &
+                                            slab_data % earth_radius
+  ENDIF
+
+  IF( slab_data % iproj == 3)THEN !LAMBERT
+                             WRITE(imt_grd) slab_data % startloc, &
+                                            slab_data % startlat, &
+                                            slab_data % startlon, &
+                                            slab_data % dx,       &
+                                            slab_data % dy,       &
+                                            slab_data % stdlon,   &
+                                            slab_data % truelat1, &
+                                            slab_data % truelat2, &
+                                            slab_data % earth_radius
+  ENDIF
+
+  WRITE(imt_grd)slab_data % is_wind_grid_rel
+  WRITE(imt_grd)slab_data % slab(:,:,k)
+  END DO
+
+
+
+end subroutine PUT_SLAB_RECORD
 
   
   

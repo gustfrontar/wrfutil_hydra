@@ -2,11 +2,8 @@
 source /opt/load-libs.sh 1              #HYDRA  Load intel libraries and paths
 . /opt/intel/oneapi/setvars.sh intel64  #Fugaku Load intel libraries and paths
 
-
-PGM=wrf_to_wps.exe
 F90=ifort
-
-FLAGS="-convert big_endian -FR"
+FLAGS="-convert big_endian -FR -O3"
 
 #NETCDF=/opt/netcdf/netcdf-4/intel/2021.4.0/            #Netcdf HYDRA
 NETCDF=/home/ra000007/a04037/data/comp_libs/netcdf4/    #Fugaku - intel
@@ -27,13 +24,33 @@ $F90 $FLAGS             -c module_map_utils.f90
 $F90 $FLAGS $INC_NETCDF -c common_wrf.f90
 $F90 $FLAGS             -c met_data.f90
 $F90 $FLAGS $INC_NETCDF -c wrf_to_wps.f90
-$F90 $FLAGS -o ${PGM} *.o $LIB_NETCDF 
+$F90 $FLAGS -o wrf_to_wps.exe *.o $LIB_NETCDF 
 
 rm ./SFMT.f90
 rm ./module_map_utils.f90
 rm ./common_wrf.f90
 rm ./common.f90
 rm *.o *.mod
+
+
+#Build interpolate_intermediate
+ln -sf ../../common/SFMT.f90       ./SFMT.f90
+ln -sf ../common/module_map_utils.f90  ./module_map_utils.f90
+ln -sf ../common/common_wrf.f90 ./common_wrf.f90
+ln -sf ../../common/common.f90  ./common.f90
+
+$F90 $FLAGS             -c SFMT.f90
+$F90 $FLAGS             -c common.f90
+$F90 $FLAGS             -c met_data.f90
+$F90 $FLAGS             -c interpolate_intermediate.f90
+$F90 $FLAGS -o interpolate_intermediate.exe *.o
+
+rm ./SFMT.f90
+rm ./module_map_utils.f90
+rm ./common_wrf.f90
+rm ./common.f90
+rm *.o *.mod
+
 
 
 #Build read_intermediate
