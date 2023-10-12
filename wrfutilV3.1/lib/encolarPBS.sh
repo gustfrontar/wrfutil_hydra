@@ -4,6 +4,7 @@ export AFTEROKA="#PBS -W depend=afterokarray:"
 
 queue (){
         QDEPEND=$(getDepend)
+	cd $QWORKPATH
         test $QUEUE && 		echo "#PBS -q $QUEUE " >  ${QPROC_NAME}.pbs      						## Cola a la que se lo va a encolar
         test $PCODE && 		echo "#PBS -A $PCODE "  >>  ${QPROC_NAME}.pbs							## Codigo de Usuario/Cuanta si fuera necesario
         test $QPROC_NAME &&	echo "#PBS -N ${QPROC_NAME} "  >>  ${QPROC_NAME}.pbs						## Nombre del Job
@@ -17,6 +18,7 @@ queue (){
         			echo $QDEPEND  >>  ${QPROC_NAME}.pbs								## Indica la dependencia del Job
 				echo "export WRFUTILDIR=$WRFUTILDIR" >>${QPROC_NAME}.pbs 
 				echo "source $WRFUTILDIR/config.env" >>${QPROC_NAME}.pbs 
+		                echo "source $BASEDIR/lib/errores.env">> ${QPROC_NAME}.pbs
 				echo "source $BASEDIR/experimento.conf" >>${QPROC_NAME}.pbs 
                 		echo "export MPIEXE=$(which mpirun) -np ${QPROC}"  >> ${QPROC_NAME}.pbs                         ## Comando MPIRUN con cantidad de nodos y cores por nodos
                 		#echo 'export ARRAYID=$PBS_ARRAY_INDEX'  >> ${QPROC_NAME}.pbs                         ## Comando MPIRUN con cantidad de nodos y cores por nodos

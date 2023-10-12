@@ -127,8 +127,6 @@ mv rsl.error.0000 ./wrf_${PASO}_${MIEM}.log
 
 EOF
 
-cd $WRFDIR
-
 #Node / core distribution parameters
 QNODE=$WRFNODE
 QPROC=$WRFPROC
@@ -137,6 +135,7 @@ QTHREAD=$WRFTHREAD
 QWALLTIME=$WRFWALLTIME
 QPROC_NAME=FCST_${PASO}
 QCONF=${EXPTYPE}.conf
+QWORKPATH=$WRFDIR
 
 #Execute the job 
 echo "Tiempo en correr el real y  wrf"

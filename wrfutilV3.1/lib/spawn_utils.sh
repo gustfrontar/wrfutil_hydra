@@ -3,6 +3,7 @@ spawn () {
 	export FI_MLX_NS_ENABLE=1
 	ulimit -s unlimited
 	ulimit -l unlimited
+	cd $QWORKPATH
 
         if [ $# -lt 3 ]; then
                 echo "Usage : spawn" 

@@ -50,6 +50,6 @@ rm ./SFMT.f90
 rm ./common.f90 
 rm *.o *.mod
 
-tar -cvf ../../../wrf_to_wps_FUJITSU.tar ./*.exe
+tar -cvf ../../../wrf_to_wps_INTEL.tar ./*.exe
 
 echo "NORMAL END"

@@ -7,6 +7,7 @@ queue (){
 	#TOT_CORES will be computed as the number of available cores  (number of lines in PBS_NODEFILE)
 	#MAX_JOBS will be computed as the maximum number of simultaneous jobs ( floor( TOT_CORES / QPROC ) )
 	#Groups of up to MAX_JOBS runs will be executed until all the ensemble members are processed. 
+        cd $QWORKPATH
 
 	ini_mem=${1}
         end_mem=${2}
@@ -48,6 +49,7 @@ queue (){
 		echo "export PARALLEL=1              "                                             > ${QPROC_NAME}_${QMIEM}.pbs
 		echo "source $BASEDIR/conf/config.env"                                            >> ${QPROC_NAME}_${QMIEM}.pbs 
                 echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}_${QMIEM}.pbs
+                echo "source $BASEDIR/lib/errores.env"                                            >> ${QPROC_NAME}_${QMIEM}.pbs
                 echo "source $BASEDIR/conf/$QCONF      "                                          >> ${QPROC_NAME}_${QMIEM}.pbs
 		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                        >> ${QPROC_NAME}_${QMIEM}.pbs
                 echo "MIEM=$QMIEM "                                                               >> ${QPROC_NAME}_${QMIEM}.pbs

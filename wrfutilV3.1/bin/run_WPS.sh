@@ -100,6 +100,7 @@ EOF
 	QMIEM=00
 	QWALLTIME=$WPSWALLTIME
         QCONF=${EXPTYPE}.conf
+	QWORKPATH=$WPSDIR
 	queue 00 00 
 	check_proc 00 00
 fi
@@ -145,7 +146,7 @@ if [ $WPS_DATA_SOURCE == 'GFS' ] ; then
    $MPIEXESERIAL ./ungrib.exe $WPS_RUNTIME_FLAGS > ungrib.log
    [[ $? -ne 0 ]] && dispararError 9 "ungrib.exe"
 
-elif[ $WPS_DATA_SOURCE == 'WRF' ] ; then 
+elif [ $WPS_DATA_SOURCE == 'WRF' ] ; then 
 
    BDYBASE=$BDYPATH/$(date -d "$DATE_INI_BDY" +"%Y%m%d%H%M%S")/$MIEM/
    echo "Selected data source is WRF, we will use wrf_to_wps tool to decode the data"
@@ -155,11 +156,12 @@ elif[ $WPS_DATA_SOURCE == 'WRF' ] ; then
    CDATE=$DATE_INI_BDY 
    while [ $CDATE -le $DATE_END_BDY ] ; do 
       WRFFILE=BDYBASE/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )
-      WPSFILE=$WPSDIR/$MIEM/FILE:$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%H" )
+      WPSFILE=$WPSDIR/$MIEM/FILE:$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )
       $MPIEXESERIAL ./wrf_to_wps.exe $WRFFILE $WPSFILE
       #Update CDATE
       CDATE=$(date -u -d "$CDATE + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
    done
+   #TODO> we need to add an intermediat file time interpolation tool as in ungrib.
 else 
   echo "Not recognized WPS_DATA_SOURCE option: "$WPS_DATA_SOURCE
   echo "I can do nothing"
@@ -182,6 +184,7 @@ QTHREAD=$WPSTHREAD
 QWALLTIME=$WPSWALLTIME
 QPROC_NAME=WPS_${PASO}
 QCONF=${EXPTYPE}.conf
+QWORKPATH=$WPSDIR
 
 # Encolar
 queue $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN

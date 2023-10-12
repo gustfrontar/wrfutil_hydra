@@ -2,6 +2,7 @@ queue (){
         ini_mem=${1}
         end_mem=${2}
 	ens_size=$(($end_mem - $ini_mem + 1 ))
+	cd $QWORKPATH
 
         TPROC=$(( $QNODE * $QPROC ))  #Total number of cores to be used. 	
 	for QMIEM in $(seq -w $ini_mem $end_mem ) ; do 
@@ -14,6 +15,7 @@ queue (){
 	test $QTHREAD   &&	echo "export OMP_NUM_THREADS=$QTHREAD"                >> ${QPROC_NAME}_${QMIEM}.pbs		
 				echo "source $BASEDIR/conf/config.env"                >> ${QPROC_NAME}_${QMIEM}.pbs 
                                 echo "source $BASEDIR/conf/machine.conf"              >> ${QPROC_NAME}_${QMIEM}.pbs
+	                        echo "source $BASEDIR/lib/errores.env"                >> ${QPROC_NAME}_${QMIEM}.pbs
 				echo "source $BASEDIR/conf/$QCONF"                    >> ${QPROC_NAME}_${QMIEM}.pbs                   ## Experiment specific configuration file.
                 		echo "export MPIEXE=\"$MPIEXEC -np ${TPROC}\" "       >> ${QPROC_NAME}_${QMIEM}.pbs                   ## Comando MPIRUN con cantidad de nodos y cores por nodos
 	                        echo "MIEM=$QMIEM "                                   >> ${QPROC_NAME}_${QMIEM}.pbs 			
