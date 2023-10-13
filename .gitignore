@@ -1,4 +1,8 @@
 *.tar
 *.exe
 *.sh.*
+*nohup*
+*.o
+*.mod
+*.swp
 

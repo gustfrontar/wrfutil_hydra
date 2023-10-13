@@ -157,9 +157,19 @@ elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
    echo "Decoding wrfouts in : $WPSDIR/$MIEM" 
    #Need to loop over wrfout files.
    CDATE=$DATE_INI_BDY 
+
+   #Set the WPS_FILE_FORMAT [this depends on the file frequency]
+   if [ $INTERVALO_WPS -lt 60 ] ; then
+      WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H:%M:%S"
+   elif [ $INTERVALO_WPS -lt 3600 ] ; then
+      WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H:%M"
+   else
+      WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H"
+   fi
+
    while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$DATE_END_BDY" +"%Y%m%d%H%M%S") ] ; do 
       WRFFILE=$BDYBASE/wrfout_d01_$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-      WPSFILE=$WPSDIR/$MIEM/FILE:$(date -u -d  "$CDATE UTC" +"%Y-%m-%d_%T" )
+      WPSFILE=$WPSDIR/$MIEM/FILE:$(date -u -d  "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )
       $MPIEXESERIAL ./wrf_to_wps.exe $WRFFILE $WPSFILE
       #Update CDATE
       CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
@@ -168,15 +178,16 @@ elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
    if [ $INTERVALO_WPS -lt $INTERVALO_BDY ] ; then 
       echo "Interpolating files in time to reach $INTERVALO_WPS time frequency."
       CDATE=$DATE_INI_BDY
+
       while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -lt $(date -d "$DATE_END_BDY" +"%Y%m%d%H%M%S") ] ; do
          #First we look for the BDY dates inmediatelly above and below $CDATE
          DATE_1=$(date_floor "$CDATE" $INTERVALO_BDY )
          DATE_2=$(date -u -d "$DATE_1 UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
 
          #Define the names corresponding to each file
-         WPSFILE_1=$WPSDIR/$MIEM/FILE:$(date -u -d "$DATE_1 UTC" +"%Y-%m-%d_%T" )
-         WPSFILE_2=$WPSDIR/$MIEM/FILE:$(date -u -d "$DATE_2 UTC" +"%Y-%m-%d_%T" )
-         WPSFILE_INT=$WPSDIR/$MIEM/FILE:$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
+         WPSFILE_1=$WPSDIR/$MIEM/FILE:$(date -u -d "$DATE_1 UTC" +"$WPS_FILE_DATE_FORMAT" )
+         WPSFILE_2=$WPSDIR/$MIEM/FILE:$(date -u -d "$DATE_2 UTC" +"$WPS_FILE_DATE_FORMAT" )
+         WPSFILE_INT=$WPSDIR/$MIEM/FILE:$(date -u -d "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )
          echo "First file will be : $WPSFILE_1"
          echo "Scnd  file will be : $WPSFILE_2"
          echo "Itpl  file will be : $WPSFILE_INT"
