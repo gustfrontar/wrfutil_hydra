@@ -91,7 +91,8 @@ if [ ! -e $WPSDIR/geogrid/geo_em.d01.nc ] ; then
 read -r -d '' QSCRIPTCMD << "EOF"
         cd $WPSDIR/geogrid
 	ulimit -s unlimited
-        $MPIEXE ./geogrid.exe $WPS_RUNTIME_FLAGS
+        export FORT90L=${WPS_RUNTIME_FLAGS}
+        $MPIEXE ./geogrid.exe 
 EOF
         QPROC_NAME=GEOG_$PASO
 	QPROC=$WPSPROC
@@ -119,7 +120,7 @@ mkdir -p $WPSDIR/$MIEM
 ln -sf $WPSDIR/code/* $WPSDIR/$MIEM
 cp $WPSDIR/namelist.wps $WPSDIR/$MIEM/
 cd $WPSDIR/$MIEM
-ln -sf $WPSDIR/geogrid/geo_em* .
+cp $WPSDIR/geogrid/geo_em* .
 if [ $WPS_CYCLE -eq 1 ] ; then
    FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($WPS_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
    FECHA_END_PASO=$(date -u -d "$FECHA_INI UTC +$((($WPS_INI_FREQ*$PASO)+$WPS_LEAD_TIME )) seconds" +"%Y-%m-%d %T")
@@ -130,6 +131,7 @@ fi
 DATE_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )  #Get the closest prior date in which BDY data is available.
 DATE_END_BDY=$(date_ceil  "$FECHA_END_PASO" $INTERVALO_BDY )      #Get the closest posterior date in which BDY data is available.
 
+export FORT90L=${WPS_RUNTIME_FLAGS}
 
 if [ $WPS_DATA_SOURCE == 'GFS' ] ; then 
 
@@ -146,7 +148,7 @@ if [ $WPS_DATA_SOURCE == 'GFS' ] ; then
 
    #Corro el Ungrib 
    OMP_NUM_THREADS=1
-   $MPIEXESERIAL ./ungrib.exe $WPS_RUNTIME_FLAGS > ungrib.log
+   $MPIEXESERIAL ./ungrib.exe > ungrib.log
    [[ $? -ne 0 ]] && dispararError 9 "ungrib.exe"
 
 elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
@@ -170,7 +172,7 @@ elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
    while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$DATE_END_BDY" +"%Y%m%d%H%M%S") ] ; do 
       WRFFILE=$BDYBASE/wrfout_d01_$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
       WPSFILE=$WPSDIR/$MIEM/FILE:$(date -u -d  "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )
-      $MPIEXESERIAL ./wrf_to_wps.exe $WRFFILE $WPSFILE
+      $MPIEXESERIAL ./wrf_to_wps.exe $WRFFILE $WPSFILE 
       #Update CDATE
       CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
    done
@@ -199,7 +201,7 @@ elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
 
          echo "Target_SEC = $TARGET_SEC "
 
-         $MPIEXESERIAL ./interpolate_intermediate.exe $WPSFILE_1 $WPSFILE_2 $WPSFILE_INT $DATE_1_SEC $DATE_2_SEC $TARGET_SEC
+         $MPIEXESERIAL ./interpolate_intermediate.exe $WPSFILE_1 $WPSFILE_2 $WPSFILE_INT $DATE_1_SEC $DATE_2_SEC $TARGET_SEC 
 
          #Update CDATE
          CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_WPS seconds" +"%Y-%m-%d %T")
@@ -215,7 +217,7 @@ else
 fi
 
 #Corro el Metgrid en paralelo
-$MPIEXE ./metgrid.exe $WPS_RUNTIME_FLAGS
+$MPIEXE ./metgrid.exe 
 EC=$?
 [[ $EC -ne 0 ]] && dispararError 9 "metgrid.exe"
 

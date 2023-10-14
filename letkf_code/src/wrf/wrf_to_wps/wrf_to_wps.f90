@@ -587,7 +587,9 @@ PROGRAM wrf_to_wps
   output_data % xlvl(1) = 200100
   CALL WRITE_SLAB(grdfid)
 
+  
   CLOSE(grdfid)
+  write(*,*)'Successfully converted wrfout file to WPS intermediate format'
 
   STOP
 END PROGRAM wrf_to_wps

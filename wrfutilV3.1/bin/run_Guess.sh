@@ -105,7 +105,7 @@ cd $WRFDIR/$MIEM
 if [ $MULTIMODEL -eq 0 ] ; then
    NLCONF=$(printf '%03d' ${MODEL_CONF} )
 else 
-   NLCONF=$(printf '%03d' $((10#$MIEM % 10#$NCONF)))
+   NLCONF=$(printf '%03d' $(( ( ( 10#$MIEM - 1 ) % 10#$NCONF ) + 1 )) )
 fi
 cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
 
