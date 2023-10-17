@@ -60,10 +60,9 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
       fi
    fi
 
-   exit
    #####  all assimilation cycles
    echo "Running cycle: $PASO"
-   echo "$(printf "%02d" $PASO)  | $(date +'%s')" >>  $LOGDIR/cycles.log
+   echo "$(printf "%02d" $PASO)  | $(date)" >>  $LOGDIR/cycles.log
 
    echo "Vamos a ejecutar el real, el da_upbdate_bc y el wrf"
    time $BASEDIR/bin/run_Guess.sh > $LOGDIR/guess_${PASO}.log  2>&1

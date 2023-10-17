@@ -60,12 +60,18 @@ for  ilist , file_list_in in enumerate( EnsFileList ) :
      file_list_out = TargetEnsFileList[ilist]    
      #Create ensemble files for the output ensemble
      template_file = EnsFileList[ilist][0]
+     print('Creating the additional met_em files')
      mpm.create_ens_files( file_list_out , template_file , conf )
-    
+     print('Perturbing the met_em files')
      for my_var in conf['VarList']:
+         print('Processing variable :',my_var)
+         print('Reading ...')
          my_ens = mpm.read_ens( file_list_in , my_var , conf )          #Read
+         print('Transforming ...')
          my_ens = mpm.trans_ens( my_ens , Tm , conf , new_mean = None ) #Transform
+         print('Checking ...')
          my_ens = mpm.check_ens( my_ens , my_var )                      #Check
+         print('Writing ...')
          mpm.write_ens( file_list_out , my_var , my_ens , conf )        #Write
 
 

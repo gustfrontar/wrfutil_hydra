@@ -9,6 +9,7 @@ import netCDF4 as nc
 import glob
 import os
 import sys
+import gc
 
 def get_file_lists ( conf ) :
     #Generate the list with the original ensemble files and the target ensemble files.
@@ -71,7 +72,7 @@ def read_ens( file_list , variable , conf ) :
         ens[...,ifile] = my_var
         
         my_ds.close()
-        
+    gc.collect()    
     return ens
 
 def write_ens( file_list , variable , ens , conf ) :
@@ -84,30 +85,40 @@ def write_ens( file_list , variable , ens , conf ) :
     
 
 def create_ens_files( file_list , template_file , conf ) :
-    
-    #This function creates all the files specified in file_list using template_file as a template.
-    template_ds = nc.Dataset( template_file )
-    for my_file in file_list :
-        #Create the file directory if it does not exist.
-        os.makedirs( os.path.dirname( my_file ) , exist_ok=True)
-        #Create the file and transfer template information into the file.
-        if conf['NetCDF4'] :
-           my_ds = nc.Dataset( my_file , 'w' , format='NETCDF4' )            #Force NETCDF4 Output (independent of input data format)
-        else               :
-           my_ds = nc.Dataset( my_file , 'w' , format=conf['DataModel'] )    #Use the input data format as output data format.
 
-        my_ds.setncatts( template_ds.__dict__)
-        for dname , the_dim in template_ds.dimensions.items():
-            my_ds.createDimension(dname, len(the_dim) if not the_dim.isunlimited() else None)
-        for v_name, varin in template_ds.variables.items():
+    if conf['UseCp'] : 
+       #Use system copy to generate the new files. Note that netcdf type will be inherited from the original netcdf files. 
+       for my_file in file_list :
+          #Create the file directory if it does not exist.
+          os.makedirs( os.path.dirname( my_file ) , exist_ok=True) 
+          copycmd = 'cp ' + template_file + ' ' + my_file 
+          os.system(copycmd)
+    else   :
+       #This function creates all the files specified in file_list using template_file as a template.
+       template_ds = nc.Dataset( template_file )
+       for my_file in file_list :
+          #Create the file directory if it does not exist.
+          os.makedirs( os.path.dirname( my_file ) , exist_ok=True)
+          #Create the file and transfer template information into the file.
+          if conf['NetCDF4'] :
+             my_ds = nc.Dataset( my_file , 'w' , format='NETCDF4' )            #Force NETCDF4 Output (independent of input data format)
+          else               :
+             my_ds = nc.Dataset( my_file , 'w' , format=conf['DataModel'] )    #Use the input data format as output data format.
+
+          my_ds.setncatts( template_ds.__dict__)
+          for dname , the_dim in template_ds.dimensions.items():
+             my_ds.createDimension(dname, len(the_dim) if not the_dim.isunlimited() else None)
+          for v_name, varin in template_ds.variables.items():
              if conf['NetCDF4'] or conf['DataModel'] == 'NETCDF4' :
                 my_var = my_ds.createVariable(v_name, varin.datatype, varin.dimensions , compression='zlib' )
              else                                                 :
                 my_var = my_ds.createVariable(v_name, varin.datatype, varin.dimensions )
              my_var.setncatts({k: varin.getncattr(k) for k in varin.ncattrs()})
+             #if v_name not in conf['VarList'] : 
              my_var[:] = varin[:]
-        my_ds.close()
-    template_ds.close()
+          my_ds.close()
+       template_ds.close()
+    gc.collect()   
 
     
 def get_pert_matrix( conf ) :
@@ -170,7 +181,6 @@ def trans_ens( ens , Tm , conf , new_mean = None ) :
     ens_size_target = np.shape( Tm )[1]    #The columns of Tm defines the size of the target ensemble.
     ens_shape_target = np.array(ens_shape)
     ens_shape_target[-1] = ens_size_target    
-    
     #Reshape the ensemble (files are different variables, columns are ensemble members)
     ens = ens.reshape( np.prod( ens_shape[0:-1] ) , ens_size )
     #Get the ensemble mean and the perturbations.
@@ -182,17 +192,72 @@ def trans_ens( ens , Tm , conf , new_mean = None ) :
        ens = ens + np.tile( new_mean , ( ens_size_target , 1 ) ).T
     else :
        ens = ens + np.tile( ens_mean , ( ens_size_target , 1 ) ).T
-    
     #Reshape the ensemble to recover its original strucutre.
     ens = ens.reshape( ens_shape_target )
-    
     return ens
+
+
+
+# Transform the ensemble computing one new memeber at at time to be more memory efficient.
+def trans_and_write_ens( ori_ens , my_target_file_list , my_var , Tm , conf , new_mean = None ) :
+    #ens a numpy array containing data for each ensemble member. 
+    #the ensemble dimension is always the last dimension.
+    #new_mean is for the case we would like to recenter the ensemble mean.
+
+    ori_ens_shape = ori_ens.shape
+    var_shape  = ori_ens.shape[0:-1]
+    ori_ens_size = ori_ens_shape[-1]  #The number of original ensemble members.
+
+    print('Reshaping the ensemble')
+    ori_ens = ori_ens.reshape( np.prod( var_shape ) , ori_ens_size )             #Reshape ensemble members (1 member per column of a matrix)
+    ori_ens_mean = np.mean( ori_ens , axis = 1 )                                 #Compute the ensemble mean
+    ori_ens = ori_ens - np.tile( ori_ens_mean , ( ori_ens_size , 1 ) ).T         #Substract the mean to obtain the ensemble perturbations.
+
+    if new_mean is not None :
+        new_mean = new_mean.reshape( np.prod( var_shape , 1 ) )                  #Reshape the recentering mean (if any)
+
+    for imember , file_member in enumerate( my_target_file_list ) :
+        print('Processing member ',imember+1,' to be written at ',file_member )
+        if imember == 0 :
+           print('New member weigths ',Tm[:,imember] ) 
+        #Generate the new member
+        my_member = np.matmul( ori_ens , Tm[:,imember] )                  #Compute the new perturbations according to the selected method.
+        if new_mean is not None :
+           my_member = my_member + new_mean                               #Recenter the new perturbations around a new mean
+        else :
+           my_member = my_member + ori_ens_mean                           #Recenter the new perturbations around the original mean
+        #Check the new member
+        my_member = check_ens( my_member , my_var )                       #Do some sanity checks.
+
+        #Write the new member to the corresponding file.
+        print('Writing the file')
+        my_member = my_member.reshape( var_shape )
+        my_ds = nc.Dataset( file_member , 'r+' )
+        my_ds[my_var][:] = np.copy( my_member )
+        my_ds.close()
+        gc.collect()
+
+    return 
 
 def check_ens( ens , variable ) :
     #Variable specific checks (enforce physically meaningful ranges)
     if variable == 'HR' :
         ens[ens < 0.0] = 0.0
         ens[ens > 1.0] = 1.0
+    if variable == 'SPECHUMD' :
+        ens[ens < 0.0] = 0.0
+    if variable == 'QR' :
+        ens[ens < 0.0] = 0.0
+    if variable == 'QG' :
+        ens[ens < 0.0] = 0.0
+    if variable == 'QS' :
+        ens[ens < 0.0] = 0.0
+    if variable == 'QC' :
+        ens[ens < 0.0] = 0.0
+    if variable == 'QI' :
+        ens[ens < 0.0] = 0.0
+    if variable == 'QH' :
+        ens[ens < 0.0] = 0.0
         
     return ens
 

@@ -1,0 +1,8 @@
+
+&general
+  nbv_ori=20
+  nbv_tar=80
+  method=1
+  ntimes=1
+/
+

@@ -25,7 +25,8 @@ conf['PertType'] = __PERT_TYPE__                         #The type of perturbati
 conf['VarList'] = __VAR_LIST__                           #List containing the variable names to be perturbed. 
 conf['NetCDF4'] = __NETCDF4__                            #If TRUE, NETCDF4 output will be forced independently of the input format.
                                                          #if FALSE, then the output format will be the same as the input format.
-
+conf['UseCp'] = True                                     #Use CP to create the new met_em files before computing the perturbations. 
+conf['ReduceMemUse'] = True                              #Do not store the expaneded ensemble in memory. 
 conf['FileSearchString'] = 'met_em*.nc*'
 
 #==============================================================================
@@ -50,12 +51,27 @@ def pert_file_type( my_ens_file_list , my_target_ens_file_list , my_Tm , conf ) 
      print('Processing file type: ', my_ens_file_list[0] )
      template_file = my_ens_file_list[0]
      mpm.create_ens_files( my_target_ens_file_list , template_file , conf )
-
      for my_var in conf['VarList']:
+         print('Processing variable :',my_var)
+         print('Reading ...')
          my_ens = mpm.read_ens( my_ens_file_list , my_var , conf )                #Read
-         my_ens = mpm.trans_ens( my_ens , my_Tm , conf , new_mean = None )        #Transform
-         my_ens = mpm.check_ens( my_ens , my_var )                                #Check
-         mpm.write_ens( my_target_ens_file_list , my_var , my_ens , conf )        #Write
+         if conf['ReduceMemUse'] :
+            print('Transforming and writing ...')
+            mpm.trans_and_write_ens( my_ens , my_target_ens_file_list , my_var , Tm , conf , new_mean = None )       #Transform and write.
+         else   :
+            print('Transforming ...')
+            my_ens = mpm.trans_ens( my_ens , my_Tm , conf , new_mean = None )        #Transform
+            print('Checking ...')
+            my_ens = mpm.check_ens( my_ens , my_var )                                #Check
+            print('Writing ...')
+            mpm.write_ens( my_target_ens_file_list , my_var , my_ens , conf )        #Write
+         
+
+     #for my_var in conf['VarList']:
+     #    my_ens = mpm.read_ens( my_ens_file_list , my_var , conf )                #Read
+     #    my_ens = mpm.trans_ens( my_ens , my_Tm , conf , new_mean = None )        #Transform
+     #    my_ens = mpm.check_ens( my_ens , my_var )                                #Check
+     #    mpm.write_ens( my_target_ens_file_list , my_var , my_ens , conf )        #Write
 
 THREADS_NUM=int(os.environ['OMP_NUM_THREADS'])
 pool = Pool(processes=THREADS_NUM)

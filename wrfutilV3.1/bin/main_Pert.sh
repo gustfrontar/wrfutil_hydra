@@ -1,7 +1,24 @@
 #!/bin/bash 
 #######################################################
 # This script is only for the FUGAKU computer.
-#############
+# This script can be sent directly to the queue.
+# sbatch main_Pert.sh 
+# Note: This script is intensive in memory use. 
+# memory scales with the number of ensemble members in
+# the original ensemble and with the size of the domain
+# in the experiment. 
+# In the future we can translate this into fortran and 
+# use MPI for more efficient memory administration and
+# faster performance. 
+#######################################################
+
+#!/bin/bash
+#SBATCH --time=24:00:00
+#SBATCH -p mem2      # Specifying a queue
+#SBATCH -n 10        # Specifying the number of CPUs
+#SBATCH -N 1         # Specifying the number of nodes (this script can only use one node)
+#SBATCH --mem 100G   # Specifying memory usage [MB]
+export OMP_NUM_THREADS=10
 
 #Get the working directory
 if [ ! -z ${PBS_O_WORKDIR}    ]; then cd ${PBS_O_WORKDIR}   ;fi
@@ -36,8 +53,7 @@ sed -i -e "s|__NETCDF4__|$NETCDF4|g"                                            
 
 ulimit -s unlimited
 cd $WPSDIR
-export OMP_NUM_THREADS=$PERTTHREAD
-$PYTHON -u ./main_perturb_met_em.py > main_perturb_met_em.out 
+time $PYTHON -u ./main_perturb_met_em.py > $LOGDIR/log_pert_${PASO}.log
 EC=$?
 [[ $EC -ne 0 ]] && dispararError 9 "main_perturb_met_em.py"
 
