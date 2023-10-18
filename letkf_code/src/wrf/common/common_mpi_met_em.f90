@@ -60,9 +60,8 @@ SUBROUTINE set_common_mpi_met_em
 
   ALLOCATE( wmatrix(nbv_ori,nbv_tar) )
   if( myrank .eq. 0 ) then
-     wmatrix = 0.0e0
-     !TODO call the transformation matrix generation.
-     !CALL get_weigths( nbv_ori , nbv_tar , method , wmatrix )
+     !wmatrix = 0.0e0
+     CALL get_weigths( nbv_ori , nbv_tar , method , wmatrix , sigma )
   endif
   CALL MPI_BCAST(wmatrix,nbv_ori*nbv_tar,MPI_REAL,0,MPI_COMM_WORLD,ierr)
 
@@ -109,20 +108,21 @@ SUBROUTINE read_ens_mpi_alltoall(file,member,v3d,v2d,vs3d)
   REAL(r_sngl)  :: fieldg3(nlon,nlat,nlev,nv3d)
   REAL(r_sngl)  :: fieldg2(nlon,nlat,nv2d)
   INTEGER       :: l,ll,im,mstart,mend
-  CHARACTER(20) :: filename='xxxx00000'
+  CHARACTER(len=9)  :: filename='eo0100001'
+
 
   ll = CEILING(REAL(member)/REAL(nprocs))
   DO l=1,ll
     im = myrank+1 + (l-1)*nprocs
     IF(im <= member) THEN
-      WRITE(filename(1:9),'(A4,I5.5)') file,im
+      WRITE(filename(1:9),'(A,I5.5)') file,im
       WRITE(6,'(A,I3.3,2A)') 'MYRANK ',myrank,' is reading a file ',filename
       !Read the ncfile
       CALL read_grd(filename,fieldg3,fieldg2,fields3)
     END IF
   END DO  !End do over variables
 
-  !! Agregado por MPM
+  ! Agregado por MPM
   DO l=1,ll 
     mstart = 1 + (l-1)*nprocs
     mend = MIN(l*nprocs, member)
@@ -163,7 +163,7 @@ SUBROUTINE write_ens_mpi_alltoall(file,member,v3d,v2d,vs3d)
   DO l=1,ll
     im = myrank+1 + (l-1)*nprocs
     IF(im <= member) THEN
-      WRITE(filename(1:9),'(A4,I5.5)')file,im
+      WRITE(filename(1:9),'(A,I5.5)')file,im
       !Write a netcdf file
       WRITE(6,'(A,I3.3,2A)')'MYRANK ',myrank,' is writing a file ',filename
       CALL write_grd(filename,fieldg3,fieldg2,fields3)

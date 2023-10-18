@@ -5,7 +5,7 @@ source /opt/load-libs.sh 1              #HYDRA  Load intel libraries
 
 set -ex
 F90=mpiifort
-OMP='-qopenmp'
+OMP=''
 
 F90OPT='-O3 -xHost ' #-convert big_endian' #-O3 -convert big_endian' #-Kfast,parallel' # -Hs'
 
@@ -27,7 +27,7 @@ cat $COMMONDIR/netlibblas.f >> netlib2.f
 LBLAS=""
 fi
 
-NETCDF=/home/ra000007/a04037/data/comp_libs/netcdf/                #Fugaku - intel
+NETCDF=/home/ra000007/a04037/data/comp_libs/netcdf4/                #Fugaku - intel
 
 
 LIB_NETCDF="-L$NETCDF/lib/ -lnetcdff -lnetcdf"

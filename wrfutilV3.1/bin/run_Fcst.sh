@@ -106,7 +106,7 @@ if [ $WPS_CYCLE -eq 1 ] ; then
    INI_BDY_DATE=$(date_floor "$INI_STEP_DATE" $INTERVALO_INI_BDY )
    INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
 else
-   INI_BDY_DATE=$(date_floor "$FECHA_INI" $INTERVALO_INI_BDY )
+   INI_BDY_DATE=$(date_floor "$FECHA_INI" $INTERVALO_BDY )
    INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
 fi
 

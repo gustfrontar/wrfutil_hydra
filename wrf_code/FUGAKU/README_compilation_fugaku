@@ -1,0 +1,33 @@
+Some things to take into account when compiling codes in Fugaku.
+
+Some libraries will need the option --host=ia64 at the time of runing the configure utility when using the FUJITSU compilers.
+This is because executables can not be run at the login nodes (and some configures test if they can run or not the executables
+created by the compilers). 
+
+In addition to use the configuration files contained in this folders, some modifications to the source files may be required.
+Some "old fashion" fortran files are not well handled by the pre-processor and the compilers. 
+
+Some old stile comments starting with "C" should be removed before compiling. Also in some files the special character at 
+the beginning of a continuation line is missing creating compilation errors. If you found this errors during compilation
+add by hand the missing special characters at the beginning of the continuation line. 
+
+Also some additional flags has to be set, these are already included in the configure files in this folder. 
+
+For wrf and wrfvar compilation in Fugaku we use the source code contained in 
+/vol0004/apps/oss/spack-v0.19/opt/spack/linux-rhel8-a64fx/fj-4.8.1/wrf-4.4-hrs2lzvy4kh7xmh3tvgif5frs2v2cfa3/
+This already contains modified files to avoid the problems with some fortran formats. 
+Note that WRF and WRF-VAR has to be compiled in independent folders so a copy of the source code has to be made
+so there are two folders one containing WRF and the other containing WRF-VAR (the same source code different compilation options).
+
+In the case of WPS files were modified by hand. The source code with modified files is in
+/home/ra000007/a04037/data/WPS4.5_FUJITSU_NETCDF4
+
+Libraries for the compilation of WRF, WRF-VAR and WPS in Fugaku are in 
+/home/ra000007/a04037/data/comp_libs_fujitsu
+
+Netcdf4 libraries were already compiled and available through the following spack module (which is the one that has been used
+for the compilation of wrf).
+/vol0004/apps/oss/spack-v0.19/opt/spack/linux-rhel8-a64fx/fj-4.8.1/netcdf-c-4.9.0-v4ki326az3gwlvs6lphu3v4hq7svkwpk/
+However a copy of these libraries has been made to the comp_libs_fujitsu folder in case the spack package is updated / removed, etc.
+
+

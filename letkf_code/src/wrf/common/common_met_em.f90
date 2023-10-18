@@ -46,7 +46,7 @@ MODULE common_met_em
   LOGICAL, PARAMETER :: OPTIONAL_VARIABLE(nvar)= &  !Some input variables are optional (eg. condensates)
   &(/ .false. , .false. , .true. , .false. , .false. , .false. , .false. , .true. , .true. , &
   !   U          V         W         T         P1         P2   ,   GHT      QV        QC        
-  & .true. , .true. , .true. , .true. , .true. , .false. , .true. ,  &
+  & .true. , .true. , .true. , .true. , .true. , .false. , .false. ,  &
   !   QR       QCI      QS       QG       QH       PS       SLP 
   & .true. , .true. /)
   !   SM       ST 
@@ -78,10 +78,13 @@ MODULE common_met_em
   CHARACTER(20), PARAMETER :: VAR_NAME(nvar) = &
   &(/ 'UU' , 'VV' , 'WW' , 'TT' , 'PRESSURE' , 'PRES' , 'GHT' , 'SPECHUMD' , 'QC' ,  &
   !   U      V        W     T        P1          P2      GHT        QV        QC        
-  &  'QR'  , 'QI' , 'QS' , 'QG' , 'QH' ,  'PSFC' , 'SLP' , &
+  &  'QR'  , 'QI' , 'QS' , 'QG' , 'QH' ,  'PSFC' , 'PMSL' , &
   !   QR      QCI   QS      QG     QH      PS       SLP  
   &  'SM' , 'ST' /)
-  !  SM      ST    
+  !  SM      ST  
+
+  !Variables to store the actual variable names that are included in the data structures.
+  CHARACTER(len=20) , ALLOCATABLE :: VAR_NAME_3D(:) , VAR_NAME_2D(:) , VAR_NAME_S3D(:)  
 
   LOGICAL :: PRESENT_VARIABLE(nvar) = .false.  !For checking input variables.
 
@@ -89,13 +92,62 @@ MODULE common_met_em
 !-----------------------------------------------------------------------
 ! Set the parameters
 !-----------------------------------------------------------------------
+
+SUBROUTINE get_weigths( member_ori , member_tar , method , wmatrix , sigma ) 
+IMPLICIT NONE
+REAL(r_sngl) , INTENT(OUT) :: wmatrix(member_ori,member_tar)
+INTEGER      , INTENT(IN ) :: member_ori , member_tar , method
+INTEGER                    :: ii , jj , ima
+
+!This routine generates a transformation matrix that produce the desired perturbation.
+
+
+IF ( method == 1 .or. method == 2 ) THEN  !Particle rejuvenation.
+   DO jj = 1 , member_tar
+     IF ( method == 1 ) THEN 
+        CALL comm_randn( wmatrix(:,jj) , member_ori )  !With Gaussian distribution
+     ELSE
+        CALL comm_rand(  wmatrix(:,jj) , member_ori )  !With Uniform distribution
+     ENDIF
+   ENDDO 
+   wmatrix = ( sigma / REAL( member_ori ) ) ** 0.5
+   im = 0
+   DO jj = 1 , member_tar 
+      wmatrix(im,jj) = wmatrix(im,jj) + 1.0e0
+      im = im + 1
+      IF ( im == member_ori ) THEN
+         im = 0
+      ENDIF
+   ENDDO
+ENDIF
+
+IF ( method == 3 ) THEN   !Specular 
+
+   IF ( member_tar /= 2 * member_ori ) THEN
+      WRITE(*,*)'Error: In specular method the target ensemble size should be '
+      WRITE(*,*)'       twice the original ensmble size'
+      WRITE(*,*)'       Original ensemble size ',member_ori
+      WRITE(*,*)'       Target ensemble size   ',member_tar
+      STOP 1
+   ENDIF
+   wmatrix = 0.0e0 
+   im = 0
+   amp = 1.0e0
+   DO ii = 1 , member_ori
+      wmatrix(ii,ii)=1.0e0
+      wmatrix(ii,ii+member_ori)=-1.0e0
+   ENDDO
+ENDIF
+
+END SUBROUTINE get_weigths
+
 SUBROUTINE set_common_met_em(inputfile)
   IMPLICIT NONE
   INTEGER :: i , j 
   INTEGER(4) :: ncid,varid,dimids(4),shape(4)
   INTEGER(4),ALLOCATABLE :: start(:),count(:)
   CHARACTER(*)           :: inputfile
-  INTEGER :: ierr  
+  INTEGER :: ierr , iv3d , iv2d , is3d 
 
   WRITE(6,'(A)') 'Hello from set_common_wrf'
   !
@@ -122,10 +174,7 @@ SUBROUTINE set_common_met_em(inputfile)
   WRITE(6,'(A)') '*** grid information ***'
   WRITE(6,'(3(2X,A,I5))') 'nlon =',nlon,'nlat =',nlat,'nlev =',nlev,'nlev_soil=',nlev_soil
   nij0=nlon*nlat
-  nlevall=nlev*nv3d+nv2d+ns3d*nlev_soil
   ngpv=nij0*nlevall
-
-  DEALLOCATE(start,count)
 
   WRITE(6,'(a)') '***  END  : READ NETCDF (CNST) ***'
 
@@ -163,11 +212,34 @@ SUBROUTINE set_common_met_em(inputfile)
         END SELECT
       ENDIF
   ENDDO
+  nlevall=nlev*nv3d+nv2d+ns3d*nlev_soil
 
   WRITE(6,*)'The number of 3D atmospheric variables to be perturbed is ',nv3d
   WRITE(6,*)'The number of 2D variables to be perturbed is             ',nv2d
   WRITE(6,*)'The number of 3D soil variables to be perturbed is        ',ns3d
+  WRITE(6,*)'Nleval is ',nlevall
 
+  ALLOCATE( VAR_NAME_3D(nv3d) , VAR_NAME_2d(nv2d) , VAR_NAME_S3D(ns3d) )
+
+  iv3d = 0
+  iv2d = 0
+  is3d = 0
+  !Check input variables
+  DO i = 1,nvar
+      IF ( PRESENT_VARIABLE(i) .and. PERTURB_VARIABLE(i) ) THEN
+        SELECT CASE ( VAR_TYPE(i) )
+          CASE( 'A3D' )
+             iv3d = iv3d + 1
+             VAR_NAME_3D(iv3d)=VAR_NAME(i)
+          CASE( 'A2D' )
+             iv2d = iv2d + 1
+             VAR_NAME_2d(iv2d)=VAR_NAME(i)
+          CASE( 'S3D' )
+             is3d = is3d + 1
+             VAR_NAME_s3d(is3d)=VAR_NAME(i)
+        END SELECT
+      ENDIF
+  ENDDO
 
   CALL check_io(NF90_CLOSE(ncid))
 
@@ -187,11 +259,11 @@ END SUBROUTINE set_common_met_em
 
 SUBROUTINE read_grd(filename,v3d,v2d,vs3d)
 IMPLICIT NONE
-CHARACTER(*) :: filename
-REAL(r_sngl) :: v3d(nlon,nlat,nlev,nv3d) , v2d(nlon,nlat,nv2d) , vs3d(nlon,nlat,nlev_soil,ns3d)
-INTEGER(4)   :: ncid
-INTEGER      :: iv , iv2d , iv3d , ivs3d
-INTEGER      :: varid
+CHARACTER(len=*) :: filename
+REAL(r_sngl)  :: v3d(nlon,nlat,nlev,nv3d) , v2d(nlon,nlat,nv2d) , vs3d(nlon,nlat,nlev_soil,ns3d)
+INTEGER       :: ncid
+INTEGER       :: iv , iv2d , iv3d , ivs3d
+INTEGER       :: varid
 INTEGER, ALLOCATABLE         :: start(:),count(:)
 INTEGER                      :: nxvar,nyvar,nzvar
 LOGICAL                      :: readvar
@@ -217,6 +289,7 @@ DO iv = 1 , nvar !Loop over the variables.
         nzvar=nlev
       CASE('S')
         nzvar=nlev_soil  
+      CASE('M')  
       CASE DEFAULT
         WRITE(6,*)"ERROR: Stagger option not recognized: ",STAGGER_TYPE(iv)
         STOP 1
@@ -304,6 +377,7 @@ DO iv = 1 , nvar !Main loop over variables
         nzvar=nlev
       CASE('S')
         nzvar=nlev_soil
+      CASE('M')
       CASE DEFAULT
         WRITE(6,*)"Error: Staggering type not recognized ",STAGGER_TYPE(iv)
         STOP 1
@@ -315,20 +389,20 @@ DO iv = 1 , nvar !Main loop over variables
          CASE('A3D')
            ALLOCATE(start(4),count(4))
            start = (/ 1,1,1,1 /)
-           count = (/ nxvar,nyvar,nlev,1 /)
+           count = (/ nxvar,nyvar,nzvar,1 /)
            !WRITE VARIABLE
            CALL check_io(NF90_INQ_VARID(ncid,TRIM(VAR_NAME(iv)),varid))
-           CALL check_io(NF90_PUT_VAR(ncid,varid,v3d(1:nxvar,1:nyvar,1:nlev,iv3d),start,count))
+           CALL check_io(NF90_PUT_VAR(ncid,varid,v3d(1:nxvar,1:nyvar,1:nzvar,iv3d),start,count))
            iv3d=iv3d+1
            DEALLOCATE( start , count )
 
          CASE('S3D') 
            ALLOCATE(start(4),count(4))
            start = (/ 1,1,1,1 /)
-           count = (/ nxvar,nyvar,nlev_soil,1 /)
+           count = (/ nxvar,nyvar,nzvar,1 /)
            !WRITE VARIABLE
            CALL check_io(NF90_INQ_VARID(ncid,TRIM(VAR_NAME(iv)),varid))
-           CALL check_io(NF90_PUT_VAR(ncid,varid,vs3d(1:nxvar,1:nyvar,1:nlev_soil,ivs3d),start,count))
+           CALL check_io(NF90_PUT_VAR(ncid,varid,vs3d(1:nxvar,1:nyvar,1:nzvar,ivs3d),start,count))
            ivs3d=ivs3d+1
            DEALLOCATE( start , count )
 
@@ -460,5 +534,6 @@ SUBROUTINE close_wrf_file(ncid)
 
   RETURN
 END SUBROUTINE close_wrf_file
+
 
 END MODULE common_met_em

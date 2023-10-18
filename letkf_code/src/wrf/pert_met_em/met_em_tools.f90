@@ -33,6 +33,11 @@ SUBROUTINE transform_pert
   REAL(r_sngl),ALLOCATABLE :: mean3dg(:,:,:)
   REAL(r_sngl),ALLOCATABLE :: mean2dg(:,:)
   REAL(r_sngl),ALLOCATABLE :: means3dg(:,:,:)
+  REAL(r_sngl),ALLOCATABLE :: permean3dg(:,:,:)
+  REAL(r_sngl),ALLOCATABLE :: permean2dg(:,:)
+  REAL(r_sngl),ALLOCATABLE :: permeans3dg(:,:,:)
+
+
 
   WRITE(6,'(A)') 'Hello pert_met_em'
   !
@@ -54,9 +59,9 @@ SUBROUTINE transform_pert
   ! MAIN TRNSFORMATION
   !
   DO n=1,nbv_tar 
-    eper3d(:,:,m,:) = mean3dg(:,:,:)
-    eper2d(:,m,:) = mean2dg(:,:)
-    epers3d(:,:,m,:) = means3dg(:,:,:)
+    eper3d(:,:,m,:) = 0.0e0
+    eper2d(:,m,:) = 0.0e0
+    epers3d(:,:,m,:) = 0.0e0
     DO m=1,nbv_ori
        eper3d(:,:,m,:)  = eper3d(:,:,m,:)  + eori3d(:,:,m,:)  * wmatrix(m,n)  
        eper2d(:,m,:)    = eper2d(:,m,:)    + eori2d(:,m,:)    * wmatrix(m,n)
@@ -64,18 +69,34 @@ SUBROUTINE transform_pert
     END DO
   END DO 
 
+  !
+  !  RECENTER PERTURBATIONS SO THEY HAVE 0-MEAN AND ADD THE ORIGINAL ENSEMBLE MEAN
+  !
+  ALLOCATE(permean3dg(nij1,nlev,nv3d),permean2dg(nij1,nv2d),permeans3dg(nij1,nlev_soil,ns3d))
+  CALL ensmean_grd(nbv_tar,nij1,eper3d,eper2d,epers3d,permean3dg,permean2dg,permeans3dg)
+  DO m=1,nbv_ori
+     eper3d(:,:,m,:) = eper3d(:,:,m,:) - permean3dg + mean3dg
+  END DO
+  DO m=1,nbv_ori
+     eper2d(:,m,:) = eper2d(:,m,:) - permean2dg + mean2dg
+  END DO
+  DO m=1,nbv_ori
+     epers3d(:,:,m,:) = epers3d(:,:,m,:) - permeans3dg + means3dg
+  END DO
+
+
 
   !CONDENSATES AND QVAPOR CANNOT BE 0 AFTER ASSIMILATION.
-  DO iv = 1 , nvar
-   IF( VAR_NAME(iv)=='SPECHUMD' .or. VAR_NAME(iv)=='QR' .or.  &
-    &    VAR_NAME(iv)=='QC'       .or. VAR_NAME(iv)=='QS' .or.  &
-    &    VAR_NAME(iv)=='QI'       .or. VAR_NAME(iv)=='QG' .or.  &
-    &    VAR_NAME(iv)=='QH' )THEN
-       WHERE( eper3d(:,:,:,iv) <= 0.0e0 )eper3d(:,:,:,iv) = 0.0e0 
+  DO iv = 1 , nv3d
+   IF( VAR_NAME_3D(iv)=='SPECHUMD'   .or. VAR_NAME_3D(iv)=='QR' .or.  &
+    &    VAR_NAME_3D(iv)=='QC'       .or. VAR_NAME_3D(iv)=='QS' .or.  &
+    &    VAR_NAME_3D(iv)=='QI'       .or. VAR_NAME_3D(iv)=='QG' .or.  &
+    &    VAR_NAME_3D(iv)=='QH' )THEN
+     WHERE( eper3d(:,:,:,iv) <= 0.0e0 )eper3d(:,:,:,iv) = 0.0e0 
    ENDIF            
   END DO
 
-  DEALLOCATE(mean3dg,mean2dg,means3dg)
+  DEALLOCATE(mean3dg,mean2dg,means3dg,permean3dg,permean2dg,permeans3dg)
 
   RETURN
 END SUBROUTINE transform_pert

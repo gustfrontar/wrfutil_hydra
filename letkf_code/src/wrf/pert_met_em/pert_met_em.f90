@@ -46,11 +46,8 @@ PROGRAM pert_met_em
   WRITE(6,'(A,I15)')   '  nbv_ntimes   :',ntimes  
   WRITE(6,'(A,I15)')   '  method       :',method
   WRITE(6,'(A)') '============================================='
-  CALL set_common_met_em('me0100001')
+  CALL set_common_met_em('eo0100001')
   CALL set_common_mpi_met_em
-
-
-
 
   DO itime = 1 , ntimes 
 !
@@ -69,7 +66,7 @@ PROGRAM pert_met_em
     ALLOCATE(eoris3d(nij1,nlev_soil,nbv_ori,ns3d))
 
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-    WRITE(prefix(3:4),'(2A,I2.2)')'mo',itime
+    WRITE(prefix(1:4),'(A,I2.2)')'eo',itime
     CALL read_ens_mpi_alltoall(prefix,nbv_ori,eori3d,eori2d,eoris3d)
 
     CALL CPU_TIME(rtimer)
@@ -92,6 +89,7 @@ PROGRAM pert_met_em
     CALL CPU_TIME(rtimer)
     WRITE(6,'(A,2F10.2)') '### TIMER(PERTURBATION TRANSFORM):',rtimer,rtimer-rtimer00
     rtimer00=rtimer
+
 !-----------------------------------------------------------------------
 ! Analysis ensemble
 !-----------------------------------------------------------------------
@@ -99,7 +97,7 @@ PROGRAM pert_met_em
   ! WRITE PERTURBED METEM FILES
   !
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-    WRITE(prefix(3:4),'(2A,I2.2)')'mp',itime
+    WRITE(prefix(1:4),'(A,I2.2)')'ep',itime
     CALL write_ens_mpi_alltoall(prefix,nbv_tar,eper3d,eper2d,epers3d)
 
     CALL CPU_TIME(rtimer)

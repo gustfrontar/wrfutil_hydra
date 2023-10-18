@@ -131,7 +131,7 @@ def get_pert_matrix( conf ) :
     if conf['PertType'] == 'RejuGauss' :
         Tm = np.random.randn(Ne,Nt)
         Tm = np.matmul( Tm , (np.eye(Nt) - (1.0/Nt)*np.ones((Nt,Nt)) ) )
-        Tm = np.sqrt( conf['PertAmp'] / (Nt-1) ) * Tm
+        Tm = np.sqrt( conf['PertAmp'] / (Ne-1) ) * Tm
         iens = 0
         for ii in range( Nt ) :
              Tm[iens,ii] = Tm[iens,ii] + 1.0
