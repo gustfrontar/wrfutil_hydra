@@ -42,6 +42,6 @@ rm *.o
 
 
 
-tar -cvf ../../spawn_INTEL.tar ./*.exe
+tar -cvf ../../../spawn_INTEL.tar ./*.exe
 
 echo "NORMAL END"

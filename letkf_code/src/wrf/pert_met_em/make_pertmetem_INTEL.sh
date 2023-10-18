@@ -30,7 +30,7 @@ fi
 NETCDF=/home/ra000007/a04037/data/comp_libs/netcdf4/                #Fugaku - intel
 
 
-LIB_NETCDF="-L$NETCDF/lib/ -lnetcdff -lnetcdf"
+LIB_NETCDF="-L$NETCDF/lib/ -lnetcdff -lnetcdf -lhdf5_fortran -lhdf5_hl -lhdf5 "
 INC_NETCDF="-I$NETCDF/include/"
 
 
@@ -58,6 +58,10 @@ rm -f *.mod
 rm -f *.o
 rm -f netlib.f
 
+$F90 $OMP $F90OPT -c dummy_mpi.f90 
+$F90              -o dummy_mpi.exe *.o
+
 tar -cvf ../../../pertmetem_INTEL.tar ./*.exe ./pertmetem.namelist
+
 
 echo "NORMAL END"

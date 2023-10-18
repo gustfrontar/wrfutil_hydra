@@ -45,6 +45,10 @@ SUBROUTINE transform_pert
   !
   ALLOCATE(mean3dg(nij1,nlev,nv3d),mean2dg(nij1,nv2d),means3dg(nij1,nlev_soil,ns3d))
   CALL ensmean_grd(nbv_ori,nij1,eori3d,eori2d,eoris3d,mean3dg,mean2dg,means3dg)
+  !IF ( myrank == 0 ) THEN
+  !   WRITE(*,*)'Initial ensemble ',eori3d(1,1,:,1)
+  !ENDIF
+
   DO m=1,nbv_ori
      eori3d(:,:,m,:) = eori3d(:,:,m,:) - mean3dg
   END DO
@@ -58,14 +62,14 @@ SUBROUTINE transform_pert
   !
   ! MAIN TRNSFORMATION
   !
+  eper3d(:,:,m,:)  = 0.0e0
+  eper2d(:,m,:)    = 0.0e0
+  epers3d(:,:,m,:) = 0.0e0
   DO n=1,nbv_tar 
-    eper3d(:,:,m,:) = 0.0e0
-    eper2d(:,m,:) = 0.0e0
-    epers3d(:,:,m,:) = 0.0e0
     DO m=1,nbv_ori
-       eper3d(:,:,m,:)  = eper3d(:,:,m,:)  + eori3d(:,:,m,:)  * wmatrix(m,n)  
-       eper2d(:,m,:)    = eper2d(:,m,:)    + eori2d(:,m,:)    * wmatrix(m,n)
-       epers3d(:,:,m,:) = epers3d(:,:,m,:) + eoris3d(:,:,m,:) * wmatrix(m,n)
+       eper3d(:,:,n,:)  = eper3d(:,:,n,:)  + eori3d(:,:,m,:)  * wmatrix(m,n)  
+       eper2d(:,n,:)    = eper2d(:,n,:)    + eori2d(:,m,:)    * wmatrix(m,n)
+       epers3d(:,:,n,:) = epers3d(:,:,n,:) + eoris3d(:,:,m,:) * wmatrix(m,n)
     END DO
   END DO 
 
@@ -74,17 +78,19 @@ SUBROUTINE transform_pert
   !
   ALLOCATE(permean3dg(nij1,nlev,nv3d),permean2dg(nij1,nv2d),permeans3dg(nij1,nlev_soil,ns3d))
   CALL ensmean_grd(nbv_tar,nij1,eper3d,eper2d,epers3d,permean3dg,permean2dg,permeans3dg)
-  DO m=1,nbv_ori
+  DO m=1,nbv_tar
      eper3d(:,:,m,:) = eper3d(:,:,m,:) - permean3dg + mean3dg
   END DO
-  DO m=1,nbv_ori
+  DO m=1,nbv_tar
      eper2d(:,m,:) = eper2d(:,m,:) - permean2dg + mean2dg
   END DO
-  DO m=1,nbv_ori
+  DO m=1,nbv_tar
      epers3d(:,:,m,:) = epers3d(:,:,m,:) - permeans3dg + means3dg
   END DO
 
-
+  !IF ( myrank == 0 ) THEN
+  !   WRITE(*,*)'Perturbed ensemble ',eper3d(1,1,:,1)
+  !ENDIF
 
   !CONDENSATES AND QVAPOR CANNOT BE 0 AFTER ASSIMILATION.
   DO iv = 1 , nv3d

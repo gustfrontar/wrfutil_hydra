@@ -28,6 +28,9 @@ Libraries for the compilation of WRF, WRF-VAR and WPS in Fugaku are in
 Netcdf4 libraries were already compiled and available through the following spack module (which is the one that has been used
 for the compilation of wrf).
 /vol0004/apps/oss/spack-v0.19/opt/spack/linux-rhel8-a64fx/fj-4.8.1/netcdf-c-4.9.0-v4ki326az3gwlvs6lphu3v4hq7svkwpk/
+The HDF5 librarie required by netcdf has been copied from
+/vol0004/apps/oss/spack-v0.19/opt/spack/linux-rhel8-a64fx/fj-4.8.1/hdf5-1.12.2-evapq545yrhjn2lnbd63wy6gokhbedu2/
+
 However a copy of these libraries has been made to the comp_libs_fujitsu folder in case the spack package is updated / removed, etc.
 
 

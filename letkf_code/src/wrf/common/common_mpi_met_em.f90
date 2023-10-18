@@ -120,10 +120,8 @@ SUBROUTINE read_ens_mpi_alltoall(file,member,v3d,v2d,vs3d)
       !Read the ncfile
       CALL read_grd(filename,fieldg3,fieldg2,fields3)
     END IF
-  END DO  !End do over variables
 
-  ! Agregado por MPM
-  DO l=1,ll 
+    ! Agregado por MPM
     mstart = 1 + (l-1)*nprocs
     mend = MIN(l*nprocs, member)
     if (mstart <= mend) then
@@ -152,15 +150,13 @@ SUBROUTINE write_ens_mpi_alltoall(file,member,v3d,v2d,vs3d)
 ! variables y todos los niveles
   ll = CEILING(REAL(member)/REAL(nprocs))
   DO l=1,ll
-      mstart = 1 + (l-1)*nprocs
-      mend = MIN(l*nprocs, member)
-      if (mstart <= mend) then
-        CALL gather_grd_mpi_alltoall(member,mstart,mend,v3d,v2d,vs3d,fieldg3,fieldg2,fields3) !cambiamos tmpv3d
-      end if
-  END DO
+    mstart = 1 + (l-1)*nprocs
+    mend = MIN(l*nprocs, member)
+    if (mstart <= mend) then
+      CALL gather_grd_mpi_alltoall(member,mstart,mend,v3d,v2d,vs3d,fieldg3,fieldg2,fields3) !cambiamos tmpv3d
+    end if
 
-  !Write the data to the ensemble files.
-  DO l=1,ll
+    !Write the data to the ensemble files.
     im = myrank+1 + (l-1)*nprocs
     IF(im <= member) THEN
       WRITE(filename(1:9),'(A,I5.5)')file,im

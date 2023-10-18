@@ -21,7 +21,6 @@ MODULE common_met_em
 !-----------------------------------------------------------------------
 
   !MODULE VARIABLES (NOT READ FROM NAMELIST) 
-  INTEGER, PARAMETER :: nid_obs=10
   INTEGER, PARAMETER :: nvar = 18
   INTEGER            :: nv3d , nv2d , ns3d
 
@@ -93,11 +92,13 @@ MODULE common_met_em
 ! Set the parameters
 !-----------------------------------------------------------------------
 
-SUBROUTINE get_weigths( member_ori , member_tar , method , wmatrix , sigma ) 
+SUBROUTINE get_weigths( member_ori , member_tar , method , wmatrix , sigma_nml ) 
 IMPLICIT NONE
 REAL(r_sngl) , INTENT(OUT) :: wmatrix(member_ori,member_tar)
+REAL(r_size)               :: bufr( member_ori )
+REAL(r_sngl) , INTENT(IN)  :: sigma_nml
 INTEGER      , INTENT(IN ) :: member_ori , member_tar , method
-INTEGER                    :: ii , jj , ima
+INTEGER                    :: ii , jj , im
 
 !This routine generates a transformation matrix that produce the desired perturbation.
 
@@ -105,19 +106,22 @@ INTEGER                    :: ii , jj , ima
 IF ( method == 1 .or. method == 2 ) THEN  !Particle rejuvenation.
    DO jj = 1 , member_tar
      IF ( method == 1 ) THEN 
-        CALL comm_randn( wmatrix(:,jj) , member_ori )  !With Gaussian distribution
+        CALL com_randn( member_ori , bufr )  !With Gaussian distribution
      ELSE
-        CALL comm_rand(  wmatrix(:,jj) , member_ori )  !With Uniform distribution
+        CALL com_rand(  member_ori , bufr )  !With Uniform distribution
      ENDIF
+     wmatrix(:,jj) = REAL( bufr , r_sngl )
    ENDDO 
-   wmatrix = ( sigma / REAL( member_ori ) ) ** 0.5
-   im = 0
+   wmatrix = wmatrix * ( sigma_nml / REAL( member_ori ) ) ** 0.5 
+   im = 1
    DO jj = 1 , member_tar 
       wmatrix(im,jj) = wmatrix(im,jj) + 1.0e0
       im = im + 1
-      IF ( im == member_ori ) THEN
-         im = 0
+      IF ( im > member_ori ) THEN
+         im = 1
       ENDIF
+      WRITE(6,*)'Weigths for member ',jj 
+      WRITE(6,*)wmatrix(:,jj) 
    ENDDO
 ENDIF
 
@@ -132,7 +136,6 @@ IF ( method == 3 ) THEN   !Specular
    ENDIF
    wmatrix = 0.0e0 
    im = 0
-   amp = 1.0e0
    DO ii = 1 , member_ori
       wmatrix(ii,ii)=1.0e0
       wmatrix(ii,ii+member_ori)=-1.0e0

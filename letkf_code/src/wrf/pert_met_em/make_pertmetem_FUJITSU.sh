@@ -50,6 +50,10 @@ rm -f *.mod
 rm -f *.o
 rm -f netlib.f
 
-tar -cvf ../../../pertmetem_INTEL.tar ./*.exe ./pertmetem.namelist
+
+$F90 $OMP $F90OPT -c dummy_mpi.f90
+$F90              -o dummy_mpi.exe *.o
+
+tar -cvf ../../../pertmetem_FUJITSU.tar ./*.exe ./pertmetem.namelist
 
 echo "NORMAL END"

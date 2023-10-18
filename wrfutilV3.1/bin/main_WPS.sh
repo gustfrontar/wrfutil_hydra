@@ -11,6 +11,8 @@
 # Fecha: 01/2018
 # Readaptado a hydra
 # Fecha: 07/2023
+# Ported to Fugaku
+# Date : 10/2023
 
 #Get the working directory
 if [ ! -z ${PBS_O_WORKDIR}    ]; then cd ${PBS_O_WORKDIR}   ;fi
@@ -50,12 +52,6 @@ if [ $RUN_WPS -eq 1 ] ; then
    time $BASEDIR/bin/run_WPS.sh > $LOGDIR/log_wps_${PASO}.log
 fi
 if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
-   if [ $MACHINE == 'FUGAKU' ] ; then 
-      echo "Warning: met_em perturbation can not be executed at the computer nodes of FUGAKU"
-      echo "Please execute main_Pert.sh in the login nodes or in the FUGAKU pre/post nodes"
-      echo "      -----------------------------------------------------------             "
-      exit
-   fi      
    echo "We will perturb met_em files"
    rm -fr $HISTDIR/WPS/met_em
    time $BASEDIR/bin/run_Pert.sh > $LOGDIR/pert_met_em_${PASO}.log   2>&1

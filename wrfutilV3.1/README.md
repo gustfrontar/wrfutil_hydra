@@ -13,7 +13,11 @@ https://github.com/wrf-model/WPS
 This guide provide information on how to compile WRF, WPS and WRFDA from scratch
 https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compilation_tutorial.php
 
-Also the geographycal statical data has to be downloaded from this location
+Additional notes and configuration files will be included in the wrf_code folder.
+A folder for each machine should be there containing configure files specific for that
+machine as well as some additional considerations for the compilation of WRF on that machine.
+
+Also the geographycal static data has to be downloaded from this location
 https://www2.mmm.ucar.edu/wrf/users/download/get_sources_wps_geog.html
 
 Additionally to WRF code, the following programs needs to be compiled.

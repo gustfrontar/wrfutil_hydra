@@ -17,7 +17,7 @@ MODULE common_namelist_met_em
   INTEGER :: nbv_tar=80   ! Target number of perturbed ensemble members
   INTEGER :: ntimes=1     ! Number of times to perturb
   INTEGER :: method=1     ! RejuGauss 1 , RejuUniform 2 , Specular 3 
-  REAL(r_singl) :: sigma = 1.0e-3  !Perturbation amplitude (methods 1 and 2 only)
+  REAL(r_sngl) :: sigma = 1.0e-3  !Perturbation amplitude (methods 1 and 2 only)
 
   CHARACTER(LEN=50) :: NAMELIST_FILE='./pertmetem.namelist'
 

@@ -1,0 +1,9 @@
+
+&general
+  nbv_ori= __NBV_ORI__
+  nbv_tar= __NBV_TAR__
+  method=  __METHOD__
+  ntimes=  __NTIMES__
+  sigma =  __SIGMA__
+/
+

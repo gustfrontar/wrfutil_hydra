@@ -657,41 +657,27 @@ SUBROUTINE read_ens_mpi_alltoall(file,member,v3d,v2d)
       WRITE(6,'(A,I3.3,2A)') 'MYRANK ',myrank,' is reading a file ',filename
       CALL open_wrf_file(filename,'ro',ncid(im))
     END IF
-  END DO
 
-  !Read one field at a time and scatter to process.
-  DO l=1,ll 
-    im = myrank+1 + (l-1)*nprocs
+    !Read one field at a time and scatter to process.
     IF( im <= member)THEN
      DO iv=1,nv3d
           CALL read_var_wrf(ncid(im),iv,1,nlev,1,fieldg3(:,:,:,iv),'3d')
-      !ENDIF
      END DO
-     !WRITE(*,*) 'MPM:en read_ens_mpi_ata estoy en myrank',myrank
-     !WRITE(*,*) 'MPM:en read_ens_mpi_ata fieldg3(1,1,1,1)=',fieldg3(1,1,1,1)
 
      DO iv=1,nv2d
           CALL read_var_wrf(ncid(im),iv,1,1,1,fieldg2(:,:,iv),'2d')
      END DO
     
     END IF
-  END DO  !End do over variables
 
-  !! Agregado por MPM
-  DO l=1,ll 
-    !WRITE(*,*) 'MPM:haciendo el DO de ll(ALLTOALL) l=',l
+    !! Agregado por MPM
     mstart = 1 + (l-1)*nprocs
     mend = MIN(l*nprocs, member)
-    if (mstart <= mend) then
+    IF (mstart <= mend) THEN
       CALL scatter_grd_mpi_alltoall(member,mstart,mend,fieldg3,fieldg2,v3d,v2d)
-    end if
-  END DO
-  !WRITE(*,*) 'MPM:despues de scatter estoy en myrank',myrank
-  !WRITE(*,*) 'MPM:en read_ens_mpi_ata v3d(1,1,1,1)=',v3d(1,1,1,1)
+    END IF
 
-  DO l=1,ll
-   im = myrank+1 + (l-1)*nprocs
-   IF(im <= member) THEN
+    IF(im <= member) THEN
       CALL close_wrf_file(ncid(im))
     END IF
   END DO
@@ -1272,6 +1258,9 @@ END SUBROUTINE write_ens_mpi_fast
 
 
 SUBROUTINE write_ens_mpi_alltoall(file,member,v3d,v2d)
+  !TODO: This routine might not work properly if the number
+  !of allocated processses is less than the number of ensemble
+  !members. This should be corrected in future versions.
   IMPLICIT NONE
   CHARACTER(4),INTENT(IN) :: file
   INTEGER,INTENT(IN) :: member

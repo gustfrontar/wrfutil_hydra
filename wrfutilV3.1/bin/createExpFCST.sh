@@ -43,16 +43,18 @@ source $BASEDIR/conf/config.env
 mkdir -p $LOGDIR
 mkdir -p $WPSDIR
 mkdir -p $PROCSDIR
-cp    $WPSPATH $WPSDIR/wps.tar
-cp    $SPAWNPATH $WPSDIR/spawn.tar
 cp    $WRFTOWPSPATH $WPSDIR/wrf_to_wps.tar
 cp    $WRFUTILDIR/vtables/* $WPSDIR/
 mkdir -p $WRFDIR
-cp    $WRFPATH $WRFDIR/wrf.tar
-cp    $SPAWNPATH $WRFDIR/spawn.tar
 cp -r $WRFUTILDIR/bin $EXPDIR
 cp -r $WRFUTILDIR/lib $EXPDIR
 mkdir -p $NAMELISTDIR
 cp    $WRFUTILDIR/namelists/$MODEL_CONF_SET/* $NAMELISTDIR/
 mkdir -p $HISTDIR
+mkdir -p $PERTDIR
+cp    $PERTMETEMPATH $PERTDIR/
+
+#Create tar files containing the WRF, WPS and WRFDA required executables and additional files.
+tar -h --dereference -cvf $WPSDIR/wps.tar -C $WPSPATH *
+tar -h --dereference -cvf $WRFDIR/wrf.tar -C $WRFPATH/run/ *
 

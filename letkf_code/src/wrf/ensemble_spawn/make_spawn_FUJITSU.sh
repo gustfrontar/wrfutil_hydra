@@ -33,6 +33,6 @@ $F90 $FLAGS -o mpi_ungrib_wrapper.exe *.o
 rm *.o
 
 
-tar -cvf ../../spawn_FUJITSU.tar ./*.exe
+tar -cvf ../../../spawn_FUJITSU.tar ./*.exe
 
 echo "NORMAL END"

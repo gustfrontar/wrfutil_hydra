@@ -15,39 +15,153 @@ source $BASEDIR/conf/model.conf
 source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
 
 ##### FIN INICIALIZACION ######
-cd $WPSDIR 
-cp $BASEDIR/bin/python/main_perturb_met_em_par.py $WPSDIR/main_perturb_met_em.py
-cp $BASEDIR/bin/python/module_pert_met_em.py  $WPSDIR/module_pert_met_em.py
 
-FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($WPS_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
-FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_BDY )
-FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY" +"%Y%m%d%H%M%S")
+#Decompress tar files
+if [ ! -e $PERTDIR/code/pert_met_em.exe ] ; then
+   echo "Decompressing Pert Met Em"
+   mkdir -p $PERTDIR/code/
+   tar -xf $PERTDIR/pert_met_em.tar -C $PERTDIR/code
+   #Remove pertmetem.namelist (it will be created later from the templates)
+   if [ -e $PERTDIR/code/pertmetem.namelist ] ; then
+      rm -f $PERTDIR/code/pertmetem.namelist
+   fi
+fi
 
-sed -i -e "s|__BASE_PATH_ORI__|'$HISTDIR/WPS/met_em_ori/${FECHA_INI_BDY}/'|g"   $WPSDIR/main_perturb_met_em.py
-sed -i -e "s|__BASE_PATH_OUT__|'$HISTDIR/WPS/met_em/${FECHA_INI_BDY}'|g"        $WPSDIR/main_perturb_met_em.py
-sed -i -e "s|__TARGET_ENSEMBLE_SIZE__|$TARGET_ENSEMBLE_SIZE|g"                  $WPSDIR/main_perturb_met_em.py
-sed -i -e "s|__ACTUAL_ENSEMBLE_SIZE__|$ACTUAL_ENSEMBLE_SIZE|g"                  $WPSDIR/main_perturb_met_em.py
-sed -i -e "s|__PERT_AMP__|$PERT_AMP|g"                                          $WPSDIR/main_perturb_met_em.py
-sed -i -e "s|__PERT_TYPE__|'$PERT_TYPE'|g"                                      $WPSDIR/main_perturb_met_em.py
-sed -i -e "s|__VAR_LIST__|$VAR_LIST|g"                                          $WPSDIR/main_perturb_met_em.py
-sed -i -e "s|__THREADS_NUM__|$PERTTHREADS|g"                                    $WPSDIR/main_perturb_met_em.py
-sed -i -e "s|__NETCDF4__|$NETCDF4|g"                                            $WPSDIR/main_perturb_met_em.py
+cd $PERTDIR
 
+PERTRUNDIR=$PERTDIR/00/
+mkdir -p $PERTRUNDIR  #Pert work dir.
+
+if [ $WPS_CYCLE -eq 1 ] ; then
+   #WPS_CYCLE = 1 means that boundary data will be taken from forecasts initialized at different times.
+   #so there is a bdy forecast initialization frequency and a bdy data output frequency.
+   #Find the prior bdy data initialization date closest to the current step date
+   FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($WPS_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
+   #Find the posterior bdy data initialization date closest to the forecast end date
+   FECHA_END_PASO=$(date -u -d "$FECHA_INI UTC +$((($WPS_INI_FREQ*$PASO)+$WPS_LEAD_TIME )) seconds" +"%Y-%m-%d %T")
+else
+   #Asume that bdy data for the entire experiment is available in the same folder (eg using analysis as bdy or for short experiments that use a single forecasts as bdy)
+   #In this case WPS is run at PASO=0
+   if [ $PASO -ge 1 ] ; then
+      echo "WPS with WPS_CYCLE=0 is run only at PASO=0. And currently PASO=",$PASO
+      return 0
+   fi
+   FECHA_INI_PASO=$FECHA_INI
+   FECHA_END_PASO=$FECHA_FIN
+fi
+
+DATE_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_BDY )   #Get the closest prior date in which BDY data is available.
+DATE_END_BDY=$(date_ceil  "$FECHA_END_PASO" $INTERVALO_BDY )   #Get the closest posterior date in which BDY data is available.
+
+
+#Copy met_em_files to create the expanded ensemble.
+echo "Making a copy of met_em files to create the expanded ensemble"
+MAX_SIM_CP=$(( $BDY_MIEMBRO_FIN - $BDY_MIEMBRO_INI + 1 ))                  #Maximum number of simultaneous cp commands.
+mkdir -p $HISTDIR/WPS/met_em/
+CDATE=$DATE_INI_BDY
+ICP=1                                                                      #Counter for the number of cp commands.
+DATE_INI_BDY_INT=$(date -d "$DATE_INI_BDY" +"%Y%m%d%H%M%S")
+DATE_END_BDY_INT=$(date -d "$DATE_END_BDY" +"%Y%m%d%H%M%S")
+
+#Creating directories
+for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
+   member1=$(printf '%02d' $((10#$MIEM)))
+   mkdir -p $HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$member1/
+done
+#Copying the files
+while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $DATE_END_BDY_INT ] ; do
+   echo "Copying met ems for date "$CDATE
+   for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
+       member1=$(printf '%02d' $((10#$MIEM)))
+       member2=$(printf '%02d' $((10#$ICP)))
+       CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
+       if [ $MACHINE == "FUGAKU" ] ; then  #In Fugaku background processes must be submitted with MPI using a machine file. 
+	  echo "(0) core=1 " > $HISTDIR/WPS/machine.$member2
+	  mpiexec -np 1 -vcoordfile $HISTDIR/WPS/machine.$member2 $PERTDIR/code/dummy_mpi.exe "cp $HISTDIR/WPS/met_em_ori/$DATE_INI_BDY_INT/01/met_em.d01.$CDATE_WPS.nc $HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$member1/met_em.d01.$CDATE_WPS.nc"  &
+       else 	  
+          cp $HISTDIR/WPS/met_em_ori/$DATE_INI_BDY_INT/01/met_em.d01.$CDATE_WPS.nc $HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$member1/met_em.d01.$CDATE_WPS.nc &
+       fi
+       ICP=$(( $ICP + 1 ))
+       if [ $ICP -gt $MAX_SIM_CP ] ; then
+          time wait
+          ICP=1
+       fi
+   done
+   CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_WPS seconds" +"%Y-%m-%d %T")
+done
+
+echo "Creating links to the pert_met_em.exe application"
+#Create links for the met_em_files in the run directory.
+CDATE=$DATE_INI_BDY
+ITIME=1
+while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -lt $DATE_END_BDY_INT ] ; do
+   met_em_time=$(printf '%02d' $((10#$ITIME)))
+   for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
+       member1=$(printf '%02d' $((10#$MIEM)))
+       CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
+       met_em_file_name=$HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$member1/met_em.d01.$CDATE_WPS.nc
+       member2=$(printf '%05d' $((10#$MIEM)))
+       ln -sf $met_em_file_name $PERTRUNDIR/ep${met_em_time}${member2} &
+   done
+   time wait
+   for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN ) ; do
+       member1=$(printf '%02d' $((10#$MIEM)))
+       CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
+       met_em_file_name=$HISTDIR/WPS/met_em_ori/$DATE_INI_BDY_INT/$member1/met_em.d01.$CDATE_WPS.nc
+       member2=$(printf '%05d' $((10#$MIEM)))
+       ln -sf $met_em_file_name $PERTRUNDIR/eo${met_em_time}${member2} &
+   done
+   time wait
+   ITIME=$(( $ITIME + 1 ))
+   CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_WPS seconds" +"%Y-%m-%d %T")
+done
+
+exit
+
+echo "Generating the namelist"
+#Prepare the namelist.
+NBV_ORI=$(( $BDY_MIEMBRO_FIN - $BDY_MIEMBRO_INI + 1 ))
+NBV_TAR=$(( $MIEMBRO_FIN     - $MIEMBRO_INI     + 1 )) 
+NTIMES=$(( ITIME - 1 ))
+
+cp $NAMELISTS/pertmetem.namelist $PERTDIR/pertmetem.namelist
+
+#Edit the namelist from the template
+sed -i -e "s|__NBV_ORI__|$NBV_ORI|g"   $PERTDIR/pertmetem.namelists
+sed -i -e "s|__NBV_TAR__|$NBV_TAR|g"   $PERTDIR/pertmetem.namelists
+sed -i -e "s|__NTIMES__|$NTIMES|g"     $PERTDIR/pertmetem.namelists
+sed -i -e "s|__METHOD__|$PERT_TYPE|g"  $PERTDIR/pertmetem.namelists
+sed -i -e "s|__SIGMA__|$PERT_AMP|g"    $PERTDIR/pertmetem.namelists
+
+ln -sf $PERTDIR/code/pert_met_em.exe $PERTDIR/00/
+#script de ejecucion
 read -r -d '' QSCRIPTCMD << "EOF"
-ulimit -s unlimited
-cd $WPSDIR
-$PYTHON -u ./main_perturb_met_em.py > main_perturb_met_em.out 
-EC=$?
-[[ $EC -ne 0 ]] && dispararError 9 "main_perturb_met_em.py"
+  res='OK'
+  cd $PERTDIR/00/
+  time $MPIEXE  ./pert_met_em.exe
+  PERT_ERROR=$?
+  if [[ $PERT_ERROR != 0 ]] ; then
+   res='ERROR'
+  fi
 EOF
 
-QPROC_NAME=PERT_$PASO
+# Parametros de encolamiento
+QPROC_NAME=PERTMETEM_$PASO
 QNODE=$PERTNODE
 QPROC=$PERTPROC
 QTHREAD=$PERTTHREAD
-QMIEM=01
-QWALLTIME=$WPSWALLTIME
+QWALLTIME=$PERTWALLTIME
 QCONF=${EXPTYPE}.conf
-QWORKPATH=$WPSDIR
+QWORKPATH=$PERTDIR
+
+echo "Sending pert met em script to the queue"
+# Encolar
 queue 00 00
 check_proc 00 00
+
+echo "Sucessfully finished perturbation of met_em files"
+
+
+
+
+
