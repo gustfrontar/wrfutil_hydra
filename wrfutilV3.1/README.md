@@ -25,9 +25,12 @@ There are a couple of compilation scripts available for some compilers and
 computer environments. If these do not correspond to your environment you will
 have to edit the compilation scripts before runing a successfull compilation.
 
-LETKF -> /letkf_code/src/wrf/letkf/make_letkf_$COMPILER.sh 
-ENSEMBLE SPAWNER -> /letkf_code/src/ensemble_spawn/make_spawner_$COMPILER.sh [ Only required to run the scripts that use spawn to distribute the ensemble members ]
-WRF_TO_WPS -> /letkf_code/src/wrf/wrf_to_wps/make_wrf_to_wps_$COMPILER.sh 
+These additional codes (LETKF and associated tools, WRF_TO_WPS and associated tools and,
+PERT_MET_EM and associated tools) can be compiled using the make_all.sh script under
+the directory letkf_code. This script include compilation options for some machines.
+You can use these compilation options as templates for your own system. 
+
+Binaries are packed into tar files in the letkf_code/bin directory.
 
 
 Step 1

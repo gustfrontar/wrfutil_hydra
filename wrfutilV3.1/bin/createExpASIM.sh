@@ -58,8 +58,8 @@ mkdir -p $PERTDIR
 cp    $PERTMETEMPATH $PERTDIR/
 
 #Create tar files containing the WRF, WPS and WRFDA required executables and additional files.
-tar -h --dereference -cvf $WPSDIR/wps.tar -C $WPSPATH *
-tar -h --dereference -cvf $WRFDIR/wrf.tar -C $WRFPATH/run/ *
+tar -h --dereference -cvf $WPSDIR/wps.tar   -C $WPSPATH/ ./
+tar -h --dereference -cvf $WRFDIR/wrf.tar   -C $WRFPATH/run/ ./
 tar -h --dereference -cvf $WRFDIR/wrfda.tar -C $WRFDAPATH/var/da/ ./da_update_bc.exe
 
 

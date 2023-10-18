@@ -33,4 +33,5 @@ The HDF5 librarie required by netcdf has been copied from
 
 However a copy of these libraries has been made to the comp_libs_fujitsu folder in case the spack package is updated / removed, etc.
 
-
+The compilation of WRFVAR failed in FUGAKU is the enviroment variable NETCDF (pointing to the NETCDF root dir containing lib and include directories) is not set. 
+The reason for this is still unclear.

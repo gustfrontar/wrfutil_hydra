@@ -1,8 +1,6 @@
 Things to be improved.
 
 -Merge the current LETKF version with the latest version.
--Add the tar creation to the experiment creation script. 
--Simplify the compilation of wrf-letkf and other associated tools (wrf_to_wps, pert_met_em, spawners ... )
 -Add additional flags of LETKF namelist to the configuration files.
 -Consider the possibility of running WPS only on the times corresponding to boundary files and the performing
  linear time interpolation on met_em files on each cycle (to reduce computational cost). 
