@@ -28,7 +28,7 @@ MODULE common_namelist
   REAL(r_size) :: sigma_obsz=2000.0d0 !To perform vertical localization in Z.
   REAL(r_size) :: sigma_obst=3.0d0
 
-  INTEGER      :: lev_update_q = 45  !Condensate won't be updated for levels over this level. 
+  INTEGER      :: lev_update_q = 90  !Condensate won't be updated for levels over this level. 
 
   REAL(r_size) :: var_local_uv(nv3d+nv2d)=1.0d0
   REAL(r_size) :: var_local_t(nv3d+nv2d)=1.0d0
@@ -51,11 +51,10 @@ MODULE common_namelist
   !OBSERVATIONS
   REAL(r_size) :: threshold_dz=1000.0d0
   REAL(r_size) :: gross_error=15.0d0
-  REAL(r_size) :: gross_error_reflectivity=7.0d0
   REAL(r_size) :: gross_error_tycll=10.0d0    ! degree
   REAL(r_size) :: gross_error_tycmip=60.0d2   ! Pa
+  REAL(r_size) :: gross_error_reflectivity=7.0d0
   REAL(r_size) :: undef_obs=9.99d9            ! Missing obs code
-  REAL(r_size) :: rainratio_threshold = 0.3d0 !Percentaje of ensemble members with reflectivity greather than 0.
   LOGICAL      :: force_norain_assimilation = .false. 
 
   !PARAMETER ESTIMATION
@@ -93,8 +92,9 @@ MODULE common_namelist
   INTEGER            :: nradar = 1               !Number of assimilated radars
   LOGICAL            :: use_wt=.true.            !Use or not terminal velocity in the computation of VR
   LOGICAL            :: use_pseudorh=.false.     !Enable pseudo RH observations.
-  REAL(r_size)       :: minrefdbz=0.0d0          !Reflectivity values below this threshold won't be assimilated.
   REAL(r_size)       :: pseudorh_error=0.1       !Obserational error for pseudo RH observations.
+  REAL(r_size)       :: minrefdbz=0.0d0          !Reflectivity values below this threshold won't be assimilated.
+  REAL(r_size)       :: rainratio_threshold = 0.3d0 !Percentaje of ensemble members with reflectivity greather than 0.
 
   !OBSGRID SECTION
   REAL(r_size)       :: regrid_res=1.0d0         !Horizontal resolution of obsgrid grid (degree)
@@ -121,12 +121,12 @@ LOGICAL :: file_exist
 !Namelist declaration
 
 NAMELIST / GENERAL / nslots , nbslot , nbv
-NAMELIST / LOCALIZATION / sigma_obs , sigma_obs_radar, sigma_obsv  , sigma_obsz , sigma_obst ,  &
+NAMELIST / LOCALIZATION / sigma_obs , sigma_obs_radar, sigma_obsv  , sigma_obsz , sigma_obst , lev_update_q ,  &
  & var_local_uv , var_local_t , var_local_tv , var_local_moist , var_local_ps , var_local_ref , var_local_dop , var_local_co , &
  & var_localp_uv , var_localp_t , var_localp_tv , var_localp_moist , var_localp_ps , var_localp_ref , var_localp_dop ,         &
    var_localp_co  
 NAMELIST / OBSERVATIONS / threshold_dz , gross_error , gross_error_tycll , gross_error_tycmip , &
-&  undef_obs , force_norain_assimilation  
+& gross_error_reflectivity , undef_obs , force_norain_assimilation  
 NAMELIST / PARAMETER_ESTIMATION / estpar , smooth_par_update_flag , update_parameter_2d , update_parameter_0d , &
  & parameter_localization_type_0d , parameter_localization_type_2d , param_sprd_init , transpar ,  &
  & addinfpar , parameter_inflation_type , parameter_fixinflation , additive_inflation_factor , &

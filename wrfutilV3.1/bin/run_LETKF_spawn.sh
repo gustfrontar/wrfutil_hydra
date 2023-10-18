@@ -55,6 +55,7 @@ sed -i -e "s|__SIGMA_OBS__|$SIGMA_OBS|g"                   $NAMELISTFILE
 sed -i -e "s|__SIGMA_OBSV__|$SIGMA_OBSV|g"                 $NAMELISTFILE
 sed -i -e "s|__SIGMA_OBS_RADAR__|$SIGMA_OBS_RADAR|g"       $NAMELISTFILE
 sed -i -e "s|__N_RADAR__|$N_RADAR|g"                       $NAMELISTFILE
+sed -i -e "s|__LEV_UPDATE_Q__|$LEV_UPDATE_Q|g"             $NAMELISTFILE
 
 echo "Linking files"
 FECHA_WINDOW_INI=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_WIN_INI)) seconds" +"%Y-%m-%d %T")
