@@ -16,6 +16,7 @@ ln -fs ../common/common_met_em.f90 ./
 ln -fs ../common/common_mpi_met_em.f90 ./
 ln -fs ../common/common_namelist_met_em.f90 ./
 
+#COMPILE PERT MET EM
 $PARF90 $OMP $FFLAGS -c SFMT.f90
 $PARF90 $OMP $FFLAGS -c common.f90
 $PARF90 $OMP $FFLAGS -c common_mpi.f90
@@ -30,8 +31,23 @@ $PARF90 $OMP $FFLAGS $INC_NETCDF -o pert_met_em.exe *.o $LBLAS $LIB_NETCDF
 rm -f *.mod
 rm -f *.o
 
+#COMPILE DUMMY MPI
 $PARF90 $FFLAGS -c dummy_mpi.f90 
 $PARF90         -o dummy_mpi.exe *.o
+
+
+rm -f *.mod
+rm -f *.o
+
+#COMPILE INTERP MET EM
+$PARF90 $OMP $FFLAGS -c SFMT.f90
+$PARF90 $OMP $FFLAGS -c common.f90
+$PARF90 $OMP $FFLAGS $INC_NETCDF -c common_met_em.f90
+$PARF90 $OMP $FFLAGS $INC_NETCDF -c common_namelist_met_em.f90
+$PARF90 $OMP $FFLAGS $INC_NETCDF -c interp_met_em.f90
+$PARF90 $OMP $FFLAGS $INC_NETCDF -o interp_met_em.exe *.o $LBLAS $LIB_NETCDF
+
+rm common_met_em.f90 common_mpi_met_em.f90 common_namelist_met_em.f90 SFMT.f90 common.f90 common_mpi.f90 netlib.f
 
 tar -cvf ${current_dir}/bin/pert_met_em_${COMPILATION_NAME}.tar ./*.exe 
 

@@ -1,10 +1,10 @@
 #!/bin/bash 
 
 #### CLUSTER ###
-export MACHINE='FUGAKU'                                         # Options HYDRA, FUGAKU , FUGAKUPPS
-export ICORE=48                                                 # Number of processes per NODE requested to the queue
-export INODE=2                                                 # Number of NODES requested to the queue
-export QUEUESYS='PJM'                                           # Queue system [SLURM | PBS | PBSPRO | SGE | PBS_block | SSH | PJM ]
+export MACHINE='FUGAKUPPS'                                      # Options HYDRA, FUGAKU , FUGAKUPPS
+export ICORE=10                                                 # Number of processes per NODE requested to the queue
+export INODE=1                                                  # Number of NODES requested to the queue
+export QUEUESYS='SINGLENODE'                                    # Queue system [SLURM | PBS | PBSPRO | SGE | PBS_block | SSH | PJM ]
 export QUEUE='small'                                            # Queue name (depends on the machine)
 export QEXCLU=0                                                 # If JOBS will be NODE exclusive [Currently not being used]
 export QSUB_ROOT=""
@@ -36,8 +36,8 @@ export PERTPROC=10                                                      # Number
 export PERTTHREAD=$PERTPROC                                             # Number of OMP THREADS for PERT (must be equal to $PERTPROC)
 export PERTWALLTIME="03:00:00"                                          # Maximum wall time for PERT (for sequeantial queue JOBS only)
 
-export WRFNODE=2                                                        # Number of nodes for WRF (for each ensemble member)
-export WRFPROC=48                                                       # Number of procs per node for WRF (if WRFNODE > 1, then ICORE will be assumed)
+export WRFNODE=1                                                        # Number of nodes for WRF (for each ensemble member)
+export WRFPROC=10                                                       # Number of procs per node for WRF (if WRFNODE > 1, then ICORE will be assumed)
 export WRFTHREAD=1                                                      # Number of OMP THREADS for WRF
 export WRFWALLTIME="03:00:00"                                           # Maximum wall time for WRF (for sequeantial queue JOBS only)
 export WRF_RUNTIME_FLAGS="-Wl,-T"                                       # Runtime flags (for example endian conversion)
@@ -49,7 +49,6 @@ if [ $MACHINE = "FUGAKU"  ] ; then
   export LD_LIBRARY_PATH=/lib64:/usr/lib64:/opt/FJSVxtclanga/tcsds-latest/lib64:/opt/FJSVxtclanga/tcsds-latest/lib/:/vol0004/ra000007/data/jruiz/comp_libs_fujitsu/netcdf/lib:$LD_LIBRARY_PATH
   export I_MPI_SPAWN=on
   export MPIEXEC=mpiexec
-  ulimit -s unlimited
 
 elif [ $MACHINE = "FUGAKUPPS" ] ; then
 
@@ -59,7 +58,6 @@ elif [ $MACHINE = "FUGAKUPPS" ] ; then
   export I_MPI_SPAWN=on
   set FI_TCP_IFACE=lo
   export MPIEXEC=mpiexec
-  ulimit -s unlimited
 
 elif [ $MACHINE = "HYDRA" ] ; then
 
@@ -69,7 +67,6 @@ elif [ $MACHINE = "HYDRA" ] ; then
   export LD_LIBRARY_PATH=/home/jruiz/salidas/libpng-1.2.50/lib/:$LD_LIBRARY_PATH
   export HDF5_USE_FILE_LOCKING=FALSE
   export MPIEXEC=mpiexec
-  ulimit -s unlimited
 
 fi
 

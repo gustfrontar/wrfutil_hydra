@@ -2,11 +2,8 @@ Things to be improved.
 
 -Merge the current LETKF version with the latest version.
 -Add additional flags of LETKF namelist to the configuration files.
--Consider the possibility of running WPS only on the times corresponding to boundary files and the performing
- linear time interpolation on met_em files on each cycle (to reduce computational cost). 
 -Translate the documentation to English including the comments written in the scripts.
 -Translate some variable names into English so the code is more friendly and easy to understand. 
--Expand the maximum number of ensemble members. Ideally the number should contain 5 digits as in the LETKF.
+-[This is done. Should be work authomatically when the number of characters defining the ensemble size is expanded in the configuration files.]Expand the maximum number of ensemble members. Ideally the number should contain 5 digits as in the LETKF. 
 -Add the observation linking to the run_LETKF script to be able to actually assimilate data.
- 
 

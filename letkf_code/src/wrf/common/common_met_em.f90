@@ -21,7 +21,7 @@ MODULE common_met_em
 !-----------------------------------------------------------------------
 
   !MODULE VARIABLES (NOT READ FROM NAMELIST) 
-  INTEGER, PARAMETER :: nvar = 18
+  INTEGER, PARAMETER :: nvar = 28
   INTEGER            :: nv3d , nv2d , ns3d
 
   REAL(r_sngl) :: tmpatt
@@ -33,7 +33,6 @@ MODULE common_met_em
   INTEGER,SAVE :: nlev_soil
   INTEGER,SAVE :: ntime  !Number of times in file.
 
-  INTEGER(4),PARAMETER :: imt_grd = 50
   INTEGER,SAVE      :: nij0
   INTEGER,SAVE      :: nlevall
   INTEGER,SAVE      :: ngpv
@@ -43,42 +42,52 @@ MODULE common_met_em
 
   !Variables to be read and perturbed.
   LOGICAL, PARAMETER :: OPTIONAL_VARIABLE(nvar)= &  !Some input variables are optional (eg. condensates)
-  &(/ .false. , .false. , .true. , .false. , .false. , .false. , .false. , .true. , .true. , &
-  !   U          V         W         T         P1         P2   ,   GHT      QV        QC        
+  &(/ .false. , .false. , .true. , .false. , .false. , .false. , .false. , .true. , .true. , .true. , &
+  !   U          V         W         T         P1         P2   ,   GHT       RH        QV        QC        
   & .true. , .true. , .true. , .true. , .true. , .false. , .false. ,  &
   !   QR       QCI      QS       QG       QH       PS       SLP 
+  &  .true. , .true. , .true. , .true. , .true. , .true. , .true. , .true. , .true. , &
+  ! SKINTEMP ST100200 ST040100 ST010040 ST000010 SM100200 SM040100 SM010040 SM000010 
   & .true. , .true. /)
   !   SM       ST 
 
  !Variables to be read and perturbed.
   LOGICAL :: PERTURB_VARIABLE(nvar)= &  !Some input variables are optional (eg. condensates)
-  &(/ .true. , .true. , .false. , .true. , .true. , .true. , .true. , .true. , .false. , &
-  !   U          V         W         T         P1     P2   ,   GHT      QV        QC        
+  &(/ .true. , .true. , .false. , .true. , .true. , .true. , .true. , .true.  ,.true. , .false. , &
+  !   U          V         W         T         P1     P2   ,   GHT      RH        QV        QC        
   & .false. , .false. , .false. , .false. , .false. , .true. , .true. , &
   !   QR       QCI          QS       QG       QH       PS       SLP 
+  &  .true. , .true. , .true. , .true. , .true. , .true. , .true. , .true. , .true. , &
+  ! SKINTEMP ST100200 ST040100 ST010040 ST000010 SM100200 SM040100 SM010040 SM000010
   & .true. , .true. /)
   !   SM       ST 
 
   CHARACTER(3), PARAMETER :: VAR_TYPE(nvar)= &  !Which type of variable (A3D - atmo 3d, A2D - atmo 2d , S3D - soil 3d)
-  &(/ 'A3D' , 'A3D' , 'A3D' , 'A3D' , 'A3D' , 'A3D' , 'A3D' , 'A3D' , 'A3D' ,   &
-  !     U       V       W       T       P1      P2     GHT     QV      QC        
+  &(/ 'A3D' , 'A3D' , 'A3D' , 'A3D' , 'A3D' , 'A3D' , 'A3D' , 'A3D' , 'A3D' , 'A3D' ,   &
+  !     U       V       W       T       P1      P2     GHT      RH      QV      QC        
   &  'A3D'  , 'A3D' , 'A3D' , 'A3D' , 'A3D' , 'A2D' , 'A2D' , &
   !   QR       QCI      QS      QG      QH     PS      SLP  
+  &  'A2D' ,  'A2D' ,   'A2D' ,  'A2D' ,  'A2D' ,  'A2D' ,  'A2D' ,  'A2D' ,  'A2D' , &
+  ! SKINTEMP ST100200 ST040100 ST010040 ST000010 SM100200 SM040100 SM010040 SM000010 
   &  'S3D' , 'S3D' /)
   !  SM    ST 
 
   CHARACTER(1), PARAMETER :: STAGGER_TYPE(nvar)= &       !Which time of staggering do we have (U,V,W,M,S)
-  &(/ 'U' , 'V' , 'W' , 'M' , 'M' , 'M' , 'M' , 'M' , 'M' ,   &
-  !   U      V     W     T     P1   P2    GHT    QV    QC        
+  &(/ 'U' , 'V' , 'W' , 'M' , 'M' , 'M' , 'M' ,  'M'  , 'M' , 'M' ,   &
+  !   U      V     W     T     P1   P2    GHT    RH     QV    QC        
   &  'M'  , 'M' , 'M' , 'M' , 'M' , 'M' , 'M' , &
   !   QR    QCI   QS    QG    QH   PS    SLP  
+  &  'M'    ,  'M'   ,   'M'  ,  'M'   ,  'M'   ,  'M'   ,  'M'   ,  'M'   ,  'M'   , &
+  ! SKINTEMP ST100200 ST040100 ST010040 ST000010 SM100200 SM040100 SM010040 SM000010 
   &  'S' , 'S' /)
   !  SM    ST 
   CHARACTER(20), PARAMETER :: VAR_NAME(nvar) = &
-  &(/ 'UU' , 'VV' , 'WW' , 'TT' , 'PRESSURE' , 'PRES' , 'GHT' , 'SPECHUMD' , 'QC' ,  &
-  !   U      V        W     T        P1          P2      GHT        QV        QC        
+  &(/ 'UU' , 'VV' , 'WW' , 'TT' , 'PRESSURE' , 'PRES' , 'GHT' , 'RH' , 'SPECHUMD' , 'QC' ,  &
+  !   U      V        W     T        P1          P2      GHT    RH        QV        QC        
   &  'QR'  , 'QI' , 'QS' , 'QG' , 'QH' ,  'PSFC' , 'PMSL' , &
   !   QR      QCI   QS      QG     QH      PS       SLP  
+  &'SKINTEMP','ST100200','ST040100','ST010040','ST000010','SM100200','SM040100','SM010040','SM000010', &
+  ! SKINTEMP   ST100200   ST040100   ST010040   ST000010   SM100200   SM040100   SM010040   SM000010
   &  'SM' , 'ST' /)
   !  SM      ST  
 
@@ -148,7 +157,6 @@ SUBROUTINE set_common_met_em(inputfile)
   IMPLICIT NONE
   INTEGER :: i , j 
   INTEGER(4) :: ncid,varid,dimids(4),shape(4)
-  INTEGER(4),ALLOCATABLE :: start(:),count(:)
   CHARACTER(*)           :: inputfile
   INTEGER :: ierr , iv3d , iv2d , is3d 
 
@@ -502,6 +510,33 @@ SUBROUTINE ensmean_grd(member,nij,v3d,v2d,s3d,v3dm,v2dm,s3dm)
 
   RETURN
 END SUBROUTINE ensmean_grd
+
+SUBROUTINE write_date_met_em(inputfile,new_date)
+IMPLICIT NONE
+character(*)  , intent(in)  :: inputfile
+character(19) , intent(in)  :: new_date
+integer :: start(2) , count(2) , ncid
+character(19) :: tmpdate
+integer :: varid
+
+  CALL open_wrf_file(inputfile,'rw',ncid)
+  CALL check_io(NF90_INQ_VARID(ncid,'Times',varid))
+  start = (/ 1 ,1 /)
+  count = (/ 19,1 /)
+  !Read the current date in file to get the date format.
+  CALL check_io(NF90_GET_VAR(ncid,varid,tmpdate,start,count))
+  WRITE(*,*)'Previous date was ',tmpdate,' new date is ',new_date
+
+  !Write the new date in the file.
+  CALL check_io(NF90_PUT_VAR(ncid,varid,new_date,start,count))
+  !CALL check_io(NF90_PUT_ATT(ncid,NF90_GLOBAL,'START_DATE',new_date))
+  CALL check_io(NF90_PUT_ATT(ncid,NF90_GLOBAL,'SIMULATION_START_DATE',new_date))
+
+  CALL close_wrf_file(ncid)
+
+END SUBROUTINE write_date_met_em
+
+
 
 SUBROUTINE check_io(status)
   IMPLICIT NONE

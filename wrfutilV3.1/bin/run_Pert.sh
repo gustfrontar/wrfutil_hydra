@@ -65,21 +65,21 @@ DATE_END_BDY_INT=$(date -d "$DATE_END_BDY" +"%Y%m%d%H%M%S")
 
 #Creating directories
 for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-   member1=$(printf '%02d' $((10#$MIEM)))
-   mkdir -p $HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$member1/
+   #member1=$(printf '%02d' $((10#$MIEM)))
+   mkdir -p $HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$MIEM/
 done
 #Copying the files
 while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $DATE_END_BDY_INT ] ; do
    echo "Copying met ems for date "$CDATE
    for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-       member1=$(printf '%02d' $((10#$MIEM)))
+       #member1=$(printf '%02d' $((10#$MIEM)))
        member2=$(printf '%02d' $((10#$ICP)))
        CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
        if [ $MACHINE == "FUGAKU" ] ; then  #In Fugaku background processes must be submitted with MPI using a machine file. 
 	  echo "(0) core=1 " > $HISTDIR/WPS/machine.$member2
-	  mpiexec -np 1 -vcoordfile $HISTDIR/WPS/machine.$member2 $PERTDIR/code/dummy_mpi.exe "cp $HISTDIR/WPS/met_em_ori/$DATE_INI_BDY_INT/01/met_em.d01.$CDATE_WPS.nc $HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$member1/met_em.d01.$CDATE_WPS.nc"  &
+	  mpiexec -np 1 -vcoordfile $HISTDIR/WPS/machine.$member2 $PERTDIR/code/dummy_mpi.exe "cp $HISTDIR/WPS/met_em_ori/$DATE_INI_BDY_INT/01/met_em.d01.$CDATE_WPS.nc $HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc"  &
        else 	  
-          cp $HISTDIR/WPS/met_em_ori/$DATE_INI_BDY_INT/01/met_em.d01.$CDATE_WPS.nc $HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$member1/met_em.d01.$CDATE_WPS.nc &
+          cp $HISTDIR/WPS/met_em_ori/$DATE_INI_BDY_INT/01/met_em.d01.$CDATE_WPS.nc $HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc &
        fi
        ICP=$(( $ICP + 1 ))
        if [ $ICP -gt $MAX_SIM_CP ] ; then
@@ -87,7 +87,7 @@ while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $DATE_END_BDY_INT ] ; do
           ICP=1
        fi
    done
-   CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_WPS seconds" +"%Y-%m-%d %T")
+   CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
 done
 
 echo "Creating links to the pert_met_em.exe application"
@@ -97,26 +97,24 @@ ITIME=1
 while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -lt $DATE_END_BDY_INT ] ; do
    met_em_time=$(printf '%02d' $((10#$ITIME)))
    for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-       member1=$(printf '%02d' $((10#$MIEM)))
+       #member1=$(printf '%02d' $((10#$MIEM)))
        CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-       met_em_file_name=$HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$member1/met_em.d01.$CDATE_WPS.nc
+       met_em_file_name=$HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc
        member2=$(printf '%05d' $((10#$MIEM)))
        ln -sf $met_em_file_name $PERTRUNDIR/ep${met_em_time}${member2} &
    done
    time wait
    for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN ) ; do
-       member1=$(printf '%02d' $((10#$MIEM)))
+       #member1=$(printf '%02d' $((10#$MIEM)))
        CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-       met_em_file_name=$HISTDIR/WPS/met_em_ori/$DATE_INI_BDY_INT/$member1/met_em.d01.$CDATE_WPS.nc
+       met_em_file_name=$HISTDIR/WPS/met_em_ori/$DATE_INI_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc
        member2=$(printf '%05d' $((10#$MIEM)))
        ln -sf $met_em_file_name $PERTRUNDIR/eo${met_em_time}${member2} &
    done
    time wait
    ITIME=$(( $ITIME + 1 ))
-   CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_WPS seconds" +"%Y-%m-%d %T")
+   CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
 done
-
-exit
 
 echo "Generating the namelist"
 #Prepare the namelist.
@@ -124,7 +122,7 @@ NBV_ORI=$(( $BDY_MIEMBRO_FIN - $BDY_MIEMBRO_INI + 1 ))
 NBV_TAR=$(( $MIEMBRO_FIN     - $MIEMBRO_INI     + 1 )) 
 NTIMES=$(( ITIME - 1 ))
 
-cp $NAMELISTS/pertmetem.namelist $PERTDIR/pertmetem.namelist
+cp $NAMELISTDIR/pertmetem.namelist $PERTDIR/pertmetem.namelist
 
 #Edit the namelist from the template
 sed -i -e "s|__NBV_ORI__|$NBV_ORI|g"   $PERTDIR/pertmetem.namelists
@@ -132,6 +130,8 @@ sed -i -e "s|__NBV_TAR__|$NBV_TAR|g"   $PERTDIR/pertmetem.namelists
 sed -i -e "s|__NTIMES__|$NTIMES|g"     $PERTDIR/pertmetem.namelists
 sed -i -e "s|__METHOD__|$PERT_TYPE|g"  $PERTDIR/pertmetem.namelists
 sed -i -e "s|__SIGMA__|$PERT_AMP|g"    $PERTDIR/pertmetem.namelists
+sed -i -e "s|__NITER__|$NITER|g"    $PERTDIR/pertmetem.namelists
+
 
 ln -sf $PERTDIR/code/pert_met_em.exe $PERTDIR/00/
 #script de ejecucion

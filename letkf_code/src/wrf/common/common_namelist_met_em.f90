@@ -13,11 +13,23 @@ MODULE common_namelist_met_em
   PUBLIC
 
   !GENERAL
-  INTEGER :: nbv_ori=20   ! Original number of ensemble members
-  INTEGER :: nbv_tar=80   ! Target number of perturbed ensemble members
-  INTEGER :: ntimes=1     ! Number of times to perturb
-  INTEGER :: method=1     ! RejuGauss 1 , RejuUniform 2 , Specular 3 
+  INTEGER :: nbv_ori=20    ! Original number of ensemble members
+  INTEGER :: nbv_tar=80    ! Target number of perturbed ensemble members
+  INTEGER :: ntimes=1      ! Number of times to perturb
+  INTEGER :: method=1      ! RejuGauss 1 , RejuUniform 2 , Specular 3 
+  INTEGER :: niter=10      ! Number of sections in which we will divide the output ensemble
+                           ! to reduce memory use. 
   REAL(r_sngl) :: sigma = 1.0e-3  !Perturbation amplitude (methods 1 and 2 only)
+
+  CHARACTER(500) :: file_ini=' ' , file_end=' ' , file_tar=' '          !File names to interpolate.
+                                                                        !File ini corresponds to the initial time, file_end to the
+                                                                        !final time and file_tar to the target time.
+  CHARACTER(19)  :: date_tar=' '                                           
+  REAL(r_sngl)   :: time_ini=0.0e0 , time_end=0.0e0 , time_tar=0.0e0    !Times corresponding to the initial, final and target times
+                                                                        !in any time continous unit (eg seconds)
+
+
+                           
 
   CHARACTER(LEN=50) :: NAMELIST_FILE='./pertmetem.namelist'
 
@@ -30,7 +42,9 @@ INTEGER :: IERR
 LOGICAL :: file_exist
 !Namelist declaration
 
-NAMELIST / GENERAL / nbv_ori , nbv_tar , ntimes , method , sigma
+NAMELIST / GENERAL / nbv_ori , nbv_tar , ntimes , method , sigma , niter
+
+NAMELIST / INTERP / time_ini , time_end , time_tar , date_tar , file_ini , file_end , file_tar
 
 INQUIRE(FILE=NAMELIST_FILE, EXIST=file_exist)
 

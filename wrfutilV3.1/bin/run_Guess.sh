@@ -75,22 +75,19 @@ done
 
 #Descomprimimos el archivo .tar (si es que no fue descomprimido)
 if [ ! -e $WRFDIR/code/real.exe ] ; then
-   echo "Descomprimiendo WRF"
+   echo "Decompressing executables ..."
    mkdir -p $WRFDIR/code
    cd $WRFDIR
    tar -xf wrf.tar -C $WRFDIR/code
+   tar -xf wrfda.tar -C $WRFDIR/code
+   tar -xf pertmetem.tar -C $WRFDIR/code
    #Si existe el namelist.input lo borramos para que no interfiera
    #con los que crea el sistema de asimilacion
    if [ -e $WRFDIR/code/namelist.input ] ; then
       rm -f $WRFDIR/code/namelist.input
    fi
 fi
-#Descomprimimos el wrfda.tar (si es que no fue descomprimido)
-if [ ! -e $WRFDIR/code/da_update_bc.exe ] ; then
-   echo "Descomprimiendo DA_UPDATE_BC"
-   mkdir -p $WRFDIR/code
-   tar -xf wrfda.tar -C $WRFDIR/code
-fi
+
 
 #Build the script to run REAL/DA-UPDATE-BC/WRF
 read -r -d '' QSCRIPTCMD << "EOF"
@@ -110,6 +107,10 @@ fi
 cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
 
 ln -sf $WRFDIR/code/* . 
+
+DATE_FORECAST_INI=$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*$PASO)) seconds" +"%Y-%m-%d %T")
+DATE_FORECAST_END=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_WIN_FIN)) seconds" +"%Y-%m-%d %T")
+
 if [ $WPS_CYCLE -eq 1 ] ; then
    INI_STEP_DATE=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
    INI_BDY_DATE=$(date_floor "$INI_STEP_DATE" $INTERVALO_INI_BDY )
@@ -119,7 +120,40 @@ else
    INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
 fi
 
-ln -sf $HISTDIR/WPS/met_em/${INI_BDY_DATE}/$MIEM/met_em* $WRFDIR/$MIEM/
+
+if [ $FORECAST_BDY_FREQ -eq $INTERVALO_BDY ] ;
+   ln -sf $HISTDIR/WPS/met_em/${INI_BDY_DATE}/$MIEM/met_em* $WRFDIR/$MIEM/
+else    
+   #We will conduct interpolation of the met_em files.
+   echo "Interpolating files in time to reach $FORECAST_BDY_FREQ time frequency."
+   CDATE=$DATE_FORECAST_INI
+   WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H:%M:%S"
+
+   while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -lt $(date -d "$DATE_FORECAST_END" +"%Y%m%d%H%M%S") ] ; do
+     FILE_TAR=met_em.d01.$(date -u -d "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" ).nc
+
+     if [ -e $WPSDIR/$MIEM/$FILE_TAR ] ; then #Target file exists. 
+        ln -sf $WPSDIR/$MIEM/$FILE_TAR  ./
+     else 
+        DATE_INI=$(date_floor "$CDATE" $INTERVALO_BDY )
+        DATE_END=$(date -u -d "$DATE_INI UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
+        FILE_INI=met_em.d01.$(date -u -d "$DATE_INI UTC" +"$WPS_FILE_DATE_FORMAT" ).nc
+        FILE_END=met_em.d01.$(date -u -d "$DATE_END UTC" +"$WPS_FILE_DATE_FORMAT" ).nc
+        #File does not exist. Interpolate data in time to create it.  
+        echo "&interp                          "  > ./pertmetem.namelist
+        echo "file_ini=$WPSDIR/$MIEM/$FILE_INI " >> ./pertmetem.namelist
+        echo "file_end=$WPSDIR/$MIEM/$FILE_END " >> ./pertmetem.namelist
+        echo "file_tar=$WPSDIR/$MIEM/$FILE_TAR " >> ./pertmetem.namelist
+        echo "time_ini=0                       " >> ./pertmetem.namelist
+        echo "time_end=$INTERVALO_BDY          " >> ./pertmetem.namelist
+        echo "time_tar=$((($(date -d "$CDATE" +%s) - $(date -d "$DATE_INI" +%s))))  " >> ./pertmetem.namelist
+        $MPIEXESERIAL ./interp_met_em.exe  
+        ln -sf $WPSDIR/$MIEM/$FILE_TAR  ./
+     fi
+     #Update CDATE
+     CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_WPS seconds" +"%Y-%m-%d %T")
+   done
+fi
 
 OMP_NUM_THREADS=$REALTHREADS
 OMP_STACKSIZE=512M

@@ -133,33 +133,35 @@ SUBROUTINE read_ens_mpi_alltoall(file,member,v3d,v2d,vs3d)
 END SUBROUTINE read_ens_mpi_alltoall
 
 
-SUBROUTINE write_ens_mpi_alltoall(file,member,v3d,v2d,vs3d)
+SUBROUTINE write_ens_mpi_alltoall(file,ini_member,end_member,v3d,v2d,vs3d)
   IMPLICIT NONE
   CHARACTER(4),INTENT(IN) :: file
-  INTEGER,INTENT(IN) :: member
-  REAL(r_sngl),INTENT(IN) :: vs3d(nij1,nlev_soil,member,ns3d)
-  REAL(r_sngl),INTENT(IN) :: v3d(nij1,nlev,member,nv3d)
-  REAL(r_sngl),INTENT(IN) :: v2d(nij1,member,nv2d)
+  INTEGER,INTENT(IN) :: ini_member,end_member
+  REAL(r_sngl),INTENT(IN) :: vs3d(nij1,nlev_soil,(end_member-ini_member+1),ns3d)
+  REAL(r_sngl),INTENT(IN) :: v3d(nij1,nlev,(end_member-ini_member+1),nv3d)
+  REAL(r_sngl),INTENT(IN) :: v2d(nij1,(end_member-ini_member+1),nv2d)
   REAL(r_sngl)  :: fields3(nlon,nlat,nlev_soil,ns3d)
   REAL(r_sngl)  :: fieldg3(nlon,nlat,nlev,nv3d)
   REAL(r_sngl)  :: fieldg2(nlon,nlat,nv2d)
-  INTEGER       :: l,ll,im,mstart,mend
+  INTEGER       :: l,ll,im,mstart,mend,member
   CHARACTER(20) :: filename='xxxx00000'
 
-! Junta de todos los nodos de procesos a los nodos que escriben todas las 
-! variables y todos los niveles
+  member = end_member - ini_member + 1
+
+! Gather the data distributed in the different processess
+! for all level and variables
   ll = CEILING(REAL(member)/REAL(nprocs))
   DO l=1,ll
     mstart = 1 + (l-1)*nprocs
     mend = MIN(l*nprocs, member)
     if (mstart <= mend) then
-      CALL gather_grd_mpi_alltoall(member,mstart,mend,v3d,v2d,vs3d,fieldg3,fieldg2,fields3) !cambiamos tmpv3d
+      CALL gather_grd_mpi_alltoall(member,mstart,mend,v3d,v2d,vs3d,fieldg3,fieldg2,fields3) 
     end if
 
     !Write the data to the ensemble files.
     im = myrank+1 + (l-1)*nprocs
     IF(im <= member) THEN
-      WRITE(filename(1:9),'(A,I5.5)')file,im
+      WRITE(filename(1:9),'(A,I5.5)')file,im+ini_member-1
       !Write a netcdf file
       WRITE(6,'(A,I3.3,2A)')'MYRANK ',myrank,' is writing a file ',filename
       CALL write_grd(filename,fieldg3,fieldg2,fields3)

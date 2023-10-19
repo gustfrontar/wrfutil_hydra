@@ -65,7 +65,7 @@ DATE_END_BDY=$(date -u -d "$DATE_END_BDY UTC" +"%Y-%m-%d_%T" ) #Cambio al format
 #Edit the namelist from the template
 sed -i -e "s|__FECHA_INI__|$DATE_INI_BDY|g"   $WPSDIR/namelist.wps
 sed -i -e "s|__FECHA_FIN__|$DATE_END_BDY|g"   $WPSDIR/namelist.wps
-sed -i -e "s|__INTERVALO__|$INTERVALO_WPS|g"  $WPSDIR/namelist.wps
+sed -i -e "s|__INTERVALO__|$INTERVALO_BDY|g"  $WPSDIR/namelist.wps
 sed -i -e "s|__E_WE__|$E_WE|g"                $WPSDIR/namelist.wps
 sed -i -e "s|__E_SN__|$E_SN|g"                $WPSDIR/namelist.wps
 sed -i -e "s|__DX__|$DX|g"                    $WPSDIR/namelist.wps
@@ -161,9 +161,9 @@ elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
    CDATE=$DATE_INI_BDY 
 
    #Set the WPS_FILE_FORMAT [this depends on the file frequency]
-   if [ $INTERVALO_WPS -lt 60 ] ; then
+   if [ $FORECAST_BDY_FREQ -lt 60 ] ; then
       WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H:%M:%S"
-   elif [ $INTERVALO_WPS -lt 3600 ] ; then
+   elif [ $FORECAST_BDY_FREQ -lt 3600 ] ; then
       WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H:%M"
    else
       WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H"
@@ -177,36 +177,36 @@ elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
       CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
    done
   
-   if [ $INTERVALO_WPS -lt $INTERVALO_BDY ] ; then 
-      echo "Interpolating files in time to reach $INTERVALO_WPS time frequency."
-      CDATE=$DATE_INI_BDY
+   #if [ $FORECAST_BDY_FREQ -lt $INTERVALO_BDY ] ; then 
+   #   echo "Interpolating files in time to reach $FORECAST_BDY_FREQ time frequency."
+   #   CDATE=$DATE_INI_BDY
+   #
+   #   while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -lt $(date -d "$DATE_END_BDY" +"%Y%m%d%H%M%S") ] ; do
+   #      #First we look for the BDY dates inmediatelly above and below $CDATE
+   #      DATE_1=$(date_floor "$CDATE" $INTERVALO_BDY )
+   #      DATE_2=$(date -u -d "$DATE_1 UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
+   #
+   #      #Define the names corresponding to each file
+   #      WPSFILE_1=$WPSDIR/$MIEM/FILE:$(date -u -d "$DATE_1 UTC" +"$WPS_FILE_DATE_FORMAT" )
+   #      WPSFILE_2=$WPSDIR/$MIEM/FILE:$(date -u -d "$DATE_2 UTC" +"$WPS_FILE_DATE_FORMAT" )
+   #      WPSFILE_INT=$WPSDIR/$MIEM/FILE:$(date -u -d "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )
+   #      echo "First file will be : $WPSFILE_1"
+   #      echo "Scnd  file will be : $WPSFILE_2"
+   #      echo "Itpl  file will be : $WPSFILE_INT"
 
-      while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -lt $(date -d "$DATE_END_BDY" +"%Y%m%d%H%M%S") ] ; do
-         #First we look for the BDY dates inmediatelly above and below $CDATE
-         DATE_1=$(date_floor "$CDATE" $INTERVALO_BDY )
-         DATE_2=$(date -u -d "$DATE_1 UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
+   #      #Compute the relative times corresponding to each file [seconds]
+   #      DATE_1_SEC=0
+   #      DATE_2_SEC=$INTERVALO_BDY
+   #      TARGET_SEC=$((($(date -d "$CDATE" +%s) - $(date -d "$DATE_1" +%s))))
 
-         #Define the names corresponding to each file
-         WPSFILE_1=$WPSDIR/$MIEM/FILE:$(date -u -d "$DATE_1 UTC" +"$WPS_FILE_DATE_FORMAT" )
-         WPSFILE_2=$WPSDIR/$MIEM/FILE:$(date -u -d "$DATE_2 UTC" +"$WPS_FILE_DATE_FORMAT" )
-         WPSFILE_INT=$WPSDIR/$MIEM/FILE:$(date -u -d "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )
-         echo "First file will be : $WPSFILE_1"
-         echo "Scnd  file will be : $WPSFILE_2"
-         echo "Itpl  file will be : $WPSFILE_INT"
+   #      echo "Target_SEC = $TARGET_SEC "
 
-         #Compute the relative times corresponding to each file [seconds]
-         DATE_1_SEC=0
-         DATE_2_SEC=$INTERVALO_BDY
-         TARGET_SEC=$((($(date -d "$CDATE" +%s) - $(date -d "$DATE_1" +%s))))
+   #      $MPIEXESERIAL ./interpolate_intermediate.exe $WPSFILE_1 $WPSFILE_2 $WPSFILE_INT $DATE_1_SEC $DATE_2_SEC $TARGET_SEC 
 
-         echo "Target_SEC = $TARGET_SEC "
-
-         $MPIEXESERIAL ./interpolate_intermediate.exe $WPSFILE_1 $WPSFILE_2 $WPSFILE_INT $DATE_1_SEC $DATE_2_SEC $TARGET_SEC 
-
-         #Update CDATE
-         CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_WPS seconds" +"%Y-%m-%d %T")
-      done
-   fi
+   #      #Update CDATE
+   #      CDATE=$(date -u -d "$CDATE UTC + $FORECAST_BDY_FREQ seconds" +"%Y-%m-%d %T")
+   #   done
+   #fi
 
 else 
 
