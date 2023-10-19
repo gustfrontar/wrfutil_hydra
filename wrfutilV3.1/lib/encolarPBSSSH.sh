@@ -65,7 +65,7 @@ queue (){
         IJOB=1     #Counter for the number of running jobs;
         IMIEM=$ini_mem
         while [ $IMIEM -le $end_mem ] ; do
-	    MEMBER=$(printf "%02d" $IMIEM)
+	    MEMBER=$(printf "%0${ens_num_length}d" $IMIEM)
 	    bash ${QPROC_NAME}_${MEMBER}.pbs > ${QPROC_NAME}_${MEMBER}.out  2>&1  &
             IJOB=$(($IJOB + 1))
 	    IMIEM=$(($IMIEM + 1))
@@ -80,18 +80,24 @@ check_proc(){
        
     ini_mem=${1}
     end_mem=${2}
-    nmem=$(($end_mem-$ini_mem+1))
-    check=0
-    while [ $check -ne $nmem ] ; do 
-       check=0
-       for cmiem in $(seq -w $ini_mem $end_mem ) ; do
-          if [ -e $PROCSDIR/${QPROC_NAME}_${cmiem}_ENDOK ] ; then
-             check=$(($check+1))
-          else
-             sleep 10 #There is at least one missing member ... wait.
-          fi
-       done
+    ens_num_length=${#ini_mem}
+    nmem=$(( $((10#$end_mem))-$((10#$ini_mem))+1))
+    check=0 
+    for cmiem in $(seq -w $ini_mem $end_mem ) ; do
+       if [ -e $PROCSDIR/${QPROC_NAME}_${cmiem}_ENDOK ] ; then
+          check=$(($check+1))
+       else
+          "Member ${cmiem} finished with errors"       
+       fi
     done
+    if [ $check -eq $nmem  ] ; then
+       echo "All members successfully processed"
+    else 
+       echo "Some members failed for ${QPROC_NAME}"
+       echo "exiting .... "
+       exit 1
+    fi
+    
 }
 
 

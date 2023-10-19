@@ -40,10 +40,10 @@ PROGRAM interp_met_em
   WRITE(6,'(A,I15)')   '  time_ini    :',time_ini
   WRITE(6,'(A,I15)')   '  time_end    :',time_end
   WRITE(6,'(A,I15)')   '  time_tar    :',time_tar
-  WRITE(6,'(A,I15)')   '  date_tar    :',date_tar
-  WRITE(6,'(A,I15)')   '  file_ini    :',file_ini
-  WRITE(6,'(A,I15)')   '  file_end    :',file_end
-  WRITE(6,'(A,I15)')   '  file_tar    :',file_tar
+  WRITE(6,'(2A)')      '  date_tar    :',date_tar
+  WRITE(6,'(2A)')      '  file_ini    :',TRIM(file_ini)
+  WRITE(6,'(2A)')      '  file_end    :',TRIM(file_end)
+  WRITE(6,'(2A)')      '  file_tar    :',TRIM(file_tar)
   WRITE(6,'(A)') '============================================='
   CALL set_common_met_em( file_ini )
 

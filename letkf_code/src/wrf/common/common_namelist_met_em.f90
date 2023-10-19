@@ -29,8 +29,6 @@ MODULE common_namelist_met_em
                                                                         !in any time continous unit (eg seconds)
 
 
-                           
-
   CHARACTER(LEN=50) :: NAMELIST_FILE='./pertmetem.namelist'
 
 CONTAINS
@@ -43,7 +41,6 @@ LOGICAL :: file_exist
 !Namelist declaration
 
 NAMELIST / GENERAL / nbv_ori , nbv_tar , ntimes , method , sigma , niter
-
 NAMELIST / INTERP / time_ini , time_end , time_tar , date_tar , file_ini , file_end , file_tar
 
 INQUIRE(FILE=NAMELIST_FILE, EXIST=file_exist)
@@ -57,6 +54,12 @@ OPEN(54,FILE=NAMELIST_FILE)
 READ(54,NML=GENERAL,IOSTAT=IERR)
 IF(IERR /=0)THEN
 WRITE(*,*)"Warning!! Error during namelist reading at GENERAL section"
+WRITE(*,*)"Using default values"
+ENDIF
+REWIND(54)
+READ(54,NML=INTERP,IOSTAT=IERR)
+IF(IERR /=0)THEN
+WRITE(*,*)"Warning!! Error during namelist reading at INTERP section"
 WRITE(*,*)"Using default values"
 ENDIF
 CLOSE(54)
