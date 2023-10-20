@@ -11,7 +11,7 @@ queue (){
 
 	ini_mem=${1}
         end_mem=${2}
-	ens_num_length=${#ini_mem}
+	mem_print_format='%0'${#ini_mem}'d'
 
         MAX_JOBS=$(( $INODE / $QNODE ))  #Floor rounding (bash default)
 	TOT_PROCS=$(( $QPROC * $QNODE ))
@@ -31,7 +31,7 @@ queue (){
 	while [ $IMIEM -le $end_mem ]; do
 	   for MY_NODE in $(seq -w $NNODE $(($NNODE + QNODE - 1)) ) ; do
 	       for MY_CORE in $(seq -w 1 $QPROC ) ; do
-	          echo "(${MY_NODE}) core=1" >>  machine.$(printf '%0${ens_num_length}d' $((10#$IMIEM)))
+	          echo "(${MY_NODE}) core=1" >>  machine.$(printf "$mem_print_format" $((10#$IMIEM)))
 	       done
            done
 	   IJOB=$(( $IJOB + 1 ))
@@ -55,7 +55,7 @@ queue (){
                 echo "MIEM=$IMIEM "                                                               >> ${QPROC_NAME}_${IMIEM}.pbs
                 echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -vcoordfile ../machine.$IMIEM \"  "   >> ${QPROC_NAME}_${IMIEM}.pbs
          	echo "export MPIEXE=\"\$MPIEXEC                -vcoordfile ../machine.$IMIEM \"  ">> ${QPROC_NAME}_${IMIEM}.pbs ## Comando MPIRUN con cantidad de nodos y cores por nodos           
-	       	test $QWORKPATH &&  echo "cd ${QWORKPAH}/${IMIEM}"                                >> ${QPROC_NAME}_${IMIEM}.pbs
+	       	test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMIEM}"                               >> ${QPROC_NAME}_${IMIEM}.pbs
 	        echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}_${IMIEM}.pbs
 	        echo "if [[ -z \${res} ]] || [[ \${res} -eq "OK" ]] ; then"                       >> ${QPROC_NAME}_${IMIEM}.pbs
 	        echo "touch $PROCSDIR/${QPROC_NAME}_${IMIEM}_ENDOK  "                             >> ${QPROC_NAME}_${IMIEM}.pbs  #Si existe la variable RES en el script la usamos
@@ -66,7 +66,7 @@ queue (){
         IJOB=1     #Counter for the number of running jobs;
         IMIEM=$ini_mem
         while [ $IMIEM -le $end_mem ] ; do
-	    MEMBER=$(printf "%0${ens_num_length}d" $IMIEM)
+	    MEMBER=$(printf "$mem_print_format" $IMIEM)
 	    bash ${QPROC_NAME}_${MEMBER}.pbs > ${QPROC_NAME}_${MEMBER}.out  2>&1  &
             IJOB=$(($IJOB + 1))
 	    IMIEM=$(($IMIEM + 1))
@@ -81,7 +81,6 @@ check_proc(){
        
     ini_mem=${1}
     end_mem=${2}
-    ens_num_length=${#ini_mem}
     nmem=$(( $((10#$end_mem))-$((10#$ini_mem))+1))
     check=0 
     for cmiem in $(seq -w $ini_mem $end_mem ) ; do

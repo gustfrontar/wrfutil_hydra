@@ -57,15 +57,12 @@ sed -i -e "s|__SIGMA_OBSV__|$SIGMA_OBSV|g"                 $NAMELISTFILE
 sed -i -e "s|__SIGMA_OBS_RADAR__|$SIGMA_OBS_RADAR|g"       $NAMELISTFILE
 sed -i -e "s|__N_RADAR__|$N_RADAR|g"                       $NAMELISTFILE
 
-
-exit
-
 echo "Linking files"
-FECHA_WINDOW_INI=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_WIN_INI)) seconds" +"%Y-%m-%d %T")
-ANALYSIS_DATE_WFMT=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_FREC)) seconds" +"%Y-%m-%d_%T")   #WRF format
-ANALYSIS_DATE_PFMT=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_FREC)) seconds" +"%Y%m%d%H%M%S")  #Path/folder format
+FECHA_WINDOW_INI=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*($PASO-1))+$SPIN_UP_LENGTH+$ANALISIS_WIN_INI)) seconds" +"%Y-%m-%d %T")
+ANALYSIS_DATE_WFMT=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*($PASO-1))+$SPIN_UP_LENGTH+$ANALISIS_FREC)) seconds" +"%Y-%m-%d_%T")   #WRF format
+ANALYSIS_DATE_PFMT=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*($PASO-1))+$SPIN_UP_LENGTH+$ANALISIS_FREC)) seconds" +"%Y%m%d%H%M%S")  #Path/folder format
 
-for MIEM in $(seq -f "%02g" $MIEMBRO_INI $MIEMBRO_FIN ) ; do
+for MIEM in $(seq $MIEMBRO_INI $MIEMBRO_FIN ) ; do
    for ISLOT in $(seq -f "%02g" 0 $(($NSLOTS-1))) ; do
       FECHA_SLOT=$(date -u -d "$FECHA_WINDOW_INI UTC +$(($ISLOT*$ANALISIS_WIN_STEP)) seconds" +"%Y-%m-%d_%T")
       ln -sf ${WRFDIR}/$MIEM/wrfout_d01_$FECHA_SLOT ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$MIEM)))
@@ -128,12 +125,12 @@ if [ $PASO -ge $SPIN_UP_LENGTH ] ; then
 fi
 
 ##
-# Guaramos los analisis
+# Save the analysis
 ##
 echo "Copying analysis files"
 echo "Guardando analisis $MIEMBRO_INI - $MIEMBRO_FIN"
 DIRANAL=$HISTDIR/ANAL/$ANALYSIS_DATE_PFMT
-for MIEM in $(seq -f "%02g" $MIEMBRO_INI $MIEMBRO_FIN ) ; do
+for MIEM in $(seq $MIEMBRO_INI $MIEMBRO_FIN ) ; do
         mkdir -p  ${DIRANAL}/
 	echo "Updating the date in the analysis file " $WRFDIR/$MIEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT
 	$LETKFDIR/code/update_wrf_time.exe $WRFDIR/$MIEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT
@@ -151,6 +148,6 @@ cp $LETKFDIRRUN/obs.dat $DIRANAL
 # Guardamos un NOUT
 mv $LETKFDIRRUN/NOUT-000 $DIRANAL
 
-echo "We are done!"
+echo "Successfully finished running WRF-LETKF"
 
 

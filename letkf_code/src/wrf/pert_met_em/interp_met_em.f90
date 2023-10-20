@@ -37,9 +37,9 @@ PROGRAM interp_met_em
   WRITE(6,'(A)') '============================================='
   WRITE(6,'(A)') '              PARAMETERS                     '
   WRITE(6,'(A)') ' ------------------------------------------- '
-  WRITE(6,'(A,I15)')   '  time_ini    :',time_ini
-  WRITE(6,'(A,I15)')   '  time_end    :',time_end
-  WRITE(6,'(A,I15)')   '  time_tar    :',time_tar
+  WRITE(6,'(A,F10.2)')   '  time_ini    :',time_ini
+  WRITE(6,'(A,F10.2)')   '  time_end    :',time_end
+  WRITE(6,'(A,F10.2)')   '  time_tar    :',time_tar
   WRITE(6,'(2A)')      '  date_tar    :',date_tar
   WRITE(6,'(2A)')      '  file_ini    :',TRIM(file_ini)
   WRITE(6,'(2A)')      '  file_end    :',TRIM(file_end)

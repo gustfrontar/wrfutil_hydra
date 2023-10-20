@@ -61,6 +61,7 @@ spawn () {
         #This is a serial program so we will need to use the mpi_serial_wrapper.exe 
         ini_mem=$(( $INI_MEMBER ))
         end_mem=$(( $INI_MEMBER + $MAX_SIM_MEM - 1 ))
+        mem_print_format='%0'${#ini_mem}'d'
         exe_group=1
         #Run several instances of metgrid.exe using the spawner.
         #Even for serial instances we may want to launch them with several cores to prevent to many instances
@@ -71,7 +72,7 @@ spawn () {
                echo $MPIEXEC -np 1 ./spawn.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem $RUNTIME_FLAGS
                $MPIEXEC -np 1 ./spawn.exe ./$COMMAND $PTCORE $BASE_DIR $ini_mem $end_mem $RUNTIME_FLAGS
             else #There is only one instance to run. Then call mpi directly without using the spawner.
-	       cd $BASE_DIR/$(printf "%02d" $ini_mem)
+	       cd $BASE_DIR/$(printf "$mem_print_format" $ini_mem)
                echo $MPIEXEC -np $PCORE ./$COMMAND 
 	    fi
             if [ $? -ne 0 ] ; then

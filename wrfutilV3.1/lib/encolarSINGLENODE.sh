@@ -12,7 +12,7 @@ queue (){
 
 	ini_mem=${1}
         end_mem=${2}
-        ens_num_length=${#ini_mem}
+	mem_print_format='%0'${#ini_mem}'d'
 
         MAX_JOBS=$(( $ICORE / $QPROC ))  #Floor rounding (bash default)
 	TOT_PROCS=$(( $QPROC ))
@@ -43,7 +43,7 @@ queue (){
         IJOB=1     #Counter for the number of running jobs;
         IMIEM=$ini_mem
         while [ $IMIEM -le $end_mem ] ; do
-	    MEMBER=$(printf "%0${ens_num_length}d" $IMIEM)
+	    MEMBER=$(printf "$mem_print_format" $IMIEM)
 	    bash ${QPROC_NAME}_${MEMBER}.pbs > ${QPROC_NAME}_${MEMBER}.out  2>&1  &
             IJOB=$(($IJOB + 1))
 	    IMIEM=$(($IMIEM + 1))
@@ -58,7 +58,6 @@ check_proc(){
        
     ini_mem=${1}
     end_mem=${2}
-    ens_num_length=${#ini_mem}
     nmem=$(( $((10#$end_mem))-$((10#$ini_mem))+1))
     check=0
     for cmiem in $(seq -w $ini_mem $end_mem ) ; do

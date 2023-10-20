@@ -8,7 +8,7 @@ queue (){
 
 	ini_mem=${1}
         end_mem=${2}
-	ens_num_length=${#ini_mem}
+	mem_print_format='%0'${#ini_mem}'d'
 
 	#Get the number of available nodes and the number of available procs per nods.
 	#Construct the machine files, write the scripts and run them. 
@@ -27,8 +27,8 @@ queue (){
 	IPPROCINNODE=1  #Counter of number of procs used in the current node.
 	rm -fr machine.*
         while [ $IMIEM -le $end_mem ]; do
-	    echo "${NODES[${IPNODE}]} " >> machine.$(printf '%0${ens_num_length}d' $((10#$IMIEM)))
-	    echo $IPCORE , ${NODES[${IPNODE}]} , $IPCORE , $IJOB , $IMIEM , machine.$(printf '%0${ens_num_length}d' $((10#$IMIEM)))
+	    echo "${NODES[${IPNODE}]} " >> machine.$(printf "$mem_print_format" $((10#$IMIEM)))
+	    echo $IPCORE , ${NODES[${IPNODE}]} , $IPCORE , $IJOB , $IMIEM , machine.$(printf "$mem_print_format" $((10#$IMIEM)))
 	    IPCORE=$(($IPCORE + 1))
 	    IPPROCINNODE=$(( $IPPROCINNODE + 1 ))
 	    if [ $IPCORE -gt $QPROC ] ; then
@@ -68,7 +68,7 @@ queue (){
         IJOB=1     #Counter for the number of running jobs;
         IMIEM=$ini_mem
         while [ $IMIEM -le $end_mem ] ; do
-	    MEMBER=$(printf "%0${ens_num_length}d" $IMIEM)
+	    MEMBER=$(printf "$mem_print_format" $IMIEM)
 	    bash ${QPROC_NAME}_${MEMBER}.pbs > ${QPROC_NAME}_${MEMBER}.out  2>&1  &
             IJOB=$(($IJOB + 1))
 	    IMIEM=$(($IMIEM + 1))
@@ -83,7 +83,6 @@ check_proc(){
        
     ini_mem=${1}
     end_mem=${2}
-    ens_num_length=${#ini_mem}
     nmem=$(( $((10#$end_mem))-$((10#$ini_mem))+1))
     check=0 
     for cmiem in $(seq -w $ini_mem $end_mem ) ; do

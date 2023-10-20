@@ -6,10 +6,9 @@ queue (){
 	#Groups of up to MAX_JOBS runs will be executed until all the ensemble members are processed. 
         cd $QWORKPATH
 
-	ini_mem=${1}
         end_mem=${2}
-
 	ens_size=$(($end_mem-$ini_mem+1))
+	mem_print_format='%0'${#ini_mem}'d'
 	#Get the number of available nodes and the number of available procs per nods.
 	#Construct the machine files, write the scripts and run them. 
 
@@ -28,8 +27,8 @@ queue (){
 	rm -fr machine.*
 	echo $NODES
         while [ $QMIEM -le $end_mem ]; do
-	    echo "${NODES[${IPNODE}]} " >> machine.$(printf "%02d" $QMIEM)
-	    echo $IPCORE , ${NODES[${IPNODE}]} , $IPCORE , $IJOB , $QMIEM , machine.$(printf "%02d" $QMIEM)
+	    echo "${NODES[${IPNODE}]} " >> machine.$(printf "$mem_print_format" $QMIEM)
+	    echo $IPCORE , ${NODES[${IPNODE}]} , $IPCORE , $IJOB , $QMIEM , machine.$(printf "$mem_print_format" $QMIEM)
 	    IPCORE=$(($IPCORE + 1))
 	    IPPROCINNODE=$(( $IPPROCINNODE + 1 ))
 	    if [ $IPCORE -gt $QPROC ] ; then
@@ -67,7 +66,7 @@ queue (){
         IJOB=1     #Counter for the number of running jobs;
         QMIEM=$ini_mem
         while [ $QMIEM -le $end_mem ] ; do
-	    MEMBER=$(printf "%02d" $QMIEM)
+	    MEMBER=$(printf "$mem_print_format" $QMIEM)
 	    bash ${QPROC_NAME}_${MEMBER}.pbs > ${QPROC_NAME}_${MEMBER}.out  2>&1  &
             IJOB=$(($IJOB + 1))
 	    QMIEM=$(($QMIEM + 1))

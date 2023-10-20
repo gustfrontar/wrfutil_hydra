@@ -49,6 +49,8 @@ $PARF90 $OMP $FFLAGS $INC_NETCDF -o interp_met_em.exe *.o $LBLAS $LIB_NETCDF
 
 rm common_met_em.f90 common_mpi_met_em.f90 common_namelist_met_em.f90 SFMT.f90 common.f90 common_mpi.f90 netlib.f
 
+rm -f *.mod *.o
+
 tar -cvf ${current_dir}/bin/pert_met_em_${COMPILATION_NAME}.tar ./*.exe 
 
 GREEN=$'\e[0;32m'

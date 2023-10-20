@@ -6,6 +6,8 @@
 # Fecha: 03/2019
 #############
 
+#TODO... add the possibility of an spin up.
+
 ### CONFIGURACION
 #Load experiment configuration
 source $BASEDIR/lib/errores.env
@@ -19,9 +21,20 @@ source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el 
 
 cd $WRFDIR
 #Seteamos las fechas de inicio y final de los forecasts.
-FECHA_FORECAST_INI=$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*$PASO)) seconds" +"%Y-%m-%d %T")
-FECHA_FORECAST_END=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_WIN_FIN)) seconds" +"%Y-%m-%d %T")
-FECHA_ANALISIS=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_FREC)) seconds" +"%Y-%m-%d %T")
+if [ $PASO -eq 0 ] ; then 
+   FECHA_FORECAST_INI=$FECHA_INI 
+   FECHA_FORECAST_END=$(date -u -d "$FECHA_INI UTC +$SPIN_UP_LENGTH seconds" +"%Y-%m-%d %T")
+   FECHA_ANALISIS=$FECHA_FORECAST_END
+   INTERVALO_WRF=$SPIN_UP_LENGTH
+   echo " Running spin up "
+   echo " Spin up will start at $FECHA_FORECAST_INI"
+   echo " Spin up will end   at $FECHA_FORECAST_END"
+else 
+   echo "This is a regular data assimilation step"
+   FECHA_FORECAST_INI=$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*($PASO-1)+$SPIN_UP_LENGTH)) seconds" +"%Y-%m-%d %T")
+   FECHA_FORECAST_END=$(date -u -d "$FECHA_FORECAST_INI UTC +$ANALISIS_WIN_FIN seconds" +"%Y-%m-%d %T")
+   FECHA_ANALISIS=$(date -u -d "$FECHA_FORECAST_INI UTC +$ANALISIS_FREC seconds" +"%Y-%m-%d %T")
+fi
 
 echo "=========================="
 echo "Forecast for STEP " $PASO
@@ -108,12 +121,16 @@ cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
 
 ln -sf $WRFDIR/code/* . 
 
-DATE_FORECAST_INI=$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*$PASO)) seconds" +"%Y-%m-%d %T")
-DATE_FORECAST_END=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_WIN_FIN)) seconds" +"%Y-%m-%d %T")
+if [ $PASO -eq 0 ] ; then
+   DATE_FORECAST_INI=$FECHA_INI 
+   DATE_FORECAST_END=$(date -u -d "$DATE_FORECAST_INI UTC +$SPIN_UP_LENGTH seconds" +"%Y-%m-%d %T")
+else 
+   DATE_FORECAST_INI=$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*($PASO-1)+$SPIN_UP_LENGTH)) seconds" +"%Y-%m-%d %T")
+   DATE_FORECAST_END=$(date -u -d "$DATE_FORECAST_INI UTC +$ANALISIS_WIN_FIN seconds" +"%Y-%m-%d %T")
+fi
 
 if [ $WPS_CYCLE -eq 1 ] ; then
-   INI_STEP_DATE=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
-   INI_BDY_DATE=$(date_floor "$INI_STEP_DATE" $INTERVALO_INI_BDY )
+   INI_BDY_DATE=$(date_floor "$DATE_FORECAST_INI" $INTERVALO_INI_BDY )
    INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
 else
    INI_BDY_DATE=$(date_floor "$FECHA_INI" $INTERVALO_BDY )
@@ -140,6 +157,8 @@ else
         FILE_INI=met_em.d01.$(date -u -d "$DATE_INI UTC" +"$WPS_FILE_DATE_FORMAT" ).nc
         FILE_END=met_em.d01.$(date -u -d "$DATE_END UTC" +"$WPS_FILE_DATE_FORMAT" ).nc
         #File does not exist. Interpolate data in time to create it.  
+        echo "&general                         "  > ./pertmetem.namelist
+        echo "/                                " >> ./pertmetem.namelist
         echo "&interp                          "  > ./pertmetem.namelist
         echo "time_ini=0                       " >> ./pertmetem.namelist
         echo "time_end=$INTERVALO_BDY          " >> ./pertmetem.namelist
@@ -159,8 +178,6 @@ else
    done
 fi
 
-OMP_NUM_THREADS=$REALTHREADS
-OMP_STACKSIZE=512M
 $MPIEXE $WRFDIR/$MIEM/real.exe $WRF_RUNTIME_FLAGS
 mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
 EXCOD=$?
@@ -170,13 +187,12 @@ if [ $PASO -gt 0 ] ; then
   echo "Corremos el update_bc"
   cp $NAMELISTDIR/parame* .
   mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
-  cp $HISTDIR/ANAL/$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*$PASO)) seconds" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
+  cp $HISTDIR/ANAL/$(date -u -d "$DATE_FORECAST_INI" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
   ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
   time $MPIEXESERIAL $WRFDIR/$MIEM/da_update_bc.exe $WRF_RUNTIME_FLAGS > ./da_update_bc_${PASO}_${MIEM}.log 
 fi
 
 echo "Corriendo WRF en Miembro $MIEM"
-export OMP_NUM_THREADS=1
 
 $MPIEXE $WRFDIR/$MIEM/wrf.exe $WRF_RUNTIME_FLAGS 
 excod=$?
@@ -201,16 +217,33 @@ echo "Tiempo en correr el real, update bc y wrf"
 queue $MIEMBRO_INI $MIEMBRO_FIN 
 time check_proc $MIEMBRO_INI $MIEMBRO_FIN
 
-#Copy the guess files corresponding to the analysis time.
-if [[ ! -z "$GUARDOGUESS" ]] && [[ $GUARDOGUESS -eq 1 ]] ; then
+if [ $PASO -eq 0  ] ; then  #Copy the spin up output as the analysis for the next cycle.
    for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
+       OUTPUTPATH="$HISTDIR/ANAL/$(date -u -d "$FECHA_ANALISIS UTC" +"%Y%m%d%H%M%S")/"
+       mkdir -p $OUTPUTPATH
+       echo "Copying file $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )"
+       mv $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/anal$(printf %05d $((10#$MIEM)))
+       mv $WRFDIR/$MIEM/*.log                                                         $OUTPUTPATH
+       mv $WRFDIR/$MIEM/namelist*                                                     $OUTPUTPATH
+   done
+
+else 
+  #Copy the guess files corresponding to the analysis time.
+  if [[ ! -z "$GUARDOGUESS" ]] && [[ $GUARDOGUESS -eq 1 ]] ; then
+     for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
        OUTPUTPATH="$HISTDIR/GUES/$(date -u -d "$FECHA_ANALISIS UTC" +"%Y%m%d%H%M%S")/"
        mkdir -p $OUTPUTPATH
        echo "Copying file $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )"
        cp $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/gues$(printf %05d $((10#$MIEM)))
        mv $WRFDIR/$MIEM/*.log                                                         $OUTPUTPATH
        mv $WRFDIR/$MIEM/namelist*                                                     $OUTPUTPATH
-   done
+     done
+  fi
 fi
+
+
+
+
+
 
 

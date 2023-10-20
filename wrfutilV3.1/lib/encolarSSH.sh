@@ -8,7 +8,7 @@ queue (){
 
 	ini_mem=${1}
         end_mem=${2}
-	ens_num_length=${#ini_mem}
+	mem_print_format='%0'${#ini_mem}'d'
 
 
 	ens_size=$(($end_mem-$ini_mem+1))
@@ -32,8 +32,8 @@ queue (){
 	echo $NODES
         while [ $IMIEM -le $end_mem ]; do
 	    ICORE=$(( ($IJOB-1)*$QPROC + $IPCORE ))
-	    echo "${NODES[${ICORE}]} " >> machine.$(printf '%0${ens_num_length}d' $((10#$IMIEM)))
-	    echo $ICORE , ${NODES[${ICORE}]} , $IPCORE , $IJOB , $IMIEM , machine.$(printf '%0${ens_num_length}d' $((10#$IMIEM)))
+	    echo "${NODES[${ICORE}]} " >> machine.$(printf "$mem_print_format" $((10#$IMIEM)))
+	    echo $ICORE , ${NODES[${ICORE}]} , $IPCORE , $IJOB , $IMIEM , machine.$(printf "$mem_print_format" $((10#$IMIEM)))
 	    IPCORE=$(($IPCORE + 1))
 	    if [ $IPCORE -gt $QPROC ] ; then
                IMIEM=$(($IMIEM + 1 ))
@@ -67,7 +67,7 @@ queue (){
         IJOB=1     #Counter for the number of running jobs;
         IMIEM=$ini_mem
         while [ $IMIEM -le $end_mem ] ; do
-	    MEMBER=$(printf "%0${ens_num_length}d" $IMIEM)
+	    MEMBER=$(printf "$mem_print_format" $IMIEM)
 	    bash ${QPROC_NAME}_${MEMBER}.pbs > ${QPROC_NAME}_${MEMBER}.out  2>&1  &
             IJOB=$(($IJOB + 1))
 	    IMIEM=$(($IMIEM + 1))

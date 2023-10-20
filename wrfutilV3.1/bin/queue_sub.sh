@@ -38,5 +38,11 @@ if [ "$QUEUESYS" = "PJM" ] ; then
 
 fi 
 
+#STAND ALONE SERVER WITH NO QUEUE SYSTEM
+if [ "$QUEUESYS" = "SINGLENODE" ] ; then
+   echo "Submitting an interactive JOB on a SINGLENODE server"
+      nohup ./${COMMAND} > ${COMMAND}.log &
+fi
+
 
 

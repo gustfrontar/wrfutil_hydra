@@ -5,4 +5,7 @@
 *.o
 *.mod
 *.swp
+*.nc
+*.log
+*.out
 
