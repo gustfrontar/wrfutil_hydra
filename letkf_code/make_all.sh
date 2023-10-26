@@ -1,5 +1,5 @@
 ##### COMPILATION FLAGS FOR DIFFERENT ARCHITECTURES #######
-export COMPILATION_NAME="FUJITSU_FUGAKU"   # FUJITSU_FUGAKU , INTEL_FUGAKU , INTEL_HYDRA
+export COMPILATION_NAME="INTEL_FUGAKU"   # FUJITSU_FUGAKU , INTEL_FUGAKU , INTEL_HYDRA
 MAKE_LETKF="TRUE"
 MAKE_PERT_MET_EM="TRUE"
 MAKE_WRF_TO_WPS="TRUE"
@@ -33,7 +33,7 @@ if [ $COMPILATION_NAME == "INTEL_FUGAKU" ] ; then
   export FFLAGS="-O3 -xHost -convert big_endian -FR ${DEBUG_FLAGS}"
   export OMP="-qopenmp"
   export NETCDF="/home/ra000007/a04037/data/comp_libs/netcdf4/"
-  export LIB_NETCDF="-L$NETCDF/lib/ -lnetcdff -lnetcdf"
+  export LIB_NETCDF="-L$NETCDF/lib/ -lnetcdff -lnetcdf -lhdf5_fortran -lhdf5_hl -lhdf5"
   export INC_NETCDF="-I$NETCDF/include/"
   export LBLAS="-qmkl"
   export LSCALAPACK=""
@@ -51,7 +51,7 @@ if [ $COMPILATION_NAME == "INTEL_HYDRA" ] ; then
   export FFLAGS="-O3 -xHost -convert big_endian -FR -O3 ${DEBUG_FLAGS}"
   export OMP="-qopenmp"
   export NETCDF="/home/ra000007/a04037/data/comp_libs/netcdf/"
-  export LIB_NETCDF="-L$NETCDF/lib/ -lnetcdff -lnetcdf"
+  export LIB_NETCDF="-L$NETCDF/lib/ -lnetcdff -lnetcdf -lhdf5_fortran -lhdf5_hl -lhdf5"
   export INC_NETCDF="-I$NETCDF/include/"
   export LBLAS="-qmkl"
   export LSCALAPACK=""
