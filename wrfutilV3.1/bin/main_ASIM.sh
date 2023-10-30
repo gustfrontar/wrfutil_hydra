@@ -30,7 +30,7 @@ source $BASEDIR/conf/machine.conf
 #Calculamos la cantidad de pasos
 ####################################
 
-PASOS_RESTANTES=$((($(date -d "$FECHA_FIN" +%s) - $(date -d "$FECHA_INI" +%s))/$ANALISIS_FREC ))
+PASOS_RESTANTES=$((($(date -d "$FECHA_FIN" +%s) - $(date -d "$FECHA_INI" +%s) - $SPIN_UP_LENGTH )/$ANALISIS_FREC ))
 PASOS_RESTANTES=$((10#$PASOS_RESTANTES-10#$PASO))
 
 echo "El experimento abarca desde $FECHA_INI hasta $FECHA_FIN"
@@ -38,8 +38,23 @@ echo "Se hicieron $PASO pasos de asimilacion y resta hacer $PASOS_RESTANTES"
 
 rm -f $PROCSDIR/*_ENDOK
 
+if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then 
+   echo "We will use Fugaku's temporary directory to speed up IO"
+   echo "Copying the data to ${PJM_SHAREDTMP}"
+   mkdir -p ${PJM_SHAREDTMP}/HIST   
+   cp -r ${HISTDIR}/WPS        ${PJM_SHAREDTMP}/HIST/  &
+   cp -r ${HISTDIR}/ANAL       ${PJM_SHAREDTMP}/HIST/  &
+   cp -r ${HISTDIR}/GUES       ${PJM_SHAREDTMP}/HIST/  &
+   mkdir -p ${PJM_SHAREDTMP}/WRF    ; cp -r $WRFDIR/* ${PJM_SHAREDTMP}/WRF      &
+   mkdir -p ${PJM_SHAREDTMP}/LETKF  ; cp -r $LETKFDIR/* ${PJM_SHAREDTMP}/LETKF  &
+   mkdir -p ${PJM_SHAREDTMP}/WPS    ; cp -r $WPSDIR/* ${PJM_SHAREDTMP}/WPS      &
+   time wait
+   echo "Finish copying the data"
+   echo $( ls ${PJM_SHAREDTMP}/WRF/ )
+fi
+
+
 while [ $PASOS_RESTANTES -gt 0 ] ; do
-   echo "Corriendo el primer paso de asimilacion"
    ###### 1st assimilation cycle only
    if [[ $PASO -lt 0 ]]; then
       echo "Reinicializando asimilacion"
@@ -63,11 +78,12 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    #####  all assimilation cycles
    echo "Running cycle: $PASO"
    echo "$(printf "%02d" $PASO)  | $(date)" >>  $LOGDIR/cycles.log
-
    echo "Vamos a ejecutar el real, el da_upbdate_bc y el wrf"
    time $BASEDIR/bin/run_Guess.sh > $LOGDIR/guess_${PASO}.log  2>&1
-   echo "Vamos a ejecutar el LETKF"
-   time $BASEDIR/bin/run_LETKF.sh > $LOGDIR/letkf_${PASO}.log  2>&1
+   if [ $PASO -gt 0 ] ; then 
+      echo "Vamos a ejecutar el LETKF"
+      time $BASEDIR/bin/run_LETKF.sh > $LOGDIR/letkf_${PASO}.log  2>&1
+   fi
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))
    echo "Update PASO in the configuration file."

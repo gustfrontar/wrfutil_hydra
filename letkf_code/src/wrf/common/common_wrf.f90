@@ -222,7 +222,6 @@ SUBROUTINE set_common_wrf(inputfile)
   ALLOCATE(landmask(nlon,nlat))
   ALLOCATE(cosalpha(nlon,nlat))
   ALLOCATE(sinalpha(nlon,nlat))
-
   !!! Time
   CALL check_io(NF90_INQ_VARID(ncid,'Times',varid))
   ALLOCATE(start(3),count(3))

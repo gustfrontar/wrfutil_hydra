@@ -18,6 +18,11 @@ source $BASEDIR/conf/model.conf
 source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
 
 ##### FIN INICIALIZACION ######
+if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then 
+   echo "Using Fugaku's shared dir to run WRF"
+   WRFDIR=${PJM_SHAREDTMP}/WRF
+fi
+
 
 cd $WRFDIR
 #Seteamos las fechas de inicio y final de los forecasts.
@@ -107,6 +112,12 @@ read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited
 source $BASEDIR/conf/model.conf
 echo "Procesando Miembro $MIEM" 
+
+if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then
+   echo "Using Fugaku's shared dir to run WRF"
+   WRFDIR=${PJM_SHAREDTMP}/WRF/    #WRFDIR is redefined here
+fi
+
 cd $WRFDIR
 [[ -d $WRFDIR/$MIEM ]] && rm -r $WRFDIR/$MIEM
 mkdir -p $WRFDIR/$MIEM
@@ -137,7 +148,13 @@ else
    INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
 fi
 
-MET_EM_DIR=$HISTDIR/WPS/met_em/${INI_BDY_DATE}/$MIEM/
+
+if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then
+   MET_EM_DIR=${PJM_SHAREDTMP}/HIST/WPS/met_em/${INI_BDY_DATE}/$MIEM/    #MET_EM_DIR is redefined here
+else 
+   MET_EM_DIR=$HISTDIR/WPS/met_em/${INI_BDY_DATE}/$MIEM/
+fi
+
 if [ $FORECAST_BDY_FREQ -eq $INTERVALO_BDY ] ; then
    ln -sf $MET_EM_DIR/met_em* $WRFDIR/$MIEM/
 else    
@@ -189,7 +206,7 @@ if [ $PASO -gt 0 ] ; then
   mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
   cp $HISTDIR/ANAL/$(date -u -d "$DATE_FORECAST_INI" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
   ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
-  time $MPIEXESERIAL $WRFDIR/$MIEM/da_update_bc.exe $WRF_RUNTIME_FLAGS > ./da_update_bc_${PASO}_${MIEM}.log 
+  time $MPIEXESERIAL -stdout-proc ./da_update_bc_${PASO}_${MIEM}.log  $WRFDIR/$MIEM/da_update_bc.exe $WRF_RUNTIME_FLAGS  
 fi
 
 echo "Corriendo WRF en Miembro $MIEM"

@@ -87,7 +87,7 @@ check_proc(){
        if [ -e $PROCSDIR/${QPROC_NAME}_${cmiem}_ENDOK ] ; then
           check=$(($check+1))
        else
-          "Member ${cmiem} finished with errors"       
+          echo "Member ${cmiem} finished with errors"       
        fi
     done
     if [ $check -eq $nmem  ] ; then

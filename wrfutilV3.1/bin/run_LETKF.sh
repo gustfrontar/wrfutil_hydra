@@ -16,6 +16,13 @@ source $BASEDIR/conf/model.conf
 source $BASEDIR/conf/letkf.conf
 source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
 
+
+if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then
+   echo "Using Fugaku's shared dir to run WRF"
+   LETKFDIR=${PJM_SHAREDTMP}/LETKF
+fi
+
+
 LETKFDIRRUN=$LETKFDIR/00/   #We need to add 00 in order to be consistent with the paralelization lib.
 rm -fr $LETKFDIRRUN
 mkdir -p $LETKFDIRRUN
@@ -62,14 +69,14 @@ FECHA_WINDOW_INI=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*($PASO-1))+$SP
 ANALYSIS_DATE_WFMT=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*($PASO-1))+$SPIN_UP_LENGTH+$ANALISIS_FREC)) seconds" +"%Y-%m-%d_%T")   #WRF format
 ANALYSIS_DATE_PFMT=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*($PASO-1))+$SPIN_UP_LENGTH+$ANALISIS_FREC)) seconds" +"%Y%m%d%H%M%S")  #Path/folder format
 
-for MIEM in $(seq $MIEMBRO_INI $MIEMBRO_FIN ) ; do
+for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN ) ; do
    for ISLOT in $(seq -f "%02g" 0 $(($NSLOTS-1))) ; do
       FECHA_SLOT=$(date -u -d "$FECHA_WINDOW_INI UTC +$(($ISLOT*$ANALISIS_WIN_STEP)) seconds" +"%Y-%m-%d_%T")
-      ln -sf ${WRFDIR}/$MIEM/wrfout_d01_$FECHA_SLOT ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$MIEM)))
+      ln -sf ${WRFDIR}/${MIEM}/wrfout_d01_$FECHA_SLOT ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$MIEM)))
    done	   
 done
-cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/guesemean
-cp  $WRFDIR/$MIEMBRO_FIN/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/analemean
+cp  ${WRFDIR}/${MIEMBRO_FIN}/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/guesemean
+cp  ${WRFDIR}/${MIEMBRO_FIN}/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/analemean
 
 #Linkeamos las observaciones.
 #DIROBSRAD=$HISTDIR/OBS/${NOMBRE}/$(date -u -d "$FECHA_INI UTC +$((10#$CICLO)) hours +$((10#$CICLO_MIN+$ANALISIS)) minutes" +"%Y%m%d_%H%M%S")/
@@ -119,10 +126,8 @@ QWORKPATH=$LETKFDIR
 echo "Sending letkf script to the queue"
 cd $LETKFDIR
 # Encolar
-if [ $PASO -ge $SPIN_UP_LENGTH ] ; then
-  queue 00 00
-  check_proc 00 00
-fi
+queue 00 00
+check_proc 00 00
 
 ##
 # Save the analysis
@@ -130,7 +135,7 @@ fi
 echo "Copying analysis files"
 echo "Guardando analisis $MIEMBRO_INI - $MIEMBRO_FIN"
 DIRANAL=$HISTDIR/ANAL/$ANALYSIS_DATE_PFMT
-for MIEM in $(seq $MIEMBRO_INI $MIEMBRO_FIN ) ; do
+for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN ) ; do
         mkdir -p  ${DIRANAL}/
 	echo "Updating the date in the analysis file " $WRFDIR/$MIEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT
 	$LETKFDIR/code/update_wrf_time.exe $WRFDIR/$MIEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT

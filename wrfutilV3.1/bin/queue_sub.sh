@@ -30,10 +30,10 @@ fi
 if [ "$QUEUESYS" = "PJM" ] ; then
    if [ ! -z ${INTERACTIVE_JOB} ] && [ ${INTERACTIVE_JOB} -eq 1 ] ; then
       echo "Submitting an interactive PJM JOB"	   
-      pjsub --interact -g ${FUGAKU_GROUP} -L "node=${INODE}" --mpi "max-proc-per-node=${ICORE}" -x PJM_LLIO_GFSCACHE=${LLIO_VOL} -L "elapse=${TOTAL_TIME_LIMIT}" -j -s --no-stging --sparam wait-time=1200  ${COMMAND}
+      pjsub --interact -g ${FUGAKU_GROUP} -L "node=${INODE}" --mpi "max-proc-per-node=${ICORE}" -x PJM_LLIO_GFSCACHE=${LLIO_VOL} --llio "sharedtmp-size=${SHAREDCACHESIZE}" -L "elapse=${TOTAL_TIME_LIMIT}" -j -s --sparam wait-time=1200  ${COMMAND}
    else
       echo "Submitting a regular PJM JOB"
-      pjsub -g ${FUGAKU_GROUP} -L "node=${INODE}" --mpi "max-proc-per-node=${ICORE}" -x PJM_LLIO_GFSCACHE=${LLIO_VOL} -L "elapse=${TOTAL_TIME_LIMIT}" -j -s --no-stging ${COMMAND}
+      pjsub -g ${FUGAKU_GROUP} -L "node=${INODE}" --mpi "max-proc-per-node=${ICORE}" -x PJM_LLIO_GFSCACHE=${LLIO_VOL} --llio "sharedtmp-size=${SHAREDCACHESIZE}" -L "elapse=${TOTAL_TIME_LIMIT}" -j -s ${COMMAND}
    fi
 
 fi 
