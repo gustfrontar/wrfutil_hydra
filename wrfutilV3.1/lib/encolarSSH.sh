@@ -68,7 +68,7 @@ queue (){
         IMIEM=$ini_mem
         while [ $IMIEM -le $end_mem ] ; do
 	    MEMBER=$(printf "$mem_print_format" $IMIEM)
-	    bash ${QPROC_NAME}_${MEMBER}.pbs > ${QPROC_NAME}_${MEMBER}.out  2>&1  &
+	    bash ${QPROC_NAME}_${MEMBER}.pbs &> ${QPROC_NAME}_${MEMBER}.out  &
             IJOB=$(($IJOB + 1))
 	    IMIEM=$(($IMIEM + 1))
             if [ $IJOB -gt $MAX_JOBS ] ; then
@@ -76,6 +76,7 @@ queue (){
                IJOB=1
             fi
         done
+        time wait
 }
 
 check_proc(){
