@@ -50,8 +50,9 @@ if [ $COMPILATION_NAME == "INTEL_HYDRA" ] ; then
   export F90="ifort"
   export FFLAGS="-O3 -xHost -convert big_endian -FR -O3 ${DEBUG_FLAGS}"
   export OMP="-qopenmp"
-  export NETCDF="/home/ra000007/a04037/data/comp_libs/netcdf/"
-  export LIB_NETCDF="-L$NETCDF/lib/ -lnetcdff -lnetcdf -lhdf5_fortran -lhdf5_hl -lhdf5"
+  export NETCDF="/opt/netcdf/netcdf-4/intel/2021.4.0/"
+  export HDF5="/opt/hdf5/hdf5-1.10.5/intel/2021.4.0/"
+  export LIB_NETCDF="-L$NETCDF/lib/ -lnetcdff -lnetcdf  -L$HDF5/lib -lhdf5_fortran -lhdf5_hl -lhdf5"
   export INC_NETCDF="-I$NETCDF/include/"
   export LBLAS="-qmkl"
   export LSCALAPACK=""
@@ -61,14 +62,17 @@ fi
 
 export current_dir=$(pwd)
 if [ $MAKE_LETKF == "TRUE" ] ; then
+echo "Compiling LETKF"
 cd ${current_dir}/src/wrf/letkf/ 
 ./make.sh
 fi
 if [ $MAKE_PERT_MET_EM == "TRUE" ] ; then
+echo "Compiling PERT MET EM"
 cd ${current_dir}/src/wrf/pert_met_em/
 ./make.sh
 fi
 if [ $MAKE_WRF_TO_WPS == "TRUE" ] ; then
+echo "Compiling WRF TO WPS"
 cd ${current_dir}/src/wrf/wrf_to_wps/
 ./make.sh
 fi

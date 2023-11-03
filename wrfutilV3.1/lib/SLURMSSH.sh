@@ -67,7 +67,7 @@ queue (){
         QMIEM=$ini_mem
         while [ $QMIEM -le $end_mem ] ; do
 	    MEMBER=$(printf "$mem_print_format" $QMIEM)
-	    bash ${QPROC_NAME}_${MEMBER}.pbs > ${QPROC_NAME}_${MEMBER}.out  2>&1  &
+	    bash ${QPROC_NAME}_${MEMBER}.pbs &> ${QPROC_NAME}_${MEMBER}.out   &
             IJOB=$(($IJOB + 1))
 	    QMIEM=$(($QMIEM + 1))
             if [ $IJOB -gt $MAX_JOBS ] ; then
