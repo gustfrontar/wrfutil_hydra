@@ -21,6 +21,7 @@ if [ ! -z ${SLURM_SUBMIT_DIR} ]; then cd ${SLURM_SUBMIT_DIR};fi
 
 #Load experiment configuration
 BASEDIR=$(pwd)/../
+sed -i -e "/export EXPTYPE=/c\\export EXPTYPE=\"assimilation\"" $BASEDIR/conf/config.env
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
 source $BASEDIR/conf/$EXPTYPE.conf

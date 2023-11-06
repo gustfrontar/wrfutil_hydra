@@ -105,6 +105,7 @@ check_proc(){
     ini_mem=${1}
     end_mem=${2}
     nmem=$(( $((10#$end_mem))-$((10#$ini_mem))+1))
+    check=0
 
     if [ -f $BASEDIR/WPS/running ] ;then
       jobid=$(cat $BASEDIR/WPS/running)
@@ -117,9 +118,6 @@ check_proc(){
  
     for cmiem in $(seq -w $ini_mem $end_mem ) ; do
        if [ -e $PROCSDIR/${QPROC_NAME}_${cmiem}_ENDOK ] ; then
-          check=$(($check+1))
-       else
-          echo "Member ${cmiem} finished with errors"       
           check=$(($check+1))
        fi
     done

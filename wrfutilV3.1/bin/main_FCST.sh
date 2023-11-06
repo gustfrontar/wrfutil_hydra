@@ -23,6 +23,7 @@ if [ ! -z ${SLURM_SUBMIT_DIR} ]; then cd ${SLURM_SUBMIT_DIR};fi
 
 #Load experiment configuration
 BASEDIR=$(pwd)/../
+sed -i -e "/export EXPTYPE=/c\\export EXPTYPE=\"forecast\"" $BASEDIR/conf/config.env
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
 source $BASEDIR/conf/$EXPTYPE.conf
@@ -71,7 +72,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))
    #Update PASO in the configuration file.
-   sed -i -e "/export PASO=/c\\export PASO=$PASO" $BASEDIR/conf/$EXPCONF
+   sed -i -e "/export PASO=/c\\export PASO=$PASO" $BASEDIR/conf/$EXPTYPE.conf
 
 done
 
