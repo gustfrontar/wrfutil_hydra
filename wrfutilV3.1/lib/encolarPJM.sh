@@ -11,7 +11,8 @@ queue (){
 
 	ini_mem=${1}
         end_mem=${2}
-	mem_print_format='%0'${#ini_mem}'d'
+        time_limit=${3:-$TOTAL_TIME_LIMIT}
+	mem_print_format='%0'${#ini_mem}'g'
 
         MAX_JOBS=$(( $INODE / $QNODE ))  #Floor rounding (bash default)
 	TOT_PROCS=$(( $QPROC * $QNODE ))
@@ -43,9 +44,28 @@ queue (){
            fi
         done
 
-        
+        if [ $PJM_BULK == 1 ] ;then
         #2 - Create the scripts
-        for IMIEM in $(seq -w $ini_mem $end_mem) ; do
+		echo "export PARALLEL=1              "                                             > ${QPROC_NAME}_bulk.pbs
+		echo "source $BASEDIR/conf/config.env"                                            >> ${QPROC_NAME}_bulk.pbs 
+                echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}_bulk.pbs
+                echo "source $BASEDIR/lib/errores.env"                                            >> ${QPROC_NAME}_bulk.pbs
+                echo "source $BASEDIR/conf/$QCONF      "                                          >> ${QPROC_NAME}_bulk.pbs
+		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                        >> ${QPROC_NAME}_bulk.pbs
+                echo "MIEM=\$(printf $mem_print_format \$PJM_BULKNUM) "                           >> ${QPROC_NAME}_bulk.pbs
+                echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -vcoordfile ../machine.\${MIEM} \"  "   >> ${QPROC_NAME}_bulk.pbs
+         	echo "export MPIEXE=\"\$MPIEXEC                -vcoordfile ../machine.\${MIEM} \"  ">> ${QPROC_NAME}_bulk.pbs ## Comando MPIRUN con cantidad de nodos y cores por nodos           
+	       	test $QWORKPATH &&  echo "cd ${QWORKPATH}/\${MIEM}"                               >> ${QPROC_NAME}_bulk.pbs
+	        echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}_bulk.pbs
+	        echo "if [[ -z \${res} ]] || [[ \${res} -eq "OK" ]] ; then"                       >> ${QPROC_NAME}_bulk.pbs
+	        echo "touch $PROCSDIR/${QPROC_NAME}_\${MIEM}_ENDOK  "                             >> ${QPROC_NAME}_bulk.pbs  #Si existe la variable RES en el script la usamos
+	        echo "fi  "                             >> ${QPROC_NAME}_bulk.pbs  #Si existe la variable RES en el script la usamos
+
+          #jobid=$($BASEDIR/bin/queue_sub_bulk.sh $ini_mem $end_mem ${QPROC_NAME}_bulk.pbs)
+          $BASEDIR/bin/queue_sub_bulk.sh $ini_mem $end_mem "$time_limit" ${QPROC_NAME}_bulk.pbs
+        else
+        #2 - Create the scripts
+          for IMIEM in $(seq -w $ini_mem $end_mem) ; do
 		echo "export PARALLEL=1              "                                             > ${QPROC_NAME}_${IMIEM}.pbs
 		echo "source $BASEDIR/conf/config.env"                                            >> ${QPROC_NAME}_${IMIEM}.pbs 
                 echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}_${IMIEM}.pbs
@@ -60,22 +80,24 @@ queue (){
 	        echo "if [[ -z \${res} ]] || [[ \${res} -eq "OK" ]] ; then"                       >> ${QPROC_NAME}_${IMIEM}.pbs
 	        echo "touch $PROCSDIR/${QPROC_NAME}_${IMIEM}_ENDOK  "                             >> ${QPROC_NAME}_${IMIEM}.pbs  #Si existe la variable RES en el script la usamos
 	        echo "fi                                            "                             >> ${QPROC_NAME}_${IMIEM}.pbs
-        done
+          done
+
 
         #3 - Run the scripts
-        IJOB=1     #Counter for the number of running jobs;
-        IMIEM=$ini_mem
-        while [ $IMIEM -le $end_mem ] ; do
+          IJOB=1     #Counter for the number of running jobs;
+          IMIEM=$ini_mem
+          while [ $IMIEM -le $end_mem ] ; do
 	    MEMBER=$(printf "$mem_print_format" $IMIEM)
-	    bash ${QPROC_NAME}_${MEMBER}.pbs &> ${QPROC_NAME}_${MEMBER}.out   &
+	    $BASEDIR/bin/queue_sub.sh ${QPROC_NAME}_${MEMBER}.pbs > ${QPROC_NAME}_${MEMBER}.out 2>&1  &
             IJOB=$(($IJOB + 1))
 	    IMIEM=$(($IMIEM + 1))
             if [ $IJOB -gt $MAX_JOBS ] ; then
 	       time wait 	    
                IJOB=1
             fi
-        done
+          done
         time wait
+        fi
 }
 
 check_proc(){
@@ -83,22 +105,40 @@ check_proc(){
     ini_mem=${1}
     end_mem=${2}
     nmem=$(( $((10#$end_mem))-$((10#$ini_mem))+1))
-    check=0 
+
+    if [ -f $BASEDIR/WPS/running ] ;then
+      jobid=$(cat $BASEDIR/WPS/running)
+    fi
+
+    echo "Hello from check_proc : jobid="$jobid
+
+    while [ $check -ne $nmem ] ; do
+    check=0
+ 
     for cmiem in $(seq -w $ini_mem $end_mem ) ; do
        if [ -e $PROCSDIR/${QPROC_NAME}_${cmiem}_ENDOK ] ; then
           check=$(($check+1))
        else
           echo "Member ${cmiem} finished with errors"       
+          check=$(($check+1))
        fi
     done
     if [ $check -eq $nmem  ] ; then
        echo "All members successfully processed"
+       return
     else 
-       echo "Some members failed for ${QPROC_NAME}"
-       echo "exiting .... "
-       exit 1
+      if [ ! -z "$jobid" ] && [ ! -z "$(pjstat | grep $jobid)" ] ;then
+        echo "waiting ...."
+        sleep 30s
+      else
+        echo "Some members failed for ${QPROC_NAME}"
+        echo "jobid=$jobid"
+        echo "pjstat=$(pjstat | grep $jobid) "
+        echo "exiting ...."
+        exit 1
+      fi
     fi
-    
+    done
 }
 
 

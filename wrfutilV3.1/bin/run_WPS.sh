@@ -86,6 +86,7 @@ sed -i -e "s|__IOTYPE__|$IOTYPE|g"            $WPSDIR/namelist.wps
 if [ ! -e $WPSDIR/geogrid/geo_em.d01.nc ] ; then
    echo "Ejecutando geogrid"
    mkdir -p $WPSDIR/geogrid
+   mkdir -p $WPSDIR/00
    ln -sf $WPSDIR/code/*   $WPSDIR/geogrid/
    cp $WPSDIR/namelist.wps $WPSDIR/geogrid/ 
 read -r -d '' QSCRIPTCMD << "EOF"
@@ -102,7 +103,7 @@ EOF
 	QWALLTIME=$WPSWALLTIME
         QCONF=${EXPTYPE}.conf
 	QWORKPATH=$WPSDIR
-	queue 00 00 
+	queue 00 00 $WPSWALLTIME
 	check_proc 00 00
 fi
 
@@ -234,7 +235,7 @@ QCONF=${EXPTYPE}.conf
 QWORKPATH=$WPSDIR
 
 # Encolar
-queue $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN
+queue $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN $WPSWALLTIME
 check_proc $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN
 
 FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_BDY )    #Get the closest prior date in which BDY data is available.

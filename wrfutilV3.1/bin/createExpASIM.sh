@@ -31,6 +31,7 @@ EXPDIR=$BASEDIR
 [ -d "$BASEDIR" ]  && dispararError 6 "$BASEDIR"
 mkdir -p $BASEDIR || dispararError 5 "$BASEDIR"
 
+export BASEDIR=$(cd $BASEDIR; pwd)
 
 ### Copio la configuracion y genero los archivos de configuracion para el experimento.
 mkdir $BASEDIR/conf

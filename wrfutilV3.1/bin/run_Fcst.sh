@@ -187,7 +187,7 @@ QWORKPATH=$WRFDIR
 
 #Execute the job 
 echo "Time taken by real.exe and wrf.exe"
-queue $MIEMBRO_INI $MIEMBRO_FIN 
+queue $MIEMBRO_INI $MIEMBRO_FIN $WRFWALLTIME
 time check_proc $MIEMBRO_INI $MIEMBRO_FIN
 
 #Copy wrfout files to its final destionation.

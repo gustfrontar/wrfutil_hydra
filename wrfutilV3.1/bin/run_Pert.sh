@@ -156,7 +156,7 @@ QWORKPATH=$PERTDIR
 
 echo "Sending pert met em script to the queue"
 # Encolar
-queue 00 00
+queue 00 00 $PERTWALLTIME
 check_proc 00 00
 
 echo "Sucessfully finished perturbation of met_em files"

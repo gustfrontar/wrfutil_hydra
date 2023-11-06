@@ -61,6 +61,7 @@ fi
 
 
 export current_dir=$(pwd)
+mkdir -p $current_dir/bin
 if [ $MAKE_LETKF == "TRUE" ] ; then
 echo "Compiling LETKF"
 cd ${current_dir}/src/wrf/letkf/ 
