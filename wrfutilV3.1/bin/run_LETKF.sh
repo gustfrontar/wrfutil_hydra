@@ -67,7 +67,12 @@ sed -i -e "s|__NBV__|$NBV|g"                               $NAMELISTFILE
 sed -i -e "s|__SIGMA_OBS__|$SIGMA_OBS|g"                   $NAMELISTFILE
 sed -i -e "s|__SIGMA_OBSV__|$SIGMA_OBSV|g"                 $NAMELISTFILE
 sed -i -e "s|__SIGMA_OBS_RADAR__|$SIGMA_OBS_RADAR|g"       $NAMELISTFILE
+sed -i -e "s|__SIGMA_OBSZ__|$SIGMA_OBSZ|g"                 $NAMELISTFILE
+sed -i -e "s|__SIGMA_OBST__|$SIGMA_OBST|g"                 $NAMELISTFILE
 sed -i -e "s|__N_RADAR__|$N_RADAR|g"                       $NAMELISTFILE
+
+sed -i -e "s|__THRESHOLD_DZ__|$THRESHOLD_DZ|g"             $NAMELISTFILE
+sed -i -e "s|__GROSS_ERROR__|$GROSS_ERROR|g"               $NAMELISTFILE
 
 echo "Linking model files"
 FECHA_WINDOW_INI=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*($PASO-1))+$SPIN_UP_LENGTH+$ANALISIS_WIN_INI)) seconds" +"%Y-%m-%d %T")
@@ -80,6 +85,7 @@ for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN ) ; do
       ln -sf ${WRFDIR}/${MIEM}/wrfout_d01_$FECHA_SLOT ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$MIEM)))
    done	   
 done
+
 cp  ${WRFDIR}/${MIEMBRO_FIN}/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/guesemean
 cp  ${WRFDIR}/${MIEMBRO_FIN}/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/analemean
 
@@ -114,8 +120,6 @@ for SLOT in $(seq -f "%02g" 1 $(($NSLOTS))) ; do  #Loop over time slot within th
      done
    CTIME=$(date -u -d "$CTIME UTC +$ANALYSIS_WIN_STEP seconds" +"%Y-%m-%d %T")
 done
-
-exit
 
 #script de ejecucion
 read -r -d '' QSCRIPTCMD << "EOF"

@@ -6,14 +6,14 @@
 &localization
   sigma_obs=__SIGMA_OBS__
   sigma_obsv=__SIGMA_OBSV__
-  sigma_obsz=2000.0d0
-  sigma_obst=3.0d0
+  sigma_obsz=__SIGMA_OBSZ__
+  sigma_obst=__SIGMA_OBST__
   sigma_obs_radar=__SIGMA_OBS_RADAR__
 /
  
 &observations
-  threshold_dz=1000.0d0
-  gross_error=5.0d0
+  threshold_dz=__THRESHOLD_DZ__
+  gross_error=__GROSS_ERROR__
 /
 
 &inflation
