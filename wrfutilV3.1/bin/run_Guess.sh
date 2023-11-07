@@ -6,8 +6,6 @@
 # Fecha: 03/2019
 #############
 
-#TODO... add the possibility of an spin up.
-
 ### CONFIGURACION
 #Load experiment configuration
 source $BASEDIR/lib/errores.env
@@ -34,6 +32,8 @@ if [ $PASO -eq 0 ] ; then
    echo " Running spin up "
    echo " Spin up will start at $FECHA_FORECAST_INI"
    echo " Spin up will end   at $FECHA_FORECAST_END"
+   #Optimize the boundary data frequency for the spin-up.
+   FORECAST_BDY_FREQ=$( maximum_common_divisor $SPIN_UP_LENGTH $INTERVALO_BDY  )   
 else 
    echo "This is a regular data assimilation step"
    FECHA_FORECAST_INI=$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*($PASO-1)+$SPIN_UP_LENGTH)) seconds" +"%Y-%m-%d %T")
@@ -154,6 +154,11 @@ if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then
    MET_EM_DIR=${PJM_SHAREDTMP}/HIST/WPS/met_em/${INI_BDY_DATE}/$MIEM/    #MET_EM_DIR is redefined here
 else 
    MET_EM_DIR=$HISTDIR/WPS/met_em/${INI_BDY_DATE}/$MIEM/
+fi
+
+if [ ${PASO} -eq 0 ] ; then #Assume spin-up period.
+   #Optimize the boundary data frequency for the spin-up.
+   FORECAST_BDY_FREQ=$( maximum_common_divisor $SPIN_UP_LENGTH $INTERVALO_BDY  )
 fi
 
 if [ $FORECAST_BDY_FREQ -eq $INTERVALO_BDY ] ; then
