@@ -23,7 +23,7 @@ MODULE common_wrf
 
   !MODULE VARIABLES (NOT READ FROM NAMELIST) 
   INTEGER, PARAMETER :: nv3d=15
-  INTEGER, PARAMETER :: nv2d=11
+  INTEGER, PARAMETER :: nv2d=12
   INTEGER, PARAMETER :: np2d=3
   INTEGER, PARAMETER :: ns3d=2  !Soil variables
   INTEGER, PARAMETER :: nid_obs=10
@@ -65,10 +65,10 @@ MODULE common_wrf
   INTEGER,PARAMETER :: iv2d_sh=9
   INTEGER,PARAMETER :: iv2d_si=10
   INTEGER,PARAMETER :: iv2d_cw=11
+  INTEGER,PARAMETER :: iv2d_mu=12
 
   !SPECIAL VARIABLES
   INTEGER,PARAMETER :: iv3d_tv=100
-  INTEGER,PARAMETER :: iv2d_mu=200
   !2D PARAMETERS
   INTEGER,PARAMETER :: ip2d_hfx=1
   INTEGER,PARAMETER :: ip2d_qfx=2
@@ -109,8 +109,8 @@ MODULE common_wrf
   !   U          V         W         T         P         PH      QV        QC        
   & .true. , .true. , .true. , .true. , .true. , .true. , .true. , .false. , .true. , .true. , .true. , .true. ,&
   !   QR       QCI      QS       QG     CO_ANT  CO_BCK    CO_BBU     PS        T2M     Q2M       U10M    V10M
-  & .true. , .true. , .true. , .true. , .true. , .true. , &
-  ! LANDSEA  TSK SNOW     SNOWH    SEAICE   CANWAT
+  & .true. , .true. , .true. , .true. , .true. , .true. , .true. , &
+  ! LANDSEA  TSK SNOW     SNOWH    SEAICE   CANWAT         MU
   & .true. , .true. , .true.  , .true. , .true. /)
   !  HFX_F    QFX_F   UST_F     SMOIS    TSLB
 
@@ -131,8 +131,6 @@ SUBROUTINE set_common_wrf(inputfile)
   INTEGER(4),ALLOCATABLE :: start(:),count(:)
   CHARACTER(*)           :: inputfile
   INTEGER :: ierr , nAtts 
-  
-
 
   WRITE(6,'(A)') 'Hello from set_common_wrf'
 
@@ -165,6 +163,7 @@ SUBROUTINE set_common_wrf(inputfile)
   element(nv3d+iv2d_sh)   = 'SNOWH'
   element(nv3d+iv2d_si)   = 'SEAICE'
   element(nv3d+iv2d_cw)   = 'CANWAT'
+  element(nv3d+iv2d_mu)   = 'MU    '
   element(nv3d+nv2d+ip2d_hfx)   = 'HFX_FACTOR'
   element(nv3d+nv2d+ip2d_qfx)   = 'QFX_FACTOR'
   element(nv3d+nv2d+ip2d_ust)   = 'UST_FACTOR'
@@ -1030,7 +1029,7 @@ SUBROUTINE ensmean_grd(member,nij,v3d,v2d,v3dm,v2dm)
 
 
   DO n=1,nv3d
-!!$OMP PARALLEL DO PRIVATE(i,k,m)
+!$OMP PARALLEL DO PRIVATE(i,k,m)
     DO k=1,nlev
       DO i=1,nij
         v3dm(i,k,n) = v3d(i,k,1,n)
@@ -1040,7 +1039,7 @@ SUBROUTINE ensmean_grd(member,nij,v3d,v2d,v3dm,v2dm)
        v3dm(i,k,n) = v3dm(i,k,n) / REAL(member,r_size)
       END DO
     END DO
-!!$OMP END PARALLEL DO
+!$OMP END PARALLEL DO
   END DO
 
   DO n=1,nv2d

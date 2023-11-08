@@ -101,7 +101,7 @@ for SLOT in $(seq -f "%02g" 1 $(($NSLOTS))) ; do  #Loop over time slot within th
           for RADARC in "${RADARC_LIST[@]}" ; do
             OBSFILE=${OBSPATH}/${OBS_TYPE}/WRF_${OBS_TYPE}_${RADARC}_${CTIME_OFMT}.dat 
             [[ -e ${OBSFILE} ]] && echo "Linking $OBSFILE"
-            [[ -e ${OBSFILE} ]] && ln -sf ${OBSFILE} ${LETKFDIRRUN}/rad$(printf %02d $((10#$NRAD)))$(printf %02d $((10#$SLOT))).dat
+            [[ -e ${OBSFILE} ]] && ln -sf ${OBSFILE} ${LETKFDIRRUN}/rad$(printf %02d $((10#$SLOT)))$(printf %02d $((10#$NRAD))).dat
             NRAD=$(( $NRAD + 1 ))
           done
         else

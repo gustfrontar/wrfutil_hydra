@@ -47,7 +47,6 @@ SUBROUTINE das_letkf
   REAL(r_size),ALLOCATABLE :: dep(:)
   REAL(r_size),ALLOCATABLE :: work3d(:,:,:)
   REAL(r_size),ALLOCATABLE :: work2d(:,:)
-  REAL(r_size),ALLOCATABLE :: workp2d(:,:)
   REAL(r_sngl),ALLOCATABLE :: workg(:,:,:)
   REAL(r_size),ALLOCATABLE :: work3da(:,:,:)     !GYL
   REAL(r_size),ALLOCATABLE :: work2da(:,:)       !GYL
@@ -66,12 +65,9 @@ SUBROUTINE das_letkf
   INTEGER :: counterp
   INTEGER :: npoints
 
-  REAL(r_size),ALLOCATABLE :: mean3dg(:,:,:),mean3da(:,:,:)
-  REAL(r_size),ALLOCATABLE :: mean2dg(:,:),mean2da(:,:)
+  REAL(r_size),ALLOCATABLE :: mean2dg(:,:),mean3dg(:,:,:)
   REAL(r_size),ALLOCATABLE :: meanp2d(:,:)
-  REAL(r_size),ALLOCATABLE :: sprdp2d(:,:)
 
-  REAL(r_size)             :: tmpsprd
 
   WRITE(6,'(A)') 'Hello from das_letkf'
   WRITE(6,'(A,F15.2)') '  cov_infl_mul = ',cov_infl_mul, '  relax_alpha = ' &
@@ -124,7 +120,6 @@ SUBROUTINE das_letkf
   ! FCST PERTURBATIONS
   !
   ALLOCATE(mean3dg(nij1,nlev,nv3d),mean2dg(nij1,nv2d))
-  ALLOCATE(mean3da(nij1,nlev,nv3d),mean2da(nij1,nv2d))
   IF(ESTPAR)ALLOCATE(meanp2d(nij1,np2d))
   CALL ensmean_grd(nbv,nij1,gues3d,gues2d,mean3dg,mean2dg)
   IF(ESTPAR)CALL ensmean_ngrd(nbv,nij1,guesp2d,meanp2d,np2d)
@@ -449,11 +444,62 @@ SUBROUTINE das_letkf
     DEALLOCATE(workg,work3d,work2d)
   END IF
 
+  !Restore guess data
+  DO n=1,nv3d
+    DO m=1,nbv
+      DO k=1,nlev
+        DO i=1,nij1
+          gues3d(i,k,m,n) = gues3d(i,k,m,n) + mean3dg(i,k,n)
+        END DO
+      END DO
+    END DO
+  END DO
+  DO n=1,nv2d
+    DO m=1,nbv
+      DO i=1,nij1
+        gues2d(i,m,n) = gues2d(i,m,n) + mean2dg(i,n)
+      END DO
+    END DO
+  END DO
 
-  DEALLOCATE(logpfm,zfm,mean3da,mean2da,mean3dg,mean2dg)
+  !Update the total mass in the column
+  CALL UPDATE_MU()
+
+  !From theta to t
+  anal3d(:,:,:,iv3d_t)  = anal3d(:,:,:,iv3d_t) *(p0 /  anal3d(:,:,:,iv3d_p)) ** (rd / cp) - t0
+
+  DEALLOCATE(logpfm,zfm,mean3dg,mean2dg)
   IF(ESTPAR)DEALLOCATE(meanp2d)
   RETURN
 END SUBROUTINE das_letkf
+
+
+!-----------------------------------------------------------------------
+! Compute update in MU
+!-----------------------------------------------------------------------
+SUBROUTINE UPDATE_MU()
+IMPLICIT NONE
+INTEGER :: j , im  , k 
+REAL(r_size) ::  sdmd , s1md 
+
+   anal2d(:,:,iv2d_mu) = gues2d(:,:,iv2d_mu)
+   DO j=1,nij1
+    DO im=1,nbv
+      sdmd=0.0
+      s1md=0.0
+      DO k=1,nlev-1
+        IF( anal3d(j,k,im,iv3d_qv) >= 0.0 ) THEN
+          sdmd = sdmd + ( anal3d(j,k,im,iv3d_qv) - gues3d(j,k,im,iv3d_qv) ) * REAL(dnw(k),r_size)
+        ELSE
+          sdmd = sdmd + ( 0.0                    - gues3d(j,k,im,iv3d_qv) ) * REAL(dnw(k),r_size)
+        END IF
+        s1md = s1md + (1.0 + gues3d(j,k,im,iv3d_qv)) * REAL(dnw(k),r_size)
+      END DO
+      anal2d(j,im,iv2d_mu) = anal2d(j,im,iv2d_mu) - ((anal2d(j,im,iv2d_ps) - gues2d(j,im,iv2d_ps)) + anal2d(j,im,iv2d_mu) * sdmd) / s1md
+    END DO
+   END DO
+
+END SUBROUTINE UPDATE_MU
 
 !-----------------------------------------------------------------------
 ! Trnasform parameters to keep them within their physical meaningful range.
