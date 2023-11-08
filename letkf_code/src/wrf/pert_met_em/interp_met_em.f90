@@ -55,6 +55,8 @@ PROGRAM interp_met_em
 
   os_command = 'cp '//file_ini//' '//file_tar
   CALL SYSTEM( os_command )
+  os_command = 'chmod 744 '//file_tar !In case the original met_em is write protected
+  CALL SYSTEM( os_command )
   CALL write_date_met_em(file_tar,TRIM(date_tar))
 
   !

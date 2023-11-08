@@ -223,6 +223,7 @@ SUBROUTINE set_common_met_em(inputfile)
         END SELECT
       ENDIF
   ENDDO
+  CALL check_io(NF90_CLOSE(ncid))
   nlevall=nlev*nv3d+nv2d+ns3d*nlev_soil
 
   WRITE(6,*)'The number of 3D atmospheric variables to be perturbed is ',nv3d
@@ -252,7 +253,6 @@ SUBROUTINE set_common_met_em(inputfile)
       ENDIF
   ENDDO
 
-  CALL check_io(NF90_CLOSE(ncid))
 
   !Generate the indices for the matrix
   ALLOCATE(ri(nlon,nlat))
@@ -518,21 +518,20 @@ character(19) , intent(in)  :: new_date
 integer :: start(2) , count(2) , ncid
 character(19) :: tmpdate
 integer :: varid
-
-  CALL open_wrf_file(inputfile,'rw',ncid)
+  WRITE(6,*)'Updating the date' 
+  CALL check_io(NF90_OPEN(inputfile,NF90_WRITE,ncid))
   CALL check_io(NF90_INQ_VARID(ncid,'Times',varid))
   start = (/ 1 ,1 /)
   count = (/ 19,1 /)
   !Read the current date in file to get the date format.
   CALL check_io(NF90_GET_VAR(ncid,varid,tmpdate,start,count))
-  WRITE(*,*)'Previous date was ',tmpdate,' new date is ',new_date
+  WRITE(6,*)'Previous date was ',tmpdate,' new date is ',new_date
 
   !Write the new date in the file.
   CALL check_io(NF90_PUT_VAR(ncid,varid,new_date,start,count))
   !CALL check_io(NF90_PUT_ATT(ncid,NF90_GLOBAL,'START_DATE',new_date))
   CALL check_io(NF90_PUT_ATT(ncid,NF90_GLOBAL,'SIMULATION_START_DATE',new_date))
-
-  CALL close_wrf_file(ncid)
+  CALL check_io(NF90_CLOSE(ncid))
 
 END SUBROUTINE write_date_met_em
 
