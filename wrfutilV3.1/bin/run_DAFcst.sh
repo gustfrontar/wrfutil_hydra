@@ -4,6 +4,8 @@
 # Servicio Meteorologico Nacional
 # Autores: Maximiliano A. Sacco; Yanina Garcia Skabar; Maria Eugenia Dillon; Cynthia Mariana Matsudo
 # Fecha: 03/2019
+# Ported to hydra and Fugaku
+# Date: 11/2023
 #############
 
 ### CONFIGURACION
@@ -13,9 +15,9 @@ source $BASEDIR/conf/config.env
 source $BASEDIR/conf/${EXPTYPE}.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
-source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
+source ${BASEDIR}/lib/encolar${QUEUESYS}.sh       
 
-##### FIN INICIALIZACION ######
+##### To use Fugaku's shared filesystem  ######
 if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then 
    echo "Using Fugaku's shared dir to run WRF"
    WRFDIR=${PJM_SHAREDTMP}/WRF
@@ -23,35 +25,22 @@ fi
 
 
 cd $WRFDIR
-#Seteamos las fechas de inicio y final de los forecasts.
-if [ $PASO -eq 0 ] ; then 
-   FECHA_FORECAST_INI=$FECHA_INI 
-   FECHA_FORECAST_END=$(date -u -d "$FECHA_INI UTC +$SPIN_UP_LENGTH seconds" +"%Y-%m-%d %T")
-   FECHA_ANALISIS=$FECHA_FORECAST_END
-   INTERVALO_WRF=$SPIN_UP_LENGTH
-   echo " Running spin up "
-   echo " Spin up will start at $FECHA_FORECAST_INI"
-   echo " Spin up will end   at $FECHA_FORECAST_END"
-   #Optimize the boundary data frequency for the spin-up.
-   FORECAST_BDY_FREQ=$( maximum_common_divisor $SPIN_UP_LENGTH $INTERVALO_BDY  )   
-else 
-   echo "This is a regular data assimilation step"
-   FECHA_FORECAST_INI=$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*($PASO-1)+$SPIN_UP_LENGTH)) seconds" +"%Y-%m-%d %T")
-   FECHA_FORECAST_END=$(date -u -d "$FECHA_FORECAST_INI UTC +$ANALISIS_WIN_FIN seconds" +"%Y-%m-%d %T")
-   FECHA_ANALISIS=$(date -u -d "$FECHA_FORECAST_INI UTC +$ANALISIS_FREC seconds" +"%Y-%m-%d %T")
-fi
+#Set the initial and end dates for the forecast.
+CFST_INI_DATE=$(date -u -d "$FORECAST_INI_DATE UTC +$(($FORECAST_INI_FREQ*$FORECAST_STEP)) seconds" +"%Y-%m-%d %T")
+CFST_END_DATE=$(date -u -d "$CFST_INI_DATE     UTC +$FORECAST_LEAD_TIME seconds" +"%Y-%m-%d %T")
+FORECAST_BDY_FREQ=$( maximum_common_divisor $FORECAST_INI_FREQ $INTERVALO_BDY  ) #Optimization of boundary conditions data.
 
 echo "=========================="
-echo "Forecast for STEP " $PASO
-echo "Starting at " $FECHA_FORECAST_INI
-echo "Ending   at " $FECHA_FORECAST_END
+echo "Forecast for STEP " $FORECAST_STEP
+echo "Starting at " $CFST_INI_DATE
+echo "Ending   at " $CFST_END_DATE
 
 #Desglozamos las fechas
-read -r IY IM ID IH Im Is  <<< $(date -u -d "$FECHA_FORECAST_INI UTC" +"%Y %m %d %H %M %S")
-read -r FY FM FD FH Fm Fs  <<< $(date -u -d "$FECHA_FORECAST_END UTC" +"%Y %m %d %H %M %S")
+read -r IY IM ID IH Im Is  <<< $(date -u -d "$CFST_INI_DATE UTC" +"%Y %m %d %H %M %S")
+read -r FY FM FD FH Fm Fs  <<< $(date -u -d "$CFST_END_DATE UTC" +"%Y %m %d %H %M %S")
 
 
-# Editamos el namelist.
+#Prepare the namelists
 if [ $MULTIMODEL -eq 0 ] ; then  
    MULTIMODEL_CONF_INI=$MODEL_CONF;MULTIMODEL_CONF_FIN=$MODEL_CONF
    echo "We will run a single configuration ensemble"
@@ -76,7 +65,7 @@ for ICONF in $(seq -w $MULTIMODEL_CONF_INI $MULTIMODEL_CONF_FIN) ; do
    sed -i -e "s|__END_MINUTE__|$Fm|g"                               $WRFDIR/namelist.input.${WRFCONF}
    sed -i -e "s|__END_SECOND__|$Fs|g"                               $WRFDIR/namelist.input.${WRFCONF}
    sed -i -e "s|__INTERVALO_WPS__|$FORECAST_BDY_FREQ|g"             $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__INTERVALO_WRF__|$(($INTERVALO_WRF/60))|g"         $WRFDIR/namelist.input.${WRFCONF}
+   sed -i -e "s|__INTERVALO_WRF__|$(($FORECAST_OUTPUT_FREQ/60))|g"  $WRFDIR/namelist.input.${WRFCONF}
    sed -i -e "s|__E_WE__|$E_WE|g"                                   $WRFDIR/namelist.input.${WRFCONF}
    sed -i -e "s|__E_SN__|$E_SN|g"                                   $WRFDIR/namelist.input.${WRFCONF}
    sed -i -e "s|__DX__|$DX|g"                                       $WRFDIR/namelist.input.${WRFCONF}
@@ -92,7 +81,7 @@ for ICONF in $(seq -w $MULTIMODEL_CONF_INI $MULTIMODEL_CONF_FIN) ; do
    sed -i -e "s|__RADT__|$RADT|g"                                   $WRFDIR/namelist.input.${WRFCONF}
 done
 
-#Descomprimimos el archivo .tar (si es que no fue descomprimido)
+#Untar exacutables 
 if [ ! -e $WRFDIR/code/real.exe ] ; then
    echo "Decompressing executables ..."
    mkdir -p $WRFDIR/code
@@ -100,8 +89,6 @@ if [ ! -e $WRFDIR/code/real.exe ] ; then
    tar -xf wrf.tar -C $WRFDIR/code
    tar -xf wrfda.tar -C $WRFDIR/code
    tar -xf pert_met_em.tar -C $WRFDIR/code
-   #Si existe el namelist.input lo borramos para que no interfiera
-   #con los que crea el sistema de asimilacion
    if [ -e $WRFDIR/code/namelist.input ] ; then
       rm -f $WRFDIR/code/namelist.input
    fi
@@ -112,7 +99,7 @@ fi
 read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited
 source $BASEDIR/conf/model.conf
-echo "Procesando Miembro $MIEM" 
+echo "Processing member $MIEM" 
 
 if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then
    echo "Using Fugaku's shared dir to run WRF"
@@ -133,22 +120,17 @@ cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
 
 ln -sf $WRFDIR/code/* . 
 
-if [ $PASO -eq 0 ] ; then
-   DATE_FORECAST_INI=$FECHA_INI 
-   DATE_FORECAST_END=$(date -u -d "$DATE_FORECAST_INI UTC +$SPIN_UP_LENGTH seconds" +"%Y-%m-%d %T")
-else 
-   DATE_FORECAST_INI=$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*($PASO-1)+$SPIN_UP_LENGTH)) seconds" +"%Y-%m-%d %T")
-   DATE_FORECAST_END=$(date -u -d "$DATE_FORECAST_INI UTC +$ANALISIS_WIN_FIN seconds" +"%Y-%m-%d %T")
-fi
+CFST_INI_DATE=$(date -u -d "$FORECAST_INI_DATE UTC +$(($FORECAST_INI_FREQ*$FORECAST_STEP)) seconds" +"%Y-%m-%d %T")
+CFST_END_DATE=$(date -u -d "$CFST_INI_DATE     UTC +$FORECAST_LEAD_TIME seconds" +"%Y-%m-%d %T")
+FORECAST_BDY_FREQ=$( maximum_common_divisor $FORECAST_INI_FREQ $INTERVALO_BDY  ) #Optimization of boundary conditions data.
 
 if [ $WPS_CYCLE -eq 1 ] ; then
-   INI_BDY_DATE=$(date_floor "$DATE_FORECAST_INI" $INTERVALO_INI_BDY )
+   INI_BDY_DATE=$(date_floor "$CFST_INI_DATE" $INTERVALO_INI_BDY )
    INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
 else
    INI_BDY_DATE=$(date_floor "$FECHA_INI" $INTERVALO_BDY )
    INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
 fi
-
 
 if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then
    MET_EM_DIR=${PJM_SHAREDTMP}/HIST/WPS/met_em/${INI_BDY_DATE}/$MIEM/    #MET_EM_DIR is redefined here
@@ -156,20 +138,15 @@ else
    MET_EM_DIR=$HISTDIR/WPS/met_em/${INI_BDY_DATE}/$MIEM/
 fi
 
-if [ ${PASO} -eq 0 ] ; then #Assume spin-up period.
-   #Optimize the boundary data frequency for the spin-up.
-   FORECAST_BDY_FREQ=$( maximum_common_divisor $SPIN_UP_LENGTH $INTERVALO_BDY  )
-fi
-
 if [ $FORECAST_BDY_FREQ -eq $INTERVALO_BDY ] ; then
    ln -sf $MET_EM_DIR/met_em* $WRFDIR/$MIEM/
 else    
    #We will conduct interpolation of the met_em files.
    echo "Interpolating files in time to reach $FORECAST_BDY_FREQ time frequency."
-   CDATE=$DATE_FORECAST_INI
+   CDATE=$CFST_INI_DATE
    WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H:%M:%S"
 
-   while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$DATE_FORECAST_END" +"%Y%m%d%H%M%S") ] ; do
+   while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$CFST_END_DATE" +"%Y%m%d%H%M%S") ] ; do
      FILE_TAR=met_em.d01.$(date -u -d "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" ).nc
 
      if [ -e $MET_EM_DIR/$FILE_TAR ] ; then #Target file exists. 
@@ -202,26 +179,24 @@ else
 fi
 
 $MPIEXE $WRFDIR/$MIEM/real.exe $WRF_RUNTIME_FLAGS
-mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
+mv rsl.error.0000 ./real_${FORECAST_STEP}_${MIEM}.log
 EXCOD=$?
 [[ $EXCOD -ne 0 ]] && dispararError 9 "real.exe"
 
-if [ $PASO -gt 0 ] ; then
-  echo "Corremos el update_bc"
-  cp $NAMELISTDIR/parame* .
-  mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
-  cp $HISTDIR/ANAL/$(date -u -d "$DATE_FORECAST_INI" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
-  ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
-  time $MPIEXESERIAL -stdout-proc ./da_update_bc_${PASO}_${MIEM}.log  $WRFDIR/$MIEM/da_update_bc.exe $WRF_RUNTIME_FLAGS  
-fi
+echo "Running da_update_bc"
+cp $NAMELISTDIR/parame* .
+mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
+cp $HISTDIR/ANAL/$(date -u -d "$CFST_INI_DATE" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
+ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
+time $MPIEXESERIAL -stdout-proc ./da_update_bc_${FORECAST_STEP}_${MIEM}.log  $WRFDIR/$MIEM/da_update_bc.exe $WRF_RUNTIME_FLAGS  
 
-echo "Corriendo WRF en Miembro $MIEM"
+echo "Running WRF for member $MIEM"
 
 $MPIEXE $WRFDIR/$MIEM/wrf.exe $WRF_RUNTIME_FLAGS 
 excod=$?
 res="ERROR"
 test=$(tail -n1 $WRFDIR/$MIEM/rsl.error.0000 | grep SUCCESS ) && res="OK"
-mv rsl.error.0000 ./wrf_${PASO}_${MIEM}.log
+mv rsl.error.0000 ./wrf_${FORECAST_STEP}_${MIEM}.log
 
 EOF
 
@@ -231,38 +206,22 @@ QPROC=$WRFPROC
 TPROC=$WRFTPROC
 QTHREAD=$WRFTHREAD
 QWALLTIME=$WRFWALLTIME
-QPROC_NAME=GUESS_${PASO}
+QPROC_NAME=DAFCST_${FORECAST_STEP}
 QCONF=${EXPTYPE}.conf
 QWORKPATH=$WRFDIR
 
 #Execute the job 
-echo "Tiempo en correr el real, update bc y wrf"
-queue $MIEMBRO_INI $MIEMBRO_FIN 
-time check_proc $MIEMBRO_INI $MIEMBRO_FIN
+queue $FORECAST_MEMBER_INI $FORECAST_MEMBER_END
+time check_proc $FORECAST_MEMBER_INI $FORECAST_MEMBER_END
 
-if [ $PASO -eq 0  ] ; then  #Copy the spin up output as the analysis for the next cycle.
-   for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-       OUTPUTPATH="$HISTDIR/ANAL/$(date -u -d "$FECHA_ANALISIS UTC" +"%Y%m%d%H%M%S")/"
-       mkdir -p $OUTPUTPATH
-       echo "Copying file $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )"
-       mv $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/anal$(printf %05d $((10#$MIEM)))
-       mv $WRFDIR/$MIEM/*.log                                                         $OUTPUTPATH
-       mv $WRFDIR/$MIEM/namelist*                                                     $OUTPUTPATH
-   done
-
-else 
-  #Copy the guess files corresponding to the analysis time.
-  if [[ ! -z "$GUARDOGUESS" ]] && [[ $GUARDOGUESS -eq 1 ]] ; then
-     for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-       OUTPUTPATH="$HISTDIR/GUES/$(date -u -d "$FECHA_ANALISIS UTC" +"%Y%m%d%H%M%S")/"
-       mkdir -p $OUTPUTPATH
-       echo "Copying file $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )"
-       cp $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/gues$(printf %05d $((10#$MIEM)))
-       mv $WRFDIR/$MIEM/*.log                                                         $OUTPUTPATH
-       mv $WRFDIR/$MIEM/namelist*                                                     $OUTPUTPATH
-     done
-  fi
-fi
+#Copy the guess files corresponding to the analysis time.
+for MIEM in $(seq -w $FORECAST_MEMBER_INI $FORECAST_MEMBER_END ) ; do
+    OUTPUTPATH="$HISTDIR/DAFCST/$(date -u -d "$CFST_INI_DATE UTC" +"%Y%m%d%H%M%S")/"
+    mkdir -p $OUTPUTPATH
+    mv $WRFDIR/$MIEM/wrfout_d01_* $OUTPUTPATH/
+    mv $WRFDIR/$MIEM/*.log*       $OUTPUTPATH/
+    mv $WRFDIR/$MIEM/namelist*    $OUTPUTPATH/
+done
 
 
 
