@@ -152,6 +152,7 @@ PROGRAM letkf
   !CALL write_ens_mpi(guesf,nbv,anal3d,anal2d)
 
   IF(ESTPAR)CALL write_ensp_mpi(guesf,nbv,analp2d)
+  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
   CALL CPU_TIME(rtimer)
   WRITE(6,'(A,2F10.2)') '### TIMER(WRITE_ANAL_ens):',rtimer,rtimer-rtimer00
@@ -160,12 +161,12 @@ PROGRAM letkf
   !
   ! WRITE ENS MEAN and SPRD
   !
-  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
   WRITE(*,*)'CTRL9'
   CALL write_ensmspr_mpi('anal',nbv,anal3d,anal2d)
 
   IF(ESTPAR)CALL write_enspmspr_mpi('anal',nbv,analp2d)
 
+  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
   DEALLOCATE(anal3d,anal2d)
   IF(ESTPAR)DEALLOCATE(analp2d)
 !

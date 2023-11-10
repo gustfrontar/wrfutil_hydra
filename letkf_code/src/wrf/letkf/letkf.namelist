@@ -4,12 +4,12 @@
   nbv=@NBV@
 /
 &localization
-  lev_update_q=@E_VERT@
   sigma_obs=@SIGMA_OBS@
   sigma_obs_radar=@SIGMA_OBS_RADAR@
   sigma_obsv=@SIGMA_OBSV@
   sigma_obsz=@SIGMA_OBSZ@
   sigma_obst=@SIGMA_OBST@
+  lev_update_q=@E_VERT@
   var_local_uv=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
   var_local_t=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
   var_local_tv=1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,1.d0,0.d0
@@ -29,6 +29,7 @@
 &observations
   threshold_dz=1000.0d0
   gross_error=@GROSS_ERROR@
+  gross_error_reflectivity=@GROSS_ERROR_REFLECTIVITY@
   gross_error_tycll=10.0d0  
   gross_error_tycmip=60.0d2  
   undef_obs=9.99d9            

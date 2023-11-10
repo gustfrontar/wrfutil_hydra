@@ -89,7 +89,7 @@ SUBROUTINE set_letkf_obs
   REAL(r_size),ALLOCATABLE :: tmp2az(:),tmp2el(:),tmp2ra(:)
   INTEGER , ALLOCATABLE :: nobslotsradar(:,:)
   INTEGER :: nobslots(nslots) !, nobslotsradar(nslots,nradar)
-  INTEGER :: n,i,j,ierr,islot,nn,l,im, nini,nend
+  INTEGER :: n,i,j,ierr,islot,nn,l,ll,skip,im, nini,nend
   INTEGER :: nj(0:nlat-1)
   INTEGER :: njs(1:nlat-1)
   CHARACTER(9) :: obsfile='obsTT.dat'
@@ -269,13 +269,16 @@ timeslots: DO islot=1,nslots
     END DO
 
 
-
-    l=0
-    DO
-      im = myrank+1 + nprocs * l
-      IF(im > nbv) EXIT
+    ll = CEILING(REAL(nbv)/REAL(nprocs))
+    skip = FLOOR( REAL(nprocs) / REAL(nbv) )
+    if ( skip == 0 )skip = 1 
+    DO l=1,ll
+      IF ( MOD( myrank + 1 , skip ) == 0 .AND. (myrank+1)/skip + (l-1)*nprocs <= nbv )THEN
+         im = (myrank+1)/skip + (l-1)*nprocs
+      ELSE 
+         EXIT
+      ENDIF
       IF( nini-1 == nend )THEN   !NO OBSERVATIONS FOR THIS TIME SLOT, SKIP OBS. OPERATOR.
-           l=l+1
            CYCLE
       ENDIF
 
@@ -363,7 +366,7 @@ timeslots: DO islot=1,nslots
       END DO
 !$OMP END PARALLEL DO
 
-      l = l+1
+      !l = l+1
     END DO
 
   END DO timeslots
