@@ -51,7 +51,6 @@ MODULE common_namelist
   !OBSERVATIONS
   REAL(r_size) :: threshold_dz=1000.0d0
   REAL(r_size) :: gross_error=15.0d0
-  REAL(r_size) :: gross_error_reflectivity=7.0d0
   REAL(r_size) :: gross_error_tycll=10.0d0    ! degree
   REAL(r_size) :: gross_error_tycmip=60.0d2   ! Pa
   REAL(r_size) :: gross_error_reflectivity=7.0d0

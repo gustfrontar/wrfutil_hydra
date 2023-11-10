@@ -129,13 +129,9 @@ ln -sf $PERTDIR/code/pert_met_em.exe $PERTDIR/00/
 ln -sf $PERTDIR/pertmetem.namelist   $PERTDIR/00/
 #script de ejecucion
 read -r -d '' QSCRIPTCMD << "EOF"
-  res='OK'
   cd $PERTDIR/00/
   time $MPIEXE  ./pert_met_em.exe
-  PERT_ERROR=$?
-  if [[ $PERT_ERROR != 0 ]] ; then
-   res='ERROR'
-  fi
+  ERROR=$(( $ERROR + $? ))
 EOF
 
 # Parametros de encolamiento

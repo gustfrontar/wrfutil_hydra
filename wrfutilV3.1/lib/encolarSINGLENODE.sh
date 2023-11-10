@@ -28,13 +28,14 @@ queue (){
                 echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}_${IMIEM}.pbs
                 echo "source $BASEDIR/lib/errores.env"                                            >> ${QPROC_NAME}_${IMIEM}.pbs
                 echo "source $BASEDIR/conf/$QCONF      "                                          >> ${QPROC_NAME}_${IMIEM}.pbs
+		echo "ERROR=0                          "                                          >> ${QPROC_NAME}_${IMIEM}.pbs
 		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                        >> ${QPROC_NAME}_${IMIEM}.pbs
                 echo "MIEM=$IMIEM "                                                               >> ${QPROC_NAME}_${IMIEM}.pbs
                 echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1                                  \"  ">> ${QPROC_NAME}_${IMIEM}.pbs
          	echo "export MPIEXE=\"\$MPIEXEC -np $QPROC                                   \"  ">> ${QPROC_NAME}_${IMIEM}.pbs            
 	       	test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMIEM}"                               >> ${QPROC_NAME}_${IMIEM}.pbs
 	        echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}_${IMIEM}.pbs
-	        echo "if [[ -z \${res} ]] || [[ \${res} -eq "OK" ]] ; then"                       >> ${QPROC_NAME}_${IMIEM}.pbs
+	        echo "if [[ -z \${ERROR} ]] || [[ \${ERROR} -eq 0 ]] ; then"                      >> ${QPROC_NAME}_${IMIEM}.pbs
 	        echo "touch $PROCSDIR/${QPROC_NAME}_${IMIEM}_ENDOK  "                             >> ${QPROC_NAME}_${IMIEM}.pbs  
 	        echo "fi                                            "                             >> ${QPROC_NAME}_${IMIEM}.pbs
         done

@@ -433,9 +433,22 @@ SUBROUTINE read_ens_mpi_alltoall(file,member,v3d,v2d)
   INTEGER,INTENT(IN) :: member
   REAL(r_size),INTENT(OUT) :: v3d(nij1,nlev,member,nv3d)
   REAL(r_size),INTENT(OUT) :: v2d(nij1,member,nv2d)
-  REAL(r_sngl) :: fieldg3(nlon,nlat,nlev,nv3d)
-  REAL(r_sngl) :: fieldg2(nlon,nlat,nv2d)
+  REAL(r_sngl) , ALLOCATABLE :: field3dg(:,:,:,:)
+  REAL(r_sngl) , ALLOCATABLE :: field2dg(:,:,:)
+  !REAL(r_sngl) :: fieldg3(nlon,nlat,nlev,nv3d)
+  !REAL(r_sngl) :: fieldg2(nlon,nlat,nv2d)
   INTEGER :: l,n,ll,im,im2,i,ierr,iv,ilev,mstart,mend,skip
+  !REAL(r_sngl),INTENT(IN) :: v3dg(nlon,nlat,nlev,nv3d)
+  !REAL(r_sngl),INTENT(IN) :: v2dg(nlon,nlat,nv2d)
+  !REAL(r_size),INTENT(INOUT) :: v3d(nij1,nlev,member,nv3d)
+  !REAL(r_size),INTENT(INOUT) :: v2d(nij1,member,nv2d)
+  REAL(r_sngl) , ALLOCATABLE :: bufs(:,:,:)
+  REAL(r_sngl) , ALLOCATABLE :: bufr(:,:,:)
+  !REAL(r_sngl) :: bufs(nij1max,nlevall,nprocs)
+  !REAL(r_sngl) :: bufr(nij1max,nlevall,nprocs)
+  INTEGER :: k,n,j,m,mcount,p
+  INTEGER :: ns(nprocs),nst(nprocs),nr(nprocs),nrt(nprocs)
+
   CHARACTER(20) :: filename='xxxx00000'
   INTEGER(4) :: ncid
 
@@ -444,30 +457,85 @@ SUBROUTINE read_ens_mpi_alltoall(file,member,v3d,v2d)
   if ( skip == 0 )skip = 1
   DO l=1,ll
     IF ( MOD( myrank + 1 , skip ) == 0 .AND. (myrank+1)/skip + (l-1)*nprocs <= member )THEN
+      !This is a reading rank.
+      !Read the data from the netcdf file.
       im = (myrank+1)/skip + (l-1)*nprocs
+      ALLOCATE( field3dg(nlon,nlat,nlev,nv3d) , field2dg(nlon,nlat,nv2d) )
       WRITE(filename(1:9),'(A4,I5.5)') file,im
-      !OPEN NC FILE
       WRITE(6,'(A,I3.3,2A)') 'MYRANK ',myrank,' is reading a file ',filename
-      !WRITE(*,'(A,I3.3,2A)') 'MYRANK ',myrank,' is reading a file ',filename
       CALL open_wrf_file(filename,'ro',ncid)
       DO iv=1,nv3d
-          CALL read_var_wrf(ncid,iv,1,nlev,1,fieldg3(:,:,:,iv),'3d')
+          CALL read_var_wrf(ncid,iv,1,nlev,1,field3dg(:,:,:,iv),'3d')
       END DO
       DO iv=1,nv2d
-          CALL read_var_wrf(ncid,iv,1,1,1,fieldg2(:,:,iv),'2d')
+          CALL read_var_wrf(ncid,iv,1,1,1,field2dg(:,:,iv),'2d')
       END DO
       CALL close_wrf_file(ncid) 
+      !Store data into the send bufr
+      ALLOCATE( bufs(nij1max,nlevall,nprocs) )
+      j=0
+      DO n=1,nv3d
+         DO k=1,nlev
+            j = j+1
+            CALL grd_to_buf(field3dg(:,:,k,n),bufs(:,j,:))
+         END DO
+      END DO
+      DO n=1,nv2d
+         j = j+1
+         CALL grd_to_buf(field2dg(:,:,n),bufs(:,j,:))
+      END DO
+      DEALLOCATE( field3dg , field2dg )
+    ELSE 
+      ALLOCATE( bufs(1,1,1) )
     END IF
 
-    !! Agregado por MPM
+    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+
     mstart = 1 + (l-1)*nprocs
     mend = MIN(l*nprocs, member)
+    !Set the send and recieve bufr size for each rank
     IF (mstart <= mend) THEN
-      CALL scatter_grd_mpi_alltoall(member,mstart,mend,fieldg3,fieldg2,v3d,v2d)
-    END IF
+       mcount = mend - mstart + 1
+       ALLOCATE( bufr(nij1max,nlevall,mcount ) )
+       IF(mcount > nprocs .OR. mcount <= 0) STOP
+       nr  = 0
+       nrt = 0
+       ns  = 0
+       nst = 0
+       DO p=1,mcount
+         nr(p*skip) = nij1max*nlevall
+       ENDDO
+       IF (MOD( myrank + 1 , skip ) == 0 .AND. (myrank+1)/skip <= mcount )THEN
+          ns(:) = nij1max*nlevall
+       END IF
+       DO p=2,nprocs
+          nrt(p) = nrt(p-1) + nr(p-1)
+          nst(p) = nst(p-1) + ns(p-1)
+       END DO
+       CALL MPI_ALLTOALLV(bufs, ns, nst, MPI_REAL, &
+                          bufr, nr, nrt, MPI_REAL, MPI_COMM_WORLD, ierr)
 
-  END DO
+       DO m = mstart,mend
+          j=0
+          DO n=1,nv3d
+            DO k=1,nlev
+              j = j+1
+              v3d(:,k,m,n) = REAL(bufr(1:nij1,j,m-mstart+1),r_size)
+           END DO
+         END DO
+         DO n=1,nv2d
+           j = j+1
+           v2d(:,m,n) = REAL(bufr(1:nij1,j,m-mstart+1),r_size)
+         END DO
+       END DO
+
+    END IF   !END IF mstart < mend
+    DEALLOCATE( bufr , bufs )
+
+  END DO  !END DO l
   CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+
+
 
   RETURN
 END SUBROUTINE read_ens_mpi_alltoall
@@ -685,364 +753,6 @@ END SUBROUTINE write_ensp_mpi
 !-----------------------------------------------------------------------
 ! Write ensemble data after collecting data from processes
 !-----------------------------------------------------------------------
-SUBROUTINE write_ens_mpi(file,member,v3d,v2d)
-  IMPLICIT NONE
-  CHARACTER(4),INTENT(IN) :: file
-  INTEGER,INTENT(IN) :: member
-  REAL(r_size),INTENT(IN) :: v3d(nij1,nlev,member,nv3d)
-  REAL(r_size),INTENT(IN) :: v2d(nij1,member,nv2d)
-  REAL(4) :: sdmd, s1md
-  REAL(r_sngl) :: fieldg(nlon,nlat)
-  INTEGER :: l,n,ll,im,im2,iunit,iv,ilev,ncid(member),ierr,j,k
-  CHARACTER(20) :: filename='xxxx00000'
-  REAL(r_size),ALLOCATABLE ::  mu(:,:),ps(:,:),qv(:,:,:),t(:,:,:)
-
-  ALLOCATE(mu(nij1,member),ps(nij1,member),qv(nij1,nlev,member))
-
-  !OPEN FILES AND READ CONSTANTS.
-  ll = CEILING(REAL(member)/REAL(nprocs))
-  DO l=1,ll
-    im = myrank+1 + (l-1)*nprocs
-    IF(im <= member) THEN
-      IF(member > 1)THEN
-        WRITE(filename(1:9),'(A4,I5.5)')file,im
-      ELSE
-        WRITE(filename(1:9),'(A4,A5)')file,'emean'
-      ENDIF
-      !OPEN NC FILE
-      WRITE(6,'(A,I3.3,2A)')'MYRANK ',myrank,' is writing a file ',filename
-      CALL open_wrf_file(filename,'rw',ncid(im))
-    END IF
-  END DO
-
-! FIRST READ SOME VARIABLES FROM THE GUES FILE AND COMPUTE INCREMENT IN MU
-   !READ GUES QV
-   DO ilev=1,nlev
-      DO l=1,ll
-      im = myrank+1 + (l-1)*nprocs
-      IF( im <= member)THEN
-        CALL read_var_wrf(ncid(im),iv3d_qv,ilev,ilev,1,fieldg,'3d')
-    !CALL check_io(NF90_INQ_DIMLEN(ncid,dimids(i),shape(i)))
-      ENDIF
-     DO n=0,nprocs-1
-      im2 = n+1 + (l-1)*nprocs
-      IF(im2 <= member) THEN
-        CALL scatter_ngrd_mpi(n,fieldg,qv(:,ilev,im2),1)
-      END IF
-     END DO
-    END DO
-   END DO  !End do over levels
-   !READ MU
-   DO l=1,ll
-    im = myrank+1 + (l-1)*nprocs
-    IF( im <= member)THEN
-      CALL read_var_wrf(ncid(im),iv2d_mu,1,1,1,fieldg,'2d')
-    ENDIF
-    DO n=0,nprocs-1
-       im2 = n+1 + (l-1)*nprocs
-       IF(im2 <= member) THEN
-        CALL scatter_ngrd_mpi(n,fieldg,mu(:,im2),1)
-       END IF
-    END DO
-   END DO
-   !READ PSFC
-   DO l=1,ll
-    im = myrank+1 + (l-1)*nprocs
-    IF( im <= member)THEN
-      CALL read_var_wrf(ncid(im),iv2d_ps,1,1,1,fieldg,'2d')
-    ENDIF
-    DO n=0,nprocs-1
-      im2 = n+1 + (l-1)*nprocs
-       IF(im2 <= member) THEN
-        CALL scatter_ngrd_mpi(n,fieldg,ps(:,im2),1)
-       END IF
-    END DO
-   END DO
-
-   !COMPUTE UPDATED MU IN LOCAL VARIABLES
-
-   !WRITE(*,*)mu(10,1),v3d(10,10,1,iv3d_qv),qv(10,10,1),dnw(k)
-   DO j=1,nij1
-    DO im=1,member
-      sdmd=0.0
-      s1md=0.0
-      DO k=1,nlev-1
-        IF(v3d(j,k,im,iv3d_qv) >= 0.0) THEN
-          sdmd = sdmd + (v3d(j,k,im,iv3d_qv) - qv(j,k,im)) * REAL(dnw(k),r_size)
-        ELSE
-          sdmd = sdmd + (0.0       - qv(j,k,im)) * REAL(dnw(k),r_size)
-        END IF
-        s1md = s1md + (1.0 + qv(j,k,im)) * REAL(dnw(k),r_size)
-      END DO
-      mu(j,im) = mu(j,im) - ((v2d(j,im,iv2d_ps) - ps(j,im)) + mu(j,im) * sdmd) / s1md
-    END DO
-   END DO
-   !WRITE(*,*)mu(10,1),v3d(10,10,1,iv3d_qv),qv(10,10,1),dnw(k)
-
-    !WRITE MU
-    DO l=1,ll
-     DO n=0,nprocs-1
-      im2 = n+1 + (l-1)*nprocs
-      IF(im2 <= member) THEN
-        CALL gather_ngrd_mpi(n,mu(:,im2),fieldg,1)
-      END IF
-     END DO
-
-     im = myrank+1 + (l-1)*nprocs
-     IF (im <= member)THEN
-       CALL write_var_wrf(ncid(im),iv2d_mu,1,1,fieldg,'2d')
-     ENDIF
-    END DO
-    DEALLOCATE(ps,qv,mu)
-
-! SECOND WRITE THE ENSEMBLE ONE FIELD AT A TIME
-
-  !WRITE 3D VARIABLES
-  !GATHER AND WRITE ONE GRID AT A TIME
-  DO iv=1,nv3d
-   !From T to theta'
-   IF( iv == iv3d_t)THEN
-    ALLOCATE(t(nij1,nlev,member))
-    t=0.0d0
-    DO k=1,nlev-1
-      t(:,k,:) = v3d(:,k,:,iv3d_t) *(p0 /  v3d(:,k,:,iv3d_p)) ** (rd / cp) - t0
-    ENDDO
-   ENDIF
-
-   DO ilev=1,nlev
-    DO l=1,ll
-     DO n=0,nprocs-1
-       im2 = n+1 + (l-1)*nprocs
-       IF(im2 <= member) THEN
-        IF ( iv == iv3d_t)THEN
-           CALL gather_ngrd_mpi(n,t(:,ilev,im2),fieldg,1)
-        ELSE
-           CALL gather_ngrd_mpi(n,v3d(:,ilev,im2,iv),fieldg,1)
-        ENDIF
-       END IF
-     END DO
-     im = myrank+1 + (l-1)*nprocs
-     IF( im <= member)THEN
-      IF(iv == iv3d_w)THEN
-        CALL damp_latbnd(spec_bdy_width,nlon,nlat,1,fieldg)
-      ENDIF
-      CALL write_var_wrf(ncid(im),iv,ilev,ilev,fieldg,'3d')
-     ENDIF
-
-    END DO
-
-   END DO  !End do over levels
-
-   IF( iv == iv3d_t )DEALLOCATE(t)
-
-  END DO   !End do over variables
-
-  !WRITE 2D VARIABLES
-  !1 GRID AT A TIME
-  DO iv=1,nv2d
-
-   DO l=1,ll
-    DO n=0,nprocs-1
-      im2 = n+1 + (l-1)*nprocs
-      IF(im2 <= member) THEN
-        CALL gather_ngrd_mpi(n,v2d(:,im2,iv),fieldg,1)
-      END IF
-    END DO
-
-     im = myrank+1 + (l-1)*nprocs
-     IF (im <= member)THEN
-        CALL write_var_wrf(ncid(im),iv,1,1,fieldg,'2d')
-     ENDIF
-    END DO
-  ENDDO
-
-
-  !CLOSE FILES
-  DO l=1,ll
-   im = myrank+1 + (l-1)*nprocs
-   IF(im <= member) THEN
-      CALL close_wrf_file(ncid(im))
-    END IF
-  END DO
-
-
-  RETURN
-END SUBROUTINE write_ens_mpi
-
-
-SUBROUTINE write_ens_mpi_fast(file,member,v3d,v2d)
-  IMPLICIT NONE
-  CHARACTER(4),INTENT(IN) :: file
-  INTEGER,INTENT(IN) :: member
-  REAL(r_size),INTENT(INOUT) :: v3d(nij1,nlev,member,nv3d)
-  !REAL(r_size), ALLOCATABLE :: v3dtmp(:,:,:,:)
-  REAL(r_size),INTENT(IN) :: v2d(nij1,member,nv2d)
-  REAL(4) :: sdmd, s1md
-  REAL(r_sngl) :: fieldg(nlon,nlat)
-  REAL(r_sngl) :: fieldg3(nlon,nlat,nlev,nv3d)
-  REAL(r_sngl) :: fieldg2(nlon,nlat,nv2d)
-  INTEGER :: l,n,ll,im,im2,iunit,iv,ilev,ncid(member),ierr,j,k
-  CHARACTER(20) :: filename='xxxx00000'
-  REAL(r_size),ALLOCATABLE ::  mu(:,:),ps(:,:),qv(:,:,:),t(:,:,:)
-
-  ALLOCATE(mu(nij1,member),ps(nij1,member),qv(nij1,nlev,member))
-
-  !OPEN FILES AND READ CONSTANTS.
-  ll = CEILING(REAL(member)/REAL(nprocs))
-  DO l=1,ll
-    im = myrank+1 + (l-1)*nprocs
-    IF(im <= member) THEN
-      IF(member > 1)THEN
-        WRITE(filename(1:9),'(A4,I5.5)')file,im
-      ELSE
-        WRITE(filename(1:9),'(A4,A5)')file,'emean'
-      ENDIF
-      !OPEN NC FILE
-      WRITE(6,'(A,I3.3,2A)')'MYRANK ',myrank,' is writing a file ',filename
-      CALL open_wrf_file(filename,'rw',ncid(im))
-    END IF
-  END DO
-
-! FIRST READ SOME VARIABLES FROM THE GUES FILE AND COMPUTE INCREMENT IN MU
-   !READ GUES QV
-   DO ilev=1,nlev
-      DO l=1,ll
-      im = myrank+1 + (l-1)*nprocs
-      IF( im <= member)THEN
-        CALL read_var_wrf(ncid(im),iv3d_qv,ilev,ilev,1,fieldg,'3d')
-    !CALL check_io(NF90_INQ_DIMLEN(ncid,dimids(i),shape(i)))
-      ENDIF
-     DO n=0,nprocs-1
-      im2 = n+1 + (l-1)*nprocs
-      IF(im2 <= member) THEN
-        CALL scatter_ngrd_mpi(n,fieldg,qv(:,ilev,im2),1)
-      END IF
-     END DO
-    END DO
-   END DO  !End do over levels
-   !READ MU
-   DO l=1,ll
-    im = myrank+1 + (l-1)*nprocs
-    IF( im <= member)THEN
-      CALL read_var_wrf(ncid(im),iv2d_mu,1,1,1,fieldg,'2d')
-    ENDIF
-    DO n=0,nprocs-1
-       im2 = n+1 + (l-1)*nprocs
-       IF(im2 <= member) THEN
-        CALL scatter_ngrd_mpi(n,fieldg,mu(:,im2),1)
-       END IF
-    END DO
-   END DO
-   !READ PSFC
-   DO l=1,ll
-    im = myrank+1 + (l-1)*nprocs
-    IF( im <= member)THEN
-      CALL read_var_wrf(ncid(im),iv2d_ps,1,1,1,fieldg,'2d')
-    ENDIF
-    DO n=0,nprocs-1
-      im2 = n+1 + (l-1)*nprocs
-       IF(im2 <= member) THEN
-        CALL scatter_ngrd_mpi(n,fieldg,ps(:,im2),1)
-       END IF
-    END DO
-   END DO
-
-   !COMPUTE UPDATED MU IN LOCAL VARIABLES
-
-   !WRITE(*,*)mu(10,1),v3d(10,10,1,iv3d_qv),qv(10,10,1),dnw(k)
-   DO j=1,nij1
-    DO im=1,member
-      sdmd=0.0
-      s1md=0.0
-      DO k=1,nlev-1
-        IF(v3d(j,k,im,iv3d_qv) >= 0.0) THEN
-          sdmd = sdmd + (v3d(j,k,im,iv3d_qv) - qv(j,k,im)) * REAL(dnw(k),r_size)
-        ELSE
-          sdmd = sdmd + (0.0       - qv(j,k,im)) * REAL(dnw(k),r_size)
-        END IF
-        s1md = s1md + (1.0 + qv(j,k,im)) * REAL(dnw(k),r_size)
-      END DO
-      mu(j,im) = mu(j,im) - ((v2d(j,im,iv2d_ps) - ps(j,im)) + mu(j,im) * sdmd) / s1md
-    END DO
-   END DO
-   !WRITE(*,*)mu(10,1),v3d(10,10,1,iv3d_qv),qv(10,10,1),dnw(k)
-
-    !WRITE MU
-    DO l=1,ll
-     DO n=0,nprocs-1
-      im2 = n+1 + (l-1)*nprocs
-      IF(im2 <= member) THEN
-        CALL gather_ngrd_mpi(n,mu(:,im2),fieldg,1)
-      END IF
-     END DO
-
-     im = myrank+1 + (l-1)*nprocs
-     IF (im <= member)THEN
-       CALL write_var_wrf(ncid(im),iv2d_mu,1,1,fieldg,'2d')
-     ENDIF
-    END DO
-    DEALLOCATE(ps,qv,mu)
-
-! SECOND WRITE THE ENSEMBLE ONE FIELD AT A TIME
-    ALLOCATE(t(nij1,nlev,member))
-    t=0.0d0
-    DO k=1,nlev-1
-     t(:,k,:)  = v3d(:,k,:,iv3d_t) *(p0 /  v3d(:,k,:,iv3d_p)) ** (rd / cp) - t0
-    ENDDO
-    v3d(:,:,:,iv3d_t) = t
-    DEALLOCATE(t)
-
-! Junta de todos los nodos de procesos a los nodos que escriben todas las 
-! variables y todos los niveles
-
-    !IF(myrank .EQ. 0) WRITE(*,*) 'Por hacer el gather'
-    DO l=1,ll
-      DO n=0,nprocs-1
-       im2 = n+1 + (l-1)*nprocs
-       IF(im2 <= member) THEN
-           CALL gather_grd_mpi_fast(n,v3d(:,:,im2,:),v2d(:,im2,:),fieldg3,fieldg2)
-       ENDIF
-      ENDDO
-    END DO
-    !DEALLOCATE(v3dtmp)
-   !IF(myrank .EQ. 0) WRITE(*,*) 'Despues del gather'
-
-  !WRITE 3D VARIABLES
-  !GATHER AND WRITE ONE GRID AT A TIME
-  DO l=1,ll
-     im = myrank+1 + (l-1)*nprocs
-     DO iv=1,nv3d
-        IF( im <= member)THEN
-          !WRITE(*,*) 'Por hacer el write 3D', iv
-          IF(iv == iv3d_w)THEN
-             CALL damp_latbnd(spec_bdy_width,nlon,nlat,nlev,fieldg3(:,:,:,iv))
-          ENDIF
-          CALL write_var_wrf(ncid(im),iv,1,nlev,fieldg3(:,:,:,iv),'3d')
-        ENDIF
-     END DO !End do over 3D variables
-
-     DO iv=1,nv2d
-        !WRITE(*,*) 'Por hacer el write 2D', iv
-        IF (im <= member)THEN
-             CALL write_var_wrf(ncid(im),iv,1,1,fieldg2(:,:,iv),'2d')
-        ENDIF
-     END DO !End do over 2D variables
-
-  END DO
-
-
-  !CLOSE FILES
-  DO l=1,ll
-   im = myrank+1 + (l-1)*nprocs
-   IF(im <= member) THEN
-      CALL close_wrf_file(ncid(im))
-    END IF
-  END DO
-
-
-  RETURN
-END SUBROUTINE write_ens_mpi_fast
-
 
 SUBROUTINE write_ens_mpi_alltoall(file,member,v3d,v2d)
   IMPLICIT NONE
@@ -1050,10 +760,17 @@ SUBROUTINE write_ens_mpi_alltoall(file,member,v3d,v2d)
   INTEGER,INTENT(IN) :: member
   REAL(r_size),INTENT(IN) :: v3d(nij1,nlev,member,nv3d)
   REAL(r_size),INTENT(IN) :: v2d(nij1,member,nv2d)
-  REAL(r_sngl) :: fieldg3(nlon,nlat,nlev,nv3d)
-  REAL(r_sngl) :: fieldg2(nlon,nlat,nv2d)
-  INTEGER :: l,n,ll,im,im2,ierr,iv,ilev,ncid,j,k,mstart,mend,skip
+  REAL(r_sngl) , ALLOCATABLE :: field3dg(:,:,:,:)
+  REAL(r_sngl) , ALLOCATABLE :: field2dg(:,:,:)
+  INTEGER :: ll,im,iv,ncid,mstart,mend
   CHARACTER(20) :: filename='xxxx00000'
+  REAL(r_sngl) , ALLOCATABLE :: bufs(:,:,:)
+  REAL(r_sngl) , ALLOCATABLE :: bufr(:,:,:)
+  !REAL(r_sngl) :: bufs(nij1max,nlevall,nprocs)
+  !REAL(r_sngl) :: bufr(nij1max,nlevall,nprocs)
+  INTEGER :: l,k,n,j,m,mcount,skip,ierr,p
+  INTEGER :: ns(nprocs),nst(nprocs),nr(nprocs),nrt(nprocs)
+
 
   skip = FLOOR( REAL(nprocs) / REAL(member) )
   if ( skip == 0 )skip = 1
@@ -1063,12 +780,73 @@ SUBROUTINE write_ens_mpi_alltoall(file,member,v3d,v2d)
     !Gather the data
     mstart = 1 + (l-1)*nprocs
     mend = MIN(l*nprocs, member)
-    if (mstart <= mend) then
-      CALL gather_grd_mpi_alltoall(member,mstart,mend,v3d,v2d,fieldg3,fieldg2) 
-    end if
+    mcount = mend - mstart + 1
+    IF(mcount > nprocs .OR. mcount <= 0) STOP
+    !All member will send data (allocate bufers)
+    ALLOCATE( bufs(nij1max,nlevall,mcount ) )
+    DO m = mstart,mend
+       j=0
+       DO n=1,nv3d
+         DO k=1,nlev
+           j = j+1
+           bufs(1:nij1,j,m-mstart+1) = REAL(v3d(:,k,m,n),r_sngl)
+         END DO
+       END DO
+       DO n=1,nv2d
+         j = j+1
+         bufs(1:nij1,j,m-mstart+1) = REAL(v2d(:,m,n),r_sngl)
+       END DO
+    END DO
+    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    nr  = 0
+    nrt = 0
+    ns  = 0
+    nst = 0
+    DO p=1,mcount
+      ns(p*skip) = nij1max*nlevall
+    ENDDO
+    IF (MOD( myrank + 1 , skip ) == 0 .AND. (myrank+1)/skip <= mcount)THEN
+      ALLOCATE( bufr(nij1max,nlevall,nprocs ) ) 
+      nr(:) = nij1max*nlevall
+    ELSE
+      ALLOCATE( bufr( 1,1,1 ) )
+    END IF
+    DO p=2,nprocs
+      nrt(p) = nrt(p-1) + nr(p-1)
+      nst(p) = nst(p-1) + ns(p-1)
+    END DO
+    WRITE(*,*)'skip',skip
+    WRITE(*,*)'bufs',bufs(1,1,:)
+    WRITE(*,*)'bufr',bufr(1,1,:)
+    WRITE(*,*)'nr',nr
+    WRITE(*,*)'ns',ns
 
-    !Write data to file
-    IF ( MOD( myrank + 1 , skip ) == 0 .AND. (myrank+1)/skip + (l-1)*nprocs <= member )THEN
+    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+
+    CALL MPI_ALLTOALLV(bufs, ns, nst, MPI_REAL, &
+                       bufr, nr, nrt, MPI_REAL, MPI_COMM_WORLD, ierr)
+    WRITE(*,*)ierr
+    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)          
+    WRITE(*,*)'bufs',bufs(1,1,:)
+    WRITE(*,*)'bufr',bufr(1,1,:)
+
+    DEALLOCATE( bufs )
+    IF(MOD( myrank + 1 , skip ) == 0 .AND. (myrank+1)/skip <= mcount) THEN
+      !From bufr to grid
+      ALLOCATE( field3dg(nlon,nlat,nlev,nv3d) , field2dg(nlon,nlat,nv2d) )
+      j=0
+      DO n=1,nv3d
+        DO k=1,nlev
+          j = j+1
+          CALL buf_to_grd(bufr(:,j,:),field3dg(:,:,k,n))
+        END DO
+      END DO
+      DO n=1,nv2d
+        j = j+1
+        CALL buf_to_grd(bufr(:,j,:),field2dg(:,:,n))
+      END DO
+
+      !Write data to file
       im = (myrank+1)/skip + (l-1)*nprocs
       IF(member > 1)THEN
         WRITE(filename(1:9),'(A4,I5.5)')file,im
@@ -1081,18 +859,21 @@ SUBROUTINE write_ens_mpi_alltoall(file,member,v3d,v2d)
 
       DO iv=1,nv3d
         IF(iv == iv3d_w)THEN
-          CALL damp_latbnd(spec_bdy_width,nlon,nlat,nlev,fieldg3(:,:,:,iv))
+          CALL damp_latbnd(spec_bdy_width,nlon,nlat,nlev,field3dg(:,:,:,iv))
         ENDIF
-        CALL write_var_wrf(ncid,iv,1,nlev,fieldg3(:,:,:,iv),'3d')
+        CALL write_var_wrf(ncid,iv,1,nlev,field3dg(:,:,:,iv),'3d')
       END DO !End do over 3D variables
   
       DO iv=1,nv2d
-        CALL write_var_wrf(ncid,iv,1,1,fieldg2(:,:,iv),'2d')
+        CALL write_var_wrf(ncid,iv,1,1,field2dg(:,:,iv),'2d')
       END DO !End do over 2D variables
       CALL close_wrf_file(ncid)
+      DEALLOCATE( field3dg , field2dg , bufr )
+    ELSE
+      DEALLOCATE( bufr )
     END IF
-  END DO
-  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+END DO
 
   RETURN
 END SUBROUTINE write_ens_mpi_alltoall
