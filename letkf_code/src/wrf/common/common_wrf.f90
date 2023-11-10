@@ -505,7 +505,7 @@ IF ( flag .EQ. '3d' )THEN
        nzvar=nlev-1
        readvar=present_variable(iv)
       CASE DEFAULT
-       WRITE(6,*)"3D Variable non-recognized, retrieve none: ",iv
+       WRITE(6,*)"3D Variable non-recognized, retrieve none: ",iv,element(iv)
        RETURN
   END SELECT
 
@@ -629,7 +629,7 @@ IF ( flag .EQ. '2d' )THEN
        nyvar=nlat-1
        readvar=present_variable(nv3d+iv)
       CASE DEFAULT
-       WRITE(6,*)"2D variable not recognized, retrieve none : ",iv
+       WRITE(6,*)"2D variable not recognized, retrieve none : ",iv,element(nv3d+iv)
        RETURN
       END SELECT
 
@@ -796,7 +796,7 @@ IF ( flag .EQ. '2d' )THEN
        nyvar=nlat-1
        writevar=present_variable(nv3d+iv)
       CASE DEFAULT
-       WRITE(6,*)"Variable not recognized, won't be written",iv
+       WRITE(6,*)"2D Variable not recognized, won't be written",iv,element(nv3d+iv)
        RETURN
       END SELECT
 

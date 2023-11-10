@@ -70,9 +70,10 @@ sed -i -e "s|__SIGMA_OBS_RADAR__|$SIGMA_OBS_RADAR|g"       $NAMELISTFILE
 sed -i -e "s|__SIGMA_OBSZ__|$SIGMA_OBSZ|g"                 $NAMELISTFILE
 sed -i -e "s|__SIGMA_OBST__|$SIGMA_OBST|g"                 $NAMELISTFILE
 sed -i -e "s|__N_RADAR__|$N_RADAR|g"                       $NAMELISTFILE
-
+sed -i -e "s|__LEV_UPDATE_Q__|$LEV_UPDATE_Q|g"             $NAMELISTFILE
 sed -i -e "s|__THRESHOLD_DZ__|$THRESHOLD_DZ|g"             $NAMELISTFILE
 sed -i -e "s|__GROSS_ERROR__|$GROSS_ERROR|g"               $NAMELISTFILE
+sed -i -e "s|__GROSS_ERROR_REFLECTIVITY__|$GROSS_ERROR_REFLECTIVITY|g"  $NAMELISTFILE
 
 echo "Linking model files"
 FECHA_WINDOW_INI=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*($PASO-1))+$SPIN_UP_LENGTH+$ANALISIS_WIN_INI)) seconds" +"%Y-%m-%d %T")

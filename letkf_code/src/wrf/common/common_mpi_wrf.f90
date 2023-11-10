@@ -87,95 +87,9 @@ SUBROUTINE set_common_mpi_wrf
 
   RETURN
 END SUBROUTINE set_common_mpi_wrf
-!-----------------------------------------------------------------------
-! Scatter gridded data to processes (nrank -> all)
-!-----------------------------------------------------------------------
-!SUBROUTINE scatter_grd_mpi(nrank,v3dg,v2dg,v3d,v2d)
-!  INTEGER,INTENT(IN) :: nrank
-!  REAL(r_sngl),INTENT(IN) :: v3dg(nlon,nlat,nlev,nv3d)
-!  REAL(r_sngl),INTENT(IN) :: v2dg(nlon,nlat,nv2d)
-!  REAL(r_size),INTENT(OUT) :: v3d(nij1,nlev,nv3d)
-!  REAL(r_size),INTENT(OUT) :: v2d(nij1,nv2d)
-!
-!  !IF(mpibufsize > nij1max) THEN
-!  !  WRITE(6,*)"SCATTER GRID MPI FAST",mpibufsize,nij1max
-!    CALL scatter_grd_mpi_fast(nrank,v3dg,v2dg,v3d,v2d)
-!  !ELSE
-!  !  WRITE(6,*)"SCATTER GRID MPI SAFE",mpibufsize,nij1max
-!  !  CALL scatter_grd_mpi_safe(nrank,v3dg,v2dg,v3d,v2d)
-!  !END IF
-!
-!  RETURN
-!END SUBROUTINE scatter_grd_mpi
-!
-!SUBROUTINE scatter_grd_mpi_safe(nrank,v3dg,v2dg,v3d,v2d)
-!  INTEGER,INTENT(IN) :: nrank
-!  REAL(r_sngl),INTENT(IN) :: v3dg(nlon,nlat,nlev,nv3d)
-!  REAL(r_sngl),INTENT(IN) :: v2dg(nlon,nlat,nv2d)
-!  REAL(r_size),INTENT(OUT) :: v3d(nij1,nlev,nv3d)
-!  REAL(r_size),INTENT(OUT) :: v2d(nij1,nv2d)
-!  REAL(r_sngl) :: tmp(nij1max,nprocs)
-!  REAL(r_sngl) :: bufs(mpibufsize,nprocs)
-!  REAL(r_sngl) :: bufr(mpibufsize)
-!  INTEGER :: i,j,k,n,ierr,ns,nr
-!  INTEGER :: iter,niter
-!
-!  ns = mpibufsize
-!  nr = ns
-!  niter = CEILING(REAL(nij1max)/REAL(mpibufsize))
-!
-!  DO n=1,nv3d
-!    DO k=1,nlev
-!      IF(myrank == nrank) CALL grd_to_buf(v3dg(:,:,k,n),tmp)
-!      DO iter=1,niter
-!        IF(myrank == nrank) THEN
-!          i = mpibufsize * (iter-1)
-!          DO j=1,mpibufsize
-!            i=i+1
-!            IF(i > nij1max) EXIT
-!            bufs(j,:) = tmp(i,:)
-!          END DO
-!        END IF
-!        CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-!        CALL MPI_SCATTER(bufs,ns,MPI_REAL,&
-!                       & bufr,nr,MPI_REAL,nrank,MPI_COMM_WORLD,ierr)
-!        i = mpibufsize * (iter-1)
-!        DO j=1,mpibufsize
-!          i=i+1
-!          IF(i > nij1) EXIT
-!          v3d(i,k,n) = REAL(bufr(j),r_size)
-!        END DO
-!      END DO
-!    END DO
-!  END DO
-!
-!  DO n=1,nv2d
-!    IF(myrank == nrank) CALL grd_to_buf(v2dg(:,:,n),tmp)
-!    DO iter=1,niter
-!      IF(myrank == nrank) THEN
-!        i = mpibufsize * (iter-1)
-!        DO j=1,mpibufsize
-!          i=i+1
-!          IF(i > nij1max) EXIT
-!          bufs(j,:) = tmp(i,:)
-!        END DO
-!      END IF
-!      CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-!      CALL MPI_SCATTER(bufs,ns,MPI_REAL,&
-!                     & bufr,nr,MPI_REAL,nrank,MPI_COMM_WORLD,ierr)
-!      i = mpibufsize * (iter-1)
-!      DO j=1,mpibufsize
-!        i=i+1
-!        IF(i > nij1) EXIT
-!        v2d(i,n) = REAL(bufr(j),r_size)
-!      END DO
-!    END DO
-!  END DO
-!
-!  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-!
-!  RETURN
-!END SUBROUTINE scatter_grd_mpi_safe
+
+
+
 
 SUBROUTINE scatter_grd_mpi_fast(nrank,v3dg,v2dg,v3d,v2d)
   INTEGER,INTENT(IN) :: nrank
@@ -226,96 +140,6 @@ SUBROUTINE scatter_grd_mpi_fast(nrank,v3dg,v2dg,v3d,v2d)
   RETURN
 END SUBROUTINE scatter_grd_mpi_fast
 
-
-!-----------------------------------------------------------------------
-! Gather gridded data (all -> nrank)
-!-----------------------------------------------------------------------
-!SUBROUTINE gather_grd_mpi(nrank,v3d,v2d,v3dg,v2dg)
-!  INTEGER,INTENT(IN) :: nrank
-!  REAL(r_size),INTENT(IN) :: v3d(nij1,nlev,nv3d)
-!  REAL(r_size),INTENT(IN) :: v2d(nij1,nv2d)
-!  REAL(r_sngl),INTENT(OUT) :: v3dg(nlon,nlat,nlev,nv3d)
-!  REAL(r_sngl),INTENT(OUT) :: v2dg(nlon,nlat,nv2d)
-!
-!  !IF(mpibufsize > nij1max) THEN
-!
-!    CALL gather_grd_mpi_fast(nrank,v3d,v2d,v3dg,v2dg)
-!  !ELSE
-!  !  WRITE(*,*)"GATHER GRID MPI SAFE",mpibufsize,nij1max
-!  !  CALL gather_grd_mpi_safe(nrank,v3d,v2d,v3dg,v2dg)
-!  !END IF
-!
-!  RETURN
-!END SUBROUTINE gather_grd_mpi
-!
-!SUBROUTINE gather_grd_mpi_safe(nrank,v3d,v2d,v3dg,v2dg)
-!  INTEGER,INTENT(IN) :: nrank
-!  REAL(r_size),INTENT(IN) :: v3d(nij1,nlev,nv3d)
-!  REAL(r_size),INTENT(IN) :: v2d(nij1,nv2d)
-!  REAL(r_sngl),INTENT(OUT) :: v3dg(nlon,nlat,nlev,nv3d)
-!  REAL(r_sngl),INTENT(OUT) :: v2dg(nlon,nlat,nv2d)
-!  REAL(r_sngl) :: tmp(nij1max,nprocs)
-!  REAL(r_sngl) :: bufs(mpibufsize)
-!  REAL(r_sngl) :: bufr(mpibufsize,nprocs)
-!  INTEGER :: i,j,k,n,ierr,ns,nr
-!  INTEGER :: iter,niter
-!
-!  ns = mpibufsize
-!  nr = ns
-!  niter = CEILING(REAL(nij1max)/REAL(mpibufsize))
-!
-!  DO n=1,nv3d
-!    DO k=1,nlev
-!      DO iter=1,niter
-!        i = mpibufsize * (iter-1)
-!        DO j=1,mpibufsize
-!          i=i+1
-!          IF(i > nij1) EXIT
-!          bufs(j) = REAL(v3d(i,k,n),r_sngl)
-!        END DO
-!        CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-!        CALL MPI_GATHER(bufs,ns,MPI_REAL,&
-!                      & bufr,nr,MPI_REAL,nrank,MPI_COMM_WORLD,ierr)
-!        IF(myrank == nrank) THEN
-!          i = mpibufsize * (iter-1)
-!          DO j=1,mpibufsize
-!            i=i+1
-!            IF(i > nij1max) EXIT
-!            tmp(i,:) = bufr(j,:)
-!          END DO
-!        END IF
-!      END DO
-!      IF(myrank == nrank) CALL buf_to_grd(tmp,v3dg(:,:,k,n))
-!    END DO
-!  END DO
-!
-!  DO n=1,nv2d
-!    DO iter=1,niter
-!      i = mpibufsize * (iter-1)
-!      DO j=1,mpibufsize
-!        i=i+1
-!        IF(i > nij1) EXIT
-!        bufs(j) = REAL(v2d(i,n),r_sngl)
-!      END DO
-!      CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-!      CALL MPI_GATHER(bufs,ns,MPI_REAL,&
-!                    & bufr,nr,MPI_REAL,nrank,MPI_COMM_WORLD,ierr)
-!      IF(myrank == nrank) THEN
-!        i = mpibufsize * (iter-1)
-!        DO j=1,mpibufsize
-!          i=i+1
-!          IF(i > nij1max) EXIT
-!          tmp(i,:) = bufr(j,:)
-!        END DO
-!      END IF
-!    END DO
-!    IF(myrank == nrank) CALL buf_to_grd(tmp,v2dg(:,:,n))
-!  END DO
-!
-!  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-!
-!  RETURN
-!END SUBROUTINE gather_grd_mpi_safe
 
 SUBROUTINE gather_grd_mpi_fast(nrank,v3d,v2d,v3dg,v2dg)
   INTEGER,INTENT(IN) :: nrank
@@ -452,45 +276,12 @@ SUBROUTINE gather_ngrd_mpi(nrank,v,vg,ndim)
   INTEGER :: i,j,k,n,ierr,ns,nr
   INTEGER :: iter,niter
 
-!SAFE
-!  ns = mpibufsize
-!  nr = ns
-!  niter = CEILING(REAL(nij1max)/REAL(mpibufsize))
-!
-!  DO n=1,ndim
-!    DO iter=1,niter
-!      i = mpibufsize * (iter-1)
-!      DO j=1,mpibufsize
-!        i=i+1
-!        IF(i > nij1) EXIT
-!        bufs(j) = REAL(v(i,n),r_sngl)
-!      END DO
-!      CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-!      CALL MPI_GATHER(bufs,ns,MPI_REAL,&
-!                    & bufr,nr,MPI_REAL,nrank,MPI_COMM_WORLD,ierr)
-!      IF(myrank == nrank) THEN
-!        i = mpibufsize * (iter-1)
-!        DO j=1,mpibufsize
-!          i=i+1
-!          IF(i > nij1max) EXIT
-!          tmp(i,:) = bufr(j,:)
-!        END DO
-!      END IF
-!    END DO
-!    IF(myrank == nrank) CALL buf_to_grd(tmp,vg(:,:,n))
-!  END DO
-!
-!  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-
-
-!FAST
   ns = nij1max * ndim
   nr = ns
   DO n=1,ndim
       bufs(1:nij1,n) = REAL(v(:,n),r_sngl)
   END DO
 
-!  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
   CALL MPI_GATHER(bufs,ns,MPI_REAL,&
                 & bufr,nr,MPI_REAL,nrank,MPI_COMM_WORLD,ierr)
 
@@ -501,7 +292,7 @@ SUBROUTINE gather_ngrd_mpi(nrank,v,vg,ndim)
 
   END IF
 
-!  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
   RETURN
 END SUBROUTINE gather_ngrd_mpi
@@ -644,30 +435,28 @@ SUBROUTINE read_ens_mpi_alltoall(file,member,v3d,v2d)
   REAL(r_size),INTENT(OUT) :: v2d(nij1,member,nv2d)
   REAL(r_sngl) :: fieldg3(nlon,nlat,nlev,nv3d)
   REAL(r_sngl) :: fieldg2(nlon,nlat,nv2d)
-  INTEGER :: l,n,ll,im,im2,i,iunit,iv,ilev,mstart,mend
+  INTEGER :: l,n,ll,im,im2,i,ierr,iv,ilev,mstart,mend,skip
   CHARACTER(20) :: filename='xxxx00000'
-  INTEGER(4) :: ncid(member)
+  INTEGER(4) :: ncid
 
   ll = CEILING(REAL(member)/REAL(nprocs))
+  skip = FLOOR( REAL(nprocs) / REAL(member) )
+  if ( skip == 0 )skip = 1
   DO l=1,ll
-    im = myrank+1 + (l-1)*nprocs
-    IF(im <= member) THEN
+    IF ( MOD( myrank + 1 , skip ) == 0 .AND. (myrank+1)/skip + (l-1)*nprocs <= member )THEN
+      im = (myrank+1)/skip + (l-1)*nprocs
       WRITE(filename(1:9),'(A4,I5.5)') file,im
       !OPEN NC FILE
       WRITE(6,'(A,I3.3,2A)') 'MYRANK ',myrank,' is reading a file ',filename
-      CALL open_wrf_file(filename,'ro',ncid(im))
-    END IF
-
-    !Read one field at a time and scatter to process.
-    IF( im <= member)THEN
-     DO iv=1,nv3d
-          CALL read_var_wrf(ncid(im),iv,1,nlev,1,fieldg3(:,:,:,iv),'3d')
-     END DO
-
-     DO iv=1,nv2d
-          CALL read_var_wrf(ncid(im),iv,1,1,1,fieldg2(:,:,iv),'2d')
-     END DO
-    
+      !WRITE(*,'(A,I3.3,2A)') 'MYRANK ',myrank,' is reading a file ',filename
+      CALL open_wrf_file(filename,'ro',ncid)
+      DO iv=1,nv3d
+          CALL read_var_wrf(ncid,iv,1,nlev,1,fieldg3(:,:,:,iv),'3d')
+      END DO
+      DO iv=1,nv2d
+          CALL read_var_wrf(ncid,iv,1,1,1,fieldg2(:,:,iv),'2d')
+      END DO
+      CALL close_wrf_file(ncid) 
     END IF
 
     !! Agregado por MPM
@@ -677,10 +466,8 @@ SUBROUTINE read_ens_mpi_alltoall(file,member,v3d,v2d)
       CALL scatter_grd_mpi_alltoall(member,mstart,mend,fieldg3,fieldg2,v3d,v2d)
     END IF
 
-    IF(im <= member) THEN
-      CALL close_wrf_file(ncid(im))
-    END IF
   END DO
+  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
   RETURN
 END SUBROUTINE read_ens_mpi_alltoall
@@ -1208,7 +995,7 @@ SUBROUTINE write_ens_mpi_fast(file,member,v3d,v2d)
 ! Junta de todos los nodos de procesos a los nodos que escriben todas las 
 ! variables y todos los niveles
 
-    IF(myrank .EQ. 0) WRITE(*,*) 'Por hacer el gather'
+    !IF(myrank .EQ. 0) WRITE(*,*) 'Por hacer el gather'
     DO l=1,ll
       DO n=0,nprocs-1
        im2 = n+1 + (l-1)*nprocs
@@ -1218,7 +1005,7 @@ SUBROUTINE write_ens_mpi_fast(file,member,v3d,v2d)
       ENDDO
     END DO
     !DEALLOCATE(v3dtmp)
-   IF(myrank .EQ. 0) WRITE(*,*) 'Despues del gather'
+   !IF(myrank .EQ. 0) WRITE(*,*) 'Despues del gather'
 
   !WRITE 3D VARIABLES
   !GATHER AND WRITE ONE GRID AT A TIME
@@ -1226,7 +1013,7 @@ SUBROUTINE write_ens_mpi_fast(file,member,v3d,v2d)
      im = myrank+1 + (l-1)*nprocs
      DO iv=1,nv3d
         IF( im <= member)THEN
-          WRITE(*,*) 'Por hacer el write 3D', iv
+          !WRITE(*,*) 'Por hacer el write 3D', iv
           IF(iv == iv3d_w)THEN
              CALL damp_latbnd(spec_bdy_width,nlon,nlat,nlev,fieldg3(:,:,:,iv))
           ENDIF
@@ -1235,7 +1022,7 @@ SUBROUTINE write_ens_mpi_fast(file,member,v3d,v2d)
      END DO !End do over 3D variables
 
      DO iv=1,nv2d
-        WRITE(*,*) 'Por hacer el write 2D', iv
+        !WRITE(*,*) 'Por hacer el write 2D', iv
         IF (im <= member)THEN
              CALL write_var_wrf(ncid(im),iv,1,1,fieldg2(:,:,iv),'2d')
         ENDIF
@@ -1258,25 +1045,31 @@ END SUBROUTINE write_ens_mpi_fast
 
 
 SUBROUTINE write_ens_mpi_alltoall(file,member,v3d,v2d)
-  !TODO: This routine might not work properly if the number
-  !of allocated processses is less than the number of ensemble
-  !members. This should be corrected in future versions.
   IMPLICIT NONE
   CHARACTER(4),INTENT(IN) :: file
   INTEGER,INTENT(IN) :: member
   REAL(r_size),INTENT(IN) :: v3d(nij1,nlev,member,nv3d)
   REAL(r_size),INTENT(IN) :: v2d(nij1,member,nv2d)
-  REAL(4) :: sdmd, s1md
-  REAL(r_sngl) , ALLOCATABLE :: fieldg3(:,:,:,:)
-  REAL(r_sngl) , ALLOCATABLE :: fieldg2(:,:,:)
-  INTEGER :: l,n,ll,im,im2,iunit,iv,ilev,ncid(member),ierr,j,k,mstart,mend
+  REAL(r_sngl) :: fieldg3(nlon,nlat,nlev,nv3d)
+  REAL(r_sngl) :: fieldg2(nlon,nlat,nv2d)
+  INTEGER :: l,n,ll,im,im2,ierr,iv,ilev,ncid,j,k,mstart,mend,skip
   CHARACTER(20) :: filename='xxxx00000'
- 
-  !OPEN FILES AND READ CONSTANTS.
+
+  skip = FLOOR( REAL(nprocs) / REAL(member) )
+  if ( skip == 0 )skip = 1
   ll = CEILING(REAL(member)/REAL(nprocs))
   DO l=1,ll
-    im = myrank+1 + (l-1)*nprocs
-    IF(im <= member) THEN
+
+    !Gather the data
+    mstart = 1 + (l-1)*nprocs
+    mend = MIN(l*nprocs, member)
+    if (mstart <= mend) then
+      CALL gather_grd_mpi_alltoall(member,mstart,mend,v3d,v2d,fieldg3,fieldg2) 
+    end if
+
+    !Write data to file
+    IF ( MOD( myrank + 1 , skip ) == 0 .AND. (myrank+1)/skip + (l-1)*nprocs <= member )THEN
+      im = (myrank+1)/skip + (l-1)*nprocs
       IF(member > 1)THEN
         WRITE(filename(1:9),'(A4,I5.5)')file,im
       ELSE
@@ -1284,37 +1077,22 @@ SUBROUTINE write_ens_mpi_alltoall(file,member,v3d,v2d)
       ENDIF
       !OPEN NC FILE
       WRITE(6,'(A,I3.3,2A)')'MYRANK ',myrank,' is writing a file ',filename
-      CALL open_wrf_file(filename,'rw',ncid(im))
-      !Allocate variables
-      ALLOCATE( fieldg3(nlon,nlat,nlev,nv3d) , fieldg2(nlon,nlat,nv2d) )
-    END IF
+      CALL open_wrf_file(filename,'rw',ncid)
 
-    mstart = 1 + (l-1)*nprocs
-    mend = MIN(l*nprocs, member)
-    if (mstart <= mend) then
-      CALL gather_grd_mpi_alltoall(member,mstart,mend,v3d,v2d,fieldg3,fieldg2) 
-    end if
-
-    DO iv=1,nv3d
-      IF( im <= member)THEN
+      DO iv=1,nv3d
         IF(iv == iv3d_w)THEN
           CALL damp_latbnd(spec_bdy_width,nlon,nlat,nlev,fieldg3(:,:,:,iv))
         ENDIF
-          CALL write_var_wrf(ncid(im),iv,1,nlev,fieldg3(:,:,:,iv),'3d')
-       ENDIF
-   END DO !End do over 3D variables
-
-   DO iv=1,nv2d
-      IF (im <= member)THEN
-          CALL write_var_wrf(ncid(im),iv,1,1,fieldg2(:,:,iv),'2d')
-      ENDIF
-   END DO !End do over 2D variables
-
-   IF(im <= member) THEN
-      CALL close_wrf_file(ncid(im))
-      DEALLOCATE( fieldg3 , fieldg2 )
-   END IF
+        CALL write_var_wrf(ncid,iv,1,nlev,fieldg3(:,:,:,iv),'3d')
+      END DO !End do over 3D variables
+  
+      DO iv=1,nv2d
+        CALL write_var_wrf(ncid,iv,1,1,fieldg2(:,:,iv),'2d')
+      END DO !End do over 2D variables
+      CALL close_wrf_file(ncid)
+    END IF
   END DO
+  CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
   RETURN
 END SUBROUTINE write_ens_mpi_alltoall
@@ -1372,8 +1150,6 @@ SUBROUTINE write_ensmspr_mpi(file,member,v3d,v2d)
   REAL(r_size),INTENT(IN) :: v2d(nij1,member,nv2d)
   REAL(r_size) :: v3dm(nij1,nlev,1,nv3d)
   REAL(r_size) :: v2dm(nij1,1,nv2d)
-  INTEGER :: i,k,m,n,iunit
-  CHARACTER(20) :: filename='           '
 
   !COMPUTE AND WRITE ENSEMBLE MEAN (IN NETCDF FORMAT)
   v3dm(:,:,1,:)=SUM( v3d , DIM=3 ) / REAL( member , r_size )
@@ -1796,7 +1572,6 @@ SUBROUTINE obsope_io(member,nobs,option,oelm,olon,olat,olev,odat,oerr,otyp,olot 
   INTEGER                   :: ii , dummy
   INTEGER      , INTENT(IN) :: option ! 1 - read , 2 - write
 
-  REAL(r_sngl) :: fieldg(nlon,nlat)
   INTEGER :: l,n,ll,im,im2,iunit,iv,ilev,ncid(member),ierr,j,k 
   CHARACTER(20) :: filename='obsopeMMMMM'
 
@@ -1856,47 +1631,62 @@ SUBROUTINE scatter_grd_mpi_alltoall(member,mstart,mend,v3dg,v2dg,v3d,v2d)
   REAL(r_size),INTENT(INOUT) :: v2d(nij1,member,nv2d)
   REAL(r_sngl) :: bufs(nij1max,nlevall,nprocs)
   REAL(r_sngl) :: bufr(nij1max,nlevall,nprocs)
-  INTEGER :: k,n,j,m,mcount,ierr
+  INTEGER :: k,n,j,m,mcount,ierr,p,skip
   INTEGER :: ns(nprocs),nst(nprocs),nr(nprocs),nrt(nprocs)
 
+  skip = FLOOR( REAL(nprocs) / REAL(nbv) )
+  if ( skip == 0 )skip = 1
   mcount = mend - mstart + 1
   IF(mcount > nprocs .OR. mcount <= 0) STOP 
 
-  IF(myrank < mcount) THEN 
+  IF ( MOD( myrank + 1 , skip ) == 0 .AND. (myrank+1)/skip <= mcount )THEN
+  !IF(myrank < mcount) THEN  !Ver cual seria la condicion aca.
+  !WRITE(*,*)'Estoy en ',myrank,'completo el bufr'
     j=0  
     DO n=1,nv3d
       DO k=1,nlev
         j = j+1
-        !WRITE(*,*) 'MPM:por ejecutar 3d grd_to_buff con n,k,j = ',n,k,j
         CALL grd_to_buf(v3dg(:,:,k,n),bufs(:,j,:))
       END DO
     END DO
     DO n=1,nv2d
       j = j+1
-        !WRITE(*,*) 'MPM:por ejecutar 2d grd_to_buff con n,j = ',n,j
       CALL grd_to_buf(v2dg(:,:,n),bufs(:,j,:))
     END DO
   END IF
 
   CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-  !WRITE(*,*) 'MPM:antes de los alltoall'
-  IF(mcount == nprocs) THEN 
-    CALL MPI_ALLTOALL(bufs, nij1max*nlevall, MPI_REAL, &
-                      bufr, nij1max*nlevall, MPI_REAL, MPI_COMM_WORLD, ierr)
-  ELSE
-    CALL set_alltoallv_counts(mcount,nij1max*nlevall,nprocs,nr,nrt,ns,nst)
-    CALL MPI_ALLTOALLV(bufs, ns, nst, MPI_REAL, &
-                       bufr, nr, nrt, MPI_REAL, MPI_COMM_WORLD, ierr)
-
+  nr  = 0
+  nrt = 0
+  ns  = 0
+  nst = 0
+  DO p=1,mcount
+    nr(p*skip) = nij1max*nlevall
+  ENDDO
+  IF (MOD( myrank + 1 , skip ) == 0 .AND. (myrank+1)/skip <= mcount )THEN
+    !WRITE(*,*)'Estoy en ',myrank,' y seteo todo para enviar datos'
+    !IF(myrank+1 == p) THEN   !TODO ver cual seria la condicion aca.
+    ns(:) = nij1max*nlevall
   END IF
-  !WRITE(*,*) 'MPM:DESPUES de los alltoall'
+  DO p=2,nprocs
+    nrt(p) = nrt(p-1) + nr(p-1)
+    nst(p) = nst(p-1) + ns(p-1)
+  END DO
+  !WRITE(6,*)'nr',nr
+  !WRITE(6,*)'ns',ns
+      
+  !CALL set_alltoallv_counts(mcount,nij1max*nlevall,nprocs,nr,nrt,ns,nst)
+  CALL MPI_ALLTOALLV(bufs, ns, nst, MPI_REAL, &
+                     bufr, nr, nrt, MPI_REAL, MPI_COMM_WORLD, ierr)
 
   DO m = mstart,mend
+    !WRITE(6,*)'bufr',bufr(1,1,(m-mstart+1)*skip)
+    !WRITE(6,*)'bufrcompleto',bufr(1,1,:)
     j=0  
     DO n=1,nv3d
       DO k=1,nlev
         j = j+1
-        v3d(:,k,m,n) = REAL(bufr(1:nij1,j,m-mstart+1),r_size)
+        v3d(:,k,m,n) = REAL(bufr(1:nij1,j,m-mstart+1),r_size)  
       END DO
     END DO
     DO n=1,nv2d
@@ -1920,11 +1710,13 @@ SUBROUTINE gather_grd_mpi_alltoall(member,mstart,mend,v3d,v2d,v3dg,v2dg)
   REAL(r_size),INTENT(IN) :: v2d(nij1,member,nv2d)
   REAL(r_sngl),INTENT(OUT) :: v3dg(nlon,nlat,nlev,nv3d)
   REAL(r_sngl),INTENT(OUT) :: v2dg(nlon,nlat,nv2d)
-  REAL(r_sngl) :: bufs(nij1max,nlevall,nprocs)
-  REAL(r_sngl) :: bufr(nij1max,nlevall,nprocs)
-  INTEGER :: k,n,j,m,mcount,ierr
+  REAL(r_sngl) :: bufs(nij1max,nlevall,nprocs) 
+  REAL(r_sngl) :: bufr(nij1max,nlevall,nprocs) 
+  INTEGER :: k,n,j,m,mcount,skip,ierr,p
   INTEGER :: ns(nprocs),nst(nprocs),nr(nprocs),nrt(nprocs)
 
+  skip = FLOOR( REAL(nprocs) / REAL(member) )
+  if ( skip == 0 )skip = 1
   mcount = mend - mstart + 1
   IF(mcount > nprocs .OR. mcount <= 0) STOP
 
@@ -1943,17 +1735,28 @@ SUBROUTINE gather_grd_mpi_alltoall(member,mstart,mend,v3d,v2d,v3dg,v2dg)
   END DO
 
   CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-  IF(mcount == nprocs) THEN
-    CALL MPI_ALLTOALL(bufs, nij1max*nlevall, MPI_REAL, &
-                      bufr, nij1max*nlevall, MPI_REAL, MPI_COMM_WORLD, ierr)
-  ELSE
-    CALL set_alltoallv_counts(mcount,nij1max*nlevall,nprocs,ns,nst,nr,nrt)
-    CALL MPI_ALLTOALLV(bufs, ns, nst, MPI_REAL, &
-                       bufr, nr, nrt, MPI_REAL, MPI_COMM_WORLD, ierr)
+  nr  = 0
+  nrt = 0
+  ns  = 0
+  nst = 0
+  DO p=1,mcount
+    ns(p*skip) = nij1max*nlevall
+  ENDDO
+  IF (MOD( myrank + 1 , skip ) == 0 .AND. (myrank+1)/skip <= mcount)THEN
+    nr(:) = nij1max*nlevall
   END IF
+  DO p=2,nprocs
+    nrt(p) = nrt(p-1) + nr(p-1)
+    nst(p) = nst(p-1) + ns(p-1)
+  END DO
+  !WRITE(*,*)'nr',nr
+  !WRITE(*,*)'ns',ns
 
+  CALL MPI_ALLTOALLV(bufs, ns, nst, MPI_REAL, &
+                     bufr, nr, nrt, MPI_REAL, MPI_COMM_WORLD, ierr)
 
-  IF(myrank < mcount) THEN
+  !WRITE(*,*)'bufr',bufr(1,1,:)
+  IF(MOD( myrank + 1 , skip ) == 0 .AND. (myrank+1)/skip <= mcount) THEN
     j=0
     DO n=1,nv3d
       DO k=1,nlev
@@ -1974,28 +1777,28 @@ END SUBROUTINE gather_grd_mpi_alltoall
 !-----------------------------------------------------------------------
 ! Set the send/recieve counts of MPI_ALLTOALLV
 !-----------------------------------------------------------------------
-SUBROUTINE set_alltoallv_counts(mcount,ngpblock,np,n_ens,nt_ens,n_mem,nt_mem)
-  INTEGER,INTENT(IN) :: mcount,ngpblock
-  INTEGER,INTENT(IN) :: np
-  INTEGER,INTENT(OUT) :: n_ens(np),nt_ens(np),n_mem(np),nt_mem(np)
-  INTEGER :: p
+!SUBROUTINE set_alltoallv_counts(mcount,ngpblock,np,n_ens,nt_ens,n_mem,nt_mem)
+!  INTEGER,INTENT(IN) :: mcount,ngpblock
+!  INTEGER,INTENT(IN) :: np
+!  INTEGER,INTENT(OUT) :: n_ens(np),nt_ens(np),n_mem(np),nt_mem(np)
+!  INTEGER :: p
 
-  n_ens = 0
-  nt_ens = 0
-  n_mem = 0
-  nt_mem = 0
-  DO p=1,mcount
-    n_ens(p) = ngpblock
-    IF(myrank+1 == p) THEN
-      n_mem(:) = ngpblock
-    END IF
-  END DO
-  DO p=2,np
-    nt_ens(p) = nt_ens(p-1) + n_ens(p-1)
-    nt_mem(p) = nt_mem(p-1) + n_mem(p-1)
-  END DO
-
-  RETURN
-END SUBROUTINE set_alltoallv_counts
+!  n_ens = 0
+!  nt_ens = 0
+!  n_mem = 0
+!  nt_mem = 0
+!  DO p=1,mcount
+!    n_ens(p) = ngpblock
+!    IF(myrank+1 == p) THEN
+!      n_mem(:) = ngpblock
+!    END IF
+!  END DO
+!  DO p=2,np
+!    nt_ens(p) = nt_ens(p-1) + n_ens(p-1)
+!    nt_mem(p) = nt_mem(p-1) + n_mem(p-1)
+!  END DO
+!
+!  RETURN
+!END SUBROUTINE set_alltoallv_counts
 
 END MODULE common_mpi_wrf

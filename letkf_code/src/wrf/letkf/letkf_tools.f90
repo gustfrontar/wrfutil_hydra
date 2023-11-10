@@ -123,23 +123,16 @@ SUBROUTINE das_letkf
   IF(ESTPAR)ALLOCATE(meanp2d(nij1,np2d))
   CALL ensmean_grd(nbv,nij1,gues3d,gues2d,mean3dg,mean2dg)
   IF(ESTPAR)CALL ensmean_ngrd(nbv,nij1,guesp2d,meanp2d,np2d)
-  DO n=1,nv3d
-    DO m=1,nbv
-      DO k=1,nlev
-        DO i=1,nij1
-          gues3d(i,k,m,n) = gues3d(i,k,m,n) - mean3dg(i,k,n)
-        END DO
-      END DO
-    END DO
+  !$OMP PARALLEL DO SCHEDULE(DYNAMIC) PRIVATE(n)
+  DO n=1,nbv
+     gues3d(:,:,n,:) = gues3d(:,:,n,:) - mean3dg(:,:,:)
   END DO
-  DO n=1,nv2d
-    DO m=1,nbv
-      DO i=1,nij1
-        gues2d(i,m,n) = gues2d(i,m,n) - mean2dg(i,n)
-      END DO
-    END DO
+  !$OMP END PARALLEL DO
+  !$OMP PARALLEL DO SCHEDULE(DYNAMIC) PRIVATE(n)
+  DO n=1,nbv
+     gues2d(:,n,:) = gues2d(:,n,:) - mean2dg(:,:)
   END DO
-
+  !$OMP END PARALLEL DO
 
   !
   ! multiplicative inflation
@@ -444,29 +437,26 @@ SUBROUTINE das_letkf
     DEALLOCATE(workg,work3d,work2d)
   END IF
 
-  !Restore guess data
-  DO n=1,nv3d
-    DO m=1,nbv
-      DO k=1,nlev
-        DO i=1,nij1
-          gues3d(i,k,m,n) = gues3d(i,k,m,n) + mean3dg(i,k,n)
-        END DO
-      END DO
-    END DO
+  !$OMP PARALLEL DO SCHEDULE(DYNAMIC) PRIVATE(n)
+  DO n=1,nbv
+     gues3d(:,:,n,:) = gues3d(:,:,n,:) + mean3dg(:,:,:)
   END DO
-  DO n=1,nv2d
-    DO m=1,nbv
-      DO i=1,nij1
-        gues2d(i,m,n) = gues2d(i,m,n) + mean2dg(i,n)
-      END DO
-    END DO
+  !$OMP END PARALLEL DO
+  !$OMP PARALLEL DO SCHEDULE(DYNAMIC) PRIVATE(n)
+  DO n=1,nbv
+     gues2d(:,n,:) = gues2d(:,n,:) + mean2dg(:,:)
   END DO
+  !$OMP END PARALLEL DO
 
   !Update the total mass in the column
   CALL UPDATE_MU()
 
   !From theta to t
-  anal3d(:,:,:,iv3d_t)  = anal3d(:,:,:,iv3d_t) *(p0 /  anal3d(:,:,:,iv3d_p)) ** (rd / cp) - t0
+  !$OMP PARALLEL DO SCHEDULE(DYNAMIC) PRIVATE(j)
+  DO j=1,nij1
+     anal3d(j,:,:,iv3d_t)  = anal3d(j,:,:,iv3d_t) *(p0 /  anal3d(j,:,:,iv3d_p)) ** (rd / cp) - t0
+  ENDDO
+  !$OMP END PARALLEL DO
 
   DEALLOCATE(logpfm,zfm,mean3dg,mean2dg)
   IF(ESTPAR)DEALLOCATE(meanp2d)
@@ -483,6 +473,7 @@ INTEGER :: j , im  , k
 REAL(r_size) ::  sdmd , s1md 
 
    anal2d(:,:,iv2d_mu) = gues2d(:,:,iv2d_mu)
+   !$OMP PARALLEL DO SCHEDULE(DYNAMIC) PRIVATE(j,im,k,sdmd,s1md)
    DO j=1,nij1
     DO im=1,nbv
       sdmd=0.0
@@ -498,6 +489,7 @@ REAL(r_size) ::  sdmd , s1md
       anal2d(j,im,iv2d_mu) = anal2d(j,im,iv2d_mu) - ((anal2d(j,im,iv2d_ps) - gues2d(j,im,iv2d_ps)) + anal2d(j,im,iv2d_mu) * sdmd) / s1md
     END DO
    END DO
+   !$OMP END PARALLEL DO
 
 END SUBROUTINE UPDATE_MU
 
