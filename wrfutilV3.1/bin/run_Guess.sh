@@ -112,7 +112,7 @@ fi
 read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited
 source $BASEDIR/conf/model.conf
-echo "Procesando Miembro $MIEM" 
+echo "Processing member $MIEM" 
 
 if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then
    echo "Using Fugaku's shared dir to run WRF"
@@ -191,7 +191,9 @@ else
         echo "file_end='$MET_EM_DIR/$FILE_END'   " >> ./pertmetem.namelist
         echo "file_tar='$WRFDIR/$MIEM/$FILE_TAR' " >> ./pertmetem.namelist
         echo "/                                " >> ./pertmetem.namelist
+        echo "Running INTERP_MET_EM for member $MIEM"
         $MPIEXESERIAL ./interp_met_em.exe  
+        ERROR=$(( $ERROR + $? ))
         #ln -sf $WPSDIR/$MIEM/$FILE_TAR  ./
         #TODO: Check if would be better to create the new files in the WPS_MET_EM_DIR so
         #Interpolated files can be used again in the next cycle.
@@ -201,10 +203,10 @@ else
    done
 fi
 
-$MPIEXE $WRFDIR/$MIEM/real.exe $WRF_RUNTIME_FLAGS
+echo "Running REAL for member $MIEM"
+$MPIEXE $WRFDIR/$MIEM/real.exe 
+ERROR=$(( $ERROR + $? ))
 mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
-EXCOD=$?
-[[ $EXCOD -ne 0 ]] && dispararError 9 "real.exe"
 
 if [ $PASO -gt 0 ] ; then
   echo "Corremos el update_bc"
@@ -212,14 +214,14 @@ if [ $PASO -gt 0 ] ; then
   mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
   cp $HISTDIR/ANAL/$(date -u -d "$DATE_FORECAST_INI" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
   ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
-  time $MPIEXESERIAL -stdout-proc ./da_update_bc_${PASO}_${MIEM}.log  $WRFDIR/$MIEM/da_update_bc.exe $WRF_RUNTIME_FLAGS  
+  echo "Running DA_UPDATE_BC for member $MIEM"
+  time $MPIEXESERIAL -stdout-proc ./da_update_bc_${PASO}_${MIEM}.log  $WRFDIR/$MIEM/da_update_bc.exe 
+  ERROR=$(( $ERROR + $? ))
 fi
 
-echo "Corriendo WRF en Miembro $MIEM"
-
-$MPIEXE $WRFDIR/$MIEM/wrf.exe $WRF_RUNTIME_FLAGS 
-excod=$?
-res="ERROR"
+echo "Running WRF for member $MIEM"
+$MPIEXE $WRFDIR/$MIEM/wrf.exe 
+ERROR=$(( $ERROR + $? ))
 test=$(tail -n1 $WRFDIR/$MIEM/rsl.error.0000 | grep SUCCESS ) && res="OK"
 mv rsl.error.0000 ./wrf_${PASO}_${MIEM}.log
 
@@ -258,7 +260,7 @@ else
        mkdir -p $OUTPUTPATH
        echo "Copying file $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )"
        cp $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/gues$(printf %05d $((10#$MIEM)))
-       mv $WRFDIR/$MIEM/*.log                                                         $OUTPUTPATH
+       mv $WRFDIR/$MIEM/*.log*                                                        $OUTPUTPATH
        mv $WRFDIR/$MIEM/namelist*                                                     $OUTPUTPATH
      done
   fi

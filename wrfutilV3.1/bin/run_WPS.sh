@@ -91,8 +91,8 @@ if [ ! -e $WPSDIR/geogrid/geo_em.d01.nc ] ; then
 read -r -d '' QSCRIPTCMD << "EOF"
         cd $WPSDIR/geogrid
 	ulimit -s unlimited
-        export FORT90L=${WPS_RUNTIME_FLAGS}
         $MPIEXE ./geogrid.exe 
+        ERROR=$(( $ERROR + $? ))
 EOF
         QPROC_NAME=GEOG_$PASO
 	QPROC=$WPSPROC
@@ -131,8 +131,6 @@ fi
 DATE_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )  #Get the closest prior date in which BDY data is available.
 DATE_END_BDY=$(date_ceil  "$FECHA_END_PASO" $INTERVALO_BDY )      #Get the closest posterior date in which BDY data is available.
 
-export FORT90L=${WPS_RUNTIME_FLAGS}
-
 if [ $WPS_DATA_SOURCE == 'GFS' ] ; then 
 
    BDYBASE=$BDYPATH/gefs.$(date -d "$DATE_INI_BDY" +"%Y%m%d")/$(date -d "$DATE_INI_BDY" +"%H")/$BDYPREFIX/$MIEM/
@@ -143,13 +141,12 @@ if [ $WPS_DATA_SOURCE == 'GFS' ] ; then
    #Linkeo los gribs
    cd $WPSDIR/$MIEM
    ./link_grib.csh $BDYBASE/$BDYSEARCHSTRING  
-
-   [[ $? -ne 0 ]] && dispararError 9 "link_grib.csh "
+   ERROR=$(( $ERROR + $? ))
 
    #Corro el Ungrib 
    OMP_NUM_THREADS=1
    $MPIEXESERIAL ./ungrib.exe > ungrib.log
-   [[ $? -ne 0 ]] && dispararError 9 "ungrib.exe"
+   ERROR=$(( $ERROR + $? ))
 
 elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
 
@@ -173,6 +170,7 @@ elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
       WRFFILE=$BDYBASE/wrfout_d01_$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
       WPSFILE=$WPSDIR/$MIEM/FILE:$(date -u -d  "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )
       $MPIEXESERIAL ./wrf_to_wps.exe $WRFFILE $WPSFILE 
+      ERROR=$(( $ERROR + $? ))
       #Update CDATE
       CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
    done
@@ -212,14 +210,13 @@ else
 
   echo "Not recognized WPS_DATA_SOURCE option: "$WPS_DATA_SOURCE
   echo "I can do nothing"
-  disparaError 9 "run_wps.sh"
+  ERROR=$(( $ERROR + 1 ))
 
 fi
 
-#Corro el Metgrid en paralelo
+echo "Running METGRID for member $MIEM"
 $MPIEXE ./metgrid.exe 
-EC=$?
-[[ $EC -ne 0 ]] && dispararError 9 "metgrid.exe"
+ERROR=$(( $ERROR + $? ))
 
 EOF
 

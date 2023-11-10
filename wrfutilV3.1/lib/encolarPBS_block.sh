@@ -17,10 +17,12 @@ queue (){
                                 echo "source $BASEDIR/conf/machine.conf"              >> ${QPROC_NAME}_${IMIEM}.pbs
 	                        echo "source $BASEDIR/lib/errores.env"                >> ${QPROC_NAME}_${IMIEM}.pbs
 				echo "source $BASEDIR/conf/$QCONF"                    >> ${QPROC_NAME}_${IMIEM}.pbs                   ## Experiment specific configuration file.
+				echo "ERROR=0                    "                    >> ${QPROC_NAME}_${IMIEM}.pbs
+				echo "export MPIEXESERIAL=\"$MPIEXEC -np 1"           >> ${QPROC_NAME}_${IMIEM}.pbs
                 		echo "export MPIEXE=\"$MPIEXEC -np ${TPROC}\" "       >> ${QPROC_NAME}_${IMIEM}.pbs                   ## Comando MPIRUN con cantidad de nodos y cores por nodos
 	                        echo "MIEM=$IMIEM "                                   >> ${QPROC_NAME}_${IMIEM}.pbs 			
 	                        echo "${QSCRIPTCMD}"                                  >> ${QPROC_NAME}_${IMIEM}.pbs
-				echo "if [[ -z \${res} ]] || [[ \${res} -eq "OK" ]] ; then" >> ${QPROC_NAME}_${IMIEM}.pbs
+				echo "if [[ -z \${ERROR} ]] || [[ \${ERROR} -eq 0 ]] ; then" >> ${QPROC_NAME}_${IMIEM}.pbs
 	                        echo "touch $PROCSDIR/${QPROC_NAME}_${IMIEM}_ENDOK  " >> ${QPROC_NAME}_${IMIEM}.pbs  #Si existe la variable RES en el script la usamos
 				echo "fi 				            " >> ${QPROC_NAME}_${IMIEM}.pbs
 

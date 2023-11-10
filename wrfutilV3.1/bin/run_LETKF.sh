@@ -124,13 +124,9 @@ done
 
 #script de ejecucion
 read -r -d '' QSCRIPTCMD << "EOF"
-  res='OK'
   cd $LETKFDIR/00/
   time $MPIEXE  ./letkf.exe
-  LETKF_ERROR=$?
-  if [[ $LETKF_ERROR != 0 ]] ; then
-   res='ERROR'
-  fi
+  ERROR=$(( $ERROR + $? ))
 EOF
 
 # Parametros de encolamiento

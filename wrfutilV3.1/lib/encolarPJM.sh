@@ -15,6 +15,7 @@ queue (){
 
         MAX_JOBS=$(( $INODE / $QNODE ))  #Floor rounding (bash default)
 	TOT_PROCS=$(( $QPROC * $QNODE ))
+	QTHREAD=$(( $ICORE / $QPROC ))   #Optimally compute QTHREAD
         echo MAX_JOBS = $MAX_JOBS 
 	if [ $MAX_JOBS -gt 128 ] ; then 
 	  echo "WARNING: Maximum number of simultaneous runs is 128, this may produce problems!!!" 
@@ -24,9 +25,6 @@ queue (){
 	NNODE=0          #Starting node
 	IJOB=0           #Starint job
 	IMIEM=$ini_mem   #Starting ensemble member
-	if [ $INODE -gt 1  ] ; then 
-           QPROC=$ICORE #If an application is using more than one node we force it to use all the cores within each node. 
-        fi
 	rm -fr machine.*
 	while [ $IMIEM -le $end_mem ]; do
 	   for MY_NODE in $(seq -w $NNODE $(($NNODE + QNODE - 1)) ) ; do
@@ -51,13 +49,14 @@ queue (){
                 echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}_${IMIEM}.pbs
                 echo "source $BASEDIR/lib/errores.env"                                            >> ${QPROC_NAME}_${IMIEM}.pbs
                 echo "source $BASEDIR/conf/$QCONF      "                                          >> ${QPROC_NAME}_${IMIEM}.pbs
+		echo "ERROR=0                          "                                          >> ${QPROC_NAME}_${IMIEM}.pbs
 		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                        >> ${QPROC_NAME}_${IMIEM}.pbs
                 echo "MIEM=$IMIEM "                                                               >> ${QPROC_NAME}_${IMIEM}.pbs
                 echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -vcoordfile ../machine.$IMIEM \"  "   >> ${QPROC_NAME}_${IMIEM}.pbs
          	echo "export MPIEXE=\"\$MPIEXEC                -vcoordfile ../machine.$IMIEM \"  ">> ${QPROC_NAME}_${IMIEM}.pbs ## Comando MPIRUN con cantidad de nodos y cores por nodos           
 	       	test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMIEM}"                               >> ${QPROC_NAME}_${IMIEM}.pbs
 	        echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}_${IMIEM}.pbs
-	        echo "if [[ -z \${res} ]] || [[ \${res} -eq "OK" ]] ; then"                       >> ${QPROC_NAME}_${IMIEM}.pbs
+	        echo "if [[ -z \${ERROR} ]] || [[ \${ERROR} -eq 0 ]] ; then"                      >> ${QPROC_NAME}_${IMIEM}.pbs
 	        echo "touch $PROCSDIR/${QPROC_NAME}_${IMIEM}_ENDOK  "                             >> ${QPROC_NAME}_${IMIEM}.pbs  #Si existe la variable RES en el script la usamos
 	        echo "fi                                            "                             >> ${QPROC_NAME}_${IMIEM}.pbs
         done

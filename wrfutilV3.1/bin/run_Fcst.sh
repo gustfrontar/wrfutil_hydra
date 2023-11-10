@@ -146,7 +146,9 @@ else
         echo "file_end='$MET_EM_DIR/$FILE_END'   " >> ./pertmetem.namelist
         echo "file_tar='$WRFDIR/$MIEM/$FILE_TAR' " >> ./pertmetem.namelist
         echo "/                                " >> ./pertmetem.namelist
+        echo "Running INTERP MET EM for member $MIEM"
         $MPIEXESERIAL ./interp_met_em.exe  
+        ERROR=$(( $ERROR + $? )) 
         #ln -sf $WPSDIR/$MIEM/$FILE_TAR  ./
         #TODO: Check if would be better to create the new files in the WPS_MET_EM_DIR so
         #Interpolated files can be used again in the next cycle.
@@ -156,21 +158,16 @@ else
    done
 fi
 
-ln -sf $HISTDIR/WPS/met_em/${INI_BDY_DATE}/$MIEM/met_em* $WRFDIR/$MIEM/
-OMP_NUM_THREADS=$REALTHREADS
-OMP_STACKSIZE=512M
-$MPIEXE $WRFDIR/$MIEM/real.exe $WRF_RUNTIME_FLAGS
+echo "Running REAL for member $MIEM"
+$MPIEXE $WRFDIR/$MIEM/real.exe 
+ERROR=$(( $ERROR + $? ))
 mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
 EXCOD=$?
 [[ $EXCOD -ne 0 ]] && dispararError 9 "real.exe"
 
-echo "Corriendo WRF en Miembro $MIEM"
-export OMP_NUM_THREADS=1
-
-$MPIEXE $WRFDIR/$MIEM/wrf.exe $WRF_RUNTIME_FLAGS 
-excod=$?
-res="ERROR"
-test=$(tail -n1 $WRFDIR/$MIEM/rsl.error.0000 | grep SUCCESS ) && res="OK"
+echo "Running WRF for member $MIEM"
+$MPIEXE $WRFDIR/$MIEM/wrf.exe 
+ERROR=$(( $ERROR + $? ))
 mv rsl.error.0000 ./wrf_${PASO}_${MIEM}.log
 
 EOF
