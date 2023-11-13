@@ -4,24 +4,25 @@ import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 from matplotlib.colors import from_levels_and_colors
 import matplotlib.patches as mpatches
-from cartopy import crs
-from cartopy.feature import NaturalEarthFeature, COLORS
+#from cartopy import crs
+#from cartopy.feature import NaturalEarthFeature, COLORS
 from netCDF4 import Dataset
 from wrf import (to_np, getvar, smooth2d, get_cartopy, cartopy_xlim,
-                 cartopy_ylim, latlon_coords , vinterp , destagger )
+                 cartopy_ylim, latlon_coords , vinterp , destagger , extract_times )
 import glob
 
 
 def ploter_loop( conf , plot_types ) :
 
- if conf['exp_type'] == 'FCST' :
-   base_data_dir = conf['histdir'] + '/' + conf['exp_type'] + '/' 
+ #Plot forecasts.   
+ if 'FCST' in conf['exp_type']  :
+   base_data_dir = conf['histdir'] + '/FCST/' 
+   attribs=dict()
+   attribs['exp_type']='FCST'
 
    #Get the list of date paths
    date_list = glob.glob( base_data_dir + '/*' )
-
    for my_date in date_list  :
-       attribs=dict()
        attribs['date'] = os.path.basename( my_date ) 
        print( 'Ploting date ', attribs['date']  )
 
@@ -38,6 +39,33 @@ def ploter_loop( conf , plot_types ) :
          
             for my_type in conf['plot_type_list'] :
                 get_figure( conf , plot_types[ my_type ] , attribs )
+ 
+ #Plot analysis 
+ if 'ANAL' in conf['exp_type']  :
+   base_data_dir = conf['histdir'] + '/ANAL/'
+   attribs=dict()
+   attribs['exp_type']='ANAL'
+
+   #Get the list of date paths
+   date_list = glob.glob( base_data_dir + '/*' )
+   for my_date in date_list  :
+      attribs['date'] = os.path.basename( my_date )
+      print( 'Ploting date ', attribs['date']  )
+
+      #Get the list of ensemble member files
+      file_list = glob.glob( my_date + '/anal*' )
+      file_list.append( my_date + '/guesemean' )  #Add the gues ensemble mean to the list. 
+      for my_file in file_list :
+         attribs['mem'] = os.path.basename( my_file )[4:]
+         print( 'Ploting member ', attribs['mem'] )
+         attribs['file'] = os.path.basename( my_file )
+         attribs['file_path'] = my_file
+         print('Ploting file ', attribs['file'] )
+
+         for my_type in conf['plot_type_list'] :
+             get_figure( conf , plot_types[ my_type ] , attribs )
+
+                
 
 
 def get_figure( conf , plot_type , attribs ) :
@@ -67,7 +95,7 @@ def get_figure( conf , plot_type , attribs ) :
       pvar2 = np.squeeze( to_np( pvar2 ) )
 
    lon = to_np( lon ) ; lat = to_np( lat )
-   plot_date = os.path.basename( attribs['file_path'] )[11:]  
+   plot_date = np.datetime_as_string( extract_times( ncfile , timeidx=0 , meta=False ) , unit='s')    #os.path.basename( attribs['file_path'] )[11:]  
    print( plot_date )
    plot_title=''
    file_name = str( plot_date ) + '.png'
@@ -103,7 +131,8 @@ def get_figure( conf , plot_type , attribs ) :
    # Add the gridlines
    plt.grid()
    file_name=file_name.replace(':','_')
-   file_path=conf['plotdir'] + '/' + conf['exp_type'] + '/' + attribs['date'] + '/' + attribs['mem'] + '/' 
+   file_name=file_name.replace('T','_')
+   file_path=conf['plotdir'] + '/' + attribs['exp_type'] + '/' + attribs['date'] + '/' + attribs['mem'] + '/' 
    os.makedirs(file_path , exist_ok=True)
    plt.title( plot_title )
    plt.savefig( file_path + file_name , dpi=None, facecolor='w',edgecolor='w' )

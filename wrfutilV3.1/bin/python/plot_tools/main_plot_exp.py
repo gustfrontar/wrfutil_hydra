@@ -15,10 +15,10 @@ conf=dict()
 #conf['plotdir']        = os.getenv( 'PLOTDIR' )   #Directory where plots will be created.
 #conf['plot_type_list'] = os.getenve( 'PLOT_TYPE_LIST' ) #TODO create a plot.conf file and add this to this file.
 
-conf['exp_type']       = 'FCST'
+conf['exp_type']       = ['ANAL']
 conf['exp_ini_date']   = '2019-10-10 18:00:00'
 conf['exp_end_date']   = '2019-10-12 18:00:00'
-conf['basedir']        = '/home/jruiz/salidas/data_assimilation_exps/PREVENIR_LOWRES_20191010/'
+conf['basedir']        = '/home/ra000007/a04037/data/data_assimilation_exps/PREVENIR_HIRESOLUTION_20191010/'
 conf['histdir']        = conf['basedir'] + '/HIST/' 
 conf['plotdir']        = conf['basedir'] + '/PLOT/'
 conf['plot_type_list'] = ['MAXDBZ']
