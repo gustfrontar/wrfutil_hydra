@@ -88,9 +88,6 @@ SUBROUTINE set_common_mpi_wrf
   RETURN
 END SUBROUTINE set_common_mpi_wrf
 
-
-
-
 SUBROUTINE scatter_grd_mpi_fast(nrank,v3dg,v2dg,v3d,v2d)
   INTEGER,INTENT(IN) :: nrank
   REAL(r_sngl),INTENT(IN) :: v3dg(nlon,nlat,nlev,nv3d)
