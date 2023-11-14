@@ -689,7 +689,7 @@ iprh=0
 
      IF( rainratio .GE. rainratio_threshold .AND. value(iobs) .GT. minrefdbz )THEN
          ir=ir+1
-         DO i=1,nmember  !Convert all pseudo rh values to minimum reflectivity.
+         DO i=1,nmember  
            IF( hdxf(iobs,i) .LE. minrefdbz )THEN
              hdxf(iobs,i)=minrefdbz
            ENDIF
