@@ -36,13 +36,17 @@ Binaries are packed into tar files in the letkf_code/bin directory.
 Step 1
 ======
 
-Edit and run the script>
-/wrf_code/create_tar_$COMPILER
+Compile the LETKF code and assimilation cycle tools
+using the script /letkf_code/make_all.sh 
 
-This will create tar files with the executables and required files to run
-WRF, WPS and WRFDA. This tar files will be used to create experiments using the
-scripts under the wrfutil folder.
+You may need to edit the make_all.sh script to create a set of enviroment variables
+compatible with your compiler and system. A few instances of compiler options and flags
+are available as a reference. 
 
+Also, the first time you run this script check that variables MAKE_LETKF, MAKE_PERT_MET_EM and MAKE_WRF_TO_WPS
+are all set to true. Binary files will be created and added to tar files located in  /letkf_code/bin/
+The tar file name will contain the ENVIRONMENT name (e.g. INTEL_FUGAKU, FUJITSU_FUGAKU or the name
+chosen for your custom environment)
 
 Step 2
 ======
@@ -73,8 +77,11 @@ forecast.conf     -> in a forecast experiment (this is defined in the config.env
 letkf.conf        -> in an assimilation experiment this file controls some aspects of the Local Ensemble Transform Based assimilation as
                      localization scales, type of observation assimilated, inflation factors, etc.
 
+obs.conf          -> in an assimilation experiment this file contains the path where the observation files are stored. It also contains two bash 
+                     arrays, one containing the list of observation types to be assimilated. The other one contains the list of radars to be assimilated
+                     (in case of radar data are being assimilated)
 
-Some detail about the meaning of different flags defined in the configuration files are provided in the configuration files.
+More details about the meaning of different flags defined in the configuration files are provided in the configuration files.
 
 
 Step 3
@@ -101,7 +108,7 @@ Step 4
 
 Prepare boundary conditions data for your experiments. For the moment the outhermost boundary conditions for the experiment
 came from the Global Ensemble Forecasting System (NCEP). Data is freely available through the Amazon Web Services repository.
-The script located in wrfutil$VERSION/bin/python/get_archived_gefs_data.py can be used to downlad this data for a particular
+The script located in wrfutil$VERSION/bin/python/gfs_tools/get_archived_gefs_data.py can be used to downlad this data for a particular
 time. 
 More information about this dataset can be found here:
 https://aws.amazon.com/marketplace/pp/prodview-qumzmkzc2acri#resources
@@ -118,10 +125,22 @@ If required it will expand the ensemble of boundary conditions using one of the 
 Then it will run real.exe and wrf.exe for each ensemble members. Ensemble members will be distributed into different nodes
 according to the settings in machine.conf 
 
-NOTE: In FUGAKU the expansion of the ensemble to add boundary and initial perturbations can not be performed in the computation nodes.
-So you need to run main_WPS.sh first to generate the original met_em... files from the GEFS ensemble in the computation nodes.
-Then you need to run main_Pert.sh in the login or FUGAKU pps nodes, and the main_FCST.sh script to run real and wrf (with RUN_WPS and RUN_PERT = 0 in the forecast.conf 
-configuration file). 
+There are different ways to run the scripts:
+-Submitting a single job that performs all the taskts in the computation nodes ( QUEUESYS in machine.conf = PJM [Fugaku] , PBSSSH [ PBS cluster] , SLURMSSH[ slurm cluster ]
+ In this case, select the corresponding option in machine.conf. To submit the job (e.g. the main_FCAST.sh script to perform all the forecasts) use the /wrfutil$VERSION/bin/queue_sub.sh script.
+ E.g. ./queue_sub main_FCST.sh  . This will submitt a single job the to queue that will attempt to run all the requested forecasts. 
+ If the job is interupted due to a time limit issue, you can resubmitt the job again using the same command. The script will authomatically resume the runs from the last successfull run.
+ (Note: if the job could not complete a single run, for example a single forecast initialization, then longer wall times should be allocated for the job before submitting it again to the queue)
+ Once the script is runing additional scripts to run individual members in the computation nodes will be created in the $BASEDIR/WRF/ in this folder also numerated folders will be created where the 
+ individual ensemble member runs will be performed (refer to the run_WRF.sh script for more details).
+ A similar procedure is used for the preparation of initial and boundary conditions using the WPS tools (refer to the run_WPS.sh script for more details). 
+
+-Submitting individual jobs to the computation nodes ( QUEUESYS in machine.conf = PBS_block ):
+ TODO
+
+-Running the scripts on a stand alone server (whitout a queue system, QUEUESYS in machine.conf = SSH ):
+ TODO
+
 
 b) Run a simple data assimilation experiment. 
 
