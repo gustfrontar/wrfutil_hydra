@@ -92,7 +92,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))
    echo "Update PASO in the configuration file."
-   sed -i -e "/export PASO=/c\\export PASO=$PASO" $BASEDIR/conf/assimilation.conf
+   sed -i -e "/export PASO=/c\\export PASO=$PASO" $BASEDIR/conf/${EXPTYPE}.conf
 
 done
 

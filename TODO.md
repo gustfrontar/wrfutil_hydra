@@ -5,3 +5,4 @@ Things to be improved.
 -Add existing random perturbations code into the met_em perturbation software. 
 -Add postprocessing tools and visualization tools. 
 -Test the comparative performance of a single job vs many smaller jobs in Fugaku.
+-In main_WPS.sh extend to the case in which different boundary conditions are used for each STEP (e.g. forecasts initialized with different global forecasts as bdy files.)

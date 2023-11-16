@@ -54,7 +54,7 @@ while [ $REMAINING_STEPS -gt 0 ] ; do
    REMAINING_STEPS=$((10#$REMAINING_STEPS-1))
    FORECAST_STEP=$((10#$FORECAST_STEP+1))
    #Update PASO in the configuration file.
-   sed -i -e "/export FORECAST_STEP=/c\\export FORECAST_STEP=$FORECAST_STEP" $BASEDIR/conf/$EXPCONF
+   sed -i -e "/export FORECAST_STEP=/c\\export FORECAST_STEP=$FORECAST_STEP" $BASEDIR/conf/${EXPTYPE}.conf
 
 done
 
