@@ -91,6 +91,7 @@ if [ ! -e $WPSDIR/geogrid/geo_em.d01.nc ] ; then
 read -r -d '' QSCRIPTCMD << "EOF"
         cd $WPSDIR/geogrid
 	ulimit -s unlimited
+        export FORT90L=${WPS_RUNTIME_FLAGS}
         $MPIEXE ./geogrid.exe 
         ERROR=$(( $ERROR + $? ))
 EOF
@@ -114,9 +115,6 @@ echo "Corriendo el WPS para el paso " $PASO
 read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited
 echo "Processing member $MIEM"
-cd $WPSDIR
-rm -r $WPSDIR/$MIEM
-mkdir -p $WPSDIR/$MIEM
 ln -sf $WPSDIR/code/* $WPSDIR/$MIEM
 cp $WPSDIR/namelist.wps $WPSDIR/$MIEM/
 cd $WPSDIR/$MIEM
@@ -130,6 +128,8 @@ else
 fi
 DATE_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )  #Get the closest prior date in which BDY data is available.
 DATE_END_BDY=$(date_ceil  "$FECHA_END_PASO" $INTERVALO_BDY )      #Get the closest posterior date in which BDY data is available.
+
+export FORT90L=${WPS_RUNTIME_FLAGS}
 
 if [ $WPS_DATA_SOURCE == 'GFS' ] ; then 
 

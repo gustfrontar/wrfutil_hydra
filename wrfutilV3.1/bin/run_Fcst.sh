@@ -91,10 +91,6 @@ read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited
 source $BASEDIR/conf/model.conf
 echo "Procesando Miembro $MIEM" 
-cd $WRFDIR
-[[ -d $WRFDIR/$MIEM ]] && rm -r $WRFDIR/$MIEM
-mkdir -p $WRFDIR/$MIEM
-cd $WRFDIR/$MIEM
 
 if [ $MULTIMODEL -eq 0 ] ; then
    NLCONF=$(printf '%03d' ${MODEL_CONF} )
@@ -105,8 +101,8 @@ cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
 
 ln -sf $WRFDIR/code/* . 
 
-DATE_FORECAST_INI=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
-DATE_FORECAST_END=$(date -u -d "$FECHA_INI UTC +$((($FORECAST_INI_FREQ*$PASO)+$FORECAST_LEAD_TIME )) seconds" +"%Y-%m-%d %T")
+DATE_FORECAST_INI=$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*$PASO)) seconds" +"%Y-%m-%d %T")
+DATE_FORECAST_END=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*$PASO)+$ANALISIS_WIN_FIN)) seconds" +"%Y-%m-%d %T")
 
 if [ $WPS_CYCLE -eq 1 ] ; then
    INI_STEP_DATE=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
@@ -159,14 +155,14 @@ else
 fi
 
 echo "Running REAL for member $MIEM"
-$MPIEXE $WRFDIR/$MIEM/real.exe 
+$MPIEXE $WRFDIR/$MIEM/real.exe $WRF_RUNTIME_FLAGS
 ERROR=$(( $ERROR + $? ))
 mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
 EXCOD=$?
 [[ $EXCOD -ne 0 ]] && dispararError 9 "real.exe"
 
 echo "Running WRF for member $MIEM"
-$MPIEXE $WRFDIR/$MIEM/wrf.exe 
+$MPIEXE $WRFDIR/$MIEM/wrf.exe $WRF_RUNTIME_FLAGS 
 ERROR=$(( $ERROR + $? ))
 mv rsl.error.0000 ./wrf_${PASO}_${MIEM}.log
 

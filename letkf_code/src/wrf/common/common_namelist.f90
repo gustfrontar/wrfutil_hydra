@@ -19,6 +19,7 @@ MODULE common_namelist
   INTEGER :: nslots=2 ! number of time slots for 4D-LETKF
   INTEGER :: nbslot=2 ! basetime slot
   INTEGER :: nbv=40   ! Number of ensemble members
+  LOGICAL :: enable_checks = .true. ! Enable / disable multiple checks (e.g. gross errors, etc)
 
   !LOCALIZATION
   REAL(r_size) :: sigma_obs=2000.0d0
@@ -120,7 +121,7 @@ INTEGER :: IERR
 LOGICAL :: file_exist
 !Namelist declaration
 
-NAMELIST / GENERAL / nslots , nbslot , nbv
+NAMELIST / GENERAL / nslots , nbslot , nbv , enable_checks 
 NAMELIST / LOCALIZATION / sigma_obs , sigma_obs_radar, sigma_obsv  , sigma_obsz , sigma_obst , lev_update_q ,  &
  & var_local_uv , var_local_t , var_local_tv , var_local_moist , var_local_ps , var_local_ref , var_local_dop , var_local_co , &
  & var_localp_uv , var_localp_t , var_localp_tv , var_localp_moist , var_localp_ps , var_localp_ref , var_localp_dop ,         &

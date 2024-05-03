@@ -9,7 +9,7 @@ MODULE letkf_obs
 !=======================================================================
 !$USE OMP_LIB
   USE common
-  USE common_letkf
+  !USE common_letkf
   USE common_mpi
   USE common_wrf
   USE common_obs_wrf
@@ -340,7 +340,7 @@ timeslots: DO islot=1,nslots
         IF(NINT(tmpelm(n)) == id_ps_obs) THEN
           CALL itpl_2d(phi0,tmpi(n),tmpj(n),dz)
           tmpk(n) = tmplev(n) - dz
-          IF(ABS(tmpk(n)) > threshold_dz) THEN ! pressure adjustment threshold
+          IF(ABS(tmpk(n)) > threshold_dz .AND. enable_checks ) THEN ! pressure adjustment threshold
             WRITE(6,*)'Pressure adjustment fails'
             WRITE(6,*)tmpelm(n),tmplon(n),tmplat(n),tmpi(n),tmpj(n),tmpk(n),tmpdat(n),tmperr(n)
             CYCLE
@@ -350,8 +350,8 @@ timeslots: DO islot=1,nslots
            NINT(tmpelm(n)) == id_us_obs .or. NINT(tmpelm(n)) == id_vs_obs ) THEN
            CALL itpl_2d(phi0,tmpi(n),tmpj(n),dz)
            dz = tmplev(n) - dz
-           tmpk(n) = 1.00001d0
-           IF( ABS( dz ) > 200.0 )THEN
+           tmpk(n) = dz       !Modified to store the difference between the model topography and the station heigth. 
+           IF( ABS( dz ) > 200.0 .AND. enable_checks )THEN
              WRITE(6,*)'Assimilation of surface observation fails, delta z is too high'
              CYCLE
            ENDIF
@@ -415,21 +415,21 @@ IF( nobs + nobsradar .GT. 0)THEN
 
     IF(tmpelm(n) == id_tcmip_obs) THEN
 !!! (1) gross_error set for tcmip_obs
-      IF(ABS(tmpdep(n)) > gross_error_tycmip) THEN !gross error  
+      IF(ABS(tmpdep(n)) > gross_error_tycmip .AND. enable_checks ) THEN !gross error  
         tmpdep(n)=undef
       END IF
     ELSE IF(tmpelm(n) == id_tclon_obs .or. tmpelm(n) == id_tclat_obs) THEN
-      IF(ABS(tmpdep(n)) > gross_error_tycll) THEN
+      IF(ABS(tmpdep(n)) > gross_error_tycll .AND. enable_checks ) THEN
         tmpdep(n)=undef
       END IF
     ELSE IF(tmpelm(n) == id_reflectivity_obs )THEN
-      IF(ABS(tmpdep(n)) > gross_error_reflectivity*tmperr(n) .AND. .NOT. force_norain_assimilation )THEN
+      IF(ABS(tmpdep(n)) > gross_error_reflectivity*tmperr(n) .AND. .NOT. force_norain_assimilation .AND. enable_checks )THEN
         write(6,*)'Observation rejected',tmpelm(n),tmpdep(n),tmplat(n),tmplon(n)
         tmpdep(n)=undef
       ENDIF
     ELSE  
        !write(6,*)'Observation ',tmpelm(n),tmpdat(n),tmpdat(n)-tmpdep(n),tmpdep(n),tmplat(n),tmplon(n),tmplev(n)
-      IF(ABS(tmpdep(n)) > gross_error*tmperr(n)) THEN !gross error
+      IF(ABS(tmpdep(n)) > gross_error*tmperr(n) .AND. enable_checks ) THEN !gross error
         write(6,*)'Observation rejected',tmpelm(n),tmpdep(n),tmplat(n),tmplon(n)
         tmpdep(n)=undef
       END IF
@@ -678,55 +678,32 @@ iprh=0
         IF( hdxf(iobs,i) .GT. minref)THEN
            hdxf(iobs,i)=10*log10(hdxf(iobs,i)) 
            rainratio=rainratio+1.0d0
-        ELSEIF( hdxf(iobs,i) == minref )THEN
+        ELSEIF( hdxf(iobs,i) .LT. minref )THEN
            hdxf(iobs,i)=minrefdbz
-        !ELSE
-        !   hdxf(iobs,i)=minrefdbz
         ENDIF
      ENDDO
 
      rainratio=rainratio/REAL(nmember,r_size)
 
+     
      IF( rainratio .GE. rainratio_threshold .AND. value(iobs) .GT. minrefdbz )THEN
          ir=ir+1
-         DO i=1,nmember  
-           IF( hdxf(iobs,i) .LE. minrefdbz )THEN
-             hdxf(iobs,i)=minrefdbz
-           ENDIF
-         ENDDO
      ENDIF
      IF( rainratio .LT. rainratio_threshold .AND. value(iobs) .GT. minrefdbz )THEN
-         IF( use_pseudorh )THEN
-            !This will be a pseudo rh observation
-            iprh=iprh+1
-            DO i=1,nmember  
-              IF( hdxf(iobs,i) .LT. minrefdbz )THEN
-                hdxf(iobs,i)=hdxf(iobs,i)+1000.0d0 !Restore the rh value.
-              ELSE
-                hdxf(iobs,i)=1.0d0 !If the member has reflectivity assume 100% rh.
-              ENDIF
-            ENDDO
-            value(iobs)=1.0d0 
-            id(iobs)=id_pseudorh_obs 
-            error(iobs)=pseudorh_error
-         ELSE
-            ilt=ilt+1
-            hdxf(iobs,:)=undef  !Observation rejected due to low rain threshold.
-         ENDIF
+       IF( enable_checks )THEN
+         ilt=ilt+1
+         hdxf(iobs,:)=undef  !Observation rejected due to low rain threshold.
+       ENDIF
      ENDIF
      IF( value(iobs) == minrefdbz .AND. rainratio == 0.0d0 )THEN
+       IF( enable_checks )THEN
          ius=ius+1           !Observation rejected because it is useless
          hdxf(iobs,:)=undef
+       ENDIF
      ENDIF
      IF( value(iobs) == minrefdbz .AND. rainratio .GT. 0.0d0 )THEN
          izeroref = izeroref + 1
-         DO i=1,nmember  !Convert all pseudo rh values to minimum reflectivity.
-           IF( hdxf(iobs,i) .LE. minrefdbz )THEN
-             hdxf(iobs,i)=minrefdbz
-           ENDIF
-         ENDDO
      ENDIF
-
 
   ENDDO
 

@@ -43,31 +43,6 @@ $PARF90 $OMP $FFLAGS $INC_NETCDF -o letkf.exe *.o $LBLAS $LIB_NETCDF
 rm -f *.mod
 rm -f *.o
 
-#Build update_wrf_time.f90
-$PARF90 $OMP $FFLAGS -c SFMT.f90
-$PARF90 $OMP $FFLAGS -c common.f90
-$PARF90 $OMP $FFLAGS -c module_map_utils.f90
-$PARF90 $OMP $FFLAGS $INC_NETCDF -c common_wrf.f90
-$PARF90 $OMP $FFLAGS $INC_NETCDF -c update_wrf_time.f90
-$PARF90 $OMP $FFLAGS $INC_NETCDF -o update_wrf_time.exe *.o $LBLAS $LIB_NETCDF
-
-rm -f *.mod
-rm -f *.o
-
-rm SFMT.f90
-rm common.f90
-rm common_mpi.f90
-rm common_mtx.f90
-rm common_letkf.f90
-rm common_wrf.f90
-rm common_mpi_wrf.f90
-rm common_obs_wrf.f90
-rm module_map_utils.f90
-rm common_smooth2d.f90
-rm common_namelist.f90
-rm netlib.f
-
-tar -cvf ${current_dir}/bin/letkf_${COMPILATION_NAME}.tar ./*.exe ./letkf.namelist
 
 GREEN=$'\e[0;32m'
 RED=$'\e[0;31m'
@@ -85,4 +60,82 @@ else
    exit 1
 fi
 
+
+
+#Build update_wrf_time.f90
+$PARF90 $OMP $FFLAGS -c SFMT.f90
+$PARF90 $OMP $FFLAGS -c common.f90
+$PARF90 $OMP $FFLAGS -c module_map_utils.f90
+$PARF90 $OMP $FFLAGS $INC_NETCDF -c common_wrf.f90
+$PARF90 $OMP $FFLAGS $INC_NETCDF -c update_wrf_time.f90
+$PARF90 $OMP $FFLAGS $INC_NETCDF -o update_wrf_time.exe *.o $LBLAS $LIB_NETCDF
+
+rm -f *.mod
+rm -f *.o
+
+GREEN=$'\e[0;32m'
+RED=$'\e[0;31m'
+NC=$'\e[0m'
+if [ -e ./update_wrf_time.exe ] ; then
+   echo "${GREEN}#######################################################"       
+   echo "${GREEN} SUCCESSFULLY COMPILED UPDATE_WRF_TIME!!!!"
+   echo "${GREEN}#######################################################"
+   echo "${NC}"
+else
+   echo "${RED}#########################################################"       
+   echo "${RED} ERROR: COMPILATION OF WRF UPDATE_WRF_TIME!!!!"
+   echo "${RED}#########################################################"       
+   echo "${NC}"
+   exit 1
+fi
+
+$PARF90 $OMP $FFLAGS -c SFMT.f90
+$PARF90 $OMP $FFLAGS -c common.f90
+$PARF90 $OMP $FFLAGS -c common_mpi.f90
+$PARF90 $OMP $FFLAGS -c module_map_utils.f90
+$PARF90 $OMP $FFLAGS $INC_NETCDF -c common_wrf.f90
+$PARF90 $OMP $FFLAGS $INC_NETCDF -c common_namelist.f90
+$PARF90 $OMP $FFLAGS -c common_smooth2d.f90
+$PARF90 $OMP $FFLAGS $INC_NETCDF -c common_obs_wrf.f90
+$PARF90 $OMP $FFLAGS $INC_NETCDF -c common_mpi_wrf.f90
+$PARF90 $OMP $FFLAGS $INC_NETCDF -c letkf_obs.f90
+$PARF90 $OMP $FFLAGS $INC_NETCDF -c obs_ope.f90
+$PARF90 $OMP $FFLAGS $INC_NETCDF -o obs_ope.exe *.o $LBLAS $LIB_NETCDF
+
+rm -f *.mod
+rm -f *.o
+
+GREEN=$'\e[0;32m'
+RED=$'\e[0;31m'
+NC=$'\e[0m'
+if [ -e ./obs_ope.exe ] ; then
+   echo "${GREEN}#######################################################"       
+   echo "${GREEN} SUCCESSFULLY COMPILED OBS_OPE!!!!"
+   echo "${GREEN}#######################################################"
+   echo "${NC}"
+else
+   echo "${RED}#########################################################"       
+   echo "${RED} ERROR: COMPILATION OF WRF OBS_OPE!!!!"
+   echo "${RED}#########################################################"       
+   echo "${NC}"
+   exit 1
+fi
+
+
+tar -cvf ${current_dir}/bin/letkf_${COMPILATION_NAME}.tar ./*.exe ./letkf.namelist
+
+
+
+rm SFMT.f90
+rm common.f90
+rm common_mpi.f90
+rm common_mtx.f90
+rm common_letkf.f90
+rm common_wrf.f90
+rm common_mpi_wrf.f90
+rm common_obs_wrf.f90
+rm module_map_utils.f90
+rm common_smooth2d.f90
+rm common_namelist.f90
+rm netlib.f
 

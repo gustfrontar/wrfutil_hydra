@@ -443,7 +443,7 @@ SUBROUTINE read_ens_mpi_alltoall(file,member,v3d,v2d)
   REAL(r_sngl) , ALLOCATABLE :: bufr(:,:,:)
   !REAL(r_sngl) :: bufs(nij1max,nlevall,nprocs)
   !REAL(r_sngl) :: bufr(nij1max,nlevall,nprocs)
-  INTEGER :: k,n,j,m,mcount,p
+  INTEGER :: k,j,m,mcount,p
   INTEGER :: ns(nprocs),nst(nprocs),nr(nprocs),nrt(nprocs)
 
   CHARACTER(20) :: filename='xxxx00000'

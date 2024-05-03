@@ -80,7 +80,6 @@ PROGRAM letkf
   !
   ! CONVENTIONAL AND RADAR OBS
   !
-  WRITE(*,*)'CTRL0'
   CALL set_letkf_obs
 
   CALL CPU_TIME(rtimer)

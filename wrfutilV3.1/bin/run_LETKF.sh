@@ -165,7 +165,7 @@ mv $LETKFDIRRUN/analemean $DIRANAL   #Analysis mean
 cp $LETKFDIRRUN/obs.dat $DIRANAL
 
 # Guardamos un NOUT
-mv $LETKFDIRRUN/NOUT-000 $DIRANAL
+mv $LETKFDIRRUN/NOUT-00000 $DIRANAL
 
 echo "Successfully finished running WRF-LETKF"
 

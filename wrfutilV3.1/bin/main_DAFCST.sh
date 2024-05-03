@@ -50,7 +50,7 @@ while [ $REMAINING_STEPS -gt 0 ] ; do
    echo "$(printf "%02d" $FORECAST_STEP)  | $(date +'%T')" >>  $LOGDIR/da_forecasts.log
 
    echo "Running the model" > $LOGDIR/dafcst_${PASO}.log
-   time $BASEDIR/bin/run_DAFcst.sh >> $LOGDIR/dafcst_${PASO}.log  2>&1
+   time $BASEDIR/bin/run_DAFcst.sh >> $LOGDIR/dafcst_${FORECAST_STEP}.log  2>&1
    REMAINING_STEPS=$((10#$REMAINING_STEPS-1))
    FORECAST_STEP=$((10#$FORECAST_STEP+1))
    #Update PASO in the configuration file.

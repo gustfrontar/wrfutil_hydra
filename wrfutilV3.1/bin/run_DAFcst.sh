@@ -106,11 +106,6 @@ if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then
    WRFDIR=${PJM_SHAREDTMP}/WRF/    #WRFDIR is redefined here
 fi
 
-cd $WRFDIR
-[[ -d $WRFDIR/$MIEM ]] && rm -r $WRFDIR/$MIEM
-mkdir -p $WRFDIR/$MIEM
-cd $WRFDIR/$MIEM
-
 if [ $MULTIMODEL -eq 0 ] ; then
    NLCONF=$(printf '%03d' ${MODEL_CONF} )
 else 
@@ -181,7 +176,7 @@ else
 fi
 
 echo "Running REAL for member $MIEM"
-$MPIEXE $WRFDIR/$MIEM/real.exe 
+time $MPIEXE $WRFDIR/$MIEM/real.exe 
 ERROR=$(( $ERROR + $? ))
 mv rsl.error.0000 ./real_${FORECAST_STEP}_${MIEM}.log
 
@@ -194,7 +189,7 @@ time $MPIEXESERIAL -stdout-proc ./da_update_bc_${FORECAST_STEP}_${MIEM}.log  $WR
 ERROR=$(( $ERROR + $? ))
 
 echo "Running WRF for member $MIEM"
-$MPIEXE $WRFDIR/$MIEM/wrf.exe 
+time $MPIEXE $WRFDIR/$MIEM/wrf.exe 
 ERROR=$(( $ERROR + $? ))
 mv rsl.error.0000 ./wrf_${FORECAST_STEP}_${MIEM}.log
 
@@ -216,7 +211,7 @@ time check_proc $FORECAST_MEMBER_INI $FORECAST_MEMBER_END
 
 #Copy the guess files corresponding to the analysis time.
 for MIEM in $(seq -w $FORECAST_MEMBER_INI $FORECAST_MEMBER_END ) ; do
-    OUTPUTPATH="$HISTDIR/DAFCST/$(date -u -d "$CFST_INI_DATE UTC" +"%Y%m%d%H%M%S")/"
+    OUTPUTPATH="$HISTDIR/DAFCST/$(date -u -d "$CFST_INI_DATE UTC" +"%Y%m%d%H%M%S")/$MIEM/"
     mkdir -p $OUTPUTPATH
     mv $WRFDIR/$MIEM/wrfout_d01_* $OUTPUTPATH/
     mv $WRFDIR/$MIEM/*.log*       $OUTPUTPATH/
