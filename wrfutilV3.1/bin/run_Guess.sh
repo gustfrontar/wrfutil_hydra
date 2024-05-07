@@ -187,7 +187,7 @@ else
         echo "file_tar='$WRFDIR/$MIEM/$FILE_TAR' " >> ./pertmetem.namelist
         echo "/                                " >> ./pertmetem.namelist
         echo "Running INTERP_MET_EM for member $MIEM"
-        $MPIEXESERIAL ./interp_met_em.exe  
+        $MPIEXESERIAL ./interp_met_em.exe > ./interp_met_em.log 
         ERROR=$(( $ERROR + $? ))
         #ln -sf $WPSDIR/$MIEM/$FILE_TAR  ./
         #TODO: Check if would be better to create the new files in the WPS_MET_EM_DIR so
