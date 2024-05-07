@@ -35,12 +35,12 @@ queue (){
         #Create the machine files (in MPI VCOORD FILE FUJITSU FORMAT)            
         echo "NNODE=0          #Starting node                                          "  >> ${QPROC_NAME}.pbs
         echo "IJOB=0           #Starint job                                            "  >> ${QPROC_NAME}.pbs
-        echo "rm -fr ./machine                                                         "  >> ${QPROC_NAME}.pbs
+        echo "rm -fr ${QWORKPATH}/\${MIEM}/machine                                     "  >> ${QPROC_NAME}.pbs
 	echo "for MYMIEM in \$(seq -w $ini_mem $end_mem ); do                          "  >> ${QPROC_NAME}.pbs
 	echo "  if [ \$MYMIEM -eq \$MIEM ] ; then                                      "  >> ${QPROC_NAME}.pbs
         echo "   for MY_NODE in \$(seq -w \$NNODE \$((\$NNODE +  $QNODE - 1)) ) ; do   "  >> ${QPROC_NAME}.pbs
         echo "       for MY_CORE in \$(seq -w 1  $QPROC ) ; do                         "  >> ${QPROC_NAME}.pbs
-        echo "          echo \"(\${MY_NODE}) core=1 \" >>  ./machine                   "  >> ${QPROC_NAME}.pbs
+        echo "          echo \"(\${MY_NODE}) core=1 \" >> ${QWORKPATH}/\${MIEM}/machine"  >> ${QPROC_NAME}.pbs
         echo "       done                                                              "  >> ${QPROC_NAME}.pbs
         echo "   done                                                                  "  >> ${QPROC_NAME}.pbs
 	echo "  fi                                                                     "  >> ${QPROC_NAME}.pbs
@@ -53,8 +53,8 @@ queue (){
         echo "done                                                                     "  >> ${QPROC_NAME}.pbs
         #Initialize error count and set MPI execution commands.
         echo "ERROR=0                          "                                          >> ${QPROC_NAME}.pbs
-        echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -vcoordfile ./machine\"            "  >> ${QPROC_NAME}.pbs
-        echo "export MPIEXE=\"\$MPIEXEC                -vcoordfile ./machine \"        "  >> ${QPROC_NAME}.pbs ## Comando MPIRUN con cantidad de nodos y cores por nodos           
+        echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -vcoordfile ${QWORKPATH}/\${MIEM}/machine\" "  >> ${QPROC_NAME}.pbs
+        echo "export MPIEXE=\"\$MPIEXEC             -vcoordfile ${QWORKPATH}/\${MIEM}/machine \" "  >> ${QPROC_NAME}.pbs ## Comando MPIRUN con cantidad de nodos y cores por nodos           
 	#Add all job specific commands.
         echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}.pbs
 	#Indicate if this JOB was successful or not

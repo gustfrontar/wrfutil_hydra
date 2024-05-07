@@ -86,14 +86,17 @@ sed -i -e "s|__IOTYPE__|$IOTYPE|g"            $WPSDIR/namelist.wps
 if [ ! -e $WPSDIR/geogrid/geo_em.d01.nc ] ; then
    echo "Ejecutando geogrid"
    mkdir -p $WPSDIR/geogrid
-   ln -sf $WPSDIR/code/*   $WPSDIR/geogrid/
-   cp $WPSDIR/namelist.wps $WPSDIR/geogrid/ 
+   #ln -sf $WPSDIR/code/*   $WPSDIR/geogrid/
+   #cp $WPSDIR/namelist.wps $WPSDIR/geogrid/ 
 read -r -d '' QSCRIPTCMD << "EOF"
         cd $WPSDIR/geogrid
+        ln -sf $WPSDIR/code/*   ./
+        cp $WPSDIR/namelist.wps ./
 	ulimit -s unlimited
         export FORT90L=${WPS_RUNTIME_FLAGS}
         $MPIEXE ./geogrid.exe 
         ERROR=$(( $ERROR + $? ))
+        cp geo_em.d01.nc $WPSDIR/geogrid/
 EOF
         QPROC_NAME=GEOG_$PASO
 	QPROC=$WPSPROC
