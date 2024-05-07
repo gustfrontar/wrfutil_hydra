@@ -101,8 +101,8 @@ cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
 
 ln -sf $WRFDIR/code/* . 
 
-DATE_FORECAST_INI=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREC*$PASO)) seconds" +"%Y-%m-%d %T")
-DATE_FORECAST_END=$(date -u -d "$FECHA_INI UTC +$((($FORECAST_INI_FREC*$PASO)+$FORECAST_LEAD_TIME )) seconds" +"%Y-%m-%d %T")
+DATE_FORECAST_INI=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
+DATE_FORECAST_END=$(date -u -d "$FECHA_INI UTC +$((($FORECAST_INI_FREQ*$PASO)+$FORECAST_LEAD_TIME )) seconds" +"%Y-%m-%d %T")
 
 if [ $WPS_CYCLE -eq 1 ] ; then
    INI_STEP_DATE=$(date -u -d "$FECHA_INI UTC +$(($FORECAST_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
