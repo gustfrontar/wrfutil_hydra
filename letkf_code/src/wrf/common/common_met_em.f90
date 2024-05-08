@@ -42,7 +42,7 @@ MODULE common_met_em
 
   !Variables to be read and perturbed.
   LOGICAL, PARAMETER :: OPTIONAL_VARIABLE(nvar)= &  !Some input variables are optional (eg. condensates)
-  &(/ .false. , .false. , .true. , .false. , .false. , .false. , .false. , .true. , .true. , .true. , &
+  &(/ .false. , .false. , .true. , .false. , .true. , .false. , .false. , .true. , .true. , .true. , &
   !   U          V         W         T         P1         P2   ,   GHT       RH        QV        QC        
   & .true. , .true. , .true. , .true. , .true. , .false. , .false. ,  &
   !   QR       QCI      QS       QG       QH       PS       SLP 
