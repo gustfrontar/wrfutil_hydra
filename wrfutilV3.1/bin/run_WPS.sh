@@ -161,9 +161,9 @@ elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
    CDATE=$DATE_INI_BDY 
 
    #Set the WPS_FILE_FORMAT [this depends on the file frequency]
-   if [ $FORECAST_BDY_FREQ -lt 60 ] ; then
+   if [ $INTERVALO_BDY -lt 60 ] ; then
       WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H:%M:%S"
-   elif [ $FORECAST_BDY_FREQ -lt 3600 ] ; then
+   elif [ $INTERVALO_BDY -lt 3600 ] ; then
       WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H:%M"
    else
       WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H"
