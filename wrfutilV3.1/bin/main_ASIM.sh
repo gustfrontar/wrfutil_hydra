@@ -68,10 +68,10 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
 	 echo "I'm not going to run WPS" >> $LOGDIR/wps_${PASO}.log
       fi
       if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 && -z ${EXTWPSPATH} ]] ; then
-	 echo "Running Pert met em" >> $LOGDIR/pert_met_em__${PASO}.log
+	 echo "Running Pert met em" >> $LOGDIR/pert_met_em_${PASO}.log
          time $BASEDIR/bin/run_Pert.sh >> $LOGDIR/pert_met_em_${PASO}.log   2>&1
       elif [[ $BDY_PERT -eq 0 && -z ${EXTWPSPATH} ]] ; then
-         echo "Linking met_em directory" >> $LOGDIR/pert_met_em__${PASO}.log
+         echo "Linking met_em directory" >> $LOGDIR/pert_met_em_${PASO}.log
 	 ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em >> $LOGDIR/pert_met_em_${PASO}.log  2>&1
       elif [ ! -z ${EXTWPSPATH} ] ; then 
 	 mkdir $HISTDIR/WPS/                      >> $LOGDIR/pert_met_em_${PASO}.log  2>&1
