@@ -194,7 +194,9 @@ SUBROUTINE set_letkf_obs
   tmpdep=0.0
   tmphdxf=0.0
   tmpradar=0.0
-
+  tmpaz=0.0
+  tmpra=0.0
+  tmpel=0.0
 
 !
 ! LOOP of timeslots 
@@ -291,7 +293,7 @@ timeslots: DO islot=1,nslots
       !Keep model height 
       zmodel=v3d(:,:,:,iv3d_ph)/gg
 
-!$OMP PARALLEL DO SCHEDULE(DYNAMIC) PRIVATE(n,dz,tg,qg)
+!###$OMP PARALLEL DO SCHEDULE(DYNAMIC) PRIVATE(n,dz,tg,qg)
       DO n=nini,nend
 
 
@@ -364,7 +366,7 @@ timeslots: DO islot=1,nslots
          & tmpaz(n),tmpel(n),v3d,v2d,tmphdxf(n,im))
 
       END DO
-!$OMP END PARALLEL DO
+!###$OMP END PARALLEL DO
 
       !l = l+1
     END DO
