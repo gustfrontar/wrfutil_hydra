@@ -2,21 +2,38 @@
 
 # source this before compile and run letkf on Fugaku
 
-echo "hello"
-#exit  0 
-
 . /vol0004/apps/oss/spack/share/spack/setup-env.sh
 
 NC_HASH=`spack find -lx netcdf-c%fj | grep netcdf-c | awk '{print $1}'`
-echo NC_HASH=$NC_HASH
 NF_HASH=`spack find -lx netcdf-fortran%fj | grep netcdf-fortran | awk '{print $1}'`
 PN_HASH=`spack find -lx parallel-netcdf%fj | grep parallel-netcdf | awk '{print $1}'`
 HDF_HASH=`spack find -l --deps /${NC_HASH} | grep hdf5 | awk '{print $1}'`
 export SPACK_HDF=`spack location --install-dir /${HDF_HASH}`
-echo SPACK_NETCDF_C=`spack location --install-dir /${NC_HASH}`
 export SPACK_NETCDF_C=`spack location --install-dir /${NC_HASH}`
 export SPACK_NETCDF_F=`spack location --install-dir /${NF_HASH}`
 export SPACK_PNETCDF=`spack location --install-dir /${PN_HASH}`
 
+# for WRF 
+export NETCDF=/data/hp150019/u10335/test_wrf/wrfutil_hydra_newest/LIBRARIES/netcdf
+export NETCDF_classic=1
+export GRIB2=/data/hp150019/u10335/test_wrf/wrfutil_hydra_newest/LIBRARIES/grib2
 
+# for hdf_fortran
+export HDF2=/data/hp150019/u10335/test_wrf/wrfutil_hydra_newest/LIBRARIES/netcdf
+
+#export PATH=$NETCDF/bin:$PATH
+#export LD_LIBRARY_PATH=$GRIB2/lib:$NETCDF/lib:$LD_LIBRARY_PATH
+export PATH=$SPACK_NETCDF_C/bin:$PATH
+export LD_LIBRARY_PATH=$GRIB2/lib:$SPACK_NETCDF_C/lib:$SPACK_NETCDF_F/lib:$SPACK_HDF/lib:$HDF2/lib:/vol0004/apps/oss/spack-v0.21/opt/spack/linux-rhel8-a64fx/fj-4.10.0/hdf5-1.14.3-yhazdvld6vknkhmbcqrbl34ifsac2hao/lib:$LD_LIBRARY_PATH
+
+
+export MACHINE=FUGAKU
+
+export JASPERLIB=$GRIB2/lib
+export JASPERINC=$GRIB2/include
+
+export FC=frtpx
+export F90=frtpx
+export CC=fccpx
+export CXX=fccpx
 
