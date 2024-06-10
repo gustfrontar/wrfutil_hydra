@@ -22,7 +22,7 @@ MODULE common_wrf
 !-----------------------------------------------------------------------
 
   !MODULE VARIABLES (NOT READ FROM NAMELIST) 
-  INTEGER, PARAMETER :: nv3d=15
+  INTEGER, PARAMETER :: nv3d=12
   INTEGER, PARAMETER :: nv2d=12
   INTEGER, PARAMETER :: np2d=3
   INTEGER, PARAMETER :: ns3d=2  !Soil variables
@@ -50,9 +50,9 @@ MODULE common_wrf
   INTEGER,PARAMETER :: iv3d_qs=11
   INTEGER,PARAMETER :: iv3d_qg=12
   !3D CHEM VARS
-  INTEGER,PARAMETER :: iv3d_coant=13
-  INTEGER,PARAMETER :: iv3d_cobck=14
-  INTEGER,PARAMETER :: iv3d_cobbu=15
+!  INTEGER,PARAMETER :: iv3d_coant=13
+!  INTEGER,PARAMETER :: iv3d_cobck=14
+!  INTEGER,PARAMETER :: iv3d_cobbu=15
   !2D VARIABLES
   INTEGER,PARAMETER :: iv2d_ps=1
   INTEGER,PARAMETER :: iv2d_t2=2
@@ -107,9 +107,11 @@ MODULE common_wrf
   LOGICAL, PARAMETER :: OPTIONAL_VARIABLE(nv3d+nv2d+np2d+ns3d)= &  !Some input variables are optional (eg. condensates)
   &(/ .false. , .false. , .true. , .false. , .false. , .false. , .true. , .true. , &
   !   U          V         W         T         P         PH      QV        QC        
-  & .true. , .true. , .true. , .true. , .true. , .true. , .true. , .false. , .true. , .true. , .true. , .true. ,&
-  !   QR       QCI      QS       QG     CO_ANT  CO_BCK    CO_BBU     PS        T2M     Q2M       U10M    V10M
-  & .true. , .true. , .true. , .true. , .true. , .true. , .true. , &
+!  & .true. , .true. , .true. , .true. , .true. , .true. , .true. , .false. , .true. , .true. , .true. , .true. ,&
+!  !   QR       QCI      QS       QG     CO_ANT  CO_BCK    CO_BBU     PS        T2M     Q2M       U10M    V10M
+  & .true. , .true. , .true. , .true. , .false. , .true. , .true. , .true. , .true. ,&
+  !   QR       QCI      QS       QG     PS        T2M     Q2M       U10M    V10M
+   & .true. , .true. , .true. , .true. , .true. , .true. , .true. , &
   ! LANDSEA  TSK SNOW     SNOWH    SEAICE   CANWAT         MU
   & .true. , .true. , .true.  , .true. , .true. /)
   !  HFX_F    QFX_F   UST_F     SMOIS    TSLB
@@ -149,9 +151,9 @@ SUBROUTINE set_common_wrf(inputfile)
   element(iv3d_qci) ='QICE'
   element(iv3d_qg) = 'QGRAUP'
   element(iv3d_qs) = 'QSNOW'
-  element(iv3d_coant) = 'CO_ANT'
-  element(iv3d_cobck) = 'CO_BCK'
-  element(iv3d_cobbu) = 'CO_BBU'
+!  element(iv3d_coant) = 'CO_ANT'
+!  element(iv3d_cobck) = 'CO_BCK'
+!  element(iv3d_cobbu) = 'CO_BBU'
   element(nv3d+iv2d_ps)   = 'PSFC'
   element(nv3d+iv2d_t2)   = 'T2  '
   element(nv3d+iv2d_q2)   = 'Q2  '
@@ -493,7 +495,7 @@ IF ( flag .EQ. '3d' )THEN
        nzvar=nlev-1
        auxvarname='PHB'
        readvar=present_variable(iv)
-      CASE(iv3d_t,iv3d_qv,iv3d_qc,iv3d_qr,iv3d_qci,iv3d_qg,iv3d_qs,iv3d_coant,iv3d_cobck,iv3d_cobbu)
+      CASE(iv3d_t,iv3d_qv,iv3d_qc,iv3d_qr,iv3d_qci,iv3d_qg,iv3d_qs)
        nxvar=nlon-1
        nyvar=nlat-1
        nzvar=nlev-1
@@ -738,7 +740,7 @@ IF ( flag .EQ. '3d' )THEN
        nzvar=nlev-1
        auxvarname='PHB'
        writevar=present_variable(iv)
-      CASE(iv3d_t,iv3d_qv,iv3d_qc,iv3d_qr,iv3d_qci,iv3d_qg,iv3d_qs,iv3d_coant,iv3d_cobck,iv3d_cobbu)
+      CASE(iv3d_t,iv3d_qv,iv3d_qc,iv3d_qr,iv3d_qci,iv3d_qg,iv3d_qs)
        nxvar=nlon-1
        nyvar=nlat-1
        nzvar=nlev-1
