@@ -58,7 +58,7 @@ queue (){
                 echo "MIEM=$IMIEM "                                                                             >> ${QPROC_NAME}_${IMIEM}.pbs
 	        echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -machinefile ../machine.$IMIEM -bootstrap slurm \" ">> ${QPROC_NAME}_${IMIEM}.pbs
          	echo "export MPIEXE=\"mpiexec -np ${QPROC} -machinefile ../machine.$IMIEM -bootstrap slurm  \" ">> ${QPROC_NAME}_${IMIEM}.pbs                   ## Comando MPIRUN con cantidad de nodos y cores por nodos           
-	       	test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMIEM}"                                             >> ${QPROC_NAME}_${IMIEM}.pbs
+	       	test $QWORKPATH &&  echo "mkdir -p ${QWORKPATH}/${IMIEM} ; cd ${QWORKPATH}/${IMIEM}"            >> ${QPROC_NAME}_${IMIEM}.pbs
 	        echo "${QSCRIPTCMD}"                                                                            >> ${QPROC_NAME}_${IMIEM}.pbs
 	        echo "if [[ -z \${ERROR} ]] || [[ \${ERROR} -eq 0 ]] ; then"                                    >> ${QPROC_NAME}_${IMIEM}.pbs
 	        echo "touch $PROCSDIR/${QPROC_NAME}_${IMIEM}_ENDOK  "                                           >> ${QPROC_NAME}_${IMIEM}.pbs  #Si existe la variable RES en el script la usamos
