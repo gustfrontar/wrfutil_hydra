@@ -30,7 +30,7 @@ fi
 cd $PERTDIR
 
 PERTRUNDIR=$PERTDIR/00/
-mkdir -p $PERTRUNDIR  #Pert work dir.
+#mkdir -p $PERTRUNDIR  #Pert work dir.
 
 if [ $WPS_CYCLE -eq 1 ] ; then
    #WPS_CYCLE = 1 means that boundary data will be taken from forecasts initialized at different times.
@@ -84,30 +84,6 @@ while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $DATE_END_BDY_INT ] ; do
 done
 time wait
 
-echo "Creating links to the pert_met_em.exe application"
-#Create links for the met_em_files in the run directory.
-CDATE=$DATE_INI_BDY
-ITIME=1
-while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -lt $DATE_END_BDY_INT ] ; do
-   met_em_time=$(printf '%02d' $((10#$ITIME)))
-   for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-       #member1=$(printf '%02d' $((10#$MIEM)))
-       CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-       met_em_file_name=$HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc
-       ln -sf $met_em_file_name $PERTRUNDIR/ep${met_em_time}$(printf '%05d' $((10#$MIEM))) &
-   done
-   time wait
-   for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN ) ; do
-       #member1=$(printf '%02d' $((10#$MIEM)))
-       CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-       met_em_file_name=$HISTDIR/WPS/met_em_ori/$DATE_INI_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc
-       ln -sf $met_em_file_name $PERTRUNDIR/eo${met_em_time}$(printf '%05d' $((10#$MIEM))) &
-   done
-   time wait
-   ITIME=$(( $ITIME + 1 ))
-   CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
-done
-
 echo "Generating the namelist"
 #Prepare the namelist.
 NBV_ORI=$(( $BDY_MIEMBRO_FIN - $BDY_MIEMBRO_INI + 1 ))
@@ -124,14 +100,41 @@ sed -i -e "s|__METHOD__|$PERT_TYPE|g"  $PERTDIR/pertmetem.namelist
 sed -i -e "s|__SIGMA__|$PERT_AMP|g"    $PERTDIR/pertmetem.namelist
 sed -i -e "s|__NITER__|$NITER|g"       $PERTDIR/pertmetem.namelist
 
+echo "Creating links to the pert_met_em.exe application"
+#Create links for the met_em_files in the run directory.
+CDATE=$DATE_INI_BDY
+ITIME=1
+while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -lt $DATE_END_BDY_INT ] ; do
+ met_em_time=$(printf '%02d' $((10#$ITIME)))
+  for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
+    #member1=$(printf '%02d' $((10#$MIEM)))
+    CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
+    met_em_file_name=$HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc
+    ln -sf $met_em_file_name $PERTRUNDIR/ep${met_em_time}$(printf '%05d' $((10#$MIEM))) &
+   done
+   time wait
+   for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN ) ; do
+     #member1=$(printf '%02d' $((10#$MIEM)))
+     CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
+     met_em_file_name=$HISTDIR/WPS/met_em_ori/$DATE_INI_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc
+     ln -sf $met_em_file_name $PERTRUNDIR/eo${met_em_time}$(printf '%05d' $((10#$MIEM))) &
+   done
+   time wait
+   ITIME=$(( $ITIME + 1 ))
+   CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
+done
 
 ln -sf $PERTDIR/code/pert_met_em.exe $PERTDIR/00/
 ln -sf $PERTDIR/pertmetem.namelist   $PERTDIR/00/
+
+
 #script de ejecucion
 read -r -d '' QSCRIPTCMD << "EOF"
+
   cd $PERTDIR/00/
   time $MPIEXE  ./pert_met_em.exe
   ERROR=$(( $ERROR + $? ))
+
 EOF
 
 # Parametros de encolamiento
