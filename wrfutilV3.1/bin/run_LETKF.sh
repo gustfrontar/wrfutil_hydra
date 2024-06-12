@@ -125,6 +125,7 @@ done
 #script de ejecucion
 read -r -d '' QSCRIPTCMD << "EOF"
   cd $LETKFDIR/00/
+  ln -sf $LETKFDIR/code/* .
   time $MPIEXE  ./letkf.exe
   ERROR=$(( $ERROR + $? ))
 EOF

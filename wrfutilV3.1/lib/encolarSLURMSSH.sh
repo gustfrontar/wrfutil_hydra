@@ -1,3 +1,23 @@
+adjust_format(){
+
+  input_nodelist=${1}
+
+  if [[ "$input_nodelist" =~ "[" ]]; then
+    inodes=$(echo $input_nodelist | cut -d "[" -f 2 | cut -d "-" -f 1)
+    inodee=$(echo $input_nodelist | cut -d "-" -f 2 | cut -d "]" -f 1)
+    cnode=$(echo $input_nodelist | cut -d "[" -f 1)
+    cnum=${#inodes}
+    output_nodelist=$cnode$inodes
+    for i in $(seq -f %$(printf %02g ${cnum})g $((10#${inodes}+1)) $((10#${inodee})) ) ;do
+      output_nodelist=$output_nodelist","$cnode$i
+    done
+  else
+    output_nodelist="$input_nodelist"
+  fi
+
+  echo $output_nodelist 
+}
+
 queue (){
 	#In the context of this function:
 	#QPROC means how many cores do we need for each ensemble member (or for the job in case a unique member is indicated)
@@ -14,7 +34,7 @@ queue (){
 	#Construct the machine files, write the scripts and run them. 
 
         #1 - Create machine files
-	IFS=', ' read -r -a NODES <<< $SLURM_JOB_NODELIST
+	IFS=', ' read -r -a NODES <<< $(adjust_format "$SLURM_JOB_NODELIST")
 	echo NODES="${NODES[@]}"
 	TOT_CORES=$(( $ICORE * $INODE ))
         MAX_JOBS=$(( $TOT_CORES / $QPROC ))  #Floor rounding (bash default)
@@ -22,7 +42,7 @@ queue (){
 
 	IPCORE=1        #Counter for the number of cores on current job
 	IJOB=1          #Counter for the number of jobs.
-	IMIEM=$ini_mem  #Counter for the ensemble member
+	IMIEM=$((10#$ini_mem))  #Counter for the ensemble member
 	IPNODE=0        #Counter for the node number in the current job
 	IPPROCINNODE=1  #Counter of number of procs used in the current node.
 	rm -fr machine.*
@@ -44,6 +64,7 @@ queue (){
             fi
 	    if [ $IPPROCINNODE -gt $ICORE ] ; then #We reached the maximum number of cores for this node.
 	       IPNODE=$(( $IPNODE + 1 ))
+	       IPPROCINNODE=1
 	    fi
         done  
 

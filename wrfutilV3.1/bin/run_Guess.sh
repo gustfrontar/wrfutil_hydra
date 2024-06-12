@@ -16,7 +16,7 @@ source $BASEDIR/conf/model.conf
 source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
 
 ##### FIN INICIALIZACION ######
-if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then 
+if [ ! -z "${PJM_SHAREDTMP}" -a  ${USETMPDIR} -eq 1 ] ; then 
    echo "Using Fugaku's shared dir to run WRF"
    WRFDIR=${PJM_SHAREDTMP}/WRF
 fi
@@ -210,7 +210,7 @@ if [ $PASO -gt 0 ] ; then
   cp $HISTDIR/ANAL/$(date -u -d "$DATE_FORECAST_INI" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
   ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
   echo "Running DA_UPDATE_BC for member $MIEM"
-  time $MPIEXESERIAL -stdout-proc ./da_update_bc_${PASO}_${MIEM}.log  $WRFDIR/$MIEM/da_update_bc.exe $WRF_RUNTIME_FLAGS  
+  time $MPIEXESERIAL  $WRFDIR/$MIEM/da_update_bc.exe $WRF_RUNTIME_FLAGS > ./da_update_bc_${PASO}_${MIEM}.log  
   ERROR=$(( $ERROR + $? ))
 fi
 

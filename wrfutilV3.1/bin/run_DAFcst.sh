@@ -185,7 +185,7 @@ cp $NAMELISTDIR/parame* .
 mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
 cp $HISTDIR/ANAL/$(date -u -d "$CFST_INI_DATE" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
 ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
-time $MPIEXESERIAL -stdout-proc ./da_update_bc_${FORECAST_STEP}_${MIEM}.log  $WRFDIR/$MIEM/da_update_bc.exe 
+time $MPIEXESERIAL  $WRFDIR/$MIEM/da_update_bc.exe > ./da_update_bc_${FORECAST_STEP}_${MIEM}.log 
 ERROR=$(( $ERROR + $? ))
 
 echo "Running WRF for member $MIEM"
