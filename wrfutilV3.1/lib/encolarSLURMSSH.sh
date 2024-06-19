@@ -3,13 +3,26 @@ adjust_format(){
   input_nodelist=${1}
 
   if [[ "$input_nodelist" =~ "[" ]]; then
-    inodes=$(echo $input_nodelist | cut -d "[" -f 2 | cut -d "-" -f 1)
-    inodee=$(echo $input_nodelist | cut -d "-" -f 2 | cut -d "]" -f 1)
     cnode=$(echo $input_nodelist | cut -d "[" -f 1)
-    cnum=${#inodes}
-    output_nodelist=$cnode$inodes
-    for i in $(seq -f %$(printf %02g ${cnum})g $((10#${inodes}+1)) $((10#${inodee})) ) ;do
-      output_nodelist=$output_nodelist","$cnode$i
+    output_nodelist=""
+    nodenums=$(echo $input_nodelist | cut -d "[" -f 2 | cut -d "]" -f 1)
+    for nodenum in $(echo $nodenums | sed -e "s#\,#\ #g"); do
+      echo $nodenum >> check.log
+      if [[ "$nodenum" =~ "-" ]]; then
+        inodes=$(echo $nodenum | cut -d "-" -f 1)
+        inodee=$(echo $nodenum | cut -d "-" -f 2)
+      else
+        inodes=$nodenum
+        inodee=$nodenum
+      fi
+      cnum=${#inodes}
+      for i in $(seq -f %$(printf %02g ${cnum})g $((10#${inodes})) $((10#${inodee})) ) ;do
+        if [ "$output_nodelist" == "" ]; then
+          output_nodelist=$cnode$inodes
+        else
+          output_nodelist=$output_nodelist","$cnode$i
+        fi
+      done
     done
   else
     output_nodelist="$input_nodelist"
