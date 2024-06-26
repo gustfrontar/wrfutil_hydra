@@ -672,7 +672,7 @@ iprh=0
      IF( value(iobs) .GT. minref)THEN
         value(iobs) = 10*log10( value(iobs) )
      ELSE
-        value(iobs) = minrefdbz
+        value(iobs) = minrefdbz + low_ref_shift
      ENDIF
 
      rainratio=0.0d0
@@ -681,7 +681,7 @@ iprh=0
            hdxf(iobs,i)=10*log10(hdxf(iobs,i)) 
            rainratio=rainratio+1.0d0
         ELSEIF( hdxf(iobs,i) .LT. minref )THEN
-           hdxf(iobs,i)=minrefdbz
+           hdxf(iobs,i)=minrefdbz + low_ref_shift
         ENDIF
      ENDDO
 
@@ -697,13 +697,13 @@ iprh=0
          hdxf(iobs,:)=undef  !Observation rejected due to low rain threshold.
        ENDIF
      ENDIF
-     IF( value(iobs) == minrefdbz .AND. rainratio == 0.0d0 )THEN
+     IF( value(iobs) == minrefdbz + low_ref_shift .AND. rainratio == 0.0d0 )THEN
        IF( enable_checks )THEN
          ius=ius+1           !Observation rejected because it is useless
          hdxf(iobs,:)=undef
        ENDIF
      ENDIF
-     IF( value(iobs) == minrefdbz .AND. rainratio .GT. 0.0d0 )THEN
+     IF( value(iobs) == minrefdbz + low_ref_shift .AND. rainratio .GT. 0.0d0 )THEN
          izeroref = izeroref + 1
      ENDIF
 
@@ -804,10 +804,10 @@ SUBROUTINE monit_mean(file,depout)
      !obs(n)=10*log10(obs(n))
      hdxf=10*log10(hdxf)
      if( obsdat(n) <= minrefdbz )then 
-      obsdat(n)=minrefdbz 
+      obsdat(n)=minrefdbz + low_ref_shift
      endif
      if( hdxf <= minrefdbz )then
-      hdxf=minrefdbz
+      hdxf=minrefdbz + low_ref_shift
      endif
     endif
 

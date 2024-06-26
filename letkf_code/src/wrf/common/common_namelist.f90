@@ -95,6 +95,7 @@ MODULE common_namelist
   LOGICAL            :: use_pseudorh=.false.     !Enable pseudo RH observations.
   REAL(r_size)       :: rainratio_threshold = 0.3d0 !Percentaje of ensemble members with reflectivity greather than 0.
   REAL(r_size)       :: minrefdbz=0.0d0          !Reflectivity values below this threshold won't be assimilated.
+  REAL(r_size)       :: low_ref_shift=0.0d0      !Shift "no-rain" reflectivity value to control increment
   REAL(r_size)       :: pseudorh_error=0.1       !Obserational error for pseudo RH observations.
 
   !OBSGRID SECTION
@@ -133,7 +134,7 @@ NAMELIST / PARAMETER_ESTIMATION / estpar , smooth_par_update_flag , update_param
  & addinfpar , parameter_inflation_type , parameter_fixinflation , additive_inflation_factor , &
  & param_default_value , param_min_value , param_max_value 
 NAMELIST / INFLATION / cov_infl_mul , sp_infl_add , relax_alpha_spread , relax_alpha ,min_infl_mul
-NAMELIST / RADAR_DA  / interpolation_technique ,  nradar , use_wt , use_pseudorh , pseudorh_error , minrefdbz , rainratio_threshold
+NAMELIST / RADAR_DA  / interpolation_technique ,  nradar , use_wt , use_pseudorh , pseudorh_error , minrefdbz , low_ref_shift, rainratio_threshold
 NAMELIST / OBSGRID / nbv , narea , vlon1 , vlon2 , vlat1 , vlat2 , compute_stat, filter_input , regrid_output, regrid_res ,  &
                      regrid_vert_res
 

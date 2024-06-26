@@ -35,6 +35,7 @@
   undef_obs=9.99d9            
   rainratio_threshold = 0.3d0 
   minrefdbz=0.0d0             
+  low_ref_shift=0.0d0             
   pseudo_rh_error=0.1         
 /
 
