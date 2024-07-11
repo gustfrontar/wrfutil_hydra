@@ -1,0 +1,6 @@
+!!!
+!!! Configuration of NetCDF data input
+!!!
+
+!!! parent model variables to ignore (WRF)
+&NetCDF_ITEM item="W" ignore=.true. /
