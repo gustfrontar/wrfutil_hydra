@@ -60,5 +60,7 @@ mkdir -p $HISTDIR
 #tar -h --dereference -cf $WPSDIR/wps.tar   -C $WPSPATH/ ./
 #tar -h --dereference -cf $WRFDIR/wrf.tar   -C $WRFPATH/run/ ./
 ln -s $SCALEPATH/bin/scale-rm_pp${SCALE_opt}   $SCALEPPDIR/
-ln -s $SCALEPATH/bin/scale-rm_init${SCALE_opt} $SCALEDIR/
+ln -s $SCALEPATH/bin/scale-rm_init${SCALE_opt} $SCALEPPDIR/
+ln -s $SCALEPATH/bin/sno${SCALE_opt}           $SCALEPPDIR/
 ln -s $SCALEPATH/bin/scale-rm${SCALE_opt}      $SCALEDIR/
+ln -s $SCALEPATH/bin/sno${SCALE_opt}           $SCALEDIR/

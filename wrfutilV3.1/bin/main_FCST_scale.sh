@@ -80,7 +80,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
 
   elif [ $MODEL == "SCALE" ];then
    if [[ $RUN_WPS -eq 1 && -z ${EXTWPSPATH} ]] ; then 
-      time $BASEDIR/bin/run_scale_pp.sh >> $LOGDIR/wps_${PASO}.log   2>&1
+      time $BASEDIR/bin/run_scale_prep.sh >> $LOGDIR/wps_${PASO}.log   2>&1
    fi   
   fi ### MODEL=WRF/SCALE
 
