@@ -179,7 +179,7 @@ else
 
 fi
 
-export LD_LIBRARY_PATH=/lib64:/usr/lib64:/opt/FJSVxtclanga/tcsds-latest/lib64:/opt/FJSVxtclanga/tcsds-latest/lib:${SPACK_NETCDF_C}/lib:${SPACK_NETCDF_F}/lib:${SPACK_PNETCDF}/lib:${SPACK_HDF}/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/lib64:/usr/lib64:/opt/FJSVxtclanga/tcsds-latest/lib64:/opt/FJSVxtclanga/tcsds-latest/lib:${SCALE_NETCDF_C}/lib:${SCALE_NETCDF_F}/lib:${SCALE_PNETCDF}/lib:${SCALE_HDF}/lib:$LD_LIBRARY_PATH
 
 echo "Running scale init for member $MIEM"
 $MPIEXE ./scale-rm_init namelist.scale_init

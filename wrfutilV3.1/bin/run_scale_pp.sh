@@ -94,7 +94,7 @@ read -r -d '' QSCRIPTCMD << "EOF"
         cp $SCALEPPDIR/namelist.scale_pp ./
 	ulimit -s unlimited
         export FORT90L=${SCALE_RUNTIME_FLAGS}
-        export LD_LIBRARY_PATH=/lib64:/usr/lib64:/opt/FJSVxtclanga/tcsds-latest/lib64:/opt/FJSVxtclanga/tcsds-latest/lib:${SPACK_NETCDF_C}/lib:${SPACK_NETCDF_F}/lib:${SPACK_PNETCDF}/lib:${SPACK_HDF}/lib:$LD_LIBRARY_PATH
+        export LD_LIBRARY_PATH=/lib64:/usr/lib64:/opt/FJSVxtclanga/tcsds-latest/lib64:/opt/FJSVxtclanga/tcsds-latest/lib:${SCALE_NETCDF_C}/lib:${SCALE_NETCDF_F}/lib:${SCALE_PNETCDF}/lib:${SCALE_HDF}/lib:$LD_LIBRARY_PATH
         $MPIEXE ./scale-rm_pp namelist.scale_pp
         ERROR=$(( $ERROR + $? ))
 EOF

@@ -8,10 +8,14 @@ NC_HASH=`spack find -lx netcdf-c%fj | grep netcdf-c | awk '{print $1}'`
 NF_HASH=`spack find -lx netcdf-fortran%fj | grep netcdf-fortran | awk '{print $1}'`
 PN_HASH=`spack find -lx parallel-netcdf%fj | grep parallel-netcdf | awk '{print $1}'`
 HDF_HASH=`spack find -l --deps /${NC_HASH} | grep hdf5 | awk '{print $1}'`
-export SPACK_HDF=`spack location --install-dir /${HDF_HASH}`
-export SPACK_NETCDF_C=`spack location --install-dir /${NC_HASH}`
-export SPACK_NETCDF_F=`spack location --install-dir /${NF_HASH}`
-export SPACK_PNETCDF=`spack location --install-dir /${PN_HASH}`
+export SCALE_HDF=`spack location --install-dir /${HDF_HASH}`
+export SCALE_NETCDF_C=`spack location --install-dir /${NC_HASH}`
+export SCALE_NETCDF_F=`spack location --install-dir /${NF_HASH}`
+export SCALE_PNETCDF=`spack location --install-dir /${PN_HASH}`
+
+export SCALE_NETCDF_INCLUDE="-I${SCALE_NETCDF_C}/include -I${SCALE_NETCDF_F}/include"
+export SCALE_NETCDF_LIBS="-L${SCALE_NETCDF_C}/lib -L${SCALE_NETCDF_F}/lib -L${SCALE_HDF}/lib -L${SCALE_PNETCDF}/lib -lpnetcdf -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lfjprofmpi -lmpi_cxx"
+
 
 # for WRF 
 export NETCDF=/data/hp150019/u10335/test_wrf/wrfutil_hydra_newest/LIBRARIES/netcdf
@@ -23,11 +27,12 @@ export HDF2=/data/hp150019/u10335/test_wrf/wrfutil_hydra_newest/LIBRARIES/netcdf
 
 #export PATH=$NETCDF/bin:$PATH
 #export LD_LIBRARY_PATH=$GRIB2/lib:$NETCDF/lib:$LD_LIBRARY_PATH
-export PATH=$SPACK_NETCDF_C/bin:$PATH
-export LD_LIBRARY_PATH=$GRIB2/lib:$SPACK_NETCDF_C/lib:$SPACK_NETCDF_F/lib:$SPACK_HDF/lib:$HDF2/lib:/vol0004/apps/oss/spack-v0.21/opt/spack/linux-rhel8-a64fx/fj-4.10.0/hdf5-1.14.3-yhazdvld6vknkhmbcqrbl34ifsac2hao/lib:$LD_LIBRARY_PATH
+export PATH=$SCALE_NETCDF_C/bin:$PATH
+export LD_LIBRARY_PATH=$GRIB2/lib:$SCALE_NETCDF_C/lib:$SCALE_NETCDF_F/lib:$SCALE_HDF/lib:$HDF2/lib:/vol0004/apps/oss/spack-v0.21/opt/spack/linux-rhel8-a64fx/fj-4.10.0/hdf5-1.14.3-yhazdvld6vknkhmbcqrbl34ifsac2hao/lib:$LD_LIBRARY_PATH
 
 
 export MACHINE=FUGAKU
+export SCALE_DB=/data/hp150019/u10335/scale_database
 
 export JASPERLIB=$GRIB2/lib
 export JASPERINC=$GRIB2/include
