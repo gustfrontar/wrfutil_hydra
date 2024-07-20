@@ -63,6 +63,7 @@ sed -i -e "s|__REF_LON__|$REF_LON|g"          $SCALEDIR/namelist.scale
 sed -i -e "s|__TRUELAT1__|$TRUELAT1|g"        $SCALEDIR/namelist.scale
 sed -i -e "s|__TRUELAT2__|$TRUELAT2|g"        $SCALEDIR/namelist.scale
 sed -i -e "s|__SCALEDATA__|$SCALEDATA|g"      $SCALEDIR/namelist.scale
+sed -i -e "s|__HISTDIR__|fcst|g"              $SCALEDIR/namelist.scale
 sed -i -e "s|__DT__|$DT|g"                    $SCALEDIR/namelist.scale
 sed -i -e "s|__RADT__|$RADT|g"                $SCALEDIR/namelist.scale
 sed -i -e "s|__DYNDT__|$DYNDT|g"              $SCALEDIR/namelist.scale

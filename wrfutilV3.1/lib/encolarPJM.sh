@@ -15,15 +15,23 @@ queue (){
 
         MAX_JOBS=$(( $INODE / $QNODE ))  #Floor rounding (bash default)
 	TOT_PROCS=$(( $QPROC * $QNODE ))
-	QTHREAD=$(( $ICORE / $QPROC ))   #Optimally compute QTHREAD
+        if [ $MACHINE == "FUGAKU" ] ;then
+	  QTHREAD=$ITHREAD   
+	else
+	  QTHREAD=$(( $ICORE / $QPROC ))   #Optimally compute QTHREAD
+	fi
         echo MAX_JOBS = $MAX_JOBS 
 	if [ $MAX_JOBS -gt 128 ] ; then 
 	  echo "WARNING: Maximum number of simultaneous runs is 128, this may produce problems!!!" 
         fi 
 
         #Set environment and go to workdir for this member.	
-        echo "export PARALLEL=1              "                                             > ${QPROC_NAME}.pbs
-	echo "export OMP_NUM_THREADS=${QTHREAD}"                                          >> ${QPROC_NAME}.pbs
+        if [ $MACHINE == "FUGAKU" ] ;then
+    	  echo "export OMP_NUM_THREADS=${QTHREAD}"                                           > ${QPROC_NAME}.pbs
+	else
+          echo "export PARALLEL=1              "                                             > ${QPROC_NAME}.pbs
+  	  echo "export OMP_NUM_THREADS=${QTHREAD}"                                          >> ${QPROC_NAME}.pbs
+        fi
 	echo "export MIEM=\$1                "                                            >> ${QPROC_NAME}.pbs #The ensemble member will be an input to the script.
         echo "source $BASEDIR/conf/config.env"                                            >> ${QPROC_NAME}.pbs
         echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}.pbs
@@ -40,7 +48,7 @@ queue (){
 	echo "  if [ \$MYMIEM -eq \$MIEM ] ; then                                      "  >> ${QPROC_NAME}.pbs
         echo "   for MY_NODE in \$(seq -w \$NNODE \$((\$NNODE +  $QNODE - 1)) ) ; do   "  >> ${QPROC_NAME}.pbs
         echo "       for MY_CORE in \$(seq -w 1  $QPROC ) ; do                         "  >> ${QPROC_NAME}.pbs
-        echo "          echo \"(\${MY_NODE}) core=1 \" >> ${QWORKPATH}/\${MIEM}/machine"  >> ${QPROC_NAME}.pbs
+        echo "          echo \"(\${MY_NODE}) core=$QTHREAD \" >> ${QWORKPATH}/\${MIEM}/machine"  >> ${QPROC_NAME}.pbs
         echo "       done                                                              "  >> ${QPROC_NAME}.pbs
         echo "   done                                                                  "  >> ${QPROC_NAME}.pbs
 	echo "  fi                                                                     "  >> ${QPROC_NAME}.pbs

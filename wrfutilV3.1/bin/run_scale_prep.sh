@@ -153,13 +153,15 @@ EOF
 	queue 00 00 
 	check_proc 00 00
 
+fi
+
 #Copiamos los archivos del directorio 
 OUTPUTPATH="$HISTDIR/const/"
-mkdir -p $OUTPUTPATH
-cp -r $SCALEPPDIR/mktopo/topo    $OUTPUTPATH
-cp -r $SCALEPPDIR/mktopo/landuse $OUTPUTPATH
+mkdir -p $OUTPUTPATH/topo
+mkdir -p $OUTPUTPATH/landuse
+cp -r $SCALEPPDIR/mktopo/topo/*    $OUTPUTPATH/topo
+cp -r $SCALEPPDIR/mktopo/landuse/* $OUTPUTPATH/landuse
 
-fi
 fi
 
 ###
@@ -269,7 +271,7 @@ time check_proc $MIEMBRO_INI $MIEMBRO_FIN
 
 #Copy init and bdy files to its final destionation.
 for QMIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-   DIR_FECHA_INI=$(date -u -d "$FECHA_FORECAST_INI UTC" +"%Y%m%d%H%M%S")
+   DIR_FECHA_INI=$(date -u -d "$FECHA_INI UTC" +"%Y%m%d%H%M%S")
    OUTPUTPATH="$HISTDIR/init/${DIR_FECHA_INI}/$QMIEM/"
    mkdir -p $OUTPUTPATH
    mv $SCALEPPDIR/$QMIEM/init/*.nc $OUTPUTPATH
