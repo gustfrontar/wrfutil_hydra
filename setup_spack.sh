@@ -23,16 +23,17 @@ export NETCDF_classic=1
 export GRIB2=/data/hp150019/u10335/test_wrf/wrfutil_hydra_newest/LIBRARIES/grib2
 
 # for hdf_fortran
-export HDF2=/data/hp150019/u10335/test_wrf/wrfutil_hydra_newest/LIBRARIES/netcdf
+#export HDF2=/data/hp150019/u10335/test_wrf/wrfutil_hydra_newest/LIBRARIES/netcdf
 
-#export PATH=$NETCDF/bin:$PATH
-#export LD_LIBRARY_PATH=$GRIB2/lib:$NETCDF/lib:$LD_LIBRARY_PATH
 export PATH=$SCALE_NETCDF_C/bin:$PATH
-export LD_LIBRARY_PATH=$GRIB2/lib:$SCALE_NETCDF_C/lib:$SCALE_NETCDF_F/lib:$SCALE_HDF/lib:$HDF2/lib:/vol0004/apps/oss/spack-v0.21/opt/spack/linux-rhel8-a64fx/fj-4.10.0/hdf5-1.14.3-yhazdvld6vknkhmbcqrbl34ifsac2hao/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$GRIB2/lib:$SCALE_NETCDF_C/lib:$SCALE_NETCDF_F/lib:$SCALE_PNETCDF/lib:$SCALE_HDF/lib:$LD_LIBRARY_PATH
 
 
 export MACHINE=FUGAKU
+export SCALE_SYS=FUGAKU
 export SCALE_DB=/data/hp150019/u10335/scale_database
+export SCALE_ENABLE_PNETCDF=F
+export SCALE_USE_SINGLEFP=T
 
 export JASPERLIB=$GRIB2/lib
 export JASPERINC=$GRIB2/include

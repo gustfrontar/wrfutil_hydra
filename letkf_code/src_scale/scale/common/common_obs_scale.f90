@@ -371,11 +371,12 @@ SUBROUTINE Trans_XtoY(elm,ri,rj,rk,lon,lat,v3d,v2d,yobs,qc,stggrd,typ)
      CALL itpl_2d(v2d(:,:,iv2dd_t2m),ri,rj,t)
      CALL itpl_2d(v2d(:,:,iv2dd_ps),ri,rj,ps)
 
-     CALL ATMOS_SATURATION_psat_all(t,psat)
-     qdry  = 1.0d0-q
-!!!  qdry = qdry - qr - qs - qg  !!! is this necessary? 
-     Rtot  = Rdry  * qdry + Rvap * q
-     yobs  = q * ps  / psat * Rvap / Rtot !! not %
+!     CALL ATMOS_SATURATION_psat_all(t,psat)
+!     qdry  = 1.0d0-q
+!!!!  qdry = qdry - qr - qs - qg  !!! is this necessary? 
+!     Rtot  = Rdry  * qdry + Rvap * q
+!     yobs  = q * ps  / psat * Rvap / Rtot !! not %
+     CALL calc_rh(t,q,ps,yobs)
 
 !  CASE(id_rain_obs) ! RAIN                        ############# (not finished)
 !    CALL itpl_2d(v2d(:,:,iv2dd_rain),ri,rj,yobs) !#############
@@ -2363,7 +2364,7 @@ SUBROUTINE get_nobs_radar(cfile,nn,radarlon,radarlat,radarz)
 !      RETURN
       WRITE(6,'(3A,I)') '[Error]',cfile,': Reading error', ios
       STOP
-    ELSEIF ( tmp < 0.0_r_size .or. tmp > 360.0_r_size ) THEN
+    ELSEIF ( tmp < -180.0_r_size .or. tmp > 360.0_r_size ) THEN
       WRITE(6,'(3A,E10.4)') '[Error]',cfile,': Invalid observation value radarlon = ', tmp
       WRITE(6,'(A)')'Check observation data endian'
       STOP
