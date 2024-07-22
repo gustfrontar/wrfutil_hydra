@@ -6,6 +6,7 @@
 *.mod
 *.swp
 *.nc
+!scale_code/data/rad/cira.nc
 *.log
 *.out
 *.lst
