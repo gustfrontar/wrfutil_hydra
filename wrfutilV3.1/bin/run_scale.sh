@@ -8,13 +8,16 @@
 
 ### CONFIGURACION
 BASEDIR=$(pwd)/../
-source $BASEDIR/../setup_spack.sh
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
 source $BASEDIR/conf/${EXPTYPE}.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
 source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
+if [ $MACHINE == "FUGAKU" ] ;then
+  source $BASEDIR/../setup_spack.sh
+fi
+
 ##### FIN INICIALIZACION ######
 
 cd $SCALEDIR

@@ -21,11 +21,13 @@ if [ ! -z ${SLURM_SUBMIT_DIR} ]; then cd ${SLURM_SUBMIT_DIR};fi
 
 #Load experiment configuration
 BASEDIR=$(pwd)/../
-source $BASEDIR/../setup_spack.sh
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
 source $BASEDIR/conf/$EXPTYPE.conf
 source $BASEDIR/conf/machine.conf
+if [ $MACHINE == "FUGAKU" ] ;then
+  source $BASEDIR/../setup_spack.sh
+fi
 
 ####################################
 #Calculamos la cantidad de pasos
