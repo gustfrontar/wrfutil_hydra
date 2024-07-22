@@ -55,7 +55,7 @@ if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then
 fi
 
 
-while [ $PASOS_RESTANTES -gt 0 ] ; do
+while [ $PASOS_RESTANTES -ge 0 ] ; do
    ###### 1st assimilation cycle only
    if [ $PASO == 0 ]; then
       echo " Step | TimeStamp" > $LOGDIR/cycles.log
@@ -90,7 +90,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    time $BASEDIR/bin/run_Guess_scale.sh    >> $LOGDIR/guess_${PASO}.log  2>&1
    if [ $PASO -gt 0 ] ; then 
       echo "Vamos a ejecutar el LETKF" > $LOGDIR/letkf_${PASO}.log
-      time $BASEDIR/bin/run_LETKF.sh  >> $LOGDIR/letkf_${PASO}.log  2>&1
+      time $BASEDIR/bin/run_LETKF_scale.sh  >> $LOGDIR/letkf_${PASO}.log  2>&1
    fi
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))
