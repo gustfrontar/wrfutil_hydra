@@ -165,7 +165,7 @@ read -r -d '' QSCRIPTCMD << "EOF"
 
   export LD_LIBRARY_PATH=/lib64:/usr/lib64:/opt/FJSVxtclanga/tcsds-latest/lib64:/opt/FJSVxtclanga/tcsds-latest/lib:${SCALE_NETCDF_C}/lib:${SCALE_NETCDF_F}/lib:${SCALE_PNETCDF}/lib:${SCALE_HDF}/lib:$LD_LIBRARY_PATH
 
-  time $MPIEXE  ./letkf.exe namelist.scale-letkf
+  time $MPIEXE $LETKF_RUNTIME_FLAGS ./letkf.exe namelist.scale-letkf
   ERROR=$(( $ERROR + $? ))
 EOF
 
