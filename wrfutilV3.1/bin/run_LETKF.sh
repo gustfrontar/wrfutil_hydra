@@ -125,7 +125,7 @@ done
 #script de ejecucion
 read -r -d '' QSCRIPTCMD << "EOF"
   cd $LETKFDIR/00/
-  time $MPIEXE  ./letkf.exe $LETKF_RUNTIME_FLAGS
+  time $MPIEXE  ./letkf.exe 
   ERROR=$(( $ERROR + $? ))
 EOF
 

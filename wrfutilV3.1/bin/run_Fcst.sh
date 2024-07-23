@@ -155,14 +155,14 @@ else
 fi
 
 echo "Running REAL for member $MIEM"
-$MPIEXE $WRFDIR/$MIEM/real.exe $WRF_RUNTIME_FLAGS
+$MPIEXE $WRFDIR/$MIEM/real.exe 
 ERROR=$(( $ERROR + $? ))
 mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
 EXCOD=$?
 [[ $EXCOD -ne 0 ]] && dispararError 9 "real.exe"
 
 echo "Running WRF for member $MIEM"
-$MPIEXE $WRFDIR/$MIEM/wrf.exe $WRF_RUNTIME_FLAGS 
+$MPIEXE $WRFDIR/$MIEM/wrf.exe 
 ERROR=$(( $ERROR + $? ))
 mv rsl.error.0000 ./wrf_${PASO}_${MIEM}.log
 

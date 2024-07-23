@@ -93,7 +93,6 @@ read -r -d '' QSCRIPTCMD << "EOF"
         ln -sf $WPSDIR/code/*   ./
         cp $WPSDIR/namelist.wps ./
 	ulimit -s unlimited
-        export FORT90L=${WPS_RUNTIME_FLAGS}
         $MPIEXE ./geogrid.exe 
         ERROR=$(( $ERROR + $? ))
         cp geo_em.d01.nc $WPSDIR/geogrid/
@@ -131,8 +130,6 @@ else
 fi
 DATE_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )  #Get the closest prior date in which BDY data is available.
 DATE_END_BDY=$(date_ceil  "$FECHA_END_PASO" $INTERVALO_BDY )      #Get the closest posterior date in which BDY data is available.
-
-export FORT90L=${WPS_RUNTIME_FLAGS}
 
 if [ $WPS_DATA_SOURCE == 'GFS' ] ; then 
 

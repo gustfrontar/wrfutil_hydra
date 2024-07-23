@@ -199,7 +199,7 @@ else
 fi
 
 echo "Running REAL for member $MIEM"
-$MPIEXE $WRFDIR/$MIEM/real.exe $WRF_RUNTIME_FLAGS
+$MPIEXE $WRFDIR/$MIEM/real.exe
 ERROR=$(( $ERROR + $? ))
 mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
 
@@ -210,12 +210,12 @@ if [ $PASO -gt 0 ] ; then
   cp $HISTDIR/ANAL/$(date -u -d "$DATE_FORECAST_INI" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
   ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
   echo "Running DA_UPDATE_BC for member $MIEM"
-  time $MPIEXESERIAL -stdout-proc ./da_update_bc_${PASO}_${MIEM}.log  $WRFDIR/$MIEM/da_update_bc.exe $WRF_RUNTIME_FLAGS  
+  time $MPIEXESERIAL -stdout-proc ./da_update_bc_${PASO}_${MIEM}.log  $WRFDIR/$MIEM/da_update_bc.exe  
   ERROR=$(( $ERROR + $? ))
 fi
 
 echo "Running WRF for member $MIEM"
-$MPIEXE $WRFDIR/$MIEM/wrf.exe $WRF_RUNTIME_FLAGS 
+$MPIEXE $WRFDIR/$MIEM/wrf.exe 
 ERROR=$(( $ERROR + $? ))
 test=$(tail -n1 $WRFDIR/$MIEM/rsl.error.0000 | grep SUCCESS ) && res="OK"
 mv rsl.error.0000 ./wrf_${PASO}_${MIEM}.log
