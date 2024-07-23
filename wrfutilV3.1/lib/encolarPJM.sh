@@ -26,12 +26,8 @@ queue (){
         fi 
 
         #Set environment and go to workdir for this member.	
-        if [ $MACHINE == "FUGAKU" ] ;then
-    	  echo "export OMP_NUM_THREADS=${QTHREAD}"                                           > ${QPROC_NAME}.pbs
-	else
-          echo "export PARALLEL=1              "                                             > ${QPROC_NAME}.pbs
-  	  echo "export OMP_NUM_THREADS=${QTHREAD}"                                          >> ${QPROC_NAME}.pbs
-        fi
+        echo "export PARALLEL=${QTHREAD}"                                                  > ${QPROC_NAME}.pbs
+	echo "export OMP_NUM_THREADS=${QTHREAD}"                                          >> ${QPROC_NAME}.pbs
 	echo "export MIEM=\$1                "                                            >> ${QPROC_NAME}.pbs #The ensemble member will be an input to the script.
         echo "source $BASEDIR/conf/config.env"                                            >> ${QPROC_NAME}.pbs
         echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}.pbs

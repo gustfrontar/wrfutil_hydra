@@ -264,6 +264,8 @@ MODULE common_nml
 
   logical :: RADAR_OBS_4D = .false.
 
+  logical :: RADAR_OBS_POLAR_COORDINATE = .false.
+
   REAL(r_size) :: RADAR_REF_THRES_DBZ = 15.0d0 !Threshold of rain/no rain
   INTEGER :: MIN_RADAR_REF_MEMBER_OBSRAIN = 1          !Ensemble members with reflectivity greather than RADAR_REF_THRES_DBZ
                                                        ! assimilation of RAIN 
@@ -904,7 +906,8 @@ subroutine read_nml_letkf_radar
     RADAR_THIN_LETKF_HGRID_SIZE, &
     RADAR_THIN_LETKF_VGRID_SIZE, &
     RADAR_PQV, &
-    RADAR_PQV_OMB
+    RADAR_PQV_OMB, &
+    RADAR_OBS_POLAR_COORDINATE
 
   rewind(IO_FID_CONF)
   read(IO_FID_CONF,nml=PARAM_LETKF_RADAR,iostat=ierr)

@@ -65,7 +65,7 @@ ANAL_SPRD_OUT=.false.,
  RADAR_ZMIN = 500.0D0,
  USE_METHOD3_REF_MELT = .false.,
  USE_T08_RS2014 = .false.,
- RADAR_OBS_4D = .true.,
+ RADAR_OBS_4D = .false.,
 /
 
 &PARAM_LETKF_OBS

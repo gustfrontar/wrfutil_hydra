@@ -2071,7 +2071,7 @@ SUBROUTINE read_obs(cfile,obs)
   IMPLICIT NONE
   CHARACTER(*),INTENT(IN) :: cfile
   TYPE(obs_info),INTENT(INOUT) :: obs
-  REAL(r_sngl) :: wk(8)
+  REAL(r_sngl) :: wk(7)
   real(RP) :: x_RP, y_RP
   INTEGER :: n,iunit
 
@@ -2116,7 +2116,8 @@ SUBROUTINE read_obs(cfile,obs)
     obs%dat(n) = REAL(wk(5),r_size)
     obs%err(n) = REAL(wk(6),r_size)
     obs%typ(n) = NINT(wk(7))
-    obs%dif(n) = REAL(wk(8),r_size)
+    obs%dif(n) = 0.0_r_size
+!    obs%dif(n) = REAL(wk(8),r_size)
   END DO
   CLOSE(iunit)
 
@@ -2433,6 +2434,9 @@ SUBROUTINE read_obs_radar(cfile,obs)
   REAL(r_sngl) :: tmp
   INTEGER :: n,iunit,ios
 
+  REAL(r_size) :: radarlon, radarlat, radarz
+  REAL(r_size) :: az, el, ra
+
   character(len=13) :: c_endian
 
   if(USE_OBS_LITTLE_ENDIAN)then
@@ -2449,11 +2453,11 @@ SUBROUTINE read_obs_radar(cfile,obs)
   END IF
   iunit=91
   OPEN(iunit,FILE=cfile,FORM='unformatted',ACCESS='sequential',CONVERT=trim(c_endian))
-  READ(iunit, iostat=ios)tmp
+  READ(iunit, iostat=ios)radarlon
   IF(ios /= 0) RETURN
-  READ(iunit, iostat=ios)tmp
+  READ(iunit, iostat=ios)radarlat
   IF(ios /= 0) RETURN
-  READ(iunit, iostat=ios)tmp
+  READ(iunit, iostat=ios)radarz
   IF(ios /= 0) RETURN
   DO n=1,obs%nobs
     READ(iunit) wk(1:nrec)
@@ -2469,6 +2473,12 @@ SUBROUTINE read_obs_radar(cfile,obs)
       obs%dif(n) = REAL(wk(8),r_size)
     ELSE
       obs%dif(n) = 0.0d0
+    END IF
+    IF (RADAR_OBS_POLAR_COORDINATE) THEN
+      az=obs%lon(n)
+      el=obs%lat(n)
+      ra=obs%lev(n)
+      call aer2llz(radarlon,radarlat,radarz,az,el,ra,obs%lon(n),obs%lat(n),obs%lev(n))
     END IF
   END DO
   CLOSE(iunit)
@@ -2557,7 +2567,7 @@ subroutine read_obs_all(obs)
 
     select case (OBS_IN_FORMAT(iof))
     case (obsfmt_prepbufr, obsfmt_aws)
-      call get_nobs(trim(OBS_IN_NAME(iof)),8,obs(iof)%nobs)
+      call get_nobs(trim(OBS_IN_NAME(iof)),7,obs(iof)%nobs)
     case (obsfmt_radar)
       call get_nobs_radar(trim(OBS_IN_NAME(iof)), obs(iof)%nobs, obs(iof)%meta(1), obs(iof)%meta(2), obs(iof)%meta(3))
     case default
@@ -2960,5 +2970,40 @@ subroutine write_obsnum_nc( filename, nctype, typ_ctype, elm_u_ctype, num_bqc, n
 
   return
 end subroutine write_obsnum_nc
+
+SUBROUTINE aer2llz(radarlon,radarlat,radarz,az,el,ra,lon,lat,z)
+IMPLICIT NONE
+  REAL(r_size),INTENT(IN) :: radarlon,radarlat,radarz,az,ra
+  REAL(r_size),INTENT(OUT) :: lon,lat,z
+  REAL(r_size),INTENT(INOUT) :: el  !Elevation will be corrected in this routine.
+  REAL(r_size)             :: tmp1 , tmp2 , ke
+  REAL(r_size)             :: distance_to_radar
+  !This routine computes lon,lat,z of a radar beam at a certain
+  !azimuth,elevation and range with respect to the radar location.
+  !This version uses beam propagation assuming the temperature and
+  !moisture profile of a standard atmosphere.
+  !Future versions can use the background vertical profile of t and moisture
+  !to produce a better representation of the beam propagation.
+
+  ke=(4d0/3d0)
+
+  !Perform standard height beam heigth computation.
+
+      tmp1= ra**2 + (ke*Re)**2 + 2*ra*ke*Re*sin( el*deg2rad )
+      z=radarz + SQRT( tmp1 )-ke*Re;
+      !Compute the local elevation angle tacking into account the efective earth radius.
+      tmp1= ra * cos( el * deg2rad )
+      tmp2= ra * sin( el * deg2rad ) + ke * Re
+      !Correct local elevation angle with respect to the sourface tacking into account
+      !beam propagation.
+      el = el + atan(tmp1/tmp2)
+
+  !Compute the latitude and longitude corresponding to each radar point.
+  distance_to_radar=ke*Re*asin( ra * cos(el * deg2rad) / (ke * Re) )
+
+  CALL com_ll_arc_distance(radarlon,radarlat,distance_to_radar,az,lon,lat)
+
+END SUBROUTINE aer2llz
+
 
 END MODULE common_obs_scale
