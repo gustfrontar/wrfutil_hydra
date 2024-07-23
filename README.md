@@ -43,10 +43,12 @@ export PATH=$SCALE_NETCDF_C/bin:$PATH
 export LD_LIBRARY_PATH=$GRIB2/lib:$SCALE_NETCDF_C/lib:$SCALE_NETCDF_F/lib:$SCALE_PNETCDF/lib:$SCALE_HDF/lib:$HDF2/lib:/vol0004/apps/oss/spack-v0.21/opt/spack/linux-rhel8-a64fx/fj-4.10.0/hdf5-1.14.3-yhazdvld6vknkhmbcqrbl34ifsac2hao/lib:$LD_LIBRARY_PATH
 ```
 
-You can build SCALE-RM with GNU make. 
+You can build SCALE-RM and SNO with GNU make. 
 ```
 cd scale_code/scale-rm/src
 make -j 
+cd ../util/sno
+make
 ```
 
 ### SCALE-LETKF
