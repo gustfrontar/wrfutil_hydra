@@ -29,7 +29,7 @@ queue (){
         echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}.pbs
         echo "source $BASEDIR/lib/errores.env"                                            >> ${QPROC_NAME}.pbs
         echo "source $BASEDIR/conf/$QCONF      "                                          >> ${QPROC_NAME}.pbs
-	echo "rm -fr ${QWORKPATH}/\${MIEM}"                                               >> ${QPROC_NAME}.pbs
+	#echo "rm -fr ${QWORKPATH}/\${MIEM}"                                               >> ${QPROC_NAME}.pbs
 	echo "mkdir -p ${QWORKPATH}/\${MIEM}"                                             >> ${QPROC_NAME}.pbs
 	echo "cd ${QWORKPATH}/\${MIEM}"                                                   >> ${QPROC_NAME}.pbs
         #Create the machine files (in MPI VCOORD FILE FUJITSU FORMAT)            
