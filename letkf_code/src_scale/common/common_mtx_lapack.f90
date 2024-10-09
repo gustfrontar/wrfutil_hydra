@@ -113,7 +113,7 @@ contains
 #endif
 
     ! check zero
-    if ( eival(n) <= 0.0_r_size ) then
+    if ( w(n) <= 0.0_RP_EVP ) then
        ierr = 1
     endif
 
