@@ -18,7 +18,9 @@ PROGRAM pert_met_em
 
   IMPLICIT NONE
   REAL(r_size) :: rtimer00,rtimer
-  INTEGER :: ierr , itime  , iter , ini_mem , end_mem , mem_iter , nbv_iter
+  INTEGER :: ierr , itime  , iter , ini_mem , end_mem , mem_iter , nbv_iter 
+  INTEGER :: nseed
+  INTEGER , ALLOCATABLE :: seed(:)
   INTEGER :: m
   CHARACTER(8) :: stdoutf='NOUT-000'
   CHARACTER(4) :: prefix='____'
@@ -50,6 +52,11 @@ PROGRAM pert_met_em
   WRITE(6,'(A)') '============================================='
   CALL set_common_met_em('eo0100001')
   CALL set_common_mpi_met_em
+  !Fix the pseudorandom number generator 
+  CALL random_seed( size = nseed )
+  ALLOCATE( seed( nseed ) )
+  nseed = iseed
+  CALL random_seed( put=seed )  
 
   mem_iter = INT( CEILING( REAL(nbv_tar,r_sngl) / REAL(niter,r_sngl) ) )
   DO itime = 1 , ntimes 

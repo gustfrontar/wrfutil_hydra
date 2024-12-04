@@ -6,5 +6,6 @@
   ntimes=  __NTIMES__
   sigma =  __SIGMA__
   niter =  __NITER__
+  iseed = 10
 /
 

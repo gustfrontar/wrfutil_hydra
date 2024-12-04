@@ -16,6 +16,11 @@ source ${BASEDIR}/lib/encolar${QUEUESYS}.sh
 
 ##### FIN INICIALIZACION ######
 
+if [ $PASO -ge 1 && $WPS_CYCLE -eq 0 ] ; then
+   echo "WPS with WPS_CYCLE=0 is run only at PASO=0. And currently PASO=",$PASO         
+   return 0
+fi
+
 #Decompress tar files
 if [ ! -e $WPSDIR/code/geogrid.exe ] ; then
    echo "Descomprimiendo WPS"
@@ -37,34 +42,9 @@ fi
 mkdir -p $WPSDIR
 cp $NAMELISTDIR/namelist.wps $WPSDIR/
 
-#We found the closests dates in the boundary data to the initial and final times of the forecast. 
-
-if [ $WPS_CYCLE -eq 1 ] ; then 
-   #WPS_CYCLE = 1 means that boundary data will be taken from forecasts initialized at different times. 
-   #so there is a bdy forecast initialization frequency and a bdy data output frequency. 
-   #Find the prior bdy data initialization date closest to the current step date 
-   FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($WPS_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
-   #Find the posterior bdy data initialization date closest to the forecast end date
-   FECHA_END_PASO=$(date -u -d "$FECHA_INI UTC +$((($WPS_INI_FREQ*$PASO)+$WPS_LEAD_TIME )) seconds" +"%Y-%m-%d %T")
-else 
-   #Asume that bdy data for the entire experiment is available in the same folder (eg using analysis as bdy or for short experiments that use a single forecasts as bdy)	
-   #In this case WPS is run at PASO=0
-   if [ $PASO -ge 1 ] ; then   
-      echo "WPS with WPS_CYCLE=0 is run only at PASO=0. And currently PASO=",$PASO	   
-      return 0
-   fi
-   FECHA_INI_PASO=$FECHA_INI
-   FECHA_END_PASO=$FECHA_FIN
-fi
-
-DATE_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_BDY )   #Get the closest prior date in which BDY data is available.
-DATE_INI_BDY=$(date -u -d "$DATE_INI_BDY UTC" +"%Y-%m-%d_%T" ) #Cambio al formato WPS
-DATE_END_BDY=$(date_ceil  "$FECHA_END_PASO" $INTERVALO_BDY )   #Get the closest posterior date in which BDY data is available. 
-DATE_END_BDY=$(date -u -d "$DATE_END_BDY UTC" +"%Y-%m-%d_%T" ) #Cambio al formato WPS
-
 #Edit the namelist from the template
-sed -i -e "s|__FECHA_INI__|$DATE_INI_BDY|g"   $WPSDIR/namelist.wps
-sed -i -e "s|__FECHA_FIN__|$DATE_END_BDY|g"   $WPSDIR/namelist.wps
+sed -i -e "s|__FECHA_INI__|"2000-01-01_00:00:00"|g"   $WPSDIR/namelist.wps  #We use some random date for runing geogrid.
+sed -i -e "s|__FECHA_FIN__|"2000-01-01_00:00:00"|g"   $WPSDIR/namelist.wps
 sed -i -e "s|__INTERVALO__|$INTERVALO_BDY|g"  $WPSDIR/namelist.wps
 sed -i -e "s|__E_WE__|$E_WE|g"                $WPSDIR/namelist.wps
 sed -i -e "s|__E_SN__|$E_SN|g"                $WPSDIR/namelist.wps
@@ -118,18 +98,56 @@ read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited
 echo "Processing member $MIEM"
 ln -sf $WPSDIR/code/* $WPSDIR/$MIEM
-cp $WPSDIR/namelist.wps $WPSDIR/$MIEM/
 cd $WPSDIR/$MIEM
 cp $WPSDIR/geogrid/geo_em* .
-if [ $WPS_CYCLE -eq 1 ] ; then
-   FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($WPS_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
-   FECHA_END_PASO=$(date -u -d "$FECHA_INI UTC +$((($WPS_INI_FREQ*$PASO)+$WPS_LEAD_TIME )) seconds" +"%Y-%m-%d %T")
-else 
-   FECHA_INI_PASO=$FECHA_INI
-   FECHA_END_PASO=$FECHA_FIN
+
+#Define some variables that depends if we are running in assimilation
+#mode or in forecast mode.
+if [ "$EXPTYPE" = "assimilation" ] ; then
+   CYCLE_FREQ=$ANALISIS_FREC
+   LEAD=$ANALISIS_WIN_FIN
+   SPIN_UP=$SPIN_UP_LENGTH
+elif [ $EXPTYPE -eq "forecast" ] ; then
+   CYCLE_FREQ=$FORECAST_INI_FREQ
+   LEAD=$FORECAST_LEAD_TIME
+   SPIN_UP=0
 fi
-DATE_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_INI_BDY )  #Get the closest prior date in which BDY data is available.
-DATE_END_BDY=$(date_ceil  "$FECHA_END_PASO" $INTERVALO_BDY )      #Get the closest posterior date in which BDY data is available.
+
+#Define the start date and enddate of the WPS files to be generated.
+#If WPS_CYCLE is 0 then we will process all the files from FECHA_INI to FECHA_FIN
+if [ $WPS_CYCLE -eq 1 ] ; then 
+   if [ $PASO -eq 0 ] ; then
+      INI_DATE_STEP=$FECHA_INI
+      END_DATE_STEP=$(date -u -d "$FECHA_INI UTC +$SPIN_UP seconds" +"%Y-%m-%d %T")
+   else
+      INI_DATE_STEP=$(date -u -d "$FECHA_INI UTC +$(($CYCLE_FREQ*($PASO-1)+$SPIN_UP)) seconds" +"%Y-%m-%d %T")
+      END_DATE_STEP=$(date -u -d "$INI_DATE_STEP UTC +$LEAD seconds" +"%Y-%m-%d %T")
+   fi
+else  # WPS_CYCLE -eq 0 
+   INI_DATE_STEP=$FECHA_INI
+   END_DATE_STEP=$FECHA_FIN
+fi
+
+DATE_INI_BDY=$(date_floor "$INI_DATE_STEP" $INTERVALO_INI_BDY )   #get the closest initialization of the boudndary data in which BDY data is available.
+INI_DATE_STEP=$(date_floor "$INI_DATE_STEP" $INTERVALO_BDY )      #Get the closest prior date in which BDY data is available.
+END_DATE_STEP=$(date_ceil  "$END_DATE_STEP" $INTERVALO_BDY )      #Get the closest posterior date in which BDY data is available.
+
+cp $NAMELISTDIR/namelist.wps $WPSDIR/$MIEM/
+sed -i -e "s|__FECHA_INI__|$INI_DATE_STEP|g"  $WPSDIR/$MIEM/namelist.wps  #We use some random date for runing geogrid.
+sed -i -e "s|__FECHA_FIN__|$END_DATE_STEP|g"  $WPSDIR/$MIEM/namelist.wps
+sed -i -e "s|__INTERVALO__|$INTERVALO_BDY|g"  $WPSDIR/$MIEM/namelist.wps
+sed -i -e "s|__E_WE__|$E_WE|g"                $WPSDIR/$MIEM/namelist.wps
+sed -i -e "s|__E_SN__|$E_SN|g"                $WPSDIR/$MIEM/namelist.wps
+sed -i -e "s|__DX__|$DX|g"                    $WPSDIR/$MIEM/namelist.wps
+sed -i -e "s|__DY__|$DY|g"                    $WPSDIR/$MIEM/namelist.wps
+sed -i -e "s|__MAP_PROJ__|$MAP_PROJ|g"        $WPSDIR/$MIEM/namelist.wps
+sed -i -e "s|__REF_LAT__|$REF_LAT|g"          $WPSDIR/$MIEM/namelist.wps
+sed -i -e "s|__REF_LON__|$REF_LON|g"          $WPSDIR/$MIEM/namelist.wps
+sed -i -e "s|__TRUELAT1__|$TRUELAT1|g"        $WPSDIR/$MIEM/namelist.wps
+sed -i -e "s|__TRUELAT2__|$TRUELAT2|g"        $WPSDIR/$MIEM/namelist.wps
+sed -i -e "s|__STAND_LON__|$STAND_LON|g"      $WPSDIR/$MIEM/namelist.wps
+sed -i -e "s|__GEOG__|$GEOG|g"                $WPSDIR/$MIEM/namelist.wps
+sed -i -e "s|__IOTYPE__|$IOTYPE|g"            $WPSDIR/$MIEM/namelist.wps
 
 if [ $WPS_DATA_SOURCE == 'GFS' ] ; then 
 
@@ -155,7 +173,6 @@ elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
    echo "I'm lloking for the BDY files in the folder $BDYBASE"
    echo "Decoding wrfouts in : $WPSDIR/$MIEM" 
    #Need to loop over wrfout files.
-   CDATE=$DATE_INI_BDY 
 
    #Set the WPS_FILE_FORMAT [this depends on the file frequency]
    if [ $INTERVALO_BDY -lt 60 ] ; then
@@ -166,7 +183,8 @@ elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
       WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H"
    fi
 
-   while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$DATE_END_BDY" +"%Y%m%d%H%M%S") ] ; do 
+   CDATE=$INI_DATE_STEP
+   while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$END_DATE_STEP" +"%Y%m%d%H%M%S") ] ; do 
       WRFFILE=$BDYBASE/wrfout_d01_$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
       WPSFILE=$WPSDIR/$MIEM/FILE:$(date -u -d  "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )
       $MPIEXESERIAL ./wrf_to_wps.exe $WRFFILE $WPSFILE 
@@ -175,37 +193,6 @@ elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
       CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
    done
   
-   #if [ $FORECAST_BDY_FREQ -lt $INTERVALO_BDY ] ; then 
-   #   echo "Interpolating files in time to reach $FORECAST_BDY_FREQ time frequency."
-   #   CDATE=$DATE_INI_BDY
-   #
-   #   while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -lt $(date -d "$DATE_END_BDY" +"%Y%m%d%H%M%S") ] ; do
-   #      #First we look for the BDY dates inmediatelly above and below $CDATE
-   #      DATE_1=$(date_floor "$CDATE" $INTERVALO_BDY )
-   #      DATE_2=$(date -u -d "$DATE_1 UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
-   #
-   #      #Define the names corresponding to each file
-   #      WPSFILE_1=$WPSDIR/$MIEM/FILE:$(date -u -d "$DATE_1 UTC" +"$WPS_FILE_DATE_FORMAT" )
-   #      WPSFILE_2=$WPSDIR/$MIEM/FILE:$(date -u -d "$DATE_2 UTC" +"$WPS_FILE_DATE_FORMAT" )
-   #      WPSFILE_INT=$WPSDIR/$MIEM/FILE:$(date -u -d "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )
-   #      echo "First file will be : $WPSFILE_1"
-   #      echo "Scnd  file will be : $WPSFILE_2"
-   #      echo "Itpl  file will be : $WPSFILE_INT"
-
-   #      #Compute the relative times corresponding to each file [seconds]
-   #      DATE_1_SEC=0
-   #      DATE_2_SEC=$INTERVALO_BDY
-   #      TARGET_SEC=$((($(date -d "$CDATE" +%s) - $(date -d "$DATE_1" +%s))))
-
-   #      echo "Target_SEC = $TARGET_SEC "
-
-   #      $MPIEXESERIAL ./interpolate_intermediate.exe $WPSFILE_1 $WPSFILE_2 $WPSFILE_INT $DATE_1_SEC $DATE_2_SEC $TARGET_SEC 
-
-   #      #Update CDATE
-   #      CDATE=$(date -u -d "$CDATE UTC + $FORECAST_BDY_FREQ seconds" +"%Y-%m-%d %T")
-   #   done
-   #fi
-
 else 
 
   echo "Not recognized WPS_DATA_SOURCE option: "$WPS_DATA_SOURCE
@@ -217,6 +204,12 @@ fi
 echo "Running METGRID for member $MIEM"
 $MPIEXE ./metgrid.exe 
 ERROR=$(( $ERROR + $? ))
+
+#Copy data to the met_em_ori directory. 
+echo "Copy data"
+OUTPUTPATH="$HISTDIR/WPS/met_em_ori/${DATE_INI_BDY}/$MIEM/"
+mkdir -p $OUTPUTPATH
+mv $WPSDIR/$MIEM/met_em* $OUTPUTPATH
 
 EOF
 
@@ -233,15 +226,6 @@ QWORKPATH=$WPSDIR
 # Encolar
 queue $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN
 check_proc $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN
-
-FECHA_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_BDY )    #Get the closest prior date in which BDY data is available.
-FECHA_INI_BDY=$(date -u -d "$FECHA_INI_BDY UTC" +"%Y%m%d%H%M%S" ) #Cambio al formato WPS
-#Copiamos los archivos del directorio 
-for QMIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN) ; do
-   OUTPUTPATH="$HISTDIR/WPS/met_em_ori/${FECHA_INI_BDY}/$QMIEM/"
-   mkdir -p $OUTPUTPATH
-   mv $WPSDIR/$QMIEM/met_em* $OUTPUTPATH
-done
 
 echo "Termine de correr el WPS"
 

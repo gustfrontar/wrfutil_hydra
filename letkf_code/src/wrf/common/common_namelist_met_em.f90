@@ -19,7 +19,13 @@ MODULE common_namelist_met_em
   INTEGER :: method=1      ! RejuGauss 1 , RejuUniform 2 , Specular 3 
   INTEGER :: niter=10      ! Number of sections in which we will divide the output ensemble
                            ! to reduce memory use. 
-  REAL(r_sngl) :: sigma = 1.0e-3  !Perturbation amplitude (methods 1 and 2 only)
+  LOGICAL :: recenter_mean=.FALSE. !If true the original ensemble mean will be recenter around 
+                                   !a different state (e.g. a higher resolution deterministic run) 
+  REAL(r_sngl) :: sigma = 1.0e-3   !Perturbation amplitude (methods 1 and 2 only)
+
+  INTEGER :: iseed=10              !Random seed for the perturbation weigth generator.
+                                   !When the pert_met_em program is called multiple times in the same experiment, 
+                                   !fixing the random seed ensures that the combination of perturbations is always the same.
 
   CHARACTER(500) :: file_ini=' ' , file_end=' ' , file_tar=' '          !File names to interpolate.
                                                                         !File ini corresponds to the initial time, file_end to the
@@ -40,7 +46,7 @@ INTEGER :: IERR
 LOGICAL :: file_exist
 !Namelist declaration
 
-NAMELIST / GENERAL / nbv_ori , nbv_tar , ntimes , method , sigma , niter
+NAMELIST / GENERAL / nbv_ori , nbv_tar , ntimes , method , sigma , niter , recenter_mean , iseed 
 NAMELIST / INTERP / time_ini , time_end , time_tar , date_tar , file_ini , file_end , file_tar
 
 INQUIRE(FILE=NAMELIST_FILE, EXIST=file_exist)

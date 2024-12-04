@@ -10,7 +10,7 @@ LocalDataDir = '/home/jruiz/salidas/GFSDATA/'
 DataType = 'ENS'  #ENS o DET
 
 Members = ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30']
-Cycles  = ['00']
+Cycles  = ['06','12','18']
 LeadTimes=['000','003','006','009','012','015','018','021','024','027','030','033','036']
 Dates = ['20240319']
 
@@ -37,7 +37,7 @@ if DataType == 'ENS'  :
                    
                     file_origa_list.append( RemoteServer + '/gefs.' + my_date + '/' + my_cycle + '/atmos/pgrb2ap5/' + prefix + my_member + '.t' + my_cycle + 'z.pgrb2a.0p50.f' + my_lead  )
                     file_origb_list.append( RemoteServer + '/gefs.' + my_date + '/' + my_cycle + '/atmos/pgrb2bp5/' + prefix + my_member + '.t' + my_cycle + 'z.pgrb2b.0p50.f' + my_lead  )
-                    file_dest_list.append( LocalDataDir + '/gefs.' + my_date + '/' + my_cycle + '/pgrb2b/' + my_member + '/' )
+                    file_dest_list.append( LocalDataDir + '/gefs.' + my_date + '/' + my_cycle + '/pgrb2b/0' + my_member + '/' )
                     
 
 print('A total number of ',len(file_origa_list),' files will be downloaded')

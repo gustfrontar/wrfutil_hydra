@@ -6,6 +6,10 @@
 # Fecha: 03/2019
 #############
 
+#TODO> When WPS_CYCLE -eq 1. we should fix somehow the random seed of the perturbations
+#so different calls to the pert_met_em program results in similar linear combinations of the
+#ensemble members.
+
 ### CONFIGURACION
 source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
@@ -15,6 +19,12 @@ source $BASEDIR/conf/model.conf
 source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
 
 ##### FIN INICIALIZACION ######
+
+if [ $PASO -ge 1 && $WPS_CYCLE -eq 0 ] ; then
+   echo "Pert with WPS_CYCLE=0 is run only at PASO=0. And currently PASO=",$PASO         
+   return 0
+fi
+
 
 #Decompress tar files
 if [ ! -e $PERTDIR/code/pert_met_em.exe ] ; then
@@ -32,48 +42,60 @@ cd $PERTDIR
 PERTRUNDIR=$PERTDIR/00/
 #mkdir -p $PERTRUNDIR  #Pert work dir.
 
-if [ $WPS_CYCLE -eq 1 ] ; then
-   #WPS_CYCLE = 1 means that boundary data will be taken from forecasts initialized at different times.
-   #so there is a bdy forecast initialization frequency and a bdy data output frequency.
-   #Find the prior bdy data initialization date closest to the current step date
-   FECHA_INI_PASO=$(date -u -d "$FECHA_INI UTC +$(($WPS_INI_FREQ*$PASO)) seconds" +"%Y-%m-%d %T")
-   #Find the posterior bdy data initialization date closest to the forecast end date
-   FECHA_END_PASO=$(date -u -d "$FECHA_INI UTC +$((($WPS_INI_FREQ*$PASO)+$WPS_LEAD_TIME )) seconds" +"%Y-%m-%d %T")
-else
-   #Asume that bdy data for the entire experiment is available in the same folder (eg using analysis as bdy or for short experiments that use a single forecasts as bdy)
-   #In this case WPS is run at PASO=0
-   if [ $PASO -ge 1 ] ; then
-      echo "WPS with WPS_CYCLE=0 is run only at PASO=0. And currently PASO=",$PASO
-      return 0
-   fi
-   FECHA_INI_PASO=$FECHA_INI
-   FECHA_END_PASO=$FECHA_FIN
+#Define some variables that depends if we are running in assimilation
+#mode or in forecast mode.
+if [ "$EXPTYPE" = "assimilation" ] ; then
+   CYCLE_FREQ=$ANALISIS_FREC
+   LEAD=$ANALISIS_WIN_FIN
+   SPIN_UP=$SPIN_UP_LENGTH
+elif [ $EXPTYPE -eq "forecast" ] ; then
+   CYCLE_FREQ=$FORECAST_INI_FREQ
+   LEAD=$FORECAST_LEAD_TIME
+   SPIN_UP=0
 fi
 
-DATE_INI_BDY=$(date_floor "$FECHA_INI_PASO" $INTERVALO_BDY )   #Get the closest prior date in which BDY data is available.
-DATE_END_BDY=$(date_ceil  "$FECHA_END_PASO" $INTERVALO_BDY )   #Get the closest posterior date in which BDY data is available.
+#Define the start date and enddate of the WPS files to be generated.
+#If WPS_CYCLE is 0 then we will process all the files from FECHA_INI to FECHA_FIN
+if [ $WPS_CYCLE -eq 1 ] ; then 
+   if [ $PASO -eq 0 ] ; then
+      INI_DATE_STEP=$FECHA_INI
+      END_DATE_STEP=$(date -u -d "$FECHA_INI UTC +$SPIN_UP seconds" +"%Y-%m-%d %T")
+   else
+      INI_DATE_STEP=$(date -u -d "$FECHA_INI UTC +$(($CYCLE_FREQ*($PASO-1)+$SPIN_UP)) seconds" +"%Y-%m-%d %T")
+      END_DATE_STEP=$(date -u -d "$INI_DATE_STEP UTC +$LEAD seconds" +"%Y-%m-%d %T")
+   fi
+else  # WPS_CYCLE -eq 0 
+   INI_DATE_STEP=$FECHA_INI
+   END_DATE_STEP=$FECHA_FIN
+fi
+
+INI_DATE_BDY=$(date_floor "$INI_DATE_STEP" $INTERVALO_INI_BDY )   #get the closest initialization of the boudndary data in which BDY data is available.
+INI_DATE_STEP=$(date_floor "$INI_DATE_STEP" $INTERVALO_BDY )      #Get the closest prior date in which BDY data is available.
+END_DATE_STEP=$(date_ceil  "$END_DATE_STEP" $INTERVALO_BDY )      #Get the closest posterior date in which BDY data is available.
 
 
 #Copy met_em_files to create the expanded ensemble.
 echo "Making a copy of met_em files to create the expanded ensemble"
 MAX_SIM_CP=$(( $BDY_MIEMBRO_FIN - $BDY_MIEMBRO_INI + 1 ))                  #Maximum number of simultaneous cp commands.
 mkdir -p $HISTDIR/WPS/met_em/
-CDATE=$DATE_INI_BDY
 ICP=1                                                                      #Counter for the number of cp commands.
-DATE_INI_BDY_INT=$(date -d "$DATE_INI_BDY" +"%Y%m%d%H%M%S")
-DATE_END_BDY_INT=$(date -d "$DATE_END_BDY" +"%Y%m%d%H%M%S")
+INI_DATE_STEP_INT=$(date -d "$INI_DATE_STEP" +"%Y%m%d%H%M%S")
+END_DATE_STEP_INT=$(date -d "$END_DATE_STEP" +"%Y%m%d%H%M%S")
+INI_DATE_BDY_INT=$(date -d "$INI_DATE_BDY" +"%Y%m%d%H%M%S")
 
 #Creating directories
 for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
    #member1=$(printf '%02d' $((10#$MIEM)))
-   mkdir -p $HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$MIEM/
+   mkdir -p $HISTDIR/WPS/met_em/$INI_DATE_BDY_INT/$MIEM/
 done
+
 #Copying the files
-while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $DATE_END_BDY_INT ] ; do
+CDATE=$INI_DATE_STEP
+while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $END_DATE_STEP_INT ] ; do
    echo "Copying met ems for date "$CDATE
    for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
        CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-       cp $HISTDIR/WPS/met_em_ori/$DATE_INI_BDY_INT/$(printf '%0'${#MIEMBRO_INI}'d' $ICP)/met_em.d01.$CDATE_WPS.nc $HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc &
+       cp $HISTDIR/WPS/met_em_ori/$INI_DATE_BDY_INT/$(printf '%0'${#MIEMBRO_INI}'d' $ICP)/met_em.d01.$CDATE_WPS.nc $HISTDIR/WPS/met_em/$INI_DATE_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc &
        ICP=$(( $ICP + 1 ))
        if [ $ICP -gt $MAX_SIM_CP ] ; then
           time wait
@@ -102,21 +124,19 @@ sed -i -e "s|__NITER__|$NITER|g"       $PERTDIR/pertmetem.namelist
 
 echo "Creating links to the pert_met_em.exe application"
 #Create links for the met_em_files in the run directory.
-CDATE=$DATE_INI_BDY
+CDATE=$INI_DATE_STEP
 ITIME=1
-while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -lt $DATE_END_BDY_INT ] ; do
+while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -lt $END_DATE_STEP_INT ] ; do
  met_em_time=$(printf '%02d' $((10#$ITIME)))
   for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-    #member1=$(printf '%02d' $((10#$MIEM)))
     CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-    met_em_file_name=$HISTDIR/WPS/met_em/$DATE_INI_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc
+    met_em_file_name=$HISTDIR/WPS/met_em/$INI_DATE_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc
     ln -sf $met_em_file_name $PERTRUNDIR/ep${met_em_time}$(printf '%05d' $((10#$MIEM))) &
    done
    time wait
    for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN ) ; do
-     #member1=$(printf '%02d' $((10#$MIEM)))
      CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-     met_em_file_name=$HISTDIR/WPS/met_em_ori/$DATE_INI_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc
+     met_em_file_name=$HISTDIR/WPS/met_em_ori/$INI_DATE_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc
      ln -sf $met_em_file_name $PERTRUNDIR/eo${met_em_time}$(printf '%05d' $((10#$MIEM))) &
    done
    time wait
