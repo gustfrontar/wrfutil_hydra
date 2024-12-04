@@ -125,6 +125,7 @@ done
 #script de ejecucion
 read -r -d '' QSCRIPTCMD << "EOF"
   cd $LETKFDIR/00/
+  export FORT90L=""
   time $MPIEXE  ./letkf.exe 
   ERROR=$(( $ERROR + $? ))
 EOF
