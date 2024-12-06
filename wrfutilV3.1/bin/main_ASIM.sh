@@ -60,7 +60,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
       echo " Step | TimeStamp" > $LOGDIR/cycles.log
       echo "$(printf "%02d" $PASO)  | $(date +'%T')"  >>  $LOGDIR/cycles.log
       if [ ! -z ${EXTWPSPATH} && $RUN_WPS -eq 0 ] ; then 
-	 mkdir $HISTDIR/WPS/                          >> $LOGDIR/pert_met_em_${PASO}.log  2>&1
+	 mkdir $HISTDIR/WPS/                           > $LOGDIR/pert_met_em_${PASO}.log  2>&1
 	 rm -fr $HISTDIR/WPS/met_em                   >> $LOGDIR/pert_met_em_${PASO}.log  2>&1  
          ln -sf ${EXTWPSPATH} $HISTDIR/WPS/met_em_ori >> $LOGDIR/pert_met_em_${PASO}.log  2>&1  #We will use existing met_ems from a previous experiment      
       fi
@@ -72,6 +72,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
       echo "Running WPS" > $LOGDIR/wps_${PASO}.log
       time $BASEDIR/bin/run_WPS.sh                        >> $LOGDIR/wps_${PASO}.log
    fi
+
    if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
       echo "Running Pert met em"                          >> $LOGDIR/pert_met_em_${PASO}.log
       time $BASEDIR/bin/run_Pert.sh                       >> $LOGDIR/pert_met_em_${PASO}.log   2>&1
@@ -80,6 +81,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
       ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em  >> $LOGDIR/pert_met_em_${PASO}.log  2>&1
    fi
 
+
    #####  all assimilation cycles
    echo "Vamos a ejecutar el real, el da_upbdate_bc y el wrf" > $LOGDIR/guess_${PASO}.log
    time $BASEDIR/bin/run_Guess.sh    >> $LOGDIR/guess_${PASO}.log  2>&1
@@ -87,6 +89,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
       echo "Vamos a ejecutar el LETKF" > $LOGDIR/letkf_${PASO}.log
       time $BASEDIR/bin/run_LETKF.sh  >> $LOGDIR/letkf_${PASO}.log  2>&1
    fi
+
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))
    echo "Update PASO in the configuration file."

@@ -95,6 +95,8 @@ fi
 echo "Corriendo el WPS para el paso " $PASO
 
 read -r -d '' QSCRIPTCMD << "EOF"
+source $BASEDIR/conf/model.conf
+
 ulimit -s unlimited
 echo "Processing member $MIEM"
 ln -sf $WPSDIR/code/* $WPSDIR/$MIEM
@@ -128,13 +130,16 @@ else  # WPS_CYCLE -eq 0
    END_DATE_STEP=$FECHA_FIN
 fi
 
-DATE_INI_BDY=$(date_floor "$INI_DATE_STEP" $INTERVALO_INI_BDY )   #get the closest initialization of the boudndary data in which BDY data is available.
+INI_DATE_BDY=$(date_floor "$INI_DATE_STEP" $INTERVALO_INI_BDY )   #get the closest initialization of the boudndary data in which BDY data is available.
 INI_DATE_STEP=$(date_floor "$INI_DATE_STEP" $INTERVALO_BDY )      #Get the closest prior date in which BDY data is available.
 END_DATE_STEP=$(date_ceil  "$END_DATE_STEP" $INTERVALO_BDY )      #Get the closest posterior date in which BDY data is available.
 
 cp $NAMELISTDIR/namelist.wps $WPSDIR/$MIEM/
-sed -i -e "s|__FECHA_INI__|$INI_DATE_STEP|g"  $WPSDIR/$MIEM/namelist.wps  #We use some random date for runing geogrid.
-sed -i -e "s|__FECHA_FIN__|$END_DATE_STEP|g"  $WPSDIR/$MIEM/namelist.wps
+INI_DATE_NML=$(date -u -d "$INI_DATE_STEP UTC" +"%Y-%m-%d_%T")
+END_DATE_NML=$(date -u -d "$END_DATE_STEP UTC" +"%Y-%m-%d_%T")
+
+sed -i -e "s|__FECHA_INI__|$INI_DATE_NML|g"   $WPSDIR/$MIEM/namelist.wps  #We use some random date for runing geogrid.
+sed -i -e "s|__FECHA_FIN__|$END_DATE_NML|g"   $WPSDIR/$MIEM/namelist.wps
 sed -i -e "s|__INTERVALO__|$INTERVALO_BDY|g"  $WPSDIR/$MIEM/namelist.wps
 sed -i -e "s|__E_WE__|$E_WE|g"                $WPSDIR/$MIEM/namelist.wps
 sed -i -e "s|__E_SN__|$E_SN|g"                $WPSDIR/$MIEM/namelist.wps
@@ -149,67 +154,93 @@ sed -i -e "s|__STAND_LON__|$STAND_LON|g"      $WPSDIR/$MIEM/namelist.wps
 sed -i -e "s|__GEOG__|$GEOG|g"                $WPSDIR/$MIEM/namelist.wps
 sed -i -e "s|__IOTYPE__|$IOTYPE|g"            $WPSDIR/$MIEM/namelist.wps
 
-if [ $WPS_DATA_SOURCE == 'GFS' ] ; then 
 
-   BDYBASE=$BDYPATH/gefs.$(date -d "$DATE_INI_BDY" +"%Y%m%d")/$(date -d "$DATE_INI_BDY" +"%H")/$BDYPREFIX/$MIEM/
-   echo "Selected data source is GFS, we will run ungrib to decode the data"
-   echo "I'm lloking for the BDY files in the folder  $BDYBASE"
-   ln -sf $WPSDIR/$BDYVTABLE ./Vtable
-   echo "Decoding gribs in : $WPSDIR/$MIEM"
-   #Linkeo los gribs
-   cd $WPSDIR/$MIEM
-   ./link_grib.csh $BDYBASE/$BDYSEARCHSTRING  
-   ERROR=$(( $ERROR + $? ))
+#Loop over the expected output files. If all the files are present then skip WPS step.
+CDATE=$INI_DATE_STEP
+FILE_COUNTER=0
+while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$END_DATE_STEP" +"%Y%m%d%H%M%S") ] ; do
 
-   #Corro el Ungrib 
-   OMP_NUM_THREADS=1
-   $MPIEXESERIAL ./ungrib.exe > ungrib.log
-   ERROR=$(( $ERROR + $? ))
+   MYPATH=$HISTDIR/WPS/met_em_ori/$(date -d "$INI_DATE_BDY" +"%Y%m%d%H%M%S")/$MIEM/
+   MYFILE=$MYPATH/met_em.d01.$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%H:%M:%S" ).nc
+   if ! [[ -e $MYFILE ]] ; then #My file do not exist
+      echo "Not found file: " $MYFILE
+      FILE_COUNTER=$(( $FILE_COUNTER + 1 ))
+   fi
+   CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
+done
 
-elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
+if [ $FILE_COUNTER -eq 0 ] ; then 
+   #All the required files are already there. 
+   echo "We found all the required met_em files for member $MIEM, skiping ungrib and metgrid."
+   ERROR=0
 
-   BDYBASE=$BDYPATH/$(date -d "$DATE_INI_BDY" +"%Y%m%d%H%M%S")/$MIEM/
-   echo "Selected data source is WRF, we will use wrf_to_wps tool to decode the data"
-   echo "I'm lloking for the BDY files in the folder $BDYBASE"
-   echo "Decoding wrfouts in : $WPSDIR/$MIEM" 
-   #Need to loop over wrfout files.
+else #Runing ungrib and metgrid 
+   echo $FILE_COUNTER " files are missing. We need to run UNGRIB and METGRID"
+   #We need to run ungrib/wrftowps and metgrid to generate the required met_em files
+   if [ $WPS_DATA_SOURCE == 'GFS' ] ; then 
+ 
+      BDYBASE=$BDYPATH/gefs.$(date -d "$INI_DATE_BDY" +"%Y%m%d")/$(date -d "$INI_DATE_BDY" +"%H")/$BDYPREFIX/$MIEM/
+      echo "Selected data source is GFS, we will run ungrib to decode the data"
+      echo "I'm lloking for the BDY files in the folder  $BDYBASE"
+      ln -sf $WPSDIR/$BDYVTABLE ./Vtable
+      echo "Decoding gribs in : $WPSDIR/$MIEM"
+      #Linkeo los gribs
+      cd $WPSDIR/$MIEM
+      ./link_grib.csh $BDYBASE/$BDYSEARCHSTRING  
+      ERROR=$(( $ERROR + $? ))
 
-   #Set the WPS_FILE_FORMAT [this depends on the file frequency]
-   if [ $INTERVALO_BDY -lt 60 ] ; then
-      WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H:%M:%S"
-   elif [ $INTERVALO_BDY -lt 3600 ] ; then
-      WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H:%M"
-   else
-      WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H"
+      #Corro el Ungrib 
+      OMP_NUM_THREADS=1
+      rm ungrib.log
+      $MPIEXESERIAL ./ungrib.exe > ungrib.log
+      ERROR=$(( $ERROR + $? ))
+
+   elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
+
+      BDYBASE=$BDYPATH/$(date -d "$INI_DATE_BDY" +"%Y%m%d%H%M%S")/$MIEM/
+      echo "Selected data source is WRF, we will use wrf_to_wps tool to decode the data"
+      echo "I'm lloking for the BDY files in the folder $BDYBASE"
+      echo "Decoding wrfouts in : $WPSDIR/$MIEM" 
+      #Need to loop over wrfout files.
+
+      #Set the WPS_FILE_FORMAT [this depends on the file frequency]
+      if [ $INTERVALO_BDY -lt 60 ] ; then
+         WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H:%M:%S"
+      elif [ $INTERVALO_BDY -lt 3600 ] ; then
+         WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H:%M"
+      else
+         WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H"
+      fi
+
+      CDATE=$INI_DATE_STEP
+      while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$END_DATE_STEP" +"%Y%m%d%H%M%S") ] ; do 
+         WRFFILE=$BDYBASE/wrfout_d01_$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
+         WPSFILE=$WPSDIR/$MIEM/FILE:$(date -u -d  "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )
+         $MPIEXESERIAL ./wrf_to_wps.exe $WRFFILE $WPSFILE 
+         ERROR=$(( $ERROR + $? ))
+         #Update CDATE
+         CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
+      done
+  
+   else 
+
+     echo "Not recognized WPS_DATA_SOURCE option: "$WPS_DATA_SOURCE
+     echo "I can do nothing"
+     ERROR=$(( $ERROR + 1 ))
+
    fi
 
-   CDATE=$INI_DATE_STEP
-   while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$END_DATE_STEP" +"%Y%m%d%H%M%S") ] ; do 
-      WRFFILE=$BDYBASE/wrfout_d01_$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-      WPSFILE=$WPSDIR/$MIEM/FILE:$(date -u -d  "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )
-      $MPIEXESERIAL ./wrf_to_wps.exe $WRFFILE $WPSFILE 
-      ERROR=$(( $ERROR + $? ))
-      #Update CDATE
-      CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
-   done
-  
-else 
+   echo "Running METGRID for member $MIEM"
+   $MPIEXE ./metgrid.exe 
+   ERROR=$(( $ERROR + $? ))
 
-  echo "Not recognized WPS_DATA_SOURCE option: "$WPS_DATA_SOURCE
-  echo "I can do nothing"
-  ERROR=$(( $ERROR + 1 ))
+   #Copy data to the met_em_ori directory. 
+   echo "Copy data"
+   OUTPUTPATH="$HISTDIR/WPS/met_em_ori/$(date -d "$INI_DATE_BDY" +"%Y%m%d%H%M%S")/$MIEM/"
+   mkdir -p $OUTPUTPATH
+   mv $WPSDIR/$MIEM/met_em* $OUTPUTPATH
 
 fi
-
-echo "Running METGRID for member $MIEM"
-$MPIEXE ./metgrid.exe 
-ERROR=$(( $ERROR + $? ))
-
-#Copy data to the met_em_ori directory. 
-echo "Copy data"
-OUTPUTPATH="$HISTDIR/WPS/met_em_ori/${DATE_INI_BDY}/$MIEM/"
-mkdir -p $OUTPUTPATH
-mv $WPSDIR/$MIEM/met_em* $OUTPUTPATH
 
 EOF
 

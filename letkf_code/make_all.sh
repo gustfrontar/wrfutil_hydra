@@ -48,7 +48,7 @@ if [ $COMPILATION_NAME == "INTEL_HYDRA" ] ; then
   fi 
   export PARF90="mpiifort"
   export F90="ifort"
-  export FFLAGS="-O3 -xHost -convert big_endian -FR -O3 ${DEBUG_FLAGS}"
+  export FFLAGS="-O3 -convert big_endian -FR -O3 ${DEBUG_FLAGS}"
   export OMP="-qopenmp"
   export NETCDF="/opt/netcdf/netcdf-4/intel/2021.4.0/"
   export HDF5="/opt/hdf5/hdf5-1.10.5/intel/2021.4.0/"

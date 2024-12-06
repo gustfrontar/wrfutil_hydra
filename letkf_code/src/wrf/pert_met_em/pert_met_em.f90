@@ -46,7 +46,7 @@ PROGRAM pert_met_em
   WRITE(6,'(A)') ' ------------------------------------------- '
   WRITE(6,'(A,I15)')   '  nbv_ori      :',nbv_ori
   WRITE(6,'(A,I15)')   '  nbv_tar      :',nbv_tar
-  WRITE(6,'(A,I15)')   '  nbv_ntimes   :',ntimes  
+  WRITE(6,'(A,I15)')   '  ntimes       :',ntimes  
   WRITE(6,'(A,I15)')   '  method       :',method
   WRITE(6,'(A,I15)')   '  niter        :',niter
   WRITE(6,'(A)') '============================================='
