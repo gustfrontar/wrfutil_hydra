@@ -43,7 +43,7 @@ if [ "$EXPTYPE" = "assimilation" ] ; then
    CYCLE_FREQ=$ANALISIS_FREC
    LEAD=$ANALISIS_WIN_FIN
    SPIN_UP=$SPIN_UP_LENGTH
-elif [ $EXPTYPE -eq "forecast" ] ; then
+elif [ "$EXPTYPE" = "forecast" ] ; then
    CYCLE_FREQ=$FORECAST_INI_FREQ
    LEAD=$FORECAST_LEAD_TIME
    SPIN_UP=0
