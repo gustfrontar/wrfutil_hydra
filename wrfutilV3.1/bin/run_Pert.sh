@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #############
 # Servicio Meteorologico Nacional
 # Autores: Maximiliano A. Sacco; Yanina Garcia Skabar; Maria Eugenia Dillon; Cynthia Mariana Matsudo
@@ -35,8 +34,6 @@ cd $PERTDIR
 
 #script de ejecucion
 read -r -d '' QSCRIPTCMD << "EOF"
-
-
 #Define some variables that depends if we are running in assimilation
 #mode or in forecast mode.
 if [ "$EXPTYPE" = "assimilation" ] ; then
@@ -90,85 +87,85 @@ done
 
 if [ $FILE_COUNTER -eq 0 ] ; then
    echo "We found all the required perturbed met_em files for all members, skiping met_em perturbation"
-   exit 0
+   ERROR=0
 else
    echo $FILE_COUNTER "perturbed met_ems are missing, we need to run pert_met_em."
-fi
 
-#Copy met em files to run pert metem
-mkdir -p $HISTDIR/WPS/met_em/
-ICP=1                                                                      #Counter for the number of cp commands.
-MAX_SIM_CP=$(( 10#$BDY_MIEMBRO_FIN - 10#$BDY_MIEMBRO_INI + 1 ))                  #Maximum number of simultaneous cp commands.
+   #Copy met em files to run pert metem
+   mkdir -p $HISTDIR/WPS/met_em/
+   ICP=1                                                                      #Counter for the number of cp commands.
+   MAX_SIM_CP=$(( 10#$BDY_MIEMBRO_FIN - 10#$BDY_MIEMBRO_INI + 1 ))                  #Maximum number of simultaneous cp commands.
 
-#Creating directories
-echo "Making a copy of met_em files to create the expanded ensemble"
-for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-   #member1=$(printf '%02d' $((10#$MIEM)))
-   mkdir -p $HISTDIR/WPS/met_em/$INI_DATE_BDY_INT/$MIEM/
-done
-
-#Copying the files
-CDATE=$INI_DATE_STEP
-while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $END_DATE_STEP_INT ] ; do
-   echo "Copying met ems for date "$CDATE
+   #Creating directories
+   echo "Making a copy of met_em files to create the expanded ensemble"
    for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-       CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-       cp $HISTDIR/WPS/met_em_ori/$INI_DATE_BDY_INT/$(printf '%0'${#MIEMBRO_INI}'d' $ICP)/met_em.d01.$CDATE_WPS.nc $HISTDIR/WPS/met_em/$INI_DATE_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc &
-       ICP=$(( $ICP + 1 ))
-       if [ $ICP -gt $MAX_SIM_CP ] ; then
-          time wait
-          ICP=1
-       fi
+      #member1=$(printf '%02d' $((10#$MIEM)))
+      mkdir -p $HISTDIR/WPS/met_em/$INI_DATE_BDY_INT/$MIEM/
    done
-   CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
-done
-time wait
 
-
-echo "Creating links to the pert_met_em.exe application"
-#Create links for the met_em_files in the run directory.
-CDATE=$INI_DATE_STEP
-ITIME=1
-while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $END_DATE_STEP_INT ] ; do
- met_em_time=$(printf '%02d' $((10#$ITIME)))
-  for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-    CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-    met_em_file_name=$HISTDIR/WPS/met_em/$INI_DATE_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc
-    ln -sf $met_em_file_name $PERTDIR/00/ep${met_em_time}$(printf '%05d' $((10#$MIEM))) &
+   #Copying the files
+   CDATE=$INI_DATE_STEP
+   while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $END_DATE_STEP_INT ] ; do
+      echo "Copying met ems for date "$CDATE
+      for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
+         CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
+         cp $HISTDIR/WPS/met_em_ori/$INI_DATE_BDY_INT/$(printf '%0'${#MIEMBRO_INI}'d' $ICP)/met_em.d01.$CDATE_WPS.nc $HISTDIR/WPS/met_em/$INI_DATE_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc &
+         ICP=$(( $ICP + 1 ))
+         if [ $ICP -gt $MAX_SIM_CP ] ; then
+            time wait
+            ICP=1
+         fi
+      done
+      CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
    done
    time wait
-   for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN ) ; do
-     CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-     met_em_file_name=$HISTDIR/WPS/met_em_ori/$INI_DATE_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc
-     ln -sf $met_em_file_name $PERTDIR/00/eo${met_em_time}$(printf '%05d' $((10#$MIEM))) &
+
+
+   echo "Creating links to the pert_met_em.exe application"
+   #Create links for the met_em_files in the run directory.
+   CDATE=$INI_DATE_STEP
+   ITIME=1
+   while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $END_DATE_STEP_INT ] ; do
+      met_em_time=$(printf '%02d' $((10#$ITIME)))
+      for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
+         CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
+         met_em_file_name=$HISTDIR/WPS/met_em/$INI_DATE_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc
+         ln -sf $met_em_file_name $PERTDIR/00/ep${met_em_time}$(printf '%05d' $((10#$MIEM))) &
+      done
+      time wait
+      for MIEM in $(seq -w $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN ) ; do
+        CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
+        met_em_file_name=$HISTDIR/WPS/met_em_ori/$INI_DATE_BDY_INT/$MIEM/met_em.d01.$CDATE_WPS.nc
+        ln -sf $met_em_file_name $PERTDIR/00/eo${met_em_time}$(printf '%05d' $((10#$MIEM))) &
+      done
+      time wait
+      ITIME=$(( $ITIME + 1 ))
+      CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
    done
-   time wait
-   ITIME=$(( $ITIME + 1 ))
-   CDATE=$(date -u -d "$CDATE UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
-done
 
-echo "Generating the namelist"
-#Prepare the namelist.
-NBV_ORI=$(( 10#$BDY_MIEMBRO_FIN - 10#$BDY_MIEMBRO_INI + 1 ))
-NBV_TAR=$(( 10#$MIEMBRO_FIN     - 10#$MIEMBRO_INI     + 1 ))
-NTIMES=$(( 10#$ITIME - 1 ))
+   echo "Generating the namelist"
+   #Prepare the namelist.
+   NBV_ORI=$(( 10#$BDY_MIEMBRO_FIN - 10#$BDY_MIEMBRO_INI + 1 ))
+   NBV_TAR=$(( 10#$MIEMBRO_FIN     - 10#$MIEMBRO_INI     + 1 ))
+   NTIMES=$(( 10#$ITIME - 1 ))
 
-cp $NAMELISTDIR/pertmetem.namelist $PERTDIR/00/pertmetem.namelist
+   cp $NAMELISTDIR/pertmetem.namelist $PERTDIR/00/pertmetem.namelist
 
-#Edit the namelist from the template
-sed -i -e "s|__NBV_ORI__|$NBV_ORI|g"   $PERTDIR/00/pertmetem.namelist
-sed -i -e "s|__NBV_TAR__|$NBV_TAR|g"   $PERTDIR/00/pertmetem.namelist
-sed -i -e "s|__NTIMES__|$NTIMES|g"     $PERTDIR/00/pertmetem.namelist
-sed -i -e "s|__METHOD__|$PERT_TYPE|g"  $PERTDIR/00/pertmetem.namelist
-sed -i -e "s|__SIGMA__|$PERT_AMP|g"    $PERTDIR/00/pertmetem.namelist
-sed -i -e "s|__NITER__|$NITER|g"       $PERTDIR/00/pertmetem.namelist
+   #Edit the namelist from the template
+   sed -i -e "s|__NBV_ORI__|$NBV_ORI|g"   $PERTDIR/00/pertmetem.namelist
+   sed -i -e "s|__NBV_TAR__|$NBV_TAR|g"   $PERTDIR/00/pertmetem.namelist
+   sed -i -e "s|__NTIMES__|$NTIMES|g"     $PERTDIR/00/pertmetem.namelist
+   sed -i -e "s|__METHOD__|$PERT_TYPE|g"  $PERTDIR/00/pertmetem.namelist
+   sed -i -e "s|__SIGMA__|$PERT_AMP|g"    $PERTDIR/00/pertmetem.namelist
+   sed -i -e "s|__NITER__|$NITER|g"       $PERTDIR/00/pertmetem.namelist
 
-ln -sf $PERTDIR/code/pert_met_em.exe $PERTDIR/00/
+   ln -sf $PERTDIR/code/pert_met_em.exe $PERTDIR/00/
 
-time $MPIEXE  ./pert_met_em.exe
-ERROR=$(( $ERROR + $? ))
+   time $MPIEXE  ./pert_met_em.exe
+   ERROR=$(( $ERROR + $? ))
 
-cp NOUT-000 $LOGDIR/NOUT-000-PertMetEm_$PASO
+   cp NOUT-000 $LOGDIR/NOUT-000-PertMetEm_$PASO
+fi
 
 EOF
 
@@ -185,6 +182,12 @@ echo "Sending pert met em script to the queue"
 # Encolar
 queue 00 00
 check_proc 00 00
+if [ $? -ne 0 ] ; then
+   echo "Error: Some members do not finish OK"
+   echo "Aborting this step"
+   exit 1 
+fi
+
 
 echo "Sucessfully finished perturbation of met_em files"
 

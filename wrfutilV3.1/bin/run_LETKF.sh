@@ -81,11 +81,14 @@ ANALYSIS_DATE_WFMT=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*($PASO-1))+$
 ANALYSIS_DATE_PFMT=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*($PASO-1))+$SPIN_UP_LENGTH+$ANALISIS_FREC)) seconds" +"%Y%m%d%H%M%S")  #Path/folder format
 
 for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN ) ; do
-   for ISLOT in $(seq -f "%02g" 0 $(($NSLOTS-1))) ; do
-      FECHA_SLOT=$(date -u -d "$FECHA_WINDOW_INI UTC +$(($ISLOT*$ANALISIS_WIN_STEP)) seconds" +"%Y-%m-%d_%T")
+   for ISLOT in $(seq 0 $(($NSLOTS-1))) ; do
+      FECHA_SLOT=$(date -u -d "$FECHA_WINDOW_INI UTC +$(( 10#$ISLOT*$ANALISIS_WIN_STEP)) seconds" +"%Y-%m-%d_%T")
       ln -sf ${WRFDIR}/${MIEM}/wrfout_d01_$FECHA_SLOT ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$MIEM)))
+      echo ${WRFDIR}/${MIEM}/wrfout_d01_$FECHA_SLOT ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$MIEM)))
    done	   
 done
+
+exit
 
 cp  ${WRFDIR}/${MIEMBRO_FIN}/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/guesemean
 cp  ${WRFDIR}/${MIEMBRO_FIN}/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/analemean
@@ -143,6 +146,12 @@ echo "Sending letkf script to the queue"
 cd $LETKFDIR
 queue 00 00
 check_proc 00 00
+if [ $? -ne 0 ] ; then
+   echo "Error: Some members do not finish OK"
+   echo "Aborting this step"
+   exit 1 
+fi
+
 
 ##
 # Save the analysis

@@ -16,7 +16,7 @@ source ${BASEDIR}/lib/encolar${QUEUESYS}.sh
 
 ##### FIN INICIALIZACION ######
 
-if [ $PASO -ge 1 && $WPS_CYCLE -eq 0 ] ; then
+if [ $PASO -ge 1 ] && [ $WPS_CYCLE -eq 0 ] ; then
    echo "WPS with WPS_CYCLE=0 is run only at PASO=0. And currently PASO=",$PASO         
    return 0
 fi
@@ -87,6 +87,11 @@ EOF
 	QWORKPATH=$WPSDIR
 	queue 00 00 
 	check_proc 00 00
+        if [ $? -ne 0 ] ; then
+          echo "Error: Some members do not finish OK"
+          echo "Aborting this step"
+          exit 1 
+        fi
 fi
 
 ###
@@ -257,6 +262,13 @@ QWORKPATH=$WPSDIR
 # Encolar
 queue $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN
 check_proc $BDY_MIEMBRO_INI $BDY_MIEMBRO_FIN
+if [ $? -ne 0 ] ; then
+   echo "Error: Some members do not finish OK"
+   echo "Aborting this step"
+   exit 1 
+fi
+
+
 
 echo "Termine de correr el WPS"
 

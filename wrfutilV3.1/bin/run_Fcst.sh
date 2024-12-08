@@ -182,6 +182,11 @@ QWORKPATH=$WRFDIR
 echo "Time taken by real.exe and wrf.exe"
 queue $MIEMBRO_INI $MIEMBRO_FIN 
 time check_proc $MIEMBRO_INI $MIEMBRO_FIN
+if [ $? -ne 0 ] ; then
+   echo "Error: Some members do not finish OK"
+   echo "Aborting this step"
+   exit 1 
+fi
 
 #Copy wrfout files to its final destionation.
 for QMIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do

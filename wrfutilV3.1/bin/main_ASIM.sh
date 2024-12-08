@@ -71,11 +71,23 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    if [[ $RUN_WPS -eq 1 ]] ; then 
       echo "Running WPS" > $LOGDIR/wps_${PASO}.log
       time $BASEDIR/bin/run_WPS.sh                        >> $LOGDIR/wps_${PASO}.log
+      if [ $? -ne 0 ] ; then
+         echo "Error: run_WPS finished with errors!"
+         echo "Aborting this step"
+         exit 1 
+      fi
+
    fi
 
    if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
       echo "Running Pert met em"                          >> $LOGDIR/pert_met_em_${PASO}.log
       time $BASEDIR/bin/run_Pert.sh                       >> $LOGDIR/pert_met_em_${PASO}.log   2>&1
+      if [ $? -ne 0 ] ; then
+         echo "Error: run_Pert finished with errors!"
+         echo "Aborting this step"
+         exit 1 
+      fi
+
    elif [[ $BDY_PERT -eq 0 ]] ; then
       echo "Linking met_em directory"                     >> $LOGDIR/pert_met_em_${PASO}.log
       ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em  >> $LOGDIR/pert_met_em_${PASO}.log  2>&1
@@ -85,11 +97,24 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
    #####  all assimilation cycles
    echo "Vamos a ejecutar el real, el da_upbdate_bc y el wrf" > $LOGDIR/guess_${PASO}.log
    time $BASEDIR/bin/run_Guess.sh    >> $LOGDIR/guess_${PASO}.log  2>&1
+   if [ $? -ne 0 ] ; then
+      echo "Error: run_Guess finished with errors!"
+      echo "Aborting this step"
+      exit 1 
+   fi
+
    if [ $PASO -gt 0 ] ; then 
       echo "Vamos a ejecutar el LETKF" > $LOGDIR/letkf_${PASO}.log
       time $BASEDIR/bin/run_LETKF.sh  >> $LOGDIR/letkf_${PASO}.log  2>&1
+      if [ $? -ne 0 ] ; then
+         echo "Error: run_LETKF finished with errors!"
+         echo "Aborting this step"
+         exit 1 
+      fi
+
    fi
 
+   exit
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))
    echo "Update PASO in the configuration file."
