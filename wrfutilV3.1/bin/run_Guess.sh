@@ -16,7 +16,7 @@ source $BASEDIR/conf/model.conf
 source ${BASEDIR}/lib/encolar${QUEUESYS}.sh                     # Selecciona el metodo de encolado segun el systema QUEUESYS elegido
 
 ##### FIN INICIALIZACION ######
-if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then 
+if [ ! -z ${PJM_SHAREDTMP} ] && [ ${USETMPDIR} -eq 1 ] ; then 
    echo "Using Fugaku's shared dir to run WRF"
    WRFDIR=${PJM_SHAREDTMP}/WRF
 fi
@@ -114,7 +114,7 @@ ulimit -s unlimited
 source $BASEDIR/conf/model.conf
 echo "Processing member $MIEM" 
 
-if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then
+if [ ! -z ${PJM_SHAREDTMP} ] && [ ${USETMPDIR} -eq 1 ] ; then
    echo "Using Fugaku's shared dir to run WRF"
    WRFDIR=${PJM_SHAREDTMP}/WRF/    #WRFDIR is redefined here
 fi
@@ -145,7 +145,7 @@ else
 fi
 
 
-if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then
+if [ ! -z ${PJM_SHAREDTMP} ] && [ ${USETMPDIR} -eq 1 ] ; then
    MET_EM_DIR=${PJM_SHAREDTMP}/HIST/WPS/met_em/${INI_BDY_DATE}/$MIEM/    #MET_EM_DIR is redefined here
 else 
    MET_EM_DIR=$HISTDIR/WPS/met_em/${INI_BDY_DATE}/$MIEM/
@@ -196,29 +196,51 @@ else
      #Update CDATE
      CDATE=$(date -u -d "$CDATE UTC + $FORECAST_BDY_FREQ seconds" +"%Y-%m-%d %T")
    done
+   if [ $ERROR -gt 0 ] ; then
+      echo "Error: INTERP MET EM step finished with errors"   
+   fi
 fi
 
-echo "Running REAL for member $MIEM"
-$MPIEXE $WRFDIR/$MIEM/real.exe
-ERROR=$(( $ERROR + $? ))
-mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
+#If there are no errors so far proceed with the REAL
+if [ $ERROR -eq 0 ] ; then 
+   echo "Running REAL for member $MIEM"
+   $MPIEXE $WRFDIR/$MIEM/real.exe
+   ERROR=$(( $ERROR + $? ))
+   mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
+   if [ $ERROR -gt 0 ] ; then
+      echo "Error: REAL step finished with errors"   
+   fi
+fi
 
+#If there are no errors so far proceed with the DA_UPDATE_BC
 if [ $PASO -gt 0 ] ; then
-  echo "Corremos el update_bc"
-  cp $NAMELISTDIR/parame* .
-  mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
-  cp $HISTDIR/ANAL/$(date -u -d "$DATE_FORECAST_INI" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
-  ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
-  echo "Running DA_UPDATE_BC for member $MIEM"
-  time $MPIEXESERIAL -stdout-proc ./da_update_bc_${PASO}_${MIEM}.log  $WRFDIR/$MIEM/da_update_bc.exe  
-  ERROR=$(( $ERROR + $? ))
+  if [ $ERROR -eq 0 ] ; then
+     echo "Corremos el update_bc"
+     cp $NAMELISTDIR/parame* .
+     mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
+     cp $HISTDIR/ANAL/$(date -u -d "$DATE_FORECAST_INI" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
+     ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
+     echo "Running DA_UPDATE_BC for member $MIEM"
+     time $MPIEXESERIAL $WRFDIR/$MIEM/da_update_bc.exe > ./da_update_bc_${PASO}_${MIEM}.log
+     ERROR=$(( $ERROR + $? ))
+  fi
+   if [ $ERROR -gt 0 ] ; then
+      echo "Error: DA_UPDATE_BC step finished with errors"   
+   fi  
+
 fi
 
-echo "Running WRF for member $MIEM"
-$MPIEXE $WRFDIR/$MIEM/wrf.exe 
-ERROR=$(( $ERROR + $? ))
-test=$(tail -n1 $WRFDIR/$MIEM/rsl.error.0000 | grep SUCCESS ) && res="OK"
-mv rsl.error.0000 ./wrf_${PASO}_${MIEM}.log
+#If there are no errors so far proceed with WRF
+if [ $ERROR -eq 0 ] ; then
+   echo "Running WRF for member $MIEM"
+   $MPIEXE $WRFDIR/$MIEM/wrf.exe 
+   ERROR=$(( $ERROR + $? ))
+   test=$(tail -n1 $WRFDIR/$MIEM/rsl.error.0000 | grep SUCCESS ) && res="OK"
+   mv rsl.error.0000 ./wrf_${PASO}_${MIEM}.log
+   if [ $ERROR -gt 0 ] ; then
+      echo "Error: WRF step finished with errors"   
+   fi
+fi
 
 EOF
 

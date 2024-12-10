@@ -1,8 +1,8 @@
 ##### COMPILATION FLAGS FOR DIFFERENT ARCHITECTURES #######
 export COMPILATION_NAME="INTEL_HYDRA"   # FUJITSU_FUGAKU , INTEL_FUGAKU , INTEL_HYDRA
 MAKE_LETKF="TRUE"
-MAKE_PERT_MET_EM="TRUE"
-MAKE_WRF_TO_WPS="TRUE"
+MAKE_PERT_MET_EM="FALSE"
+MAKE_WRF_TO_WPS="FALSE"
 DEBUG="FALSE"
 
 #### FUJITSU COMPILER FUGAKU COMPUTER
@@ -40,7 +40,7 @@ if [ $COMPILATION_NAME == "INTEL_FUGAKU" ] ; then
 fi
 #####################################
 
-#### INTEL COMPILER FUGAKU HYDRA
+#### INTEL COMPILER HYDRA COMPUTER
 if [ $COMPILATION_NAME == "INTEL_HYDRA" ] ; then
   source /opt/load-libs.sh 1             
   if [ $DEBUG == "TRUE" ] ; then
@@ -48,7 +48,7 @@ if [ $COMPILATION_NAME == "INTEL_HYDRA" ] ; then
   fi 
   export PARF90="mpiifort"
   export F90="ifort"
-  export FFLAGS="-O3 -convert big_endian -FR -O3 ${DEBUG_FLAGS}"
+  export FFLAGS="-convert big_endian -FR ${DEBUG_FLAGS}"
   export OMP="-qopenmp"
   export NETCDF="/opt/netcdf/netcdf-4/intel/2021.4.0/"
   export HDF5="/opt/hdf5/hdf5-1.10.5/intel/2021.4.0/"

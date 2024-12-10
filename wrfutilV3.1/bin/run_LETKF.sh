@@ -84,11 +84,8 @@ for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN ) ; do
    for ISLOT in $(seq 0 $(($NSLOTS-1))) ; do
       FECHA_SLOT=$(date -u -d "$FECHA_WINDOW_INI UTC +$(( 10#$ISLOT*$ANALISIS_WIN_STEP)) seconds" +"%Y-%m-%d_%T")
       ln -sf ${WRFDIR}/${MIEM}/wrfout_d01_$FECHA_SLOT ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$MIEM)))
-      echo ${WRFDIR}/${MIEM}/wrfout_d01_$FECHA_SLOT ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$MIEM)))
    done	   
 done
-
-exit
 
 cp  ${WRFDIR}/${MIEMBRO_FIN}/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/guesemean
 cp  ${WRFDIR}/${MIEMBRO_FIN}/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/analemean
@@ -104,6 +101,7 @@ for SLOT in $(seq -f "%02g" 1 $(($NSLOTS))) ; do  #Loop over time slot within th
           NRAD=1
           for RADARC in "${RADARC_LIST[@]}" ; do
             OBSFILE=${OBSPATH}/${OBS_TYPE}/WRF_${OBS_TYPE}_${RADARC}_${CTIME_OFMT}.dat 
+            echo $OBSFILE
             [[ -e ${OBSFILE} ]] && echo "Linking $OBSFILE"
             [[ -e ${OBSFILE} ]] && ln -sf ${OBSFILE} ${LETKFDIRRUN}/rad$(printf %02d $((10#$SLOT)))$(printf %02d $((10#$NRAD))).dat
             NRAD=$(( $NRAD + 1 ))
@@ -122,7 +120,7 @@ for SLOT in $(seq -f "%02g" 1 $(($NSLOTS))) ; do  #Loop over time slot within th
           NOBS=$(( $NOBS + 1 ))
         fi
      done
-   CTIME=$(date -u -d "$CTIME UTC +$ANALYSIS_WIN_STEP seconds" +"%Y-%m-%d %T")
+   CTIME=$(date -u -d "$CTIME UTC +$ANALISIS_WIN_STEP seconds" +"%Y-%m-%d %T")
 done
 
 #script de ejecucion
@@ -177,6 +175,6 @@ cp $LETKFDIRRUN/obs.dat $DIRANAL
 # Guardamos un NOUT
 mv $LETKFDIRRUN/NOUT-00000 $DIRANAL
 
-echo "Successfully finished running WRF-LETKF"
+echo "Successfully finished running LETKF"
 
 

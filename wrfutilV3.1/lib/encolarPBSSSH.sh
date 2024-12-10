@@ -22,6 +22,7 @@ queue (){
 	TOT_CORES=$(($ICORE-1))
         MAX_JOBS=$(( $TOT_CORES / $QPROC ))  #Floor rounding (bash default)
 	QTHREAD=$(( $ICORE / $QPROC ))   #Optimally compute QTHREAD
+
 	echo MAX_JOBS = $MAX_JOBS  
 
 	IPCORE=1        #Counter for the number of cores on current job
@@ -55,7 +56,7 @@ queue (){
 		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                        >> ${QPROC_NAME}_${IMIEM}.pbs
                 echo "MIEM=$IMIEM "                                                               >> ${QPROC_NAME}_${IMIEM}.pbs
                 echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -machinefile ../machine.$IMIEM \"  "  >> ${QPROC_NAME}_${IMIEM}.pbs
-         	echo "export MPIEXE=\"mpiexec -np ${QPROC} -machinefile ../machine.$IMIEM \" "    >> ${QPROC_NAME}_${IMIEM}.pbs  ## Comando MPIRUN con cantidad de nodos y cores por nodos           
+         	echo "export MPIEXE=\"\$MPIEXEC -np ${QPROC} -machinefile ../machine.$IMIEM \" "    >> ${QPROC_NAME}_${IMIEM}.pbs  ## Comando MPIRUN con cantidad de nodos y cores por nodos           
                 test $QWORKPATH &&  echo "mkdir ${QWORKPATH}/${IMIEM}"                            >> ${QPROC_NAME}_${IMIEM}.pbs
 	       	test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMIEM}"                               >> ${QPROC_NAME}_${IMIEM}.pbs
 	        echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}_${IMIEM}.pbs
@@ -69,6 +70,7 @@ queue (){
         IMIEM=$ini_mem
         while [ $IMIEM -le $end_mem ] ; do
 	    MEMBER=$(printf "$mem_print_format" $IMIEM)
+            echo "Submiting job $IJOB of $MAX_JOBS for member $MEMBER "
 	    bash ${QPROC_NAME}_${MEMBER}.pbs &> ${QPROC_NAME}_${MEMBER}.out  &
             IJOB=$(($IJOB + 1))
 	    IMIEM=$(($IMIEM + 1))
