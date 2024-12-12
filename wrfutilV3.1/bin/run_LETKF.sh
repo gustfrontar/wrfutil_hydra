@@ -126,34 +126,9 @@ done
 #script de ejecucion
 read -r -d '' QSCRIPTCMD << "EOF"
 
-if [ "$QUEUESYS" = "PBS_block" ] ; then
-   #1 - Create machine files
-   ICORE=1
-   NODES+='null'
-   while read mynode ; do
-      NODES+=( $mynode ) ; ICORE=$(($ICORE+1))
-   done < $PBS_NODEFILE
-   TOT_CORES=$(($ICORE-1))
-   NTHREADS=$(( $TOT_CORES / $LETKFPROC ))  #Floor rounding (bash default)
-
-   IPCORE=1        #Counter for the number of cores on current job
-   rm -fr machine.*
-   while [ $IPCORE -le $TOT_CORES ]; do
-     echo "${NODES[${IPCORE}]} " >> machine.$MIEM
-     IPCORE=$((10#$IPCORE + 10#$NTHREADS))
-   done
-   export FORT90L=""
-   export OMP_NUM_THREADS=$NTHREADS
-   export KMP_STACKSIZE=1G
-   export OMP_STACKSIZE=1G
-
-   time $MPIEXE -machinefile machine.$MIEM ./letkf.exe 
-   ERROR=$(( $ERROR + $? ))
-else
    export FORT90L=""
    time $MPIEXE ./letkf.exe 
    ERROR=$(( $ERROR + $? ))
-fi 
 
 EOF
 

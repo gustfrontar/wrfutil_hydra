@@ -5,12 +5,13 @@ queue (){
 	cd $QWORKPATH
         TPROC=$(( 10#$QNODE * 10#$QPROC ))  #Total number of cores to be used. 	
 	for IMIEM in $(seq -w $ini_mem $end_mem ) ; do 
-        if [ ! -v "$QSKIP" ]; then #If QSKIP is not set. assume is one.
+        if [ -z ${QSKIP} ]; then #If QSKIP is not set. assume is one.
+           echo "WARNING: QSKIP is not set, assuming es 1 " $QSKIP
            QSKIP=1
         fi
         #Optimally computed QTHREAD
-        QTHREAD=$(( 10#$TPROC / 10#$QSKIP )) 
-        
+        QTHREAD=$QSKIP
+        SPROC=$(( 10#$TPROC / 10#$QSKIP ))  
  
 
 
@@ -28,7 +29,7 @@ queue (){
 				echo "ERROR=0                    "                    >> ${QPROC_NAME}_${IMIEM}.pbs
                                 echo "MIEM=$IMIEM "                                   >> ${QPROC_NAME}_${IMIEM}.pbs
 				echo "export MPIEXESERIAL=\"$MPIEXEC -np 1\" "        >> ${QPROC_NAME}_${IMIEM}.pbs
-                		echo "export MPIEXE=\"$MPIEXEC -machinefile=./machine.${IMIEM} -np ${TPROC}\" " >> ${QPROC_NAME}_${IMIEM}.pbs                   ## Comando MPIRUN con cantidad de nodos y cores por nodos
+                		echo "export MPIEXE=\"$MPIEXEC -machinefile=./machine.${IMIEM} -np ${SPROC}\" " >> ${QPROC_NAME}_${IMIEM}.pbs                   ## Comando MPIRUN con cantidad de nodos y cores por nodos
                       test $QWORKPATH &&  echo "mkdir ${QWORKPATH}/${IMIEM}"          >> ${QPROC_NAME}_${IMIEM}.pbs
                       test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMIEM}"             >> ${QPROC_NAME}_${IMIEM}.pbs
                                 echo "NODES+='null'                              "    >> ${QPROC_NAME}_${IMIEM}.pbs
