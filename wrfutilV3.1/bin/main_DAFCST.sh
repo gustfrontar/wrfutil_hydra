@@ -23,6 +23,9 @@ source $BASEDIR/conf/config.env
 source $BASEDIR/conf/$EXPTYPE.conf
 source $BASEDIR/conf/machine.conf
 
+rm $BASEDIR/PROCS/*_ERROR
+rm $BASEDIR/PROCS/*_ENDOK
+
 ###################################
 #We compute the number of forecasts (steps)
 ####################################

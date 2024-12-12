@@ -28,7 +28,7 @@ if [ $PASO -eq 0 ] ; then
    FECHA_FORECAST_INI=$FECHA_INI 
    FECHA_FORECAST_END=$(date -u -d "$FECHA_INI UTC +$SPIN_UP_LENGTH seconds" +"%Y-%m-%d %T")
    FECHA_ANALISIS=$FECHA_FORECAST_END
-   INTERVALO_WRF=$SPIN_UP_LENGTH
+   WRF_OFREQ=$SPIN_UP_LENGTH
    echo " Running spin up "
    echo " Spin up will start at $FECHA_FORECAST_INI"
    echo " Spin up will end   at $FECHA_FORECAST_END"
@@ -39,6 +39,7 @@ else
    FECHA_FORECAST_INI=$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*($PASO-1)+$SPIN_UP_LENGTH)) seconds" +"%Y-%m-%d %T")
    FECHA_FORECAST_END=$(date -u -d "$FECHA_FORECAST_INI UTC +$ANALISIS_WIN_FIN seconds" +"%Y-%m-%d %T")
    FECHA_ANALISIS=$(date -u -d "$FECHA_FORECAST_INI UTC +$ANALISIS_FREC seconds" +"%Y-%m-%d %T")
+   WRF_OFREQ=$ANALISIS_WIN_STEP
 fi
 
 echo "=========================="
@@ -76,7 +77,7 @@ for ICONF in $(seq -w $MULTIMODEL_CONF_INI $MULTIMODEL_CONF_FIN) ; do
    sed -i -e "s|__END_MINUTE__|$Fm|g"                               $WRFDIR/namelist.input.${WRFCONF}
    sed -i -e "s|__END_SECOND__|$Fs|g"                               $WRFDIR/namelist.input.${WRFCONF}
    sed -i -e "s|__INTERVALO_WPS__|$FORECAST_BDY_FREQ|g"             $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__INTERVALO_WRF__|$(($INTERVALO_WRF/60))|g"         $WRFDIR/namelist.input.${WRFCONF}
+   sed -i -e "s|__INTERVALO_WRF__|$((10#$WRF_OFREQ/60))|g"          $WRFDIR/namelist.input.${WRFCONF}
    sed -i -e "s|__E_WE__|$E_WE|g"                                   $WRFDIR/namelist.input.${WRFCONF}
    sed -i -e "s|__E_SN__|$E_SN|g"                                   $WRFDIR/namelist.input.${WRFCONF}
    sed -i -e "s|__DX__|$DX|g"                                       $WRFDIR/namelist.input.${WRFCONF}
@@ -129,15 +130,17 @@ cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
 ln -sf $WRFDIR/code/* . 
 
 if [ $PASO -eq 0 ] ; then
-   DATE_FORECAST_INI=$FECHA_INI 
-   DATE_FORECAST_END=$(date -u -d "$DATE_FORECAST_INI UTC +$SPIN_UP_LENGTH seconds" +"%Y-%m-%d %T")
+   INI_DATE_FCST=$FECHA_INI 
+   END_DATE_FCST=$(date -u -d "$INI_DATE_FCST UTC +$SPIN_UP_LENGTH seconds" +"%Y-%m-%d %T")
+   WRF_OFREQ=$SPIN_UP_LENGTH
 else 
-   DATE_FORECAST_INI=$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*($PASO-1)+$SPIN_UP_LENGTH)) seconds" +"%Y-%m-%d %T")
-   DATE_FORECAST_END=$(date -u -d "$DATE_FORECAST_INI UTC +$ANALISIS_WIN_FIN seconds" +"%Y-%m-%d %T")
+   INI_DATE_FCST=$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*($PASO-1)+$SPIN_UP_LENGTH)) seconds" +"%Y-%m-%d %T")
+   END_DATE_FCST=$(date -u -d "$INI_DATE_FCST UTC +$ANALISIS_WIN_FIN seconds" +"%Y-%m-%d %T")
+   WRF_OFREQ=$ANALISIS_WIN_STEP
 fi
 
 if [ $WPS_CYCLE -eq 1 ] ; then
-   INI_BDY_DATE=$(date_floor "$DATE_FORECAST_INI" $INTERVALO_INI_BDY )   #get the closest initialization of the boudndary data in which BDY data is available.
+   INI_BDY_DATE=$(date_floor "$INI_DATE_FCST" $INTERVALO_INI_BDY )   #get the closest initialization of the boudndary data in which BDY data is available.
    INI_BDY_DATE=$(date -u -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")
 else
    INI_BDY_DATE=$(date_floor "$FECHA_INI" $INTERVALO_INI_BDY )
@@ -156,90 +159,113 @@ if [ ${PASO} -eq 0 ] ; then #Assume spin-up period.
    FORECAST_BDY_FREQ=$( maximum_common_divisor $SPIN_UP_LENGTH $INTERVALO_BDY  )
 fi
 
-if [ $FORECAST_BDY_FREQ -eq $INTERVALO_BDY ] ; then
-   ln -sf $MET_EM_DIR/met_em* $WRFDIR/$MIEM/
-else    
-   #We will conduct interpolation of the met_em files.
-   echo "Interpolating files in time to reach $FORECAST_BDY_FREQ time frequency."
-   CDATE=$DATE_FORECAST_INI
-   WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H:%M:%S"
+#Loop over the expected output files. If all the files are present then skip WPS step.
+CDATE=$INI_DATE_FCST
+FILE_COUNTER=0
+while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$END_DATE_FCST" +"%Y%m%d%H%M%S") ] ; do
 
-   while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$DATE_FORECAST_END" +"%Y%m%d%H%M%S") ] ; do
-     FILE_TAR=met_em.d01.$(date -u -d "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" ).nc
+   MYPATH=./
+   MYFILE=$MYPATH/wrfout_d01_$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%H:%M:%S" )
+   if ! [[ -e $MYFILE ]] ; then #My file do not exist
+      echo "Not found file: " $MYFILE
+      FILE_COUNTER=$(( $FILE_COUNTER + 1 ))
+   fi
+   CDATE=$(date -u -d "$CDATE UTC + $WRF_OFREQ seconds" +"%Y-%m-%d %T")
+done
 
-     if [ -e $MET_EM_DIR/$FILE_TAR ] ; then #Target file exists. 
-        ln -sf $MET_EM_DIR/$FILE_TAR  ./
-     else 
-        DATE_INI=$(date_floor "$CDATE" $INTERVALO_BDY )
-        DATE_END=$(date -u -d "$DATE_INI UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
-        FILE_INI=met_em.d01.$(date -u -d "$DATE_INI UTC" +"$WPS_FILE_DATE_FORMAT" ).nc
-        FILE_END=met_em.d01.$(date -u -d "$DATE_END UTC" +"$WPS_FILE_DATE_FORMAT" ).nc
-        #File does not exist. Interpolate data in time to create it.  
-        echo "&general                         "  > ./pertmetem.namelist
-        echo "/                                " >> ./pertmetem.namelist
-        echo "&interp                          " >> ./pertmetem.namelist
-        echo "time_ini=0                       " >> ./pertmetem.namelist
-        echo "time_end=$INTERVALO_BDY          " >> ./pertmetem.namelist
-        echo "time_tar=$((($(date -d "$CDATE" +%s) - $(date -d "$DATE_INI" +%s))))    " >> ./pertmetem.namelist
-        echo "date_tar='$(date -u -d "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )'         " >> ./pertmetem.namelist
-        echo "file_ini='$MET_EM_DIR/$FILE_INI'   " >> ./pertmetem.namelist
-        echo "file_end='$MET_EM_DIR/$FILE_END'   " >> ./pertmetem.namelist
-        echo "file_tar='$WRFDIR/$MIEM/$FILE_TAR' " >> ./pertmetem.namelist
-        echo "/                                " >> ./pertmetem.namelist
-        echo "Running INTERP_MET_EM for member $MIEM"
-        $MPIEXESERIAL ./interp_met_em.exe > ./interp_met_em.log 
+if [ $FILE_COUNTER -eq 0 ] ; then 
+   #All the required files are already there. 
+   echo "We found all the required met_em files for member $MIEM, skiping DA_UPDATE_BC, REAL and WRF."
+   ERROR=0
+
+else
+   #We need to run DA_UPDATE_BC, REAL and WRF.
+   if [ $FORECAST_BDY_FREQ -eq $INTERVALO_BDY ] ; then
+      ln -sf $MET_EM_DIR/met_em* $WRFDIR/$MIEM/
+   else    
+      #We will conduct interpolation of the met_em files.
+      echo "Interpolating files in time to reach $FORECAST_BDY_FREQ time frequency."
+      CDATE=$INI_DATE_FCST
+      WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H:%M:%S"
+
+      while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$END_DATE_FCST" +"%Y%m%d%H%M%S") ] ; do
+         FILE_TAR=met_em.d01.$(date -u -d "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" ).nc
+
+         if [ -e $MET_EM_DIR/$FILE_TAR ] ; then #Target file exists. 
+           ln -sf $MET_EM_DIR/$FILE_TAR  ./
+         else 
+           DATE_INI=$(date_floor "$CDATE" $INTERVALO_BDY )
+           DATE_END=$(date -u -d "$DATE_INI UTC + $INTERVALO_BDY seconds" +"%Y-%m-%d %T")
+           FILE_INI=met_em.d01.$(date -u -d "$DATE_INI UTC" +"$WPS_FILE_DATE_FORMAT" ).nc
+           FILE_END=met_em.d01.$(date -u -d "$DATE_END UTC" +"$WPS_FILE_DATE_FORMAT" ).nc
+           #File does not exist. Interpolate data in time to create it.  
+           echo "&general                         "  > ./pertmetem.namelist
+           echo "/                                " >> ./pertmetem.namelist
+           echo "&interp                          " >> ./pertmetem.namelist
+           echo "time_ini=0                       " >> ./pertmetem.namelist
+           echo "time_end=$INTERVALO_BDY          " >> ./pertmetem.namelist
+           echo "time_tar=$((($(date -d "$CDATE" +%s) - $(date -d "$DATE_INI" +%s))))    " >> ./pertmetem.namelist
+           echo "date_tar='$(date -u -d "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )'         " >> ./pertmetem.namelist
+           echo "file_ini='$MET_EM_DIR/$FILE_INI'   " >> ./pertmetem.namelist
+           echo "file_end='$MET_EM_DIR/$FILE_END'   " >> ./pertmetem.namelist
+           echo "file_tar='$WRFDIR/$MIEM/$FILE_TAR' " >> ./pertmetem.namelist
+           echo "/                                " >> ./pertmetem.namelist
+           echo "Running INTERP_MET_EM for member $MIEM"
+           $MPIEXESERIAL ./interp_met_em.exe > ./interp_met_em.log 
+           ERROR=$(( $ERROR + $? ))
+           #ln -sf $WPSDIR/$MIEM/$FILE_TAR  ./
+           #TODO: Check if would be better to create the new files in the WPS_MET_EM_DIR so
+           #Interpolated files can be used again in the next cycle.
+        fi
+        #Update CDATE
+        CDATE=$(date -u -d "$CDATE UTC + $FORECAST_BDY_FREQ seconds" +"%Y-%m-%d %T")
+      done
+      if [ $ERROR -gt 0 ] ; then
+         echo "Error: INTERP MET EM step finished with errors"   
+      fi
+   fi
+
+   #If there are no errors so far proceed with the REAL
+   if [ $ERROR -eq 0 ] ; then 
+      echo "Running REAL for member $MIEM"
+      $MPIEXE $WRFDIR/$MIEM/real.exe
+      ERROR=$(( $ERROR + $? ))
+      mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
+      if [ $ERROR -gt 0 ] ; then
+         echo "Error: REAL step finished with errors"   
+      fi
+   fi
+
+   #If there are no errors so far proceed with the DA_UPDATE_BC
+   if [ $PASO -gt 0 ] ; then
+     if [ $ERROR -eq 0 ] ; then
+        echo "Corremos el update_bc"
+        cp $NAMELISTDIR/parame* .
+        mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
+        cp $HISTDIR/ANAL/$(date -u -d "$INI_DATE_FCST" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
+        ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
+        echo "Running DA_UPDATE_BC for member $MIEM"
+        time $MPIEXESERIAL $WRFDIR/$MIEM/da_update_bc.exe > ./da_update_bc_${PASO}_${MIEM}.log
         ERROR=$(( $ERROR + $? ))
-        #ln -sf $WPSDIR/$MIEM/$FILE_TAR  ./
-        #TODO: Check if would be better to create the new files in the WPS_MET_EM_DIR so
-        #Interpolated files can be used again in the next cycle.
      fi
-     #Update CDATE
-     CDATE=$(date -u -d "$CDATE UTC + $FORECAST_BDY_FREQ seconds" +"%Y-%m-%d %T")
-   done
-   if [ $ERROR -gt 0 ] ; then
-      echo "Error: INTERP MET EM step finished with errors"   
+     if [ $ERROR -gt 0 ] ; then
+        echo "Error: DA_UPDATE_BC step finished with errors"   
+     fi  
+
    fi
-fi
 
-#If there are no errors so far proceed with the REAL
-if [ $ERROR -eq 0 ] ; then 
-   echo "Running REAL for member $MIEM"
-   $MPIEXE $WRFDIR/$MIEM/real.exe
-   ERROR=$(( $ERROR + $? ))
-   mv rsl.error.0000 ./real_${PASO}_${MIEM}.log
-   if [ $ERROR -gt 0 ] ; then
-      echo "Error: REAL step finished with errors"   
+   #If there are no errors so far proceed with WRF
+   if [ $ERROR -eq 0 ] ; then
+      echo "Running WRF for member $MIEM"
+      $MPIEXE $WRFDIR/$MIEM/wrf.exe 
+      ERROR=$(( $ERROR + $? ))
+      test=$(tail -n1 $WRFDIR/$MIEM/rsl.error.0000 | grep SUCCESS ) && res="OK"
+      mv rsl.error.0000 ./wrf_${PASO}_${MIEM}.log
+      if [ $ERROR -gt 0 ] ; then
+         echo "Error: WRF step finished with errors"   
+      fi
    fi
-fi
 
-#If there are no errors so far proceed with the DA_UPDATE_BC
-if [ $PASO -gt 0 ] ; then
-  if [ $ERROR -eq 0 ] ; then
-     echo "Corremos el update_bc"
-     cp $NAMELISTDIR/parame* .
-     mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
-     cp $HISTDIR/ANAL/$(date -u -d "$DATE_FORECAST_INI" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
-     ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
-     echo "Running DA_UPDATE_BC for member $MIEM"
-     time $MPIEXESERIAL $WRFDIR/$MIEM/da_update_bc.exe > ./da_update_bc_${PASO}_${MIEM}.log
-     ERROR=$(( $ERROR + $? ))
-  fi
-   if [ $ERROR -gt 0 ] ; then
-      echo "Error: DA_UPDATE_BC step finished with errors"   
-   fi  
-
-fi
-
-#If there are no errors so far proceed with WRF
-if [ $ERROR -eq 0 ] ; then
-   echo "Running WRF for member $MIEM"
-   $MPIEXE $WRFDIR/$MIEM/wrf.exe 
-   ERROR=$(( $ERROR + $? ))
-   test=$(tail -n1 $WRFDIR/$MIEM/rsl.error.0000 | grep SUCCESS ) && res="OK"
-   mv rsl.error.0000 ./wrf_${PASO}_${MIEM}.log
-   if [ $ERROR -gt 0 ] ; then
-      echo "Error: WRF step finished with errors"   
-   fi
 fi
 
 EOF
@@ -253,6 +279,7 @@ QWALLTIME=$WRFWALLTIME
 QPROC_NAME=GUESS_${PASO}
 QCONF=${EXPTYPE}.conf
 QWORKPATH=$WRFDIR
+QSKIP=$WRFSKIP
 
 #Execute the job 
 echo "Tiempo en correr el real, update bc y wrf"

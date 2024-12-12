@@ -26,6 +26,9 @@ source $BASEDIR/conf/config.env
 source $BASEDIR/conf/$EXPTYPE.conf
 source $BASEDIR/conf/machine.conf
 
+rm $BASEDIR/PROCS/*_ERROR
+rm $BASEDIR/PROCS/*_ENDOK
+
 ####################################
 #Calculamos la cantidad de pasos
 ####################################
@@ -38,7 +41,7 @@ echo "Se hicieron $PASO pasos de asimilacion y resta hacer $PASOS_RESTANTES"
 
 rm -f $PROCSDIR/*_ENDOK
 
-if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then 
+if [ ! -z ${PJM_SHAREDTMP} ] && [  ${USETMPDIR} -eq 1 ] ; then 
    echo "We will use Fugaku's temporary directory to speed up IO"
    echo "Copying the data to ${PJM_SHAREDTMP}"
    mkdir -p ${PJM_SHAREDTMP}/HIST   
@@ -76,6 +79,7 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
          echo "Aborting this step"
          exit 1 
       fi
+      echo "Succesfully run WPS"
 
    fi
 
@@ -114,7 +118,6 @@ while [ $PASOS_RESTANTES -gt 0 ] ; do
 
    fi
 
-   exit
    PASOS_RESTANTES=$((10#$PASOS_RESTANTES-1))
    PASO=$((10#$PASO+1))
    echo "Update PASO in the configuration file."

@@ -812,20 +812,20 @@ SUBROUTINE write_ens_mpi_alltoall(file,member,v3d,v2d)
       nrt(p) = nrt(p-1) + nr(p-1)
       nst(p) = nst(p-1) + ns(p-1)
     END DO
-    WRITE(*,*)'skip',skip
-    WRITE(*,*)'bufs',bufs(1,1,:)
-    WRITE(*,*)'bufr',bufr(1,1,:)
-    WRITE(*,*)'nr',nr
-    WRITE(*,*)'ns',ns
+    !WRITE(*,*)'skip',skip
+    !WRITE(*,*)'bufs',bufs(1,1,:)
+    !WRITE(*,*)'bufr',bufr(1,1,:)
+    !WRITE(*,*)'nr',nr
+    !WRITE(*,*)'ns',ns
 
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
     CALL MPI_ALLTOALLV(bufs, ns, nst, MPI_REAL, &
                        bufr, nr, nrt, MPI_REAL, MPI_COMM_WORLD, ierr)
-    WRITE(*,*)ierr
+    !WRITE(*,*)ierr
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)          
-    WRITE(*,*)'bufs',bufs(1,1,:)
-    WRITE(*,*)'bufr',bufr(1,1,:)
+    !WRITE(*,*)'bufs',bufs(1,1,:)
+    !WRITE(*,*)'bufr',bufr(1,1,:)
 
     DEALLOCATE( bufs )
     IF(MOD( myrank + 1 , skip ) == 0 .AND. (myrank+1)/skip <= mcount) THEN

@@ -177,6 +177,7 @@ QTHREAD=$PERTTHREAD
 QWALLTIME=$PERTWALLTIME
 QCONF=${EXPTYPE}.conf
 QWORKPATH=$PERTDIR
+QSKIP=$PERTSKIP
 
 echo "Sending pert met em script to the queue"
 # Encolar

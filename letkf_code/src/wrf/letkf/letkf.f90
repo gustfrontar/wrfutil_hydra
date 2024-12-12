@@ -91,26 +91,26 @@ PROGRAM letkf
   !
   ! READ GUES
   !
-  WRITE(*,*)'CTRL1'
+  !WRITE(*,*)'CTRL1'
   ALLOCATE(gues3d(nij1,nlev,nbv,nv3d))
   ALLOCATE(gues2d(nij1,nbv,nv2d))
 
   CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
   WRITE(guesf(3:4),'(I2.2)') nbslot
-  WRITE(*,*)'CTRL2'
+  !WRITE(*,*)'CTRL2'
   CALL read_ens_mpi_alltoall(guesf,nbv,gues3d,gues2d)
   !CALL read_ens_mpi(guesf,nbv,gues3d,gues2d)
-  WRITE(*,*)'CTRL3'
+  !WRITE(*,*)'CTRL3'
   IF(ESTPAR)ALLOCATE(guesp2d(nij1,nbv,np2d))
   IF(ESTPAR)CALL read_ensp_mpi(guesf,nbv,guesp2d)
-  WRITE(*,*)'CTRL4'
+  !WRITE(*,*)'CTRL4'
   CALL CPU_TIME(rtimer)
   WRITE(6,'(A,2F10.2)') '### TIMER(READ_GUES):',rtimer,rtimer-rtimer00
   rtimer00=rtimer
   !
   ! WRITE ENS MEAN and SPRD
   !
-  WRITE(*,*)'CTRL5'
+  !WRITE(*,*)'CTRL5'
   CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
   CALL write_ensmspr_mpi('gues',nbv,gues3d,gues2d)
 
@@ -126,12 +126,12 @@ PROGRAM letkf
   ! LETKF
   !
   CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-  WRITE(*,*)'CTRL6'
+  !WRITE(*,*)'CTRL6'
   ALLOCATE(anal3d(nij1,nlev,nbv,nv3d))
   ALLOCATE(anal2d(nij1,nbv,nv2d))
 
   IF(ESTPAR)ALLOCATE(analp2d(nij1,nbv,np2d))
-  WRITE(*,*)'CTRL7'
+  !WRITE(*,*)'CTRL7'
   CALL das_letkf()
 
   DEALLOCATE(gues3d,gues2d)
@@ -146,7 +146,7 @@ PROGRAM letkf
   ! WRITE ANAL
   !
   CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-  WRITE(*,*)'CTRL8'
+  !WRITE(*,*)'CTRL8'
   CALL write_ens_mpi_alltoall(guesf,nbv,anal3d,anal2d)
   !CALL write_ens_mpi(guesf,nbv,anal3d,anal2d)
 
@@ -160,7 +160,7 @@ PROGRAM letkf
   !
   ! WRITE ENS MEAN and SPRD
   !
-  WRITE(*,*)'CTRL9'
+  !WRITE(*,*)'CTRL9'
   CALL write_ensmspr_mpi('anal',nbv,anal3d,anal2d)
 
   IF(ESTPAR)CALL write_enspmspr_mpi('anal',nbv,analp2d)
@@ -175,7 +175,7 @@ PROGRAM letkf
 !-----------------------------------------------------------------------
 ! Monitor
 !-----------------------------------------------------------------------
-  WRITE(*,*)'CTRL11'
+  !WRITE(*,*)'CTRL11'
   IF(myrank == 0) THEN
     ALLOCATE(omb(nobs),oma(nobs))
 !   Compute RMSE and BIAS for the gues mean.
@@ -186,7 +186,7 @@ PROGRAM letkf
      & obserr,obstyp,omb,oma,obslot)
   END IF
 !
-  WRITE(*,*)'CTRL12'
+  !WRITE(*,*)'CTRL12'
 
   CALL CPU_TIME(rtimer)
   WRITE(6,'(A,2F10.2)') '### TIMER(MONIT_MEAN):',rtimer,rtimer-rtimer00

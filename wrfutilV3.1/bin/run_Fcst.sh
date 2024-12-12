@@ -177,6 +177,7 @@ QWALLTIME=$WRFWALLTIME
 QPROC_NAME=FCST_${PASO}
 QCONF=${EXPTYPE}.conf
 QWORKPATH=$WRFDIR
+QSKIP=$WRFSKIP
 
 #Execute the job 
 echo "Time taken by real.exe and wrf.exe"
