@@ -133,10 +133,13 @@ if [ $PASO -eq 0 ] ; then
    INI_DATE_FCST=$FECHA_INI 
    END_DATE_FCST=$(date -u -d "$INI_DATE_FCST UTC +$SPIN_UP_LENGTH seconds" +"%Y-%m-%d %T")
    WRF_OFREQ=$SPIN_UP_LENGTH
+   ANA_DATE=$END_DATE_FCST
 else 
    INI_DATE_FCST=$(date -u -d "$FECHA_INI UTC +$(($ANALISIS_FREC*($PASO-1)+$SPIN_UP_LENGTH)) seconds" +"%Y-%m-%d %T")
    END_DATE_FCST=$(date -u -d "$INI_DATE_FCST UTC +$ANALISIS_WIN_FIN seconds" +"%Y-%m-%d %T")
    WRF_OFREQ=$ANALISIS_WIN_STEP
+   ANA_DATE=$(date -u -d "$INI_DATE_FCST UTC +$ANALISIS_FREC seconds" +"%Y-%m-%d %T")
+
 fi
 
 if [ $WPS_CYCLE -eq 1 ] ; then
@@ -266,6 +269,27 @@ else
       fi
    fi
 
+   if [ $PASO -eq 0  ] ; then  #Copy the spin up output as the analysis for the next cycle.
+       OUTPUTPATH="$HISTDIR/ANAL/$(date -u -d "$ANA_DATE UTC" +"%Y%m%d%H%M%S")/"
+       mkdir -p $OUTPUTPATH
+       echo "Copying file $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$ANA_DATE UTC" +"%Y-%m-%d_%T" )"
+       mv $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$ANA_DATE UTC" +"%Y-%m-%d_%T")   $OUTPUTPATH/anal$(printf %05d $((10#$MIEM)))
+       mv $WRFDIR/$MIEM/*.log                                                     $OUTPUTPATH
+       mv $WRFDIR/$MIEM/namelist*                                                 $OUTPUTPATH
+
+   else
+   #Copy the guess files corresponding to the analysis time.
+      if [[ ! -z "$GUARDOGUESS" ]] && [[ $GUARDOGUESS -eq 1 ]] ; then
+         OUTPUTPATH="$HISTDIR/GUES/$(date -u -d "$ANA_DATE UTC" +"%Y%m%d%H%M%S")/"
+         mkdir -p $OUTPUTPATH
+         echo "Copying file $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )"
+         cp $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$ANA_DATE UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/gues$(printf %05d $((10#$MIEM)))
+         mv $WRFDIR/$MIEM/*.log*                                                  $OUTPUTPATH
+         mv $WRFDIR/$MIEM/namelist*                                               $OUTPUTPATH
+      fi
+
+   fi
+
 fi
 
 EOF
@@ -289,30 +313,6 @@ if [ $? -ne 0 ] ; then
    echo "Error: Some members do not finish OK"
    echo "Aborting this step"
    exit 1 
-fi
-
-if [ $PASO -eq 0  ] ; then  #Copy the spin up output as the analysis for the next cycle.
-   for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-       OUTPUTPATH="$HISTDIR/ANAL/$(date -u -d "$FECHA_ANALISIS UTC" +"%Y%m%d%H%M%S")/"
-       mkdir -p $OUTPUTPATH
-       echo "Copying file $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )"
-       mv $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/anal$(printf %05d $((10#$MIEM)))
-       mv $WRFDIR/$MIEM/*.log                                                         $OUTPUTPATH
-       mv $WRFDIR/$MIEM/namelist*                                                     $OUTPUTPATH
-   done
-
-else 
-  #Copy the guess files corresponding to the analysis time.
-  if [[ ! -z "$GUARDOGUESS" ]] && [[ $GUARDOGUESS -eq 1 ]] ; then
-     for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN) ; do
-       OUTPUTPATH="$HISTDIR/GUES/$(date -u -d "$FECHA_ANALISIS UTC" +"%Y%m%d%H%M%S")/"
-       mkdir -p $OUTPUTPATH
-       echo "Copying file $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T" )"
-       cp $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$FECHA_ANALISIS UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/gues$(printf %05d $((10#$MIEM)))
-       mv $WRFDIR/$MIEM/*.log*                                                        $OUTPUTPATH
-       mv $WRFDIR/$MIEM/namelist*                                                     $OUTPUTPATH
-     done
-  fi
 fi
 
 
