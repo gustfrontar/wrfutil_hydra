@@ -8,9 +8,9 @@
 
 ### CONFIGURACION
 #Load experiment configuration
-source $BASEDIR/lib/errores.env
 source $BASEDIR/conf/config.env
-source $BASEDIR/conf/${EXPTYPE}.conf
+source $BASEDIR/conf/step.conf
+source $BASEDIR/conf/exp.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
 source $BASEDIR/conf/letkf.conf
@@ -45,9 +45,9 @@ ln -sf $LETKFDIR/code/* $LETKFDIRRUN
 echo "Editing namelist"
 cp $NAMELISTDIR/letkf.namelist $LETKFDIRRUN/letkf.namelist
 NAMELISTFILE=$LETKFDIRRUN/letkf.namelist
-NSLOTS=$(( ($ANALISIS_WIN_FIN-$ANALISIS_WIN_INI)/$ANALISIS_WIN_STEP+1))
-NBSLOT=$(( ($ANALISIS_FREC-$ANALISIS_WIN_INI)/$ANALISIS_WIN_STEP+1))
-NBV=$(( 10#$MIEMBRO_FIN - 10#$MIEMBRO_INI + 1 ))
+NSLOTS=$(( ($ANALYSIS_WIN_END-$ANALYSIS_WIN_INI)/$ANALYSIS_WIN_STEP+1))
+NBSLOT=$(( ($ANALYSIS_FREQ-$ANALYSIS_WIN_INI)/$ANALYSIS_WIN_STEP+1))
+NBV=$(( 10#$MEM_END - 10#$MEM_INI + 1 ))
 
 #Check if we are going to assimilate radar data and how many radar
 #are being assimilated.
@@ -76,22 +76,22 @@ sed -i -e "s|__GROSS_ERROR__|$GROSS_ERROR|g"               $NAMELISTFILE
 sed -i -e "s|__GROSS_ERROR_REFLECTIVITY__|$GROSS_ERROR_REFLECTIVITY|g"  $NAMELISTFILE
 
 echo "Linking model files"
-FECHA_WINDOW_INI=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*($PASO-1))+$SPIN_UP_LENGTH+$ANALISIS_WIN_INI)) seconds" +"%Y-%m-%d %T")
-ANALYSIS_DATE_WFMT=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*($PASO-1))+$SPIN_UP_LENGTH+$ANALISIS_FREC)) seconds" +"%Y-%m-%d_%T")   #WRF format
-ANALYSIS_DATE_PFMT=$(date -u -d "$FECHA_INI UTC +$((($ANALISIS_FREC*($PASO-1))+$SPIN_UP_LENGTH+$ANALISIS_FREC)) seconds" +"%Y%m%d%H%M%S")  #Path/folder format
+INI_DATE_WIN=$(date -u -d "$DA_INI_DATE UTC +$((($ANALYSIS_FREQ*($STEP-1))+$SPIN_UP_LENGTH+$ANALYSIS_WIN_INI)) seconds" +"%Y-%m-%d %T")
+ANALYSIS_DATE_WFMT=$(date -u -d "$DA_INI_DATE UTC +$((($ANALYSIS_FREQ*($STEP-1))+$SPIN_UP_LENGTH+$ANALYSIS_FREQ)) seconds" +"%Y-%m-%d_%T")   #WRF format
+ANALYSIS_DATE_PFMT=$(date -u -d "$DA_INI_DATE UTC +$((($ANALYSIS_FREQ*($STEP-1))+$SPIN_UP_LENGTH+$ANALYSIS_FREQ)) seconds" +"%Y%m%d%H%M%S")  #Path/folder format
 
-for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN ) ; do
+for MIEM in $(seq -w $MEM_INI $MEM_END ) ; do
    for ISLOT in $(seq 0 $(($NSLOTS-1))) ; do
-      FECHA_SLOT=$(date -u -d "$FECHA_WINDOW_INI UTC +$(( 10#$ISLOT*$ANALISIS_WIN_STEP)) seconds" +"%Y-%m-%d_%T")
-      ln -sf ${WRFDIR}/${MIEM}/wrfout_d01_$FECHA_SLOT ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$MIEM)))
+      SLOT_DATE=$(date -u -d "$INI_DATE_WIN UTC +$(( 10#$ISLOT*$ANALYSIS_WIN_STEP)) seconds" +"%Y-%m-%d_%T")
+      ln -sf ${WRFDIR}/${MIEM}/wrfout_d01_$SLOT_DATE ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$MIEM)))
    done	   
 done
 
-cp  ${WRFDIR}/${MIEMBRO_FIN}/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/guesemean
-cp  ${WRFDIR}/${MIEMBRO_FIN}/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/analemean
+cp  ${WRFDIR}/${MEM_END}/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/guesemean
+cp  ${WRFDIR}/${MEM_END}/wrfout_d01_$ANALYSIS_DATE_WFMT ${LETKFDIRRUN}/analemean
 
 echo "Linking obs files" 
-CTIME=$FECHA_WINDOW_INI
+CTIME=$INI_DATE_WIN
 for SLOT in $(seq -f "%02g" 1 $(($NSLOTS))) ; do  #Loop over time slot within the assimilation window.
      CTIME_OFMT=$(date -u -d "$CTIME UTC" +"%Y%m%d%H%M%S")
      NOBS=1 #Counter for the concatenation of conventional obs. files.
@@ -120,12 +120,12 @@ for SLOT in $(seq -f "%02g" 1 $(($NSLOTS))) ; do  #Loop over time slot within th
           NOBS=$(( $NOBS + 1 ))
         fi
      done
-   CTIME=$(date -u -d "$CTIME UTC +$ANALISIS_WIN_STEP seconds" +"%Y-%m-%d %T")
+   CTIME=$(date -u -d "$CTIME UTC +$ANALYSIS_WIN_STEP seconds" +"%Y-%m-%d %T")
 done
 
 #script de ejecucion
 read -r -d '' QSCRIPTCMD << "EOF"
-
+   source $BASEDIR/conf/exp.conf
    export FORT90L=""
    time $MPIEXE ./letkf.exe 
    ERROR=$(( $ERROR + $? ))
@@ -133,12 +133,11 @@ read -r -d '' QSCRIPTCMD << "EOF"
 EOF
 
 # Parametros de encolamiento
-QPROC_NAME=LETKF_$PASO
+QPROC_NAME=LETKF_$STEP
 QNODE=$LETKFNODE
 QPROC=$LETKFPROC
 QTHREAD=$LETKFTHREAD
 QWALLTIME=$LETKFWALLTIME
-QCONF=${EXPTYPE}.conf
 QWORKPATH=$LETKFDIR
 QSKIP=$LETKFSKIP
 
@@ -157,9 +156,8 @@ fi
 # Save the analysis
 ##
 echo "Copying analysis files"
-echo "Guardando analisis $MIEMBRO_INI - $MIEMBRO_FIN"
 DIRANAL=$HISTDIR/ANAL/$ANALYSIS_DATE_PFMT
-for MIEM in $(seq -w $MIEMBRO_INI $MIEMBRO_FIN ) ; do
+for MIEM in $(seq -w $MEM_INI $MEM_END ) ; do
         mkdir -p  ${DIRANAL}/
 	echo "Updating the date in the analysis file " $WRFDIR/$MIEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT
 	$LETKFDIR/code/update_wrf_time.exe $WRFDIR/$MIEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT

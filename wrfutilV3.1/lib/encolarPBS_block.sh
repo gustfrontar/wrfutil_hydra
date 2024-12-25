@@ -24,7 +24,6 @@ queue (){
 	test $QTHREAD   &&	echo "export OMP_NUM_THREADS=$QTHREAD"                >> ${QPROC_NAME}_${IMIEM}.pbs		
 				echo "source $BASEDIR/conf/config.env"                >> ${QPROC_NAME}_${IMIEM}.pbs 
                                 echo "source $BASEDIR/conf/machine.conf"              >> ${QPROC_NAME}_${IMIEM}.pbs
-	                        echo "source $BASEDIR/lib/errores.env"                >> ${QPROC_NAME}_${IMIEM}.pbs
 				echo "source $BASEDIR/conf/$QCONF"                    >> ${QPROC_NAME}_${IMIEM}.pbs                   ## Experiment specific configuration file.
 				echo "ERROR=0                    "                    >> ${QPROC_NAME}_${IMIEM}.pbs
                                 echo "MIEM=$IMIEM "                                   >> ${QPROC_NAME}_${IMIEM}.pbs

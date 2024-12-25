@@ -15,14 +15,14 @@ read -r -d '' USO << EOF
 Use: createExpFCST.sh  "TEMPLATE_NAME" "BASEDIR"
 
 EOF
-: ${2?"$USO"}  
+: ${2?"$USO"}
 
 WRFUTILDIR=$(pwd)/../
 
 ### PARAMETROS
 
 export TEMPLATE_NAME=$1    #Which template will be used to create the experiment (see folders in /conf )
-export BASEDIR=$2          #Which is the root directory of the experiment. 
+export BASEDIR=$2          #Which is the root directory of the experiment.
 
 source $WRFUTILDIR/lib/errores.env
 ##### FIN INICIALIZACION ######
@@ -32,11 +32,11 @@ EXPDIR=$BASEDIR
 mkdir -p $BASEDIR || dispararError 5 "$BASEDIR"
 
 
-### Copio la configuracion y genero los archivos de configuracion para el experimento. 
-mkdir $BASEDIR/conf 
-cp $WRFUTILDIR/conf/${TEMPLATE_NAME}/* $BASEDIR/conf/ 
+### Copio la configuracion y genero los archivos de configuracion para el experimento.
+mkdir $BASEDIR/conf
+cp $WRFUTILDIR/conf/${TEMPLATE_NAME}/* $BASEDIR/conf/
 sed -i -e "s|__BASEDIR__|$BASEDIR|g"   $BASEDIR/conf/config.env
-source $BASEDIR/conf/config.env 
+source $BASEDIR/conf/config.env
 
 
 ###  Creando Entorno 
