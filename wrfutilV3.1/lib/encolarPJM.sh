@@ -32,10 +32,10 @@ queue (){
         NMEM=$ini_mem   #Counter for the ensemble member
         rm -fr machine.*
         while [ $NMEM -le $end_mem ]; do
-            NCORE=$(( ($NJOB-1)*( 10#$QPROC * 10#$QTHREAD) + ( 10#$NPCORE * 10#$QTHREAD ) ))
+            NCORE=$(( ($NJOB-1)*( 10#$QPROC ) + ( 10#$NPCORE ) ))
             SMEM=$(printf "$mem_print_format" $((10#$NMEM)))
             echo "(${NODES[$($NCORE)]}) core=1 " >> ${QWORKPATH}/machine.$SMEM
-            NPCORE=$(($NPCORE +1 ))
+            NPCORE=$(($NPCORE + $QTHREAD ))
             if [ $NPCORE -gt $QPROC ] ; then
                NMEM=$(($NMEM + 1 ))
                NJOB=$(($NJOB + 1 ))

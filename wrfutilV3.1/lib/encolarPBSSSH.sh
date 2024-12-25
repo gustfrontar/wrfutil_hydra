@@ -20,26 +20,26 @@ queue (){
 	   NODES+=( $mynode ) ; ICORE=$(($ICORE+1))
         done < $PBS_NODEFILE
 	TOT_CORES=$(($ICORE-1))
-        MAX_JOBS=$(( $TOT_CORES / ( $QPROC * $QTHREAD ) ))  #Floor rounding (bash default)
+        MAX_JOBS=$(( $TOT_CORES / ( $QPROC ) ))  #Floor rounding (bash default)
 
 	echo MAX_JOBS = $MAX_JOBS  
 
-	IPCORE=1        #Counter for the number of cores on current job
-	IJOB=1          #Counter for the number of jobs.
-	IMEM=$ini_mem  #Counter for the ensemble member
+	NPCORE=1        #Counter for the number of cores on current job
+	NJOB=1          #Counter for the number of jobs.
+	NMEM=$ini_mem  #Counter for the ensemble member
 	rm -fr machine.*
-        while [ $IMEM -le $end_mem ]; do
-	    ICORE=$(( ($IJOB-1)*( 10#$QPROC * 10#$QTHREAD) + ( 10#$IPCORE * 10#$QTHREAD ) ))
-	    echo "${NODES[${ICORE}]} " >> machine.$(printf "$mem_print_format" $((10#$IMEM)))
-	    IPCORE=$(($IPCORE +1 ))
-	    if [ $IPCORE -gt $QPROC ] ; then
-               IMEM=$(($IMEM + 1 ))
-	       IJOB=$(($IJOB + 1 ))
-	       IPCORE=1
+        while [ $NMEM -le $end_mem ]; do
+	    NCORE=$(( ($NJOB-1)*( 10#$QPROC ) + ( 10#$NPCORE ) ))
+	    echo "${NODES[${NCORE}]} " >> machine.$(printf "$mem_print_format" $((10#$NMEM)))
+	    NPCORE=$(($NPCORE + $QTHREAD ))
+	    if [ $NPCORE -gt $QPROC ] ; then
+               NMEM=$(($NMEM + 1 ))
+	       NJOB=$(($NJOB + 1 ))
+	       NPCORE=1
             fi
-            if [ $IJOB -gt $MAX_JOBS ] ; then
-               IPCORE=1
-	       IJOB=1
+            if [ $NJOB -gt $MAX_JOBS ] ; then
+               NPCORE=1
+	       NJOB=1
             fi
         done  
 
