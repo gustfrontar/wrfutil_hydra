@@ -22,32 +22,32 @@ queue (){
         fi 
  
         #2 - Create the scripts
-        for IMIEM in $(seq -w $ini_mem $end_mem) ; do
-		echo "export PARALLEL=1              "                                             > ${QPROC_NAME}_${IMIEM}.pbs
-		echo "source $BASEDIR/conf/config.env"                                            >> ${QPROC_NAME}_${IMIEM}.pbs 
-                echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}_${IMIEM}.pbs
-                echo "source $BASEDIR/lib/errores.env"                                            >> ${QPROC_NAME}_${IMIEM}.pbs
-                echo "source $BASEDIR/conf/$QCONF      "                                          >> ${QPROC_NAME}_${IMIEM}.pbs
-		echo "ERROR=0                          "                                          >> ${QPROC_NAME}_${IMIEM}.pbs
-		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                        >> ${QPROC_NAME}_${IMIEM}.pbs
-                echo "MIEM=$IMIEM "                                                               >> ${QPROC_NAME}_${IMIEM}.pbs
-                echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1                                  \"  ">> ${QPROC_NAME}_${IMIEM}.pbs
-         	echo "export MPIEXE=\"\$MPIEXEC -np $QPROC                                   \"  ">> ${QPROC_NAME}_${IMIEM}.pbs            
-	       	test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMIEM}"                               >> ${QPROC_NAME}_${IMIEM}.pbs
-	        echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}_${IMIEM}.pbs
-	        echo "if [[ -z \${ERROR} ]] || [[ \${ERROR} -eq 0 ]] ; then"                      >> ${QPROC_NAME}_${IMIEM}.pbs
-	        echo "touch $PROCSDIR/${QPROC_NAME}_${IMIEM}_ENDOK  "                             >> ${QPROC_NAME}_${IMIEM}.pbs  
-	        echo "fi                                            "                             >> ${QPROC_NAME}_${IMIEM}.pbs
+        for IMEM in $(seq -w $ini_mem $end_mem) ; do
+		echo "export PARALLEL=1              "                                             > ${QPROC_NAME}_${IMEM}.pbs
+		echo "source $BASEDIR/conf/config.env"                                            >> ${QPROC_NAME}_${IMEM}.pbs 
+                echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}_${IMEM}.pbs
+                echo "source $BASEDIR/lib/errores.env"                                            >> ${QPROC_NAME}_${IMEM}.pbs
+                echo "source $BASEDIR/conf/$QCONF      "                                          >> ${QPROC_NAME}_${IMEM}.pbs
+		echo "ERROR=0                          "                                          >> ${QPROC_NAME}_${IMEM}.pbs
+		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                        >> ${QPROC_NAME}_${IMEM}.pbs
+                echo "MEM=$IMEM "                                                               >> ${QPROC_NAME}_${IMEM}.pbs
+                echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1                                  \"  ">> ${QPROC_NAME}_${IMEM}.pbs
+         	echo "export MPIEXE=\"\$MPIEXEC -np $QPROC                                   \"  ">> ${QPROC_NAME}_${IMEM}.pbs            
+	       	test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMEM}"                               >> ${QPROC_NAME}_${IMEM}.pbs
+	        echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}_${IMEM}.pbs
+	        echo "if [[ -z \${ERROR} ]] || [[ \${ERROR} -eq 0 ]] ; then"                      >> ${QPROC_NAME}_${IMEM}.pbs
+	        echo "touch $PROCSDIR/${QPROC_NAME}_${IMEM}_ENDOK  "                             >> ${QPROC_NAME}_${IMEM}.pbs  
+	        echo "fi                                            "                             >> ${QPROC_NAME}_${IMEM}.pbs
         done
 
         #3 - Run the scripts
         IJOB=1     #Counter for the number of running jobs;
-        IMIEM=$ini_mem
-        while [ $IMIEM -le $end_mem ] ; do
-	    MEMBER=$(printf "$mem_print_format" $IMIEM)
+        IMEM=$ini_mem
+        while [ $IMEM -le $end_mem ] ; do
+	    MEMBER=$(printf "$mem_print_format" $IMEM)
 	    bash ${QPROC_NAME}_${MEMBER}.pbs &> ${QPROC_NAME}_${MEMBER}.out   &
             IJOB=$(($IJOB + 1))
-	    IMIEM=$(($IMIEM + 1))
+	    IMEM=$(($IMEM + 1))
             if [ $IJOB -gt $MAX_JOBS ] ; then
 	       time wait 	    
                IJOB=1

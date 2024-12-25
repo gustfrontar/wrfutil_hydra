@@ -20,23 +20,20 @@ queue (){
 	   NODES+=( $mynode ) ; ICORE=$(($ICORE+1))
         done < $PBS_NODEFILE
 	TOT_CORES=$(($ICORE-1))
-        MAX_JOBS=$(( $TOT_CORES / $QPROC ))  #Floor rounding (bash default)
-	QTHREAD=$(( $ICORE / $QPROC ))   #Optimally compute QTHREAD
+        MAX_JOBS=$(( $TOT_CORES / ( $QPROC * $QTHREAD ) ))  #Floor rounding (bash default)
 
 	echo MAX_JOBS = $MAX_JOBS  
 
 	IPCORE=1        #Counter for the number of cores on current job
 	IJOB=1          #Counter for the number of jobs.
-	IMIEM=$ini_mem  #Counter for the ensemble member
+	IMEM=$ini_mem  #Counter for the ensemble member
 	rm -fr machine.*
-	echo $NODES
-        while [ $IMIEM -le $end_mem ]; do
-	    ICORE=$(( ($IJOB-1)*$QPROC + $IPCORE ))
-	    echo "${NODES[${ICORE}]} " >> machine.$(printf "$mem_print_format" $((10#$IMIEM)))
-	    echo $ICORE , ${NODES[${ICORE}]} , $IPCORE , $IJOB , $IMIEM , machine.$(printf "$mem_print_format" $((10#$IMIEM)))
-	    IPCORE=$(($IPCORE + 1))
+        while [ $IMEM -le $end_mem ]; do
+	    ICORE=$(( ($IJOB-1)*( 10#$QPROC * 10#$QTHREAD) + ( 10#$IPCORE * 10#$QTHREAD ) ))
+	    echo "${NODES[${ICORE}]} " >> machine.$(printf "$mem_print_format" $((10#$IMEM)))
+	    IPCORE=$(($IPCORE +1 ))
 	    if [ $IPCORE -gt $QPROC ] ; then
-               IMIEM=$(($IMIEM + 1 ))
+               IMEM=$(($IMEM + 1 ))
 	       IJOB=$(($IJOB + 1 ))
 	       IPCORE=1
             fi
@@ -47,33 +44,33 @@ queue (){
         done  
 
         #2 - Create the scripts
-        for IMIEM in $(seq -w $ini_mem $end_mem) ; do
-		echo "source $BASEDIR/conf/config.env"                                             > ${QPROC_NAME}_${IMIEM}.pbs 
-		echo "source $BASEDIR/lib/errores.env"                                            >> ${QPROC_NAME}_${IMIEM}.pbs
-                echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}_${IMIEM}.pbs
-                echo "source $BASEDIR/conf/$QCONF"                                                >> ${QPROC_NAME}_${IMIEM}.pbs
-		echo "ERROR=0                    "                                                >> ${QPROC_NAME}_${IMIEM}.pbs
-		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                        >> ${QPROC_NAME}_${IMIEM}.pbs
-                echo "MIEM=$IMIEM "                                                               >> ${QPROC_NAME}_${IMIEM}.pbs
-                echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -machinefile ../machine.$IMIEM \"  "  >> ${QPROC_NAME}_${IMIEM}.pbs
-         	echo "export MPIEXE=\"\$MPIEXEC -np ${QPROC} -machinefile ../machine.$IMIEM \" "    >> ${QPROC_NAME}_${IMIEM}.pbs  ## Comando MPIRUN con cantidad de nodos y cores por nodos           
-                test $QWORKPATH &&  echo "mkdir ${QWORKPATH}/${IMIEM}"                            >> ${QPROC_NAME}_${IMIEM}.pbs
-	       	test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMIEM}"                               >> ${QPROC_NAME}_${IMIEM}.pbs
-	        echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}_${IMIEM}.pbs
-	        echo "if [[ -z \${ERROR} ]] || [[ \${ERROR} -eq 0 ]] ; then"                      >> ${QPROC_NAME}_${IMIEM}.pbs
-	        echo "touch $PROCSDIR/${QPROC_NAME}_${IMIEM}_ENDOK  "                             >> ${QPROC_NAME}_${IMIEM}.pbs  #Si existe la variable RES en el script la usamos
-	        echo "fi                                            "                             >> ${QPROC_NAME}_${IMIEM}.pbs
+        for IMEM in $(seq -w $ini_mem $end_mem) ; do
+		echo "source $BASEDIR/conf/config.env"                                             > ${QPROC_NAME}_${IMEM}.pbs 
+		echo "source $BASEDIR/lib/errores.env"                                            >> ${QPROC_NAME}_${IMEM}.pbs
+                echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}_${IMEM}.pbs
+                echo "source $BASEDIR/conf/$QCONF"                                                >> ${QPROC_NAME}_${IMEM}.pbs
+		echo "ERROR=0                    "                                                >> ${QPROC_NAME}_${IMEM}.pbs
+		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                        >> ${QPROC_NAME}_${IMEM}.pbs
+                echo "MIEM=$IMEM "                                                                >> ${QPROC_NAME}_${IMEM}.pbs
+                echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -machinefile ../machine.$IMEM \"  "   >> ${QPROC_NAME}_${IMEM}.pbs
+         	echo "export MPIEXE=\"\$MPIEXEC -np ${QPROC} -machinefile ../machine.$IMEM \" "   >> ${QPROC_NAME}_${IMEM}.pbs  ## Comando MPIRUN con cantidad de nodos y cores por nodos           
+                test $QWORKPATH &&  echo "mkdir ${QWORKPATH}/${IMEM}"                             >> ${QPROC_NAME}_${IMEM}.pbs
+	       	test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMEM}"                                >> ${QPROC_NAME}_${IMEM}.pbs
+	        echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}_${IMEM}.pbs
+	        echo "if [[ -z \${ERROR} ]] || [[ \${ERROR} -eq 0 ]] ; then"                      >> ${QPROC_NAME}_${IMEM}.pbs
+	        echo "touch $PROCSDIR/${QPROC_NAME}_${IMEM}_ENDOK  "                              >> ${QPROC_NAME}_${IMEM}.pbs  #Si existe la variable RES en el script la usamos
+	        echo "fi                                            "                             >> ${QPROC_NAME}_${IMEM}.pbs
         done
 
         #3 - Run the scripts
         IJOB=1     #Counter for the number of running jobs;
-        IMIEM=$ini_mem
-        while [ $IMIEM -le $end_mem ] ; do
-	    MEMBER=$(printf "$mem_print_format" $IMIEM)
+        IMEM=$ini_mem
+        while [ $IMEM -le $end_mem ] ; do
+	    MEMBER=$(printf "$mem_print_format" $IMEM)
             echo "Submiting job $IJOB of $MAX_JOBS for member $MEMBER "
 	    bash ${QPROC_NAME}_${MEMBER}.pbs &> ${QPROC_NAME}_${MEMBER}.out  &
             IJOB=$(($IJOB + 1))
-	    IMIEM=$(($IMIEM + 1))
+	    IMEM=$(($IMEM + 1))
             if [ $IJOB -gt $MAX_JOBS ] ; then
 	       time wait 	    
                IJOB=1

@@ -8,7 +8,7 @@
 # Fecha: 06/2023
 #############
 
-###  How to use this script
+###  Leyenda de USO
 
 read -r -d '' USO << EOF
 
@@ -19,12 +19,12 @@ EOF
 
 WRFUTILDIR=$(pwd)/../
 
-### PARAMETERS
+### PARAMETROS
 
 export TEMPLATE_NAME=$1    #Which template will be used to create the experiment (see folders in /conf )
 export BASEDIR=$2          #Which is the root directory of the experiment.
 
-#####  ######
+##### FIN INICIALIZACION ######
 
 EXPDIR=$BASEDIR
 [ -d "$BASEDIR" ]  && "$BASEDIR" exists

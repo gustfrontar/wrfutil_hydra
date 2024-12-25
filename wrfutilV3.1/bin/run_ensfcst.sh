@@ -92,7 +92,7 @@ ulimit -s unlimited
 source $BASEDIR/conf/model.conf
 source $BASEDIR/conf/step.conf
 source $BASEDIR/conf/exp.conf
-echo "Processing member $MIEM" 
+echo "Processing member $MEM" 
 
 if [ ! -z ${PJM_SHAREDTMP} ] && [  ${USETMPDIR} -eq 1 ] ; then
    echo "Using Fugaku's shared dir to run WRF"
@@ -102,16 +102,16 @@ fi
 if [ $MULTIMODEL -eq 0 ] ; then
    NLCONF=$(printf '%03d' ${MODEL_CONF} )
 else 
-   NLCONF=$(printf '%03d' $(( ( ( 10#$MIEM - 1 ) % 10#$NCONF ) + 1 )) )
+   NLCONF=$(printf '%03d' $(( ( ( 10#$MEM - 1 ) % 10#$NCONF ) + 1 )) )
 fi
-cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MIEM/namelist.input
+cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MEM/namelist.input
 
 ln -sf $WRFDIR/code/* . 
 
 if [ ! -z ${PJM_SHAREDTMP} ] && [  ${USETMPDIR} -eq 1 ] ; then
-   MET_EM_DIR=${PJM_SHAREDTMP}/HIST/WPS/met_em/$(date -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")/$MIEM/    #MET_EM_DIR is redefined here
+   MET_EM_DIR=${PJM_SHAREDTMP}/HIST/WPS/met_em/$(date -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")/$MEM/    #MET_EM_DIR is redefined here
 else 
-   MET_EM_DIR=$HISTDIR/WPS/met_em/$(date -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")/$MIEM/
+   MET_EM_DIR=$HISTDIR/WPS/met_em/$(date -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")/$MEM/
 fi
 
 #Loop over the expected output files. If all the files are present then skip WPS step.
@@ -129,13 +129,13 @@ done
 
 if [ $FILE_COUNTER -eq 0 ] ; then 
    #All the required files are already there. 
-   echo "We found all the required wrfout files for member $MIEM, skiping DA_UPDATE_BC, REAL and WRF."
+   echo "We found all the required wrfout files for member $MEM, skiping DA_UPDATE_BC, REAL and WRF."
    ERROR=0
 
 else
    #We need to run DA_UPDATE_BC, REAL and WRF.
    if [ $FCST_BDY_FREQ -eq $BDY_FREQ ] ; then
-      ln -sf $MET_EM_DIR/met_em* $WRFDIR/$MIEM/
+      ln -sf $MET_EM_DIR/met_em* $WRFDIR/$MEM/
    else    
       #We will conduct interpolation of the met_em files.
       echo "Interpolating files in time to reach $FCST_BDY_FREQ time frequency."
@@ -162,12 +162,12 @@ else
            echo "date_tar='$(date -u -d "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )'         " >> ./pertmetem.namelist
            echo "file_ini='$MET_EM_DIR/$FILE_INI'   " >> ./pertmetem.namelist
            echo "file_end='$MET_EM_DIR/$FILE_END'   " >> ./pertmetem.namelist
-           echo "file_tar='$WRFDIR/$MIEM/$FILE_TAR' " >> ./pertmetem.namelist
+           echo "file_tar='$WRFDIR/$MEM/$FILE_TAR' " >> ./pertmetem.namelist
            echo "/                                " >> ./pertmetem.namelist
-           echo "Running INTERP_MET_EM for member $MIEM"
+           echo "Running INTERP_MET_EM for member $MEM"
            $MPIEXESERIAL ./interp_met_em.exe > interp_met_em.log 
            ERROR=$(( $ERROR + $? ))
-           #ln -sf $WPSDIR/$MIEM/$FILE_TAR  ./
+           #ln -sf $WPSDIR/$MEM/$FILE_TAR  ./
            #TODO: Check if would be better to create the new files in the WPS_MET_EM_DIR so
            #Interpolated files can be used again in the next cycle.
         fi
@@ -181,10 +181,10 @@ else
 
    #If there are no errors so far proceed with the REAL
    if [ $ERROR -eq 0 ] ; then 
-      echo "Running REAL for member $MIEM"
-      time $MPIEXE $WRFDIR/$MIEM/real.exe 
+      echo "Running REAL for member $MEM"
+      time $MPIEXE $WRFDIR/$MEM/real.exe 
       ERROR=$(( $ERROR + $? ))
-      mv rsl.error.0000 ./real_${STEP}_${MIEM}.log
+      mv rsl.error.0000 ./real_${STEP}_${MEM}.log
       if [ $ERROR -gt 0 ] ; then
          echo "Error: REAL step finished with errors"   
       fi
@@ -196,11 +196,11 @@ else
         if [ $ERROR -eq 0 ] ; then
            echo "Running update_bc"
            cp $NAMELISTDIR/parame* .
-           mv $WRFDIR/$MIEM/wrfinput_d01 $WRFDIR/$MIEM/wrfinput_d01.org
-           cp $HISTDIR/ANAL/$(date -u -d "$INI_DATE_FCST" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MIEM))) $WRFDIR/$MIEM/wrfinput_d01
-           ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MIEM/da_update_bc.exe
-           echo "Running DA_UPDATE_BC for member $MIEM"
-           time $MPIEXESERIAL $WRFDIR/$MIEM/da_update_bc.exe > ./da_update_bc_${STEP}_${MIEM}.log
+           mv $WRFDIR/$MEM/wrfinput_d01 $WRFDIR/$MEM/wrfinput_d01.org
+           cp $HISTDIR/ANAL/$(date -u -d "$INI_DATE_FCST" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MEM))) $WRFDIR/$MEM/wrfinput_d01
+           ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MEM/da_update_bc.exe
+           echo "Running DA_UPDATE_BC for member $MEM"
+           time $MPIEXESERIAL $WRFDIR/$MEM/da_update_bc.exe > ./da_update_bc_${STEP}_${MEM}.log
            ERROR=$(( $ERROR + $? ))
         fi
         if [ $ERROR -gt 0 ] ; then
@@ -211,10 +211,10 @@ else
 
    #If there are no errors so far proceed with WRF
    if [ $ERROR -eq 0 ] ; then
-      echo "Running WRF for member $MIEM"
-      time $MPIEXE $WRFDIR/$MIEM/wrf.exe 
+      echo "Running WRF for member $MEM"
+      time $MPIEXE $WRFDIR/$MEM/wrf.exe 
       ERROR=$(( $ERROR + $? ))
-      mv rsl.error.0000 ./wrf_${STEP}_${MIEM}.log
+      mv rsl.error.0000 ./wrf_${STEP}_${MEM}.log
       if [ $ERROR -gt 0 ] ; then
          echo "Error: WRF step finished with errors"   
       fi
@@ -230,27 +230,27 @@ else
          if [ $STEP -eq 0  ] ; then  #Copy the spin up output as the analysis for the next cycle.
             OUTPUTPATH="$HISTDIR/ANAL/$(date -u -d "$ANALYSIS_DATE UTC" +"%Y%m%d%H%M%S")/"
             mkdir -p $OUTPUTPATH
-            echo "Copying file $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T" )"
-            mv $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T")   $OUTPUTPATH/anal$(printf %05d $((10#$MIEM)))
-            mv $WRFDIR/$MIEM/*.log                                                     $OUTPUTPATH
-            mv $WRFDIR/$MIEM/namelist*                                                 $OUTPUTPATH
+            echo "Copying file $WRFDIR/$MEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T" )"
+            mv $WRFDIR/$MEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T")   $OUTPUTPATH/anal$(printf %05d $((10#$MEM)))
+            mv $WRFDIR/$MEM/*.log                                                     $OUTPUTPATH
+            mv $WRFDIR/$MEM/namelist*                                                 $OUTPUTPATH
          fi
          #Copy the guess files corresponding to the analysis time.
          if [[ ! -z "$SAVEGUESS" ]] && [[ $SAVEGUESS -eq 1 ]] ; then
             OUTPUTPATH="$HISTDIR/GUES/$(date -u -d "$ANALYSIS_DATE UTC" +"%Y%m%d%H%M%S")/"
             mkdir -p $OUTPUTPATH
-            echo "Copying file $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T" )"
-            cp $WRFDIR/$MIEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/gues$(printf %05d $((10#$MIEM)))
-            mv $WRFDIR/$MIEM/*.log*                                                  $OUTPUTPATH
-            mv $WRFDIR/$MIEM/namelist*                                               $OUTPUTPATH
+            echo "Copying file $WRFDIR/$MEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T" )"
+            cp $WRFDIR/$MEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/gues$(printf %05d $((10#$MEM)))
+            mv $WRFDIR/$MEM/*.log*                                                  $OUTPUTPATH
+            mv $WRFDIR/$MEM/namelist*                                               $OUTPUTPATH
          fi
       elif [ $EXPTYPE == "DAFCST" ] || [ $EXPTYPE == "FCST" ] ; then
          #Copy the guess files corresponding to the analysis time.
-         OUTPUTPATH="$HISTDIR/$EXPTYPE/$(date -u -d "$INI_DATE_FCST UTC" +"%Y%m%d%H%M%S")/$MIEM/"
+         OUTPUTPATH="$HISTDIR/$EXPTYPE/$(date -u -d "$INI_DATE_FCST UTC" +"%Y%m%d%H%M%S")/$MEM/"
          mkdir -p $OUTPUTPATH
-         mv $WRFDIR/$MIEM/wrfout_d01_* [ $EXPTYPE == "FCST" ]$OUTPUTPATH/
-         mv $WRFDIR/$MIEM/*.log*       $OUTPUTPATH/
-         mv $WRFDIR/$MIEM/namelist*    $OUTPUTPATH/
+         mv $WRFDIR/$MEM/wrfout_d01_* [ $EXPTYPE == "FCST" ]$OUTPUTPATH/
+         mv $WRFDIR/$MEM/*.log*       $OUTPUTPATH/
+         mv $WRFDIR/$MEM/namelist*    $OUTPUTPATH/
       fi
    fi
 fi

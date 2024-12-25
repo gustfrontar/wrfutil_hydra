@@ -80,10 +80,10 @@ INI_DATE_WIN=$(date -u -d "$DA_INI_DATE UTC +$((($ANALYSIS_FREQ*($STEP-1))+$SPIN
 ANALYSIS_DATE_WFMT=$(date -u -d "$DA_INI_DATE UTC +$((($ANALYSIS_FREQ*($STEP-1))+$SPIN_UP_LENGTH+$ANALYSIS_FREQ)) seconds" +"%Y-%m-%d_%T")   #WRF format
 ANALYSIS_DATE_PFMT=$(date -u -d "$DA_INI_DATE UTC +$((($ANALYSIS_FREQ*($STEP-1))+$SPIN_UP_LENGTH+$ANALYSIS_FREQ)) seconds" +"%Y%m%d%H%M%S")  #Path/folder format
 
-for MIEM in $(seq -w $MEM_INI $MEM_END ) ; do
+for MEM in $(seq -w $MEM_INI $MEM_END ) ; do
    for ISLOT in $(seq 0 $(($NSLOTS-1))) ; do
       SLOT_DATE=$(date -u -d "$INI_DATE_WIN UTC +$(( 10#$ISLOT*$ANALYSIS_WIN_STEP)) seconds" +"%Y-%m-%d_%T")
-      ln -sf ${WRFDIR}/${MIEM}/wrfout_d01_$SLOT_DATE ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$MIEM)))
+      ln -sf ${WRFDIR}/${MEM}/wrfout_d01_$SLOT_DATE ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$MEM)))
    done	   
 done
 
@@ -157,11 +157,11 @@ fi
 ##
 echo "Copying analysis files"
 DIRANAL=$HISTDIR/ANAL/$ANALYSIS_DATE_PFMT
-for MIEM in $(seq -w $MEM_INI $MEM_END ) ; do
+for MEM in $(seq -w $MEM_INI $MEM_END ) ; do
         mkdir -p  ${DIRANAL}/
-	echo "Updating the date in the analysis file " $WRFDIR/$MIEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT
-	$LETKFDIR/code/update_wrf_time.exe $WRFDIR/$MIEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT
-        mv  $WRFDIR/$MIEM/wrfout_d01_$ANALYSIS_DATE_WFMT $DIRANAL/anal$(printf %05d $((10#$MIEM)))
+	echo "Updating the date in the analysis file " $WRFDIR/$MEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT
+	$LETKFDIR/code/update_wrf_time.exe $WRFDIR/$MEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT
+        mv  $WRFDIR/$MEM/wrfout_d01_$ANALYSIS_DATE_WFMT $DIRANAL/anal$(printf %05d $((10#$MEM)))
 done
 
 #mv $LETKFDIRRUN/*_sp $DIRANAL

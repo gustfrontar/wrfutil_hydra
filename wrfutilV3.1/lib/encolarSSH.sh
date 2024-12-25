@@ -27,16 +27,16 @@ queue (){
 
 	IPCORE=1        #Counter for the number of cores on current job
 	IJOB=1          #Counter for the number of jobs.
-	IMIEM=$ini_mem  #Counter for the ensemble member
+	IMEM=$ini_mem  #Counter for the ensemble member
 	rm -fr machine.*
 	echo $NODES
-        while [ $IMIEM -le $end_mem ]; do
+        while [ $IMEM -le $end_mem ]; do
 	    ICORE=$(( ($IJOB-1)*$QPROC + $IPCORE ))
-	    echo "${NODES[${ICORE}]} " >> machine.$(printf "$mem_print_format" $((10#$IMIEM)))
-	    echo $ICORE , ${NODES[${ICORE}]} , $IPCORE , $IJOB , $IMIEM , machine.$(printf "$mem_print_format" $((10#$IMIEM)))
+	    echo "${NODES[${ICORE}]} " >> machine.$(printf "$mem_print_format" $((10#$IMEM)))
+	    echo $ICORE , ${NODES[${ICORE}]} , $IPCORE , $IJOB , $IMEM , machine.$(printf "$mem_print_format" $((10#$IMEM)))
 	    IPCORE=$(($IPCORE + 1))
 	    if [ $IPCORE -gt $QPROC ] ; then
-               IMIEM=$(($IMIEM + 1 ))
+               IMEM=$(($IMEM + 1 ))
 	       IJOB=$(($IJOB + 1 ))
 	       IPCORE=1
             fi
@@ -47,31 +47,31 @@ queue (){
         done  
 
         #2 - Create the scripts
-        for IMIEM in $(seq -w $ini_mem $end_mem) ; do
-		echo "source $BASEDIR/conf/config.env"                                             > ${QPROC_NAME}_${IMIEM}.pbs 
-                echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}_${IMIEM}.pbs
-                echo "source $BASEDIR/lib/errores.env"                                            >> ${QPROC_NAME}_${IMIEM}.pbs
-                echo "source $BASEDIR/conf/$QCONF"                                                >> ${QPROC_NAME}_${IMIEM}.pbs
-		echo "ERROR=0                    "                                                >> ${QPROC_NAME}_${IMIEM}.pbs
-		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                        >> ${QPROC_NAME}_${IMIEM}.pbs
-                echo "MIEM=$IMIEM "                                                               >> ${QPROC_NAME}_${IMIEM}.pbs
-	        echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -machinefile ../machine.$IMIEM \"  "  >> ${QPROC_NAME}_${IMIEM}.pbs
-         	echo "export MPIEXE=\"mpiexec -np ${QPROC} -machinefile ../machine.$IMIEM \" "    >> ${QPROC_NAME}_${IMIEM}.pbs                   ## Comando MPIRUN con cantidad de nodos y cores por nodos           
-	       	test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMIEM}"                               >> ${QPROC_NAME}_${IMIEM}.pbs
-	        echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}_${IMIEM}.pbs
-	        echo "if [[ -z \${ERROR} ]] || [[ \${ERROR} -eq 0 ]] ; then"                       >> ${QPROC_NAME}_${IMIEM}.pbs
-	        echo "touch $PROCSDIR/${QPROC_NAME}_${IMIEM}_ENDOK  "                             >> ${QPROC_NAME}_${IMIEM}.pbs  #Si existe la variable RES en el script la usamos
-	        echo "fi                                            "                             >> ${QPROC_NAME}_${IMIEM}.pbs
+        for IMEM in $(seq -w $ini_mem $end_mem) ; do
+		echo "source $BASEDIR/conf/config.env"                                             > ${QPROC_NAME}_${IMEM}.pbs 
+                echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}_${IMEM}.pbs
+                echo "source $BASEDIR/lib/errores.env"                                            >> ${QPROC_NAME}_${IMEM}.pbs
+                echo "source $BASEDIR/conf/$QCONF"                                                >> ${QPROC_NAME}_${IMEM}.pbs
+		echo "ERROR=0                    "                                                >> ${QPROC_NAME}_${IMEM}.pbs
+		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                        >> ${QPROC_NAME}_${IMEM}.pbs
+                echo "MEM=$IMEM "                                                               >> ${QPROC_NAME}_${IMEM}.pbs
+	        echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -machinefile ../machine.$IMEM \"  "  >> ${QPROC_NAME}_${IMEM}.pbs
+         	echo "export MPIEXE=\"mpiexec -np ${QPROC} -machinefile ../machine.$IMEM \" "    >> ${QPROC_NAME}_${IMEM}.pbs                   ## Comando MPIRUN con cantidad de nodos y cores por nodos           
+	       	test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMEM}"                               >> ${QPROC_NAME}_${IMEM}.pbs
+	        echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}_${IMEM}.pbs
+	        echo "if [[ -z \${ERROR} ]] || [[ \${ERROR} -eq 0 ]] ; then"                       >> ${QPROC_NAME}_${IMEM}.pbs
+	        echo "touch $PROCSDIR/${QPROC_NAME}_${IMEM}_ENDOK  "                             >> ${QPROC_NAME}_${IMEM}.pbs  #Si existe la variable RES en el script la usamos
+	        echo "fi                                            "                             >> ${QPROC_NAME}_${IMEM}.pbs
         done
 
         #3 - Run the scripts
         IJOB=1     #Counter for the number of running jobs;
-        IMIEM=$ini_mem
-        while [ $IMIEM -le $end_mem ] ; do
-	    MEMBER=$(printf "$mem_print_format" $IMIEM)
+        IMEM=$ini_mem
+        while [ $IMEM -le $end_mem ] ; do
+	    MEMBER=$(printf "$mem_print_format" $IMEM)
 	    bash ${QPROC_NAME}_${MEMBER}.pbs &> ${QPROC_NAME}_${MEMBER}.out  &
             IJOB=$(($IJOB + 1))
-	    IMIEM=$(($IMIEM + 1))
+	    IMEM=$(($IMEM + 1))
             if [ $IJOB -gt $MAX_JOBS ] ; then
 	       time wait 	    
                IJOB=1

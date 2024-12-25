@@ -81,7 +81,7 @@ EOF
 	QPROC=$WPSPROC
 	QNODE=$WPSNODE
 	QTHREADS=$WPSTHREAD
-	QMIEM=00
+	QMEM=00
 	QWALLTIME=$WPSWALLTIME
 	QWORKPATH=$WPSDIR
 	queue 00 00 
@@ -104,30 +104,30 @@ source $BASEDIR/conf/exp.conf
 source $BASEDIR/conf/step.conf
 
 ulimit -s unlimited
-echo "Processing member $MIEM"
-ln -sf $WPSDIR/code/* $WPSDIR/$MIEM
-cd $WPSDIR/$MIEM
+echo "Processing member $MEM"
+ln -sf $WPSDIR/code/* $WPSDIR/$MEM
+cd $WPSDIR/$MEM
 cp $WPSDIR/geogrid/geo_em* .
 
-cp $NAMELISTDIR/namelist.wps $WPSDIR/$MIEM/
+cp $NAMELISTDIR/namelist.wps $WPSDIR/$MEM/
 INI_DATE_NML=$(date -u -d "$BDY_INI_DATE UTC" +"%Y-%m-%d_%T")
 END_DATE_NML=$(date -u -d "$BDY_END_DATE UTC" +"%Y-%m-%d_%T")
 
-sed -i -e "s|__FECHA_INI__|$INI_DATE_NML|g"   $WPSDIR/$MIEM/namelist.wps  #We use some random date for runing geogrid.
-sed -i -e "s|__FECHA_FIN__|$END_DATE_NML|g"   $WPSDIR/$MIEM/namelist.wps
-sed -i -e "s|__INTERVALO__|$BDY_FREQ|g"       $WPSDIR/$MIEM/namelist.wps
-sed -i -e "s|__E_WE__|$E_WE|g"                $WPSDIR/$MIEM/namelist.wps
-sed -i -e "s|__E_SN__|$E_SN|g"                $WPSDIR/$MIEM/namelist.wps
-sed -i -e "s|__DX__|$DX|g"                    $WPSDIR/$MIEM/namelist.wps
-sed -i -e "s|__DY__|$DY|g"                    $WPSDIR/$MIEM/namelist.wps
-sed -i -e "s|__MAP_PROJ__|$MAP_PROJ|g"        $WPSDIR/$MIEM/namelist.wps
-sed -i -e "s|__REF_LAT__|$REF_LAT|g"          $WPSDIR/$MIEM/namelist.wps
-sed -i -e "s|__REF_LON__|$REF_LON|g"          $WPSDIR/$MIEM/namelist.wps
-sed -i -e "s|__TRUELAT1__|$TRUELAT1|g"        $WPSDIR/$MIEM/namelist.wps
-sed -i -e "s|__TRUELAT2__|$TRUELAT2|g"        $WPSDIR/$MIEM/namelist.wps
-sed -i -e "s|__STAND_LON__|$STAND_LON|g"      $WPSDIR/$MIEM/namelist.wps
-sed -i -e "s|__GEOG__|$GEOG|g"                $WPSDIR/$MIEM/namelist.wps
-sed -i -e "s|__IOTYPE__|$IOTYPE|g"            $WPSDIR/$MIEM/namelist.wps
+sed -i -e "s|__FECHA_INI__|$INI_DATE_NML|g"   $WPSDIR/$MEM/namelist.wps  #We use some random date for runing geogrid.
+sed -i -e "s|__FECHA_FIN__|$END_DATE_NML|g"   $WPSDIR/$MEM/namelist.wps
+sed -i -e "s|__INTERVALO__|$BDY_FREQ|g"       $WPSDIR/$MEM/namelist.wps
+sed -i -e "s|__E_WE__|$E_WE|g"                $WPSDIR/$MEM/namelist.wps
+sed -i -e "s|__E_SN__|$E_SN|g"                $WPSDIR/$MEM/namelist.wps
+sed -i -e "s|__DX__|$DX|g"                    $WPSDIR/$MEM/namelist.wps
+sed -i -e "s|__DY__|$DY|g"                    $WPSDIR/$MEM/namelist.wps
+sed -i -e "s|__MAP_PROJ__|$MAP_PROJ|g"        $WPSDIR/$MEM/namelist.wps
+sed -i -e "s|__REF_LAT__|$REF_LAT|g"          $WPSDIR/$MEM/namelist.wps
+sed -i -e "s|__REF_LON__|$REF_LON|g"          $WPSDIR/$MEM/namelist.wps
+sed -i -e "s|__TRUELAT1__|$TRUELAT1|g"        $WPSDIR/$MEM/namelist.wps
+sed -i -e "s|__TRUELAT2__|$TRUELAT2|g"        $WPSDIR/$MEM/namelist.wps
+sed -i -e "s|__STAND_LON__|$STAND_LON|g"      $WPSDIR/$MEM/namelist.wps
+sed -i -e "s|__GEOG__|$GEOG|g"                $WPSDIR/$MEM/namelist.wps
+sed -i -e "s|__IOTYPE__|$IOTYPE|g"            $WPSDIR/$MEM/namelist.wps
 
 
 #Loop over the expected output files. If all the files are present then skip WPS step.
@@ -135,7 +135,7 @@ CDATE=$BDY_INI_DATE
 FILE_COUNTER=0
 while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$BDY_END_DATE" +"%Y%m%d%H%M%S") ] ; do
 
-   MYPATH=$HISTDIR/WPS/met_em_ori/$(date -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")/$MIEM/
+   MYPATH=$HISTDIR/WPS/met_em_ori/$(date -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")/$MEM/
    MYFILE=$MYPATH/met_em.d01.$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%H:%M:%S" ).nc
    if ! [[ -e $MYFILE ]] ; then #My file do not exist
       echo "Not found file: " $MYFILE
@@ -146,7 +146,7 @@ done
 
 if [ $FILE_COUNTER -eq 0 ] ; then 
    #All the required files are already there. 
-   echo "We found all the required met_em files for member $MIEM, skiping ungrib and metgrid."
+   echo "We found all the required met_em files for member $MEM, skiping ungrib and metgrid."
    ERROR=0
 
 else #Runing ungrib and metgrid 
@@ -154,13 +154,13 @@ else #Runing ungrib and metgrid
    #We need to run ungrib/wrftowps and metgrid to generate the required met_em files
    if [ $WPS_DATA_SOURCE == 'GFS' ] ; then 
  
-      BDYBASE=$BDYPATH/gefs.$(date -d "$INI_BDY_DATE" +"%Y%m%d")/$(date -d "$INI_BDY_DATE" +"%H")/$BDYPREFIX/$MIEM/
+      BDYBASE=$BDYPATH/gefs.$(date -d "$INI_BDY_DATE" +"%Y%m%d")/$(date -d "$INI_BDY_DATE" +"%H")/$BDYPREFIX/$MEM/
       echo "Selected data source is GFS, we will run ungrib to decode the data"
       echo "I'm lloking for the BDY files in the folder  $BDYBASE"
       ln -sf $WPSDIR/$BDYVTABLE ./Vtable
-      echo "Decoding gribs in : $WPSDIR/$MIEM"
+      echo "Decoding gribs in : $WPSDIR/$MEM"
       #Linking grib
-      cd $WPSDIR/$MIEM
+      cd $WPSDIR/$MEM
       ./link_grib.csh $BDYBASE/$BDYSEARCHSTRING  
       ERROR=$(( $ERROR + $? ))
 
@@ -172,10 +172,10 @@ else #Runing ungrib and metgrid
 
    elif [ $WPS_DATA_SOURCE == 'WRF' ]  ; then
 
-      BDYBASE=$BDYPATH/$(date -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")/$MIEM/
+      BDYBASE=$BDYPATH/$(date -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")/$MEM/
       echo "Selected data source is WRF, we will use wrf_to_wps tool to decode the data"
       echo "I'm lloking for the BDY files in the folder $BDYBASE"
-      echo "Decoding wrfouts in : $WPSDIR/$MIEM" 
+      echo "Decoding wrfouts in : $WPSDIR/$MEM" 
       #Need to loop over wrfout files.
 
       #Set the WPS_FILE_FORMAT [this depends on the file frequency]
@@ -190,7 +190,7 @@ else #Runing ungrib and metgrid
       CDATE=$BDY_INI_DATE
       while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$BDY_END_DATE" +"%Y%m%d%H%M%S") ] ; do 
          WRFFILE=$BDYBASE/wrfout_d01_$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-         WPSFILE=$WPSDIR/$MIEM/FILE:$(date -u -d  "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )
+         WPSFILE=$WPSDIR/$MEM/FILE:$(date -u -d  "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )
          $MPIEXESERIAL ./wrf_to_wps.exe $WRFFILE $WPSFILE 
          ERROR=$(( $ERROR + $? ))
          #Update CDATE
@@ -205,15 +205,15 @@ else #Runing ungrib and metgrid
 
    fi
 
-   echo "Running METGRID for member $MIEM"
+   echo "Running METGRID for member $MEM"
    $MPIEXE ./metgrid.exe 
    ERROR=$(( $ERROR + $? ))
 
    #Copy data to the met_em_ori directory. 
    echo "Copy data"
-   OUTPUTPATH="$HISTDIR/WPS/met_em_ori/$(date -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")/$MIEM/"
+   OUTPUTPATH="$HISTDIR/WPS/met_em_ori/$(date -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")/$MEM/"
    mkdir -p $OUTPUTPATH
-   mv $WPSDIR/$MIEM/met_em* $OUTPUTPATH
+   mv $WPSDIR/$MEM/met_em* $OUTPUTPATH
 
 fi
 
