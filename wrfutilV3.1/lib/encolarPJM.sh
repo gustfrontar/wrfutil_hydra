@@ -8,14 +8,14 @@ queue (){
 	ini_mem=${1}
         end_mem=${2}
 	mem_print_format='%0'${#ini_mem}'d'
+	
+	TOT_CORES=$(( 10#$INODE * 10#$ICORE ))                        #Total number of available cores
+        MAX_JOBS=$(( 10#$TOT_CORES / 10#$QPROC ))                     #Maximum number of simultaneous jobs
 
         echo MAX_JOBS = $MAX_JOBS 
 	if [ $MAX_JOBS -gt 128 ] ; then 
 	  echo "WARNING: Maximum number of simultaneous runs is 128, this may produce problems!!!" 
         fi 
-
-        TOT_CORES=$(( 10#$INODE * 10#$ICORE ))                        #Total number of available cores
-        MAX_JOBS=$(( 10#$TOT_CORES / 10#$QPROC ))                     #Maximum number of simultaneous jobs
 
         NCORE=1
         NNODE=0
@@ -47,35 +47,36 @@ queue (){
             fi
         done 
 
-        #Set environment and go to workdir for this member.	
-        echo "export PARALLEL=1              "                                             > ${QPROC_NAME}.pbs
-        if [ $QOMP -eq 1 ] ; then 
-	   echo "export OMP_NUM_THREADS=${QSKIP}"                                         >> ${QPROC_NAME}.pbs
-        else 
-           echo "export OMP_NUM_THREADS=1"                                                >> ${QPROC_NAME}.pbs
-        fi
-	echo "export MEM=\$1                "                                             >> ${QPROC_NAME}.pbs #The ensemble member will be an input to the script.
-        echo "source $BASEDIR/conf/config.env"                                            >> ${QPROC_NAME}.pbs
-        echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}.pbs
-        echo "source $BASEDIR/lib/errores.env"                                            >> ${QPROC_NAME}.pbs
-        echo "source $BASEDIR/conf/$QCONF      "                                          >> ${QPROC_NAME}.pbs
-	echo "mkdir -p ${QWORKPATH}/\${MEM}"                                             >> ${QPROC_NAME}.pbs
-	echo "cd ${QWORKPATH}/\${MEM}"                                                   >> ${QPROC_NAME}.pbs
-        #Initialize error count and set MPI execution commands.
-        echo "ERROR=0                          "                                          >> ${QPROC_NAME}.pbs
-        echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -vcoordfile ${QWORKPATH}/machine.\${MEM} \" "  >> ${QPROC_NAME}.pbs
-        echo "export MPIEXE=\"\$MPIEXEC             -vcoordfile ${QWORKPATH}/machine.\${MEM} \" "  >> ${QPROC_NAME}.pbs ## Comando MPIRUN con cantidad de nodos y cores por nodos           
-	#Add all job specific commands.
-        echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}.pbs
-	#Indicate if this JOB was successful or not
-        echo "if [[ -z \${ERROR} ]] || [[ \${ERROR} -eq 0 ]] ; then"                      >> ${QPROC_NAME}.pbs
-        echo "touch $PROCSDIR/${QPROC_NAME}_\${MEM}_ENDOK  "                             >> ${QPROC_NAME}.pbs  #Si existe la variable RES en el script la usamos
-        echo "fi 	                                    "                             >> ${QPROC_NAME}.pbs
-
+        #Set environment and go to workdir for this member.
+        for IMEM in $(seq -w $ini_mem $end_mem) ; do	
+           if [ $QOMP -eq 1 ] ; then 
+	      echo "export OMP_NUM_THREADS=${QSKIP}"                                         >> ${QPROC_NAME}_${IMEM}.pbs
+	      echo "export PARALLEL=${QSKIP}"                                                >> ${QPROC_NAME}_${IMEM}.pbs
+           else 
+              echo "export OMP_NUM_THREADS=1"                                                >> ${QPROC_NAME}_${IMEM}.pbs
+	      echo "export PARALLEL=1"                                                       >> ${QPROC_NAME}_${IMEM}.pbs
+           fi
+	   echo "export MEM=$IMEM              "                                             >> ${QPROC_NAME}_${IMEM}.pbs 
+           echo "source $BASEDIR/conf/config.env"                                            >> ${QPROC_NAME}_${IMEM}.pbs
+           echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}_${IMEM}.pbs
+	   echo "mkdir -p ${QWORKPATH}/\${MEM}"                                              >> ${QPROC_NAME}_${IMEM}.pbs
+	   echo "cd ${QWORKPATH}/\${MEM}"                                                    >> ${QPROC_NAME}_${IMEM}.pbs
+           #Initialize error count and set MPI execution commands.
+           echo "ERROR=0                          "                                          >> ${QPROC_NAME}_${IMEM}.pbs
+           echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -vcoordfile ${QWORKPATH}/machine.\${MEM} \" "  >> ${QPROC_NAME}_${IMEM}.pbs
+           echo "export MPIEXE=\"\$MPIEXEC             -vcoordfile ${QWORKPATH}/machine.\${MEM} \" "  >> ${QPROC_NAME}_${IMEM}.pbs           
+	   #Add all job specific commands.
+           echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}_${IMEM}.pbs
+	   #Indicate if this JOB was successful or not
+           echo "if [[ -z \${ERROR} ]] || [[ \${ERROR} -eq 0 ]] ; then"                      >> ${QPROC_NAME}_${IMEM}.pbs
+           echo "touch $PROCSDIR/${QPROC_NAME}_\${MEM}_ENDOK  "                              >> ${QPROC_NAME}_${IMEM}.pbs  
+           echo "fi 	                                    "                                >> ${QPROC_NAME}_${IMEM}.pbs
+        done
+      
         #3 - Run the scripts
         IJOB=1     #Counter for the number of running jobs;
 	for IMEM in $(seq -w $ini_mem $end_mem ) ; do
-	    bash ${QPROC_NAME}.pbs ${IMEM} &> ${QPROC_NAME}_${IMEM}.out   &
+	    bash ${QPROC_NAME}_${IMEM}.pbs &> ${QPROC_NAME}_${IMEM}.out &
             IJOB=$(($IJOB + 1))
             if [ $IJOB -gt $MAX_JOBS ] ; then
 	       time wait 	    
