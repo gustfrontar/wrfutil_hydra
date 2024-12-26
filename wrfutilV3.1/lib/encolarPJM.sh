@@ -14,8 +14,8 @@ queue (){
 	  echo "WARNING: Maximum number of simultaneous runs is 128, this may produce problems!!!" 
         fi 
 
-        TOT_CORES=$(($INODE*$ICORE))                        #Total number of available cores
-        MAX_JOBS=$(( $TOT_CORES / ( $QPROC * $QTHREAD ) ))  #Maximum number of simultaneous jobs
+        TOT_CORES=$(( 10#$INODE * 10#$ICORE ))                        #Total number of available cores
+        MAX_JOBS=$(( 10#$TOT_CORES / 10#$QPROC ))                     #Maximum number of simultaneous jobs
 
         NCORE=1
         NNODE=0

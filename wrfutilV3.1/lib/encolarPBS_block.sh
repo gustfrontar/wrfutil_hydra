@@ -4,14 +4,16 @@ queue (){
 	ens_num_length=${#ini_mem}
 	cd $QWORKPATH
 
-        TOT_CORES=$(( 10#$QNODE * 10#$QPROC ))  #Total number of cores to be used. 	
+        TOT_CORES=$(( 10#$QNODE * 10#$ICORE ))     #Total number of cores to be used.
+        SPROC=$(( 10#$TOT_CORES / 10#$QTHREAD ))   #Number of cores for MPI
+         	
 	for IMEM in $(seq -w $ini_mem $end_mem ) ; do 
 
 
 	                        echo "#PBS -j oe "                                    >  ${QPROC_NAME}_${IMEM}.pbs                   ## Redireccion de flujos de salida y error
 	test $QUEUE && 		echo "#PBS -q $QUEUE "                                >> ${QPROC_NAME}_${IMEM}.pbs                   ## Cola a la que se lo va a encolar
         test $QWALLTIME && 	echo "#PBS -l walltime=${QWALLTIME} "                 >> ${QPROC_NAME}_${IMEM}.pbs	              ## Tiempo estimado de corrida
-                                echo "#PBS -l nodes=${QNODE}:ppn=${QPROC}"            >> ${QPROC_NAME}_${IMEM}.pbs                   ## Recursos que seran utilizados 
+                                echo "#PBS -l nodes=${QNODE}:ppn=${ICORE}"            >> ${QPROC_NAME}_${IMEM}.pbs                   ## Recursos que seran utilizados 
         			echo '#PBS -v BASEDIR'                                >> ${QPROC_NAME}_${IMEM}.pbs		      ## Indica que debe heredar todo el enviroment
 	test $QTHREAD   &&	echo "export OMP_NUM_THREADS=$QTHREAD"                >> ${QPROC_NAME}_${IMEM}.pbs		
 				echo "source $BASEDIR/conf/config.env"                >> ${QPROC_NAME}_${IMEM}.pbs 
@@ -21,8 +23,8 @@ queue (){
                                 echo "MEM=$IMEM "                                     >> ${QPROC_NAME}_${IMEM}.pbs
 				echo "export MPIEXESERIAL=\"$MPIEXEC -np 1\" "        >> ${QPROC_NAME}_${IMEM}.pbs
                 		echo "export MPIEXE=\"$MPIEXEC -machinefile=./machine.${IMEM} -np ${SPROC}\" " >> ${QPROC_NAME}_${IMEM}.pbs                   ## Comando MPIRUN con cantidad de nodos y cores por nodos
-                      test $QWORKPATH &&  echo "mkdir ${QWORKPATH}/${IMEM}"          >> ${QPROC_NAME}_${IMEM}.pbs
-                      test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMEM}"             >> ${QPROC_NAME}_${IMEM}.pbs
+                      test $QWORKPATH &&  echo "mkdir ${QWORKPATH}/${IMEM}"           >> ${QPROC_NAME}_${IMEM}.pbs
+                      test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMEM}"              >> ${QPROC_NAME}_${IMEM}.pbs
                                 echo "NODES+='null'                              "    >> ${QPROC_NAME}_${IMEM}.pbs
                                 echo "while read mynode ; do                     "    >> ${QPROC_NAME}_${IMEM}.pbs
                                 echo "  NODES+=( \$mynode )                      "    >> ${QPROC_NAME}_${IMEM}.pbs
