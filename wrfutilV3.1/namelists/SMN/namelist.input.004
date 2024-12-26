@@ -55,7 +55,7 @@
  /
 
  &physics
- mp_physics                          = 6,
+ mp_physics                          = 2,
  bl_pbl_physics                      = 2,
  sf_sfclay_physics                   = 2,
  ra_lw_physics                       = 4,
