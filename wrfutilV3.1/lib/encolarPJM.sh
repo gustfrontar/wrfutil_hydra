@@ -49,8 +49,12 @@ queue (){
 
         #Set environment and go to workdir for this member.	
         echo "export PARALLEL=1              "                                             > ${QPROC_NAME}.pbs
-	echo "export OMP_NUM_THREADS=${QTHREAD}"                                          >> ${QPROC_NAME}.pbs
-	echo "export MEM=\$1                "                                            >> ${QPROC_NAME}.pbs #The ensemble member will be an input to the script.
+        if [ $QOMP -eq 1 ] ; then 
+	   echo "export OMP_NUM_THREADS=${QSKIP}"                                         >> ${QPROC_NAME}.pbs
+        else 
+           echo "export OMP_NUM_THREADS=1"                                                >> ${QPROC_NAME}.pbs
+        fi
+	echo "export MEM=\$1                "                                             >> ${QPROC_NAME}.pbs #The ensemble member will be an input to the script.
         echo "source $BASEDIR/conf/config.env"                                            >> ${QPROC_NAME}.pbs
         echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}.pbs
         echo "source $BASEDIR/lib/errores.env"                                            >> ${QPROC_NAME}.pbs

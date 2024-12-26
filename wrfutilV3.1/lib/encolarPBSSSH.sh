@@ -31,7 +31,7 @@ queue (){
         while [ $NMEM -le $end_mem ]; do
 	    NCORE=$(( ($NJOB-1)*( 10#$QPROC ) + ( 10#$NPCORE ) ))
 	    echo "${NODES[${NCORE}]} " >> machine.$(printf "$mem_print_format" $((10#$NMEM)))
-	    NPCORE=$(($NPCORE + $QTHREAD ))
+	    NPCORE=$(($NPCORE + $QSKIP ))
 	    if [ $NPCORE -gt $QPROC ] ; then
                NMEM=$(($NMEM + 1 ))
 	       NJOB=$(($NJOB + 1 ))
@@ -50,10 +50,14 @@ queue (){
                 echo "source $BASEDIR/conf/machine.conf"                                          >> ${QPROC_NAME}_${IMEM}.pbs
                 echo "source $BASEDIR/conf/$QCONF"                                                >> ${QPROC_NAME}_${IMEM}.pbs
 		echo "ERROR=0                    "                                                >> ${QPROC_NAME}_${IMEM}.pbs
-		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                        >> ${QPROC_NAME}_${IMEM}.pbs
-                echo "MEM=$IMEM "                                                                >> ${QPROC_NAME}_${IMEM}.pbs
+                if [ $QOMP -eq 1 ] ; then
+		   echo "export OMP_NUM_THREADS=${QSKIP}"                                         >> ${QPROC_NAME}_${IMEM}.pbs
+                else
+                   echo "export OMP_NUM_THREADS=1"                                                >> ${QPROC_NAME}_${IMEM}.pbs
+                fi  
+                echo "MEM=$IMEM "                                                                 >> ${QPROC_NAME}_${IMEM}.pbs
                 echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -machinefile ../machine.$IMEM \"  "   >> ${QPROC_NAME}_${IMEM}.pbs
-         	echo "export MPIEXE=\"\$MPIEXEC -np $(( 10#$QPROC / 10#$QTHREAD )) -machinefile ../machine.$IMEM \" "   >> ${QPROC_NAME}_${IMEM}.pbs  ## Comando MPIRUN con cantidad de nodos y cores por nodos           
+         	echo "export MPIEXE=\"\$MPIEXEC -np $(( 10#$QPROC / 10#$QSKIP )) -machinefile ../machine.$IMEM \" "   >> ${QPROC_NAME}_${IMEM}.pbs  ## Comando MPIRUN con cantidad de nodos y cores por nodos           
                 test $QWORKPATH &&  echo "mkdir ${QWORKPATH}/${IMEM}"                             >> ${QPROC_NAME}_${IMEM}.pbs
 	       	test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMEM}"                                >> ${QPROC_NAME}_${IMEM}.pbs
 	        echo "${QSCRIPTCMD}"                                                              >> ${QPROC_NAME}_${IMEM}.pbs
