@@ -105,16 +105,18 @@ while [ $REMAINING_STEPS -gt 0 ] ; do
       ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em  >> $LOGDIR/pert_met_em_${STEP}.log  2>&1
    fi
 
-   echo "Running forecast for STEP: $STEP " > $LOGDIR/guess_${STEP}.log
-   write_step_conf "GUESS" #Generate step.conf
-   time $BASEDIR/bin/run_ensfcst.sh         >> $LOGDIR/guess_${STEP}.log  2>&1
-   if [ $? -ne 0 ] ; then
-      echo "Error: run_Guess finished with errors!"
-      echo "Aborting this step"
-      exit 1 
+   if [ $RUN_FCST -eq 1 ] ; then
+      echo "Running forecast for STEP: $STEP " > $LOGDIR/guess_${STEP}.log
+      write_step_conf "GUESS" #Generate step.conf
+      time $BASEDIR/bin/run_ensfcst.sh         >> $LOGDIR/guess_${STEP}.log  2>&1
+      if [ $? -ne 0 ] ; then
+         echo "Error: run_Guess finished with errors!"
+         echo "Aborting this step"
+         exit 1 
+      fi
    fi
 
-   if [ $STEP -gt 0 ] ; then 
+   if [ $RUN_LETKF -eq 1 ] && [ $STEP -gt 0 ] ; then 
       echo "Running LETKF" > $LOGDIR/letkf_${STEP}.log
       time $BASEDIR/bin/run_LETKF.sh  >> $LOGDIR/letkf_${STEP}.log  2>&1
       if [ $? -ne 0 ] ; then
@@ -122,7 +124,6 @@ while [ $REMAINING_STEPS -gt 0 ] ; do
          echo "Aborting this step"
          exit 1 
       fi
-
    fi
 
    REMAINING_STEPS=$((10#$REMAINING_STEPS-1))
@@ -132,7 +133,7 @@ while [ $REMAINING_STEPS -gt 0 ] ; do
 
 done
 
-echo "Exiting. . .  . hasta la proxima!"
+echo "Exiting... hasta la proxima!"
 echo "We finished running @:"$(date )
 exit 0
 

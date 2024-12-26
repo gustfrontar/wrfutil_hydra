@@ -89,15 +89,16 @@ while [ $REMAINING_STEPS -gt 0 ] ; do
       ln -sf ${EXTWPSPATH} $HISTDIR/WPS/met_em >> $LOGDIR/pert_met_em_${STEP}.log  2>&1  #We will use existing met_ems from a previous experiment      
    fi
 
-   echo "Running forecast for initialization: $STEP"
-   echo "$(printf "%02d" $STEP)  | $(date +'%T')" >>  $LOGDIR/da_forecasts.log
-
-   echo "Running the model" 
-   time $BASEDIR/bin/run_ensfcst.sh >> $LOGDIR/dafcst_${STEP}.log  2>&1
-   if [ $? -ne 0 ] ; then
-      echo "Error: run_DAFcst finished with errors!"
-      echo "Aborting STEP "$STEP
-      exit 1 
+   if [ $RUN_FCST -eq 1 ] ; then
+      echo "Running forecast for initialization: $STEP"
+      echo "$(printf "%02d" $STEP)  | $(date +'%T')" >>  $LOGDIR/da_forecasts.log
+      echo "Running the model" 
+      time $BASEDIR/bin/run_ensfcst.sh >> $LOGDIR/dafcst_${STEP}.log  2>&1
+      if [ $? -ne 0 ] ; then
+         echo "Error: run_DAFcst finished with errors!"
+         echo "Aborting STEP "$STEP
+         exit 1 
+      fi
    fi
    REMAINING_STEPS=$((10#$REMAINING_STEPS-1))
    STEP=$((10#$STEP+1))
