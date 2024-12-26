@@ -46,7 +46,7 @@ if [ $COMPILATION_NAME == "INTEL_HYDRA" ] ; then
   if [ $DEBUG == "TRUE" ] ; then
      DEBUG_FLAGS=" -g -traceback "        
   fi 
-  export PARF90="mpiifort"
+  export PARF90="mpif90"
   export F90="ifort"
   export FFLAGS="-O3 -FR ${DEBUG_FLAGS}"
   export OMP="-qopenmp"

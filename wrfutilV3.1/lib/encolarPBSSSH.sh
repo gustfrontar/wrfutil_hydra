@@ -20,7 +20,7 @@ queue (){
 	   NODES+=( $mynode ) ; NCORE=$(($NCORE+1))
         done < $PBS_NODEFILE
 	TOT_CORES=$(($NCORE-1))
-        MAX_JOBS=$(( 10#$TOT_CORE /  10#$QPROC  ))  #Floor rounding (bash default)
+        MAX_JOBS=$(( 10#$TOT_CORES / 10#$QPROC ))  #Floor rounding (bash default)
 
 	echo MAX_JOBS = $MAX_JOBS  
 
