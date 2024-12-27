@@ -19,13 +19,14 @@ queue (){
 
         NCORE=1
         NNODE=0
-        NODES+='null'
-        while [ $NCORE -le $TOT_CORES ] ; do
-           NODES+=( $NNODE ) ; NCORE=$(($NCORE+1))
-           if [ $(( $NCORE % $ICORE )) == 0 ] ; then
+	NODES=()
+        while [ $NCORE -lt $TOT_CORES ] ; do
+           NODES+=( $NNODE )
+           NCORE=$(($NCORE+1))
+           if [ $(( NCORE % ICORE )) -eq 0 ] ; then
               NNODE=$(($NNODE+1))
            fi
-        done 
+        done
 
         NPCORE=1        #Counter for the number of cores on current job
         NJOB=1          #Counter for the number of jobs.
@@ -34,8 +35,8 @@ queue (){
         while [ $NMEM -le $end_mem ]; do
             NCORE=$(( ($NJOB-1)*( 10#$QPROC ) + ( 10#$NPCORE ) ))
             SMEM=$(printf "$mem_print_format" $((10#$NMEM)))
-            echo "(${NODES[$($NCORE)]}) core=1 " >> ${QWORKPATH}/machine.$SMEM
-            NPCORE=$(($NPCORE + $QTHREAD ))
+            echo "(${NODES[$NCORE]}) core=1" >> ${QWORKPATH}/machine.$SMEM
+            NPCORE=$(($NPCORE + $QSKIP ))
             if [ $NPCORE -gt $QPROC ] ; then
                NMEM=$(($NMEM + 1 ))
                NJOB=$(($NJOB + 1 ))
@@ -46,9 +47,8 @@ queue (){
                NJOB=1
             fi
         done 
-
         #Set environment and go to workdir for this member.
-        for IMEM in $(seq -w $ini_mem $end_mem) ; do	
+        for IMEM in $(seq -w $ini_mem $end_mem) ; do	  
            if [ $QOMP -eq 1 ] ; then 
 	      echo "export OMP_NUM_THREADS=${QSKIP}"                                         >> ${QPROC_NAME}_${IMEM}.pbs
 	      echo "export PARALLEL=${QSKIP}"                                                >> ${QPROC_NAME}_${IMEM}.pbs
@@ -76,6 +76,7 @@ queue (){
         #3 - Run the scripts
         IJOB=1     #Counter for the number of running jobs;
 	for IMEM in $(seq -w $ini_mem $end_mem ) ; do
+	    echo "Launching ${QPROC_NAME}_${IMEM}.pbs"
 	    bash ${QPROC_NAME}_${IMEM}.pbs &> ${QPROC_NAME}_${IMEM}.out &
             IJOB=$(($IJOB + 1))
             if [ $IJOB -gt $MAX_JOBS ] ; then
