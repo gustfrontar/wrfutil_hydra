@@ -51,7 +51,6 @@ while [ $REMAINING_STEPS -gt 0 ] ; do
    if [[ $STEP == 0 ]]; then
       echo " Step | TimeStamp" > $LOGDIR/da_forecasts.log
    fi
-
    #####  all forecasts cycles
    echo "Running forecast for initialization: $STEP"
    echo "$(printf "%02d" $STEP)  | $(date +'%T')" >>  $LOGDIR/cycles.log
@@ -59,6 +58,7 @@ while [ $REMAINING_STEPS -gt 0 ] ; do
    echo "Seting important dates: $STEP"
    write_step_conf "FORECAST" #Generate step.conf
    if [[ $RUN_WPS -eq 1 && -z ${EXTWPSPATH} ]] ; then 
+      write_step_conf "WPS"
       echo "Running WPS" 
       time $BASEDIR/bin/run_WPS.sh >> $LOGDIR/wps_${STEP}.log   2>&1
       if [ $? -ne 0 ] ; then
