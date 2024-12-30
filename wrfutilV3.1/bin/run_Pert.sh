@@ -46,8 +46,8 @@ CDATE=$BDY_INI_DATE
 FILE_COUNTER=0
 while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$BDY_END_DATE" +"%Y%m%d%H%M%S") ] ; do
    MYFILE=met_em.d01.$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%H:%M:%S" ).nc
-   for MEM in $(seq -w $MEM_INI $MEM_END) ; do
-      MYPATH=$HISTDIR/WPS/met_em/$(date -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")/$MEM/
+   for IMEM in $(seq -w $MEM_INI $MEM_END) ; do
+      MYPATH=$HISTDIR/WPS/met_em/$(date -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")/$IMEM/
       if ! [[ -e $MYPATH/$MYFILE ]] ; then #My file do not exist
          echo $MYPATH/$MYFILE " does not exist"
          FILE_COUNTER=$(( $FILE_COUNTER + 1 ))
@@ -70,18 +70,18 @@ else
 
    #Creating directories
    echo "Making a copy of met_em files to create the expanded ensemble"
-   for MEM in $(seq -w $MEM_INI $MEM_END) ; do
-      #member1=$(printf '%02d' $((10#$MEM)))
-      mkdir -p $HISTDIR/WPS/met_em/$INI_BDY_DATE_INT/$MEM/
+   for IMEM in $(seq -w $MEM_INI $MEM_END) ; do
+      #member1=$(printf '%02d' $((10#$IMEM)))
+      mkdir -p $HISTDIR/WPS/met_em/$INI_BDY_DATE_INT/$IMEM/
    done
 
    #Copying the files
    CDATE=$BDY_INI_DATE
    while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $BDY_END_DATE_INT ] ; do
       echo "Copying met ems for date "$CDATE
-      for MEM in $(seq -w $MEM_INI $MEM_END) ; do
+      for IMEM in $(seq -w $MEM_INI $MEM_END) ; do
          CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-         cp $HISTDIR/WPS/met_em_ori/$INI_BDY_DATE_INT/$(printf '%0'${#MEM_INI}'d' $ICP)/met_em.d01.$CDATE_WPS.nc $HISTDIR/WPS/met_em/$INI_BDY_DATE_INT/$MEM/met_em.d01.$CDATE_WPS.nc &
+         cp $HISTDIR/WPS/met_em_ori/$INI_BDY_DATE_INT/$(printf '%0'${#MEM_INI}'d' $ICP)/met_em.d01.$CDATE_WPS.nc $HISTDIR/WPS/met_em/$INI_BDY_DATE_INT/$IMEM/met_em.d01.$CDATE_WPS.nc &
          ICP=$(( $ICP + 1 ))
          if [ $ICP -gt $MAX_SIM_CP ] ; then
             time wait
@@ -99,16 +99,16 @@ else
    ITIME=1
    while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $BDY_END_DATE_INT ] ; do
       met_em_time=$(printf '%02d' $((10#$ITIME)))
-      for MEM in $(seq -w $MEM_INI $MEM_END) ; do
+      for IMEM in $(seq -w $MEM_INI $MEM_END) ; do
          CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-         met_em_file_name=$HISTDIR/WPS/met_em/$INI_BDY_DATE_INT/$MEM/met_em.d01.$CDATE_WPS.nc
-         ln -sf $met_em_file_name $PERTDIR/00/ep${met_em_time}$(printf '%05d' $((10#$MEM))) &
+         met_em_file_name=$HISTDIR/WPS/met_em/$INI_BDY_DATE_INT/$IMEM/met_em.d01.$CDATE_WPS.nc
+         ln -sf $met_em_file_name $PERTDIR/00/ep${met_em_time}$(printf '%05d' $((10#$IMEM))) &
       done
       time wait
-      for MEM in $(seq -w $BDY_MEM_INI $BDY_MEM_END ) ; do
+      for IMEM in $(seq -w $BDY_MEM_INI $BDY_MEM_END ) ; do
         CDATE_WPS=$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%T" )
-        met_em_file_name=$HISTDIR/WPS/met_em_ori/$INI_BDY_DATE_INT/$MEM/met_em.d01.$CDATE_WPS.nc
-        ln -sf $met_em_file_name $PERTDIR/00/eo${met_em_time}$(printf '%05d' $((10#$MEM))) &
+        met_em_file_name=$HISTDIR/WPS/met_em_ori/$INI_BDY_DATE_INT/$IMEM/met_em.d01.$CDATE_WPS.nc
+        ln -sf $met_em_file_name $PERTDIR/00/eo${met_em_time}$(printf '%05d' $((10#$IMEM))) &
       done
       time wait
       ITIME=$(( $ITIME + 1 ))
@@ -133,7 +133,7 @@ else
 
    ln -sf $PERTDIR/code/pert_met_em.exe $PERTDIR/00/
 
-   time $MPIEXE ./pert_met_em.exe
+   time $MPIEXE ./pert_met_em.exe > pert_met_em.log  2>&1
    ERROR=$(( $ERROR + $? ))
 
    cp NOUT-000 $LOGDIR/NOUT-000-PertMetEm_$STEP

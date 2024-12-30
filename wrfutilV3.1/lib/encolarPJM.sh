@@ -49,7 +49,7 @@ queue (){
         done 
         #Set environment and go to workdir for this member.
         for IMEM in $(seq -w $ini_mem $end_mem) ; do	  
-           echo "#!/bin/bash                                                                  > ${QPROC_NAME}_${IMEM}.pbs 
+           echo "#!/bin/bash  "                                                               > ${QPROC_NAME}_${IMEM}.pbs 
            if [ $QOMP -eq 1 ] ; then 
 	      echo "export OMP_NUM_THREADS=${QSKIP}"                                         >> ${QPROC_NAME}_${IMEM}.pbs
 	      echo "export PARALLEL=${QSKIP}"                                                >> ${QPROC_NAME}_${IMEM}.pbs

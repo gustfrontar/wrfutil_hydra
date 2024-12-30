@@ -67,7 +67,7 @@ while [ $REMAINING_STEPS -gt 0 ] ; do
    if [ $STEP == 0 ]; then
       echo " Step | TimeStamp" > $LOGDIR/cycles.log
       echo "$(printf "%02d" $STEP)  | $(date +'%T')"  >>  $LOGDIR/cycles.log
-      if [ ! -z ${EXTWPSPATH} && $RUN_WPS -eq 0 ] ; then 
+      if [ ! -z ${EXTWPSPATH} ] && [ $RUN_WPS -eq 0 ] ; then 
 	 mkdir $HISTDIR/WPS/                           > $LOGDIR/pert_met_em_${STEP}.log  2>&1
 	 rm -fr $HISTDIR/WPS/met_em                   >> $LOGDIR/pert_met_em_${STEP}.log  2>&1  
          ln -sf ${EXTWPSPATH} $HISTDIR/WPS/met_em_ori >> $LOGDIR/pert_met_em_${STEP}.log  2>&1  #We will use existing met_ems from a previous experiment      
@@ -81,7 +81,7 @@ while [ $REMAINING_STEPS -gt 0 ] ; do
    if [ $RUN_WPS == 1 ] ; then 
       write_step_conf "WPS" #Generate step.conf
       echo "Running WPS" > $LOGDIR/wps_${STEP}.log
-      time $BASEDIR/bin/run_WPS.sh                        >> $LOGDIR/wps_${STEP}.log
+      time $BASEDIR/bin/run_WPS.sh                        >> $LOGDIR/wps_${STEP}.log 2>&1
       if [ $? -ne 0 ] ; then
          echo "Error: run_WPS finished with errors!"
          echo "Aborting this step"
@@ -91,7 +91,7 @@ while [ $REMAINING_STEPS -gt 0 ] ; do
    fi
 
    if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
-      echo "Running Pert met em"                          >> $LOGDIR/pert_met_em_${STEP}.log
+      echo "Running Pert met em"                           > $LOGDIR/pert_met_em_${STEP}.log
       time $BASEDIR/bin/run_Pert.sh                       >> $LOGDIR/pert_met_em_${STEP}.log   2>&1
       if [ $? -ne 0 ] ; then
          echo "Error: run_Pert finished with errors!"

@@ -15,7 +15,7 @@ queue (){
 
         #1 - Create machine files
 	NCORE=1
-	NODES+='null'  
+	NODES=() 
         while read mynode ; do
 	   NODES+=( $mynode ) ; NCORE=$(($NCORE+1))
         done < $PBS_NODEFILE
