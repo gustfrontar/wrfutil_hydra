@@ -49,12 +49,15 @@ write_step_conf() (
     CALLER=$1  #WPS,GUESS,FORECAST
 
     if [ $CALLER == "WPS" ] ; then 
-       if [ $STEP == 0 ] ; then 
+       if [ $STEP == 0 ] && [ $WPS_CYCLE == 0 ] ; then 
+         INI_DATE_FCST=$DA_INI_DATE 
+         END_DATE_FCST=$(date -u -d "$DA_END_DATE     UTC +$ANALYSIS_WIN_END seconds" +"%Y-%m-%d %T")
+       elif [ $STEP == 0 ] && [ $WPS_CYCLE == 1 ] ; then 
          INI_DATE_FCST=$DA_INI_DATE   
          END_DATE_FCST=$(date -u -d "$INI_DATE_FCST     UTC +$SPIN_UP_LENGTH seconds" +"%Y-%m-%d %T")   
-       else 
+       elif [ $STEP -gt 0 ] && [ $WPS_CYCLE == 1 ] ; then
          INI_DATE_FCST=$(date -u -d "$DA_INI_DATE UTC +$((10#$ANALYSIS_FREQ*(10#$STEP-1)+10#$SPIN_UP_LENGTH)) seconds" +"%Y-%m-%d %T")
-         END_DATE_FCST=$(date -u -d "$INI_DATE_FCST UTC +$ANALYSIS_WIN_END seconds" +"%Y-%m-%d %T")
+         END_DATE_FCST=$(date -u -d "$INI_DATE_FCST     UTC +$ANALYSIS_WIN_END seconds" +"%Y-%m-%d %T")
        fi 
     fi
     if [ $CALLER == "GUESS" ] ; then
