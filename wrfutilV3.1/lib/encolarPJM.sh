@@ -16,7 +16,7 @@ queue (){
            #Round QPROC so that the number of nodes per job is integer.
 	   QPROC=$(( 10#$ICORE * ( 10#$QPROC / 10#$ICORE ) ))
         fi
-	if [ $(( $QPROC % $QSKIP )) -eq 0 ] ; then 
+	if [ $(( $QPROC % $QSKIP )) -ne 0 ] ; then 
            echo "Error: QSKIP=$QSKIP must divide QPROC=$QPROC."
 	   echo "Check the configuration in machine.con"
 	   exit 1
