@@ -14,17 +14,26 @@ queue (){
 	#Construct the machine files, write the scripts and run them. 
 
         #1 - Create machine files
-	NCORE=1
-	NODES+='null'  
+	NODES=() 
         while read mynode ; do
-	   NODES+=( $mynode ) ; NCORE=$(($NCORE+1))
+	   NODES+=( $mynode )
         done < $PBS_NODEFILE
-	TOT_CORES=$(($NCORE-1))
+	TOT_CORES=${#NODES[@]}  #Get the total number of cores
         MAX_JOBS=$(( 10#$TOT_CORES / 10#$QPROC ))  #Floor rounding (bash default)
 
 	echo MAX_JOBS = $MAX_JOBS  
 
-	NPCORE=1        #Counter for the number of cores on current job
+        if [ $QPROC -gt $ICORE ] ; then
+           #Round QPROC so that the number of nodes per job is integer.
+           QPROC=$(( 10#$ICORE * ( 10#$QPROC / 10#$ICORE ) ))
+        fi
+        if [ $(( $QPROC % $QSKIP )) -ne 0 ] ; then
+           echo "Error: QSKIP=$QSKIP must divide QPROC=$QPROC."
+           echo "Check the configuration in machine.con"
+           exit 1
+        fi
+
+	NPCORE=0        #Counter for the number of cores on current job
 	NJOB=1          #Counter for the number of jobs.
 	NMEM=$ini_mem   #Counter for the ensemble member
 	rm -fr machine.*
@@ -32,13 +41,13 @@ queue (){
 	    NCORE=$(( ($NJOB-1)*( 10#$QPROC ) + ( 10#$NPCORE ) ))
 	    echo "${NODES[${NCORE}]} " >> machine.$(printf "$mem_print_format" $((10#$NMEM)))
 	    NPCORE=$(($NPCORE + $QSKIP ))
-	    if [ $NPCORE -gt $QPROC ] ; then
+	    if [ $NPCORE -ge $QPROC ] ; then
                NMEM=$(($NMEM + 1 ))
 	       NJOB=$(($NJOB + 1 ))
-	       NPCORE=1
+	       NPCORE=0
             fi
             if [ $NJOB -gt $MAX_JOBS ] ; then
-               NPCORE=1
+               NPCORE=0
 	       NJOB=1
             fi
         done  

@@ -12,15 +12,25 @@ queue (){
 	TOT_CORES=$(( 10#$INODE * 10#$ICORE ))                        #Total number of available cores
         MAX_JOBS=$(( 10#$TOT_CORES / 10#$QPROC ))                     #Maximum number of simultaneous jobs
 
+        if [ $QPROC -gt $ICORE ] ; then
+           #Round QPROC so that the number of nodes per job is integer.
+	   QPROC=$(( 10#$ICORE * ( 10#$QPROC / 10#$ICORE ) ))
+        fi
+	if [ $(( $QPROC % $QSKIP )) -ne 0 ] ; then 
+           echo "Error: QSKIP=$QSKIP must divide QPROC=$QPROC."
+	   echo "Check the configuration in machine.con"
+	   exit 1
+	fi
+
         echo MAX_JOBS = $MAX_JOBS 
 	if [ $MAX_JOBS -gt 128 ] ; then 
 	  echo "WARNING: Maximum number of simultaneous runs is 128, this may produce problems!!!" 
         fi 
 
-        NCORE=1
+        NCORE=0
         NNODE=0
-	NODES=()
-        while [ $NCORE -lt $TOT_CORES ] ; do
+        NODES=()
+        while [ $NCORE -le $TOT_CORES ] ; do
            NODES+=( $NNODE )
            NCORE=$(($NCORE+1))
            if [ $(( NCORE % ICORE )) -eq 0 ] ; then
@@ -28,28 +38,30 @@ queue (){
            fi
         done
 
-        NPCORE=1        #Counter for the number of cores on current job
+        NPCORE=0        #Counter for the number of cores on current job
         NJOB=1          #Counter for the number of jobs.
         NMEM=$ini_mem   #Counter for the ensemble member
         rm -fr machine.*
         while [ $NMEM -le $end_mem ]; do
             NCORE=$(( ($NJOB-1)*( 10#$QPROC ) + ( 10#$NPCORE ) ))
             SMEM=$(printf "$mem_print_format" $((10#$NMEM)))
-            echo "(${NODES[$NCORE]}) core=1" >> ${QWORKPATH}/machine.$SMEM
+            echo "(${NODES[$NCORE]}) core=1" >> ./machine.$SMEM
             NPCORE=$(($NPCORE + $QSKIP ))
-            if [ $NPCORE -gt $QPROC ] ; then
+            if [ $NPCORE -ge $QPROC ] ; then
                NMEM=$(($NMEM + 1 ))
                NJOB=$(($NJOB + 1 ))
-               NPCORE=1
+               NPCORE=0
             fi
             if [ $NJOB -gt $MAX_JOBS ] ; then
-               NPCORE=1
+               NPCORE=0
                NJOB=1
             fi
-        done 
+        done
+
+
         #Set environment and go to workdir for this member.
         for IMEM in $(seq -w $ini_mem $end_mem) ; do	  
-           echo "#!/bin/bash                                                                  > ${QPROC_NAME}_${IMEM}.pbs 
+           echo "#!/bin/bash  "                                                               > ${QPROC_NAME}_${IMEM}.pbs 
            if [ $QOMP -eq 1 ] ; then 
 	      echo "export OMP_NUM_THREADS=${QSKIP}"                                         >> ${QPROC_NAME}_${IMEM}.pbs
 	      echo "export PARALLEL=${QSKIP}"                                                >> ${QPROC_NAME}_${IMEM}.pbs

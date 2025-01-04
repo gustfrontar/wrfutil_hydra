@@ -227,14 +227,6 @@ else
    #If there are no errors so far copy the files to their final destination
    if [ $ERROR -eq 0 ] ; then
       if [ $EXPTYPE == "DACYCLE" ] ; then 
-         if [ $STEP -eq 0  ] ; then  #Copy the spin up output as the analysis for the next cycle.
-            OUTPUTPATH="$HISTDIR/ANAL/$(date -u -d "$ANALYSIS_DATE UTC" +"%Y%m%d%H%M%S")/"
-            mkdir -p $OUTPUTPATH
-            echo "Copying file $WRFDIR/$MEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T" )"
-            mv $WRFDIR/$MEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T")   $OUTPUTPATH/anal$(printf %05d $((10#$MEM)))
-            mv $WRFDIR/$MEM/*.log                                                     $OUTPUTPATH
-            mv $WRFDIR/$MEM/namelist*                                                 $OUTPUTPATH
-         fi
          #Copy the guess files corresponding to the analysis time.
          if [[ ! -z "$SAVEGUESS" ]] && [[ $SAVEGUESS -eq 1 ]] ; then
             OUTPUTPATH="$HISTDIR/GUES/$(date -u -d "$ANALYSIS_DATE UTC" +"%Y%m%d%H%M%S")/"
@@ -243,6 +235,14 @@ else
             cp $WRFDIR/$MEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/gues$(printf %05d $((10#$MEM)))
             mv $WRFDIR/$MEM/*.log*                                                  $OUTPUTPATH
             mv $WRFDIR/$MEM/namelist*                                               $OUTPUTPATH
+         fi
+         if [ $STEP -eq 0  ] ; then  #Copy the spin up output as the analysis for the next cycle.
+            OUTPUTPATH="$HISTDIR/ANAL/$(date -u -d "$ANALYSIS_DATE UTC" +"%Y%m%d%H%M%S")/"
+            mkdir -p $OUTPUTPATH
+            echo "Copying file $WRFDIR/$MEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T" )"
+            mv $WRFDIR/$MEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T")   $OUTPUTPATH/anal$(printf %05d $((10#$MEM)))
+            mv $WRFDIR/$MEM/*.log                                                     $OUTPUTPATH
+            mv $WRFDIR/$MEM/namelist*                                                 $OUTPUTPATH
          fi
       elif [ $EXPTYPE == "DAFCST" ] || [ $EXPTYPE == "FCST" ] ; then
          #Copy the guess files corresponding to the analysis time.
