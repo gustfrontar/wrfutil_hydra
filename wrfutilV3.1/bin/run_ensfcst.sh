@@ -248,7 +248,7 @@ else
          #Copy the guess files corresponding to the analysis time.
          OUTPUTPATH="$HISTDIR/$EXPTYPE/$(date -u -d "$INI_DATE_FCST UTC" +"%Y%m%d%H%M%S")/$MEM/"
          mkdir -p $OUTPUTPATH
-         mv $WRFDIR/$MEM/wrfout_d01_* [ $EXPTYPE == "FCST" ]$OUTPUTPATH/
+         mv $WRFDIR/$MEM/wrfout_d01_* $OUTPUTPATH/
          mv $WRFDIR/$MEM/*.log*       $OUTPUTPATH/
          mv $WRFDIR/$MEM/namelist*    $OUTPUTPATH/
       fi
@@ -264,7 +264,7 @@ QSKIP=$WRFSKIP
 QOMP=$WRFOMP
 TPROC=$WRFTPROC
 QWALLTIME=$WRFWALLTIME
-QPROC_NAME=GUESS_${STEP}
+QPROC_NAME=ENSFCST_${STEP}
 QWORKPATH=$WRFDIR
 
 #Execute the job 
