@@ -28,4 +28,5 @@
   interpolation_technique=1
   nradar = __N_RADAR__              
   use_wt=.true.           
+  rainratio_threshold=__RAINRATIO_THRESHOLD__
 /

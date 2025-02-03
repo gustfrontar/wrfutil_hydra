@@ -38,7 +38,7 @@ queue (){
                                 echo "rm -fr machine.${IMEM}                     "    >> ${QPROC_NAME}_${IMEM}.pbs
                                 echo "while [ \$IPCORE -le $TOT_CORES ]; do      "    >> ${QPROC_NAME}_${IMEM}.pbs
                                 echo " echo "\${NODES[\${IPCORE}]} " >> machine.${IMEM} " >> ${QPROC_NAME}_${IMEM}.pbs
-                                echo " IPCORE=\$(( 10#\$IPCORE + 10#\$QSKIP )) "    >> ${QPROC_NAME}_${IMEM}.pbs
+                                echo " IPCORE=\$(( 10#\$IPCORE + $QSKIP ))       "    >> ${QPROC_NAME}_${IMEM}.pbs
                                 echo "done                                       "    >> ${QPROC_NAME}_${IMEM}.pbs
                                 echo "export FORT90L=\"\"                        "    >> ${QPROC_NAME}_${IMEM}.pbs         
                                 echo "export KMP_STACKSIZE=1G                    "    >> ${QPROC_NAME}_${IMEM}.pbs

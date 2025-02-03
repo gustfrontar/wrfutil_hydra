@@ -57,33 +57,34 @@ else
    N_RADAR=0 
 fi
 
-sed -i -e "s|__COV_INFL_MUL__|$COV_INFL_MUL|g"             $NAMELISTFILE
-sed -i -e "s|__SP_INFL_ADD__|$SP_INFL_ADD|g"               $NAMELISTFILE
-sed -i -e "s|__RELAX_ALPHA_SPREAD__|$RELAX_ALPHA_SPREAD|g" $NAMELISTFILE
-sed -i -e "s|__RELAX_ALPHA__|$RELAX_ALPHA|g"               $NAMELISTFILE
-sed -i -e "s|__NSLOTS__|$NSLOTS|g"                         $NAMELISTFILE
-sed -i -e "s|__NBSLOT__|$NBSLOT|g"                         $NAMELISTFILE
-sed -i -e "s|__NBV__|$NBV|g"                               $NAMELISTFILE
-sed -i -e "s|__SIGMA_OBS__|$SIGMA_OBS|g"                   $NAMELISTFILE
-sed -i -e "s|__SIGMA_OBSV__|$SIGMA_OBSV|g"                 $NAMELISTFILE
-sed -i -e "s|__SIGMA_OBS_RADAR__|$SIGMA_OBS_RADAR|g"       $NAMELISTFILE
-sed -i -e "s|__SIGMA_OBSZ__|$SIGMA_OBSZ|g"                 $NAMELISTFILE
-sed -i -e "s|__SIGMA_OBST__|$SIGMA_OBST|g"                 $NAMELISTFILE
-sed -i -e "s|__N_RADAR__|$N_RADAR|g"                       $NAMELISTFILE
-sed -i -e "s|__LEV_UPDATE_Q__|$LEV_UPDATE_Q|g"             $NAMELISTFILE
-sed -i -e "s|__THRESHOLD_DZ__|$THRESHOLD_DZ|g"             $NAMELISTFILE
-sed -i -e "s|__GROSS_ERROR__|$GROSS_ERROR|g"               $NAMELISTFILE
+sed -i -e "s|__COV_INFL_MUL__|$COV_INFL_MUL|g"                $NAMELISTFILE
+sed -i -e "s|__SP_INFL_ADD__|$SP_INFL_ADD|g"                  $NAMELISTFILE
+sed -i -e "s|__RELAX_ALPHA_SPREAD__|$RELAX_ALPHA_SPREAD|g"    $NAMELISTFILE
+sed -i -e "s|__RELAX_ALPHA__|$RELAX_ALPHA|g"                  $NAMELISTFILE
+sed -i -e "s|__NSLOTS__|$NSLOTS|g"                            $NAMELISTFILE
+sed -i -e "s|__NBSLOT__|$NBSLOT|g"                            $NAMELISTFILE
+sed -i -e "s|__NBV__|$NBV|g"                                  $NAMELISTFILE
+sed -i -e "s|__SIGMA_OBS__|$SIGMA_OBS|g"                      $NAMELISTFILE
+sed -i -e "s|__SIGMA_OBSV__|$SIGMA_OBSV|g"                    $NAMELISTFILE
+sed -i -e "s|__SIGMA_OBS_RADAR__|$SIGMA_OBS_RADAR|g"          $NAMELISTFILE
+sed -i -e "s|__SIGMA_OBSZ__|$SIGMA_OBSZ|g"                    $NAMELISTFILE
+sed -i -e "s|__SIGMA_OBST__|$SIGMA_OBST|g"                    $NAMELISTFILE
+sed -i -e "s|__N_RADAR__|$N_RADAR|g"                          $NAMELISTFILE
+sed -i -e "s|__LEV_UPDATE_Q__|$LEV_UPDATE_Q|g"                $NAMELISTFILE
+sed -i -e "s|__THRESHOLD_DZ__|$THRESHOLD_DZ|g"                $NAMELISTFILE
+sed -i -e "s|__GROSS_ERROR__|$GROSS_ERROR|g"                  $NAMELISTFILE
 sed -i -e "s|__GROSS_ERROR_REFLECTIVITY__|$GROSS_ERROR_REFLECTIVITY|g"  $NAMELISTFILE
+sed -i -e "s|__RAINRATIO_THRESHOLD__|$RAINRATIO_THRESHOLD|g"  $NAMELISTFILE
 
 echo "Linking model files"
 INI_DATE_WIN=$(date -u -d "$DA_INI_DATE UTC +$((($ANALYSIS_FREQ*($STEP-1))+$SPIN_UP_LENGTH+$ANALYSIS_WIN_INI)) seconds" +"%Y-%m-%d %T")
 ANALYSIS_DATE_WFMT=$(date -u -d "$DA_INI_DATE UTC +$((($ANALYSIS_FREQ*($STEP-1))+$SPIN_UP_LENGTH+$ANALYSIS_FREQ)) seconds" +"%Y-%m-%d_%T")   #WRF format
 ANALYSIS_DATE_PFMT=$(date -u -d "$DA_INI_DATE UTC +$((($ANALYSIS_FREQ*($STEP-1))+$SPIN_UP_LENGTH+$ANALYSIS_FREQ)) seconds" +"%Y%m%d%H%M%S")  #Path/folder format
 
-for IMEM in $(seq -w $MEM_INI $MEM_END ) ; do
+for MEM in $(seq -w $MEM_INI $MEM_END ) ; do
    for ISLOT in $(seq 0 $(($NSLOTS-1))) ; do
       SLOT_DATE=$(date -u -d "$INI_DATE_WIN UTC +$(( 10#$ISLOT*$ANALYSIS_WIN_STEP)) seconds" +"%Y-%m-%d_%T")
-      ln -sf ${WRFDIR}/${IMEM}/wrfout_d01_$SLOT_DATE ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$IMEM)))
+      ln -sf ${WRFDIR}/${MEM}/wrfout_d01_$SLOT_DATE ${LETKFDIRRUN}/gs$(printf %02d $((10#$ISLOT+1)))$(printf %05d $((10#$MEM)))
    done	   
 done
 
@@ -157,11 +158,11 @@ fi
 ##
 echo "Copying analysis files"
 DIRANAL=$HISTDIR/ANAL/$ANALYSIS_DATE_PFMT
-for IMEM in $(seq -w $MEM_INI $MEM_END ) ; do
+for MEM in $(seq -w $MEM_INI $MEM_END ) ; do
         mkdir -p  ${DIRANAL}/
-	echo "Updating the date in the analysis file " $WRFDIR/$IMEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT
-	$LETKFDIR/code/update_wrf_time.exe $WRFDIR/$IMEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT
-        mv  $WRFDIR/$IMEM/wrfout_d01_$ANALYSIS_DATE_WFMT $DIRANAL/anal$(printf %05d $((10#$IMEM)))
+	echo "Updating the date in the analysis file " $WRFDIR/$MEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT
+	$LETKFDIR/code/update_wrf_time.exe $WRFDIR/$MEM/wrfout_d01_$ANALYSIS_DATE_WFMT $ANALYSIS_DATE_WFMT
+        mv  $WRFDIR/$MEM/wrfout_d01_$ANALYSIS_DATE_WFMT $DIRANAL/anal$(printf %05d $((10#$MEM)))
 done
 
 #mv $LETKFDIRRUN/*_sp $DIRANAL
