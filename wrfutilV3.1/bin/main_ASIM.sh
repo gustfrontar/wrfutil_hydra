@@ -33,7 +33,7 @@ rm $BASEDIR/PROCS/*_ENDOK
 ####################################
 STEP=$INI_STEP
 
-REMAINING_STEPS=$((($(date -d "$DA_END_DATE" +%s) - $(date -d "$DA_INI_DATE" +%s) - $SPIN_UP_LENGTH )/$ANALYSIS_FREQ ))
+REMAINING_STEPS=$((($(date -d "$DA_END_DATE" +%s) - $(date -d "$DA_INI_DATE" +%s) - $SPIN_UP_LENGTH )/$ANALYSIS_FREQ )) + 1
 REMAINING_STEPS=$((10#$REMAINING_STEPS-10#$STEP))
 
 echo "The first assimilation cycle starts at $DA_INI_DATE "
