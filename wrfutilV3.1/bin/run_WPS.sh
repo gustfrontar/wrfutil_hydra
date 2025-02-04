@@ -69,7 +69,6 @@ if [ ! -e $WPSDIR/geogrid/geo_em.d01.nc ] ; then
    #ln -sf $WPSDIR/code/*   $WPSDIR/geogrid/
    #cp $WPSDIR/namelist.wps $WPSDIR/geogrid/ 
 read -r -d '' QSCRIPTCMD << "EOF"
-        cd $WPSDIR/geogrid
         ln -sf $WPSDIR/code/*   ./
         cp $WPSDIR/namelist.wps ./
 	ulimit -s unlimited

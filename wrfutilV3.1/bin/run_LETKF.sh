@@ -57,23 +57,24 @@ else
    N_RADAR=0 
 fi
 
-sed -i -e "s|__COV_INFL_MUL__|$COV_INFL_MUL|g"             $NAMELISTFILE
-sed -i -e "s|__SP_INFL_ADD__|$SP_INFL_ADD|g"               $NAMELISTFILE
-sed -i -e "s|__RELAX_ALPHA_SPREAD__|$RELAX_ALPHA_SPREAD|g" $NAMELISTFILE
-sed -i -e "s|__RELAX_ALPHA__|$RELAX_ALPHA|g"               $NAMELISTFILE
-sed -i -e "s|__NSLOTS__|$NSLOTS|g"                         $NAMELISTFILE
-sed -i -e "s|__NBSLOT__|$NBSLOT|g"                         $NAMELISTFILE
-sed -i -e "s|__NBV__|$NBV|g"                               $NAMELISTFILE
-sed -i -e "s|__SIGMA_OBS__|$SIGMA_OBS|g"                   $NAMELISTFILE
-sed -i -e "s|__SIGMA_OBSV__|$SIGMA_OBSV|g"                 $NAMELISTFILE
-sed -i -e "s|__SIGMA_OBS_RADAR__|$SIGMA_OBS_RADAR|g"       $NAMELISTFILE
-sed -i -e "s|__SIGMA_OBSZ__|$SIGMA_OBSZ|g"                 $NAMELISTFILE
-sed -i -e "s|__SIGMA_OBST__|$SIGMA_OBST|g"                 $NAMELISTFILE
-sed -i -e "s|__N_RADAR__|$N_RADAR|g"                       $NAMELISTFILE
-sed -i -e "s|__LEV_UPDATE_Q__|$LEV_UPDATE_Q|g"             $NAMELISTFILE
-sed -i -e "s|__THRESHOLD_DZ__|$THRESHOLD_DZ|g"             $NAMELISTFILE
-sed -i -e "s|__GROSS_ERROR__|$GROSS_ERROR|g"               $NAMELISTFILE
+sed -i -e "s|__COV_INFL_MUL__|$COV_INFL_MUL|g"                $NAMELISTFILE
+sed -i -e "s|__SP_INFL_ADD__|$SP_INFL_ADD|g"                  $NAMELISTFILE
+sed -i -e "s|__RELAX_ALPHA_SPREAD__|$RELAX_ALPHA_SPREAD|g"    $NAMELISTFILE
+sed -i -e "s|__RELAX_ALPHA__|$RELAX_ALPHA|g"                  $NAMELISTFILE
+sed -i -e "s|__NSLOTS__|$NSLOTS|g"                            $NAMELISTFILE
+sed -i -e "s|__NBSLOT__|$NBSLOT|g"                            $NAMELISTFILE
+sed -i -e "s|__NBV__|$NBV|g"                                  $NAMELISTFILE
+sed -i -e "s|__SIGMA_OBS__|$SIGMA_OBS|g"                      $NAMELISTFILE
+sed -i -e "s|__SIGMA_OBSV__|$SIGMA_OBSV|g"                    $NAMELISTFILE
+sed -i -e "s|__SIGMA_OBS_RADAR__|$SIGMA_OBS_RADAR|g"          $NAMELISTFILE
+sed -i -e "s|__SIGMA_OBSZ__|$SIGMA_OBSZ|g"                    $NAMELISTFILE
+sed -i -e "s|__SIGMA_OBST__|$SIGMA_OBST|g"                    $NAMELISTFILE
+sed -i -e "s|__N_RADAR__|$N_RADAR|g"                          $NAMELISTFILE
+sed -i -e "s|__LEV_UPDATE_Q__|$LEV_UPDATE_Q|g"                $NAMELISTFILE
+sed -i -e "s|__THRESHOLD_DZ__|$THRESHOLD_DZ|g"                $NAMELISTFILE
+sed -i -e "s|__GROSS_ERROR__|$GROSS_ERROR|g"                  $NAMELISTFILE
 sed -i -e "s|__GROSS_ERROR_REFLECTIVITY__|$GROSS_ERROR_REFLECTIVITY|g"  $NAMELISTFILE
+sed -i -e "s|__RAINRATIO_THRESHOLD__|$RAINRATIO_THRESHOLD|g"  $NAMELISTFILE
 
 echo "Linking model files"
 INI_DATE_WIN=$(date -u -d "$DA_INI_DATE UTC +$((($ANALYSIS_FREQ*($STEP-1))+$SPIN_UP_LENGTH+$ANALYSIS_WIN_INI)) seconds" +"%Y-%m-%d %T")
