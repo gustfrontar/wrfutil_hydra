@@ -1,0 +1,123 @@
+&PARAM_IO
+!--IO_LOG_BASENAME--
+ IO_LOG_ALLNODE  = .false.,
+/
+
+&PARAM_FILE
+!--FILE_AGGREGATE--
+/
+
+&PARAM_TIME
+!--TIME_STARTDATE--
+ TIME_STARTMS   = 0.D0,
+/
+
+&PARAM_STATISTICS
+ STATISTICS_checktotal     = .true.,
+ STATISTICS_use_globalcomm = .true.,
+/
+
+
+&PARAM_TOPOGRAPHY
+!--TOPOGRAPHY_OUT_BASENAME--
+/
+
+&PARAM_LANDUSE
+!--LANDUSE_OUT_BASENAME--
+/
+
+&PARAM_CONVERT
+!--CONVERT_TOPO--
+!--CONVERT_LANDUSE--
+/
+
+&PARAM_CNVTOPO
+!--CNVTOPO_name--
+ CNVTOPO_SMOOTH_MAXSLOPE = 4.00D0,
+ CNVTOPO_SMOOTH_local    = .true.,
+ CNVTOPO_SMOOTH_itelim   = 10000,
+! CNVTOPO_copy_parent     = .true.,
+/
+
+&PARAM_COPYTOPO
+!--COPYTOPO_IN_BASENAME--
+! COPYTOPO_ENTIRE_REGION = .false.,
+! COPYTOPO_LINEAR_H      = .true.,
+/
+
+&PARAM_CNVTOPO_GTOPO30
+ GTOPO30_IN_CATALOGUE = "GTOPO30_catalogue.txt",
+!--GTOPO30_IN_DIR--
+/
+
+&PARAM_CNVTOPO_DEM50M
+ DEM50M_IN_CATALOGUE = "DEM50M_catalogue.txt",
+!--DEM50M_IN_DIR--
+/
+
+&PARAM_CNVLANDUSE
+!--CNVLANDUSE_name--
+ CNVLANDUSE_limit_urban_fraction = 0.3D0, ! r0051
+!!! CNVLANDUSE_limit_urban_fraction = 0.0D0, ! temporal noUrban 
+/
+
+&PARAM_CNVLANDUSE_GLCCv2
+ GLCCv2_IN_CATALOGUE = "GLCCv2_catalogue.txt",
+!--GLCCv2_IN_DIR--
+/
+
+&PARAM_CNVLANDUSE_LU100M
+ LU100M_IN_CATALOGUE = "LU100M_catalogue.txt",
+!--LU100M_IN_DIR--
+/
+
+#################################################
+#
+# model configuration: process
+#
+#################################################
+
+&PARAM_PRC_CARTESC
+ PRC_NUM_X      = 8,
+ PRC_NUM_Y      = 8,
+ PRC_PERIODIC_X = .false.,
+ PRC_PERIODIC_Y = .false.,
+/
+
+#################################################
+#
+# model configuration: region
+#
+#################################################
+
+&PARAM_ATMOS_GRID_CARTESC_INDEX
+ KMAX = 45,
+ IMAX = 40,
+ JMAX = 40,
+/
+
+&PARAM_ATMOS_GRID_CARTESC
+ DX = 4000.D0,
+ DY = 4000.D0,
+
+ FZ(:) =    300.0000D0,   609.0000D0,   927.2700D0,  1255.0881D0,  1592.7408D0,
+            1940.5232D0,  2298.7390D0,  2667.7014D0,  3047.7327D0,  3439.1648D0,
+            3842.3398D0,  4257.6104D0,  4685.3389D0,  5125.8994D0,  5579.6768D0,
+            6047.0674D0,  6528.4795D0,  7024.3340D0,  7535.0640D0,  8061.1157D0,
+            8602.9492D0,  9161.0381D0,  9735.8691D0, 10327.9453D0, 10937.7842D0,
+           11565.9180D0, 12212.8955D0, 12879.2822D0, 13565.6602D0, 14272.6299D0,
+           15000.8086D0, 15800.8086D0, 16600.8086D0, 17400.8086D0, 18200.8086D0,
+           19000.8086D0, 19800.8086D0, 20600.8086D0, 21400.8086D0, 22200.8086D0,
+           23000.8086D0, 23800.8086D0, 24600.8086D0, 25400.8086D0, 26200.8086D0,
+ BUFFER_DZ = 5000.D0,
+ BUFFER_DX = 40000.D0,
+ BUFFER_DY = 40000.D0,
+/
+
+&PARAM_MAPPROJECTION
+ MAPPROJECTION_basepoint_lon = -63.95D0,
+ MAPPROJECTION_basepoint_lat = -31.55D0,
+ MAPPROJECTION_type          = "LC",
+ MAPPROJECTION_LC_lat1       = -32.0D0,
+ MAPPROJECTION_LC_lat2       = -31.0D0,
+/

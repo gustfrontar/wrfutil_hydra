@@ -1,0 +1,34 @@
+#################################################
+#
+# model configuration: user
+#
+#################################################
+
+
+&PARAM_USER
+ USER_resume_do = .true.,
+!--LAND_RESTART_IN_BASENAME--
+ READ_LAND_TEMP       = .false.,
+! READ_LAND_TEMP       = .true.,
+ READ_LAND_WATER      = .true.,
+ READ_LAND_SFC_TEMP   = .false.,
+! READ_LAND_SFC_TEMP   = .true.,
+ READ_LAND_SFC_ALB_IR_dir = .false., 
+ READ_LAND_SFC_ALB_IR_dif = .false., 
+ READ_LAND_SFC_ALB_NIR_dir = .false., 
+ READ_LAND_SFC_ALB_NIR_dif = .false., 
+ READ_LAND_SFC_ALB_VIS_dir = .false.,
+ READ_LAND_SFC_ALB_VIS_dif = .false.,
+!--OCEAN_RESTART_IN_BASENAME--
+ READ_OCEAN_TEMP      = .true.,
+ READ_OCEAN_SFC_TEMP  = .true.,
+ READ_OCEAN_SFC_ALB_IR_dir = .false., 
+ READ_OCEAN_SFC_ALB_IR_dif = .false., 
+ READ_OCEAN_SFC_ALB_NIR_dir = .false., 
+ READ_OCEAN_SFC_ALB_NIR_dif = .false., 
+ READ_OCEAN_SFC_ALB_VIS_dir = .false.,
+ READ_OCEAN_SFC_ALB_VIS_dif = .false.,
+ READ_OCEAN_SFC_Z0M   = .false.,
+ READ_OCEAN_SFC_Z0H   = .false.,
+ READ_OCEAN_SFC_Z0E   = .false.,
+/

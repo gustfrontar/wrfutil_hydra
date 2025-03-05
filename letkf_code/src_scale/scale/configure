@@ -1,0 +1,24 @@
+TOPDIR    = ../../../../scale_code
+include $(TOPDIR)/sysdep/Makedef.$(SCALE_SYS)
+include $(TOPDIR)/Mkinclude
+
+SCALE_INC = -I$(TOPDIR)/include$(POSTFIX) $(CONTRIB_INCLUDE)
+SCALE_LIB = -L$(TOPDIR)/lib -lscale$(POSTFIX) $(CONTRIB_LIBS)
+SCALE_RM_OBJDIR = $(TOPDIR)/scale-rm/src/.libs$(POSTFIX)
+
+SCALE_RM_OBJS = $(shell ls $(SCALE_RM_OBJDIR)/*.o | grep -v "scale-rm.o\|scale-rm_pp.o\|scale-rm_init.o")
+
+#------
+
+include ../arch/configure.user.$(SCALE_SYS)
+
+NETCDF_INC = $(SCALE_NETCDF_INCLUDE)
+NETCDF_LIB = $(SCALE_NETCDF_LIBS) 
+
+ifeq ($(LETKF_SINGLE_FP),T)
+FOPTS     += -DSINGLE_LETKF
+endif
+
+ifeq ($(LETKF_DEBUG),T)
+FOPTS     += -DLETKF_DEBUG
+endif

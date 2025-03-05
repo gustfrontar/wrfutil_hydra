@@ -1,0 +1,32 @@
+#
+# Dimension
+#
+&GrADS_DIMS
+ nx     = 81
+ ny     = 81
+ nz     = 10
+/
+
+#
+# Variables
+#
+&GrADS_ITEM  name='lon',   dtype='linear',  swpoint=-85.0d0,   dd=0.5d0 /
+&GrADS_ITEM  name='lat',   dtype='linear',  swpoint=-60.0d0,   dd=0.5d0 /
+&GrADS_ITEM  name='plev',  dtype='levels',  lnum=10, lvars=100000,92500,85000,70000,50000,25000,20000,10000,5000,1000, /
+&GrADS_ITEM  name='MSLP',  dtype='map',   fname='--DIR--/bdysfc', startrec=1,  totalrec=7   /
+&GrADS_ITEM  name='PSFC',  dtype='map',   fname='--DIR--/bdysfc', startrec=2,  totalrec=7   /
+&GrADS_ITEM  name='U10',   dtype='map',   fname='--DIR--/bdysfc', startrec=3,  totalrec=7   /
+&GrADS_ITEM  name='V10',   dtype='map',   fname='--DIR--/bdysfc', startrec=4,  totalrec=7   /
+&GrADS_ITEM  name='T2',    dtype='map',   fname='--DIR--/bdysfc', startrec=5,  totalrec=7   /
+&GrADS_ITEM  name='RH2',   dtype='map',   fname='--DIR--/bdysfc', startrec=6,  totalrec=7   /
+&GrADS_ITEM  name='topo',  dtype='map',   fname='--DIR--/bdysfc', startrec=7,  totalrec=7   /
+&GrADS_ITEM  name='HGT',   dtype='map',   fname='--DIR--/bdyatm', startrec=1,  totalrec=50 /
+&GrADS_ITEM  name='U',     dtype='map',   fname='--DIR--/bdyatm', startrec=11, totalrec=50 /
+&GrADS_ITEM  name='V',     dtype='map',   fname='--DIR--/bdyatm', startrec=21, totalrec=50 /
+&GrADS_ITEM  name='T',     dtype='map',   fname='--DIR--/bdyatm', startrec=31, totalrec=50 /
+&GrADS_ITEM  name='RH',    dtype='map',   fname='--DIR--/bdyatm', startrec=41, totalrec=50 /
+&GrADS_ITEM  name='llev',  dtype='levels',lnum=4, lvars=0.05,0.25,0.70,1.50, /
+&GrADS_ITEM  name='lsmask',dtype='map',   fname='--DIR--/bdyland', startrec=1, totalrec=10 /
+&GrADS_ITEM  name='SKINT', dtype='map',   fname='--DIR--/bdyland', startrec=2, totalrec=10 /
+&GrADS_ITEM  name='STEMP', dtype='map',   fname='--DIR--/bdyland', nz=4, startrec=3, totalrec=10, missval=9.999e+20 /
+&GrADS_ITEM  name='SMOISVC', dtype='map',   fname='--DIR--/bdyland', nz=4, startrec=7, totalrec=10, missval=9.999e+20 /

@@ -1,0 +1,16 @@
+# Precision
+LETKF_SINGLE_FP = T
+
+# Libraries
+#-----------------
+
+LAPACK_LIB = -SSL2 -SCALAPACK
+
+# Compiler flags
+#-----------------
+
+FOPTS_SCALE = $(FFLAGS)
+
+FOPTS     = $(FOPTS_SCALE)
+
+
