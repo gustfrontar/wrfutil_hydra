@@ -1,0 +1,30 @@
+&PARAM_IO
+ IO_LOG_BASENAME = "log/sno/LOG___ITEM__",
+ IO_LOG_ALLNODE = .false.,
+ IO_LOG_SUPPRESS = .false.,
+ IO_LOG_NML_SUPPRESS = .true.,
+/
+
+&PARAM_SNO
+ basename_in  = "__ITEM__/__ITEM__",
+ basename_out = "__ITEM__/__ITEM___merge", 
+ vars         = ,
+ nprocs_x_out = 1,
+ nprocs_y_out = 1,
+/
+
+!&PARAM_SNOPLGIN_VGRIDOPE
+! SNOPLGIN_vgridope_type = "ZLEV",
+! SNOPLGIN_vgridope_lev_num = 30,
+! SNOPLGIN_vgridope_lev_data = 500., 1000.,1500.,2000.,2500.,3000.,3500.,4000.,4500.,5000.,5500.,6000.,6500.,7000.,7500.,8000.,8500.,9000.,9500.,10000.,10500.,11000.,11500.,12000.,12500.,13000.,13500.,14000.,14500.,15000., 
+!/
+
+!&PARAM_SNOPLGIN_HGRIDOPE
+! SNOPLGIN_hgridope_type="LATLON",
+! SNOPLGIN_hgridope_lat_start=${lat_south},
+! SNOPLGIN_hgridope_lat_end=${lat_north},
+! SNOPLGIN_hgridope_dlat=${dlat},
+! SNOPLGIN_hgridope_lon_start=${lon_west},
+! SNOPLGIN_hgridope_lon_end=${lon_east},
+! SNOPLGIN_hgridope_dlon=${dlon},
+!/

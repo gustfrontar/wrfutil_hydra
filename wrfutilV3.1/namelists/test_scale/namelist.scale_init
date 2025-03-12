@@ -1,0 +1,185 @@
+!!! temporal treatment
+
+
+&PARAM_IO
+ IO_LOG_BASENAME = "log/scale_init/LOG" ,
+ IO_LOG_ALLNODE  = .false.,
+/
+
+&PARAM_TIME
+ TIME_STARTDATE = __FECHA_INI__ ,
+ TIME_STARTMS   = 0.D0,
+/
+
+&PARAM_RESTART
+ RESTART_OUTPUT = .true.,
+ RESTART_OUT_BASENAME = "init/init", 
+ RESTART_OUT_POSTFIX_TIMELABEL = .true.,
+/
+
+&PARAM_TOPOGRAPHY
+ TOPOGRAPHY_IN_BASENAME = "topo/topo" ,
+/
+
+&PARAM_LANDUSE
+ LANDUSE_IN_BASENAME = "landuse/landuse" ,
+/
+
+&PARAM_LAND_PROPERTY
+ LAND_PROPERTY_IN_FILENAME = "__SCALEDATA__/land/param.bucket.conf",
+/
+
+&PARAM_MKINIT
+ MKINIT_initname = "REAL",
+/
+
+&PARAM_MKINIT_REAL_WRFARW
+ WRF_FILE_TYPE = .true.,
+/
+
+&PARAM_MKINIT_REAL_ATMOS
+ BASENAME_BOUNDARY = "bdy/boundary",
+ BASENAME_ORG = "bdyorg/bdyorg",
+ FILETYPE_ORG = "NetCDF",
+ NUMBER_OF_FILES = __NFILES_BDY__,
+ NUMBER_OF_TSTEPS = 1,
+ NUMBER_OF_SKIP_TSTEPS = 0,
+ BOUNDARY_UPDATE_DT = __INTERVALO__ ,
+ USE_FILE_DENSITY = .false.,
+ USE_FILE_QHYD = .false.,
+/
+
+&PARAM_MKINIT_REAL_ATMOS_NETCDF
+NM_FILE = "namelist.ncinput",
+FILE_TYPE = "WRFARW",
+/
+
+
+&PARAM_MKINIT_REAL_OCEAN
+BASENAME_ORG = "bdyorg/bdyorg",
+FILETYPE_ORG = "NetCDF",
+ NUMBER_OF_FILES = __NFILES_BDY__,
+ NUMBER_OF_TSTEPS = 1,
+ NUMBER_OF_SKIP_TSTEPS = 0,
+ INTRP_OCEAN_SFC_TEMP = "mask",
+ INTRP_OCEAN_TEMP = "mask",
+/
+
+&PARAM_MKINIT_REAL_LAND
+BASENAME_ORG = "bdyorg/bdyorg",
+FILETYPE_ORG = "NetCDF",
+NUMBER_OF_FILES = __NFILES_BDY__,
+NUMBER_OF_TSTEPS = 1,
+NUMBER_OF_SKIP_TSTEPS = 0,
+USE_FILE_LANDWATER   = .false.,
+!!!!! INTRP_LAND_TEMP      = "mask", 
+ INTRP_LAND_TEMP      = "fill", 
+ INTRP_LAND_WATER     = "fill",
+ INTRP_LAND_SFC_TEMP  = "fill",
+/
+
+#################################################
+#
+# model configuration: process
+#
+#################################################
+
+&PARAM_PRC_CARTESC
+ PRC_NUM_X      = __NPROC_X__,
+ PRC_NUM_Y      = __NPROC_Y__,
+ PRC_PERIODIC_X = .false.,
+ PRC_PERIODIC_Y = .false.,
+/
+
+#################################################
+#
+# model configuration: region
+#
+#################################################
+
+&PARAM_ATMOS_GRID_CARTESC_INDEX
+ KMAX = 60,
+ IMAX = __E_WE_LOC__,
+ JMAX = __E_SN_LOC__,
+/
+
+&PARAM_LAND_GRID_CARTESC_INDEX
+ LKMAX = 7,
+/
+
+&PARAM_URBAN_GRID_CARTESC_INDEX
+ UKMAX = 5,
+/
+
+&PARAM_LAND_GRID_CARTESC
+ LDZ = 0.05D0, 0.15D0, 0.30D0, 0.50D0, 1.0D0, 1.0D0, 1.0D0,
+/
+
+&PARAM_URBAN_GRID_CARTESC
+ UDZ = 0.01D0, 0.01D0, 0.03D0, 0.05D0, 0.10D0,
+/
+
+&PARAM_OCEAN_GRID_CARTESC_INDEX
+ OKMAX = 1,
+/
+
+
+&PARAM_ATMOS_GRID_CARTESC
+ DX = __DX__,
+ DY = __DY__,
+
+ FZ(:) =     30.0000D0,    66.0000D0,   109.2000D0,   161.0400D0,   223.2480D0,
+            297.8976D0,   387.4771D0,   494.9725D0,   623.9670D0,   778.7604D0,
+            964.5125D0,  1157.1375D0,  1356.8895D0,  1564.0325D0,  1778.8397D0,
+           2001.5948D0,  2232.5918D0,  2472.1357D0,  2720.5427D0,  2978.1409D0,
+           3245.2700D0,  3522.2830D0,  3809.5454D0,  4107.4365D0,  4416.3496D0,
+           4736.6924D0,  5068.8877D0,  5413.3740D0,  5770.6064D0,  6141.0566D0,
+           6525.2134D0,  6923.5840D0,  7336.6943D0,  7765.0898D0,  8209.3359D0,
+           8670.0195D0,  9147.7480D0,  9643.1523D0, 10156.8867D0, 10689.6289D0,
+          11242.0830D0, 11814.9775D0, 12409.0693D0, 13025.1426D0, 13664.0107D0,
+          14326.5166D0, 15013.5352D0, 15725.9736D0, 16475.9727D0, 17225.9727D0,
+          17975.9727D0, 18725.9727D0, 19475.9727D0, 20225.9727D0, 20975.9727D0,
+          21725.9727D0, 22475.9727D0, 23225.9727D0, 23975.9727D0, 24725.9727D0,
+ 
+ BUFFER_DZ = 5000.D0,
+ BUFFER_DX = 20000.D0,
+ BUFFER_DY = 20000.D0,
+/
+
+
+&PARAM_MAPPROJECTION
+MAPPROJECTION_basepoint_lon = __REF_LON__,
+MAPPROJECTION_basepoint_lat = __REF_LAT__,
+MAPPROJECTION_type          = __MAP_PROJ__,
+MAPPROJECTION_LC_lat1       = __TRUELAT1__,
+MAPPROJECTION_LC_lat2       = __TRUELAT2__,
+/
+
+#################################################
+#
+# model configuration: administrator
+#
+#################################################
+
+&PARAM_ATMOS
+ ATMOS_DYN_TYPE    = "HEVI",
+ ATMOS_PHY_MP_TYPE = "TOMITA08",
+ ATMOS_PHY_RD_TYPE = "MSTRNX",
+ ATMOS_PHY_SF_TYPE = "COUPLE",
+ ATMOS_PHY_TB_TYPE = "SMAGORINSKY",
+ ATMOS_PHY_BL_TYPE = "MYNN",
+/
+
+&PARAM_OCEAN
+ OCEAN_DYN_TYPE = "INIT",
+ OCEAN_SFC_TYPE = "FIXED-TEMP",
+/
+
+&PARAM_LAND
+ LAND_DYN_TYPE = "BUCKET",
+ LAND_SFC_TYPE = "SKIN",
+/
+
+&PARAM_URBAN
+ URBAN_DYN_TYPE = "KUSAKA01",
+/
