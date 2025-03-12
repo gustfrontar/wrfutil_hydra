@@ -45,7 +45,7 @@ queue (){
         while [ $NMEM -le $end_mem ]; do
             NCORE=$(( ($NJOB-1)*( 10#$QPROC ) + ( 10#$NPCORE ) ))
             SMEM=$(printf "$mem_print_format" $((10#$NMEM)))
-            echo "(${NODES[$NCORE]}) core=1" >> ./machine.$SMEM
+            echo "(${NODES[$NCORE]}) core=$QSKIP" >> ./machine.$SMEM
             NPCORE=$(($NPCORE + $QSKIP ))
             if [ $NPCORE -ge $QPROC ] ; then
                NMEM=$(($NMEM + 1 ))
