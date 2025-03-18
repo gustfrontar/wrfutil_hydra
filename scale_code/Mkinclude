@@ -107,27 +107,27 @@ CONTRIB_LIBS    =
 CONTRIB_INCLUDE =
 
 # Super Droplet Method (SDM)
-GAGETRYDIR       = $(TOPDIR)/contrib/Gadgetry
-MTDIR            = $(TOPDIR)/contrib/mt
-SDMDIR           = $(TOPDIR)/contrib/SDM
-FFLAGS          += $(FFLAGS_SDM)
-CONTRIB_INCLUDE += -I$(GAGETRYDIR) -I$(MTDIR) -I$(SDMDIR)/.libs$(POSTFIX)
-CONTRIB_LIBS    += -L$(SDMDIR) -lsdm$(POSTFIX) -L$(GAGETRYDIR) -lgagetry -L$(MTDIR) -lmt
+#GAGETRYDIR       = $(TOPDIR)/contrib/Gadgetry
+#MTDIR            = $(TOPDIR)/contrib/mt
+#SDMDIR           = $(TOPDIR)/contrib/SDM
+#FFLAGS          += $(FFLAGS_SDM)
+#CONTRIB_INCLUDE += -I$(GAGETRYDIR) -I$(MTDIR) -I$(SDMDIR)/.libs$(POSTFIX)
+#CONTRIB_LIBS    += -L$(SDMDIR) -lsdm$(POSTFIX) -L$(GAGETRYDIR) -lgagetry -L$(MTDIR) -lmt
 
 # Data Assimilation
-ifeq ($(SCALE_ENABLE_DA),T)
-   FFLAGS += -DDA
-endif
+#ifeq ($(SCALE_ENABLE_DA),T)
+#   FFLAGS += -DDA
+#endif
 
 # JMA Physic Process Library
-ifeq ($(SCALE_ENABLE_JMAPPLIB),T)
-   JMAPPLIB_DIR     = $(CONTRIBDIR)/JMA/physlib/pp/src
-   FFLAGS          += -DJMAPPLIB
-   CONTRIB_INCLUDE += -I$(JMAPPLIB_DIR)
-   CONTRIB_LIBS    += -L$(JMAPPLIB_DIR) -lpp
-endif
+#ifeq ($(SCALE_ENABLE_JMAPPLIB),T)
+#   JMAPPLIB_DIR     = $(CONTRIBDIR)/JMA/physlib/pp/src
+#   FFLAGS          += -DJMAPPLIB
+#   CONTRIB_INCLUDE += -I$(JMAPPLIB_DIR)
+#   CONTRIB_LIBS    += -L$(JMAPPLIB_DIR) -lpp
+#endif
 
 # AMPS
-AMPSDIR          = $(CONTRIBDIR)/AMPS
-CONTRIB_INCLUDE += -I$(AMPSDIR)/.libs$(POSTFIX)
-CONTRIB_LIBS    += -L$(AMPSDIR) -lamps$(POSTFIX)
+#AMPSDIR          = $(CONTRIBDIR)/AMPS
+#CONTRIB_INCLUDE += -I$(AMPSDIR)/.libs$(POSTFIX)
+#CONTRIB_LIBS    += -L$(AMPSDIR) -lamps$(POSTFIX)

@@ -197,6 +197,8 @@ module mod_realinput
                                                                            !   LINEAR     : bi-linear interpolation
                                                                            !   DIST-WEIGHT: distance-weighted mean of the nearest N-neighbors
 
+  integer, private :: INTRP_ORDER_DGDYN_FV2DG                 = 1         ! Intrepolation order when coarse FV data is interpolated to DG nodes
+
   logical, private :: first_atmos   = .true.
   logical, private :: first_surface = .true.
   !-----------------------------------------------------------------------------
@@ -207,6 +209,9 @@ contains
        P00 => CONST_PRE00
     use scale_time, only: &
        TIME_gettimelabel
+    use mod_atmos_phy_mp_vars, only: &
+       QS_MP, &
+       QE_MP       
     use mod_atmos_vars, only: &
        DENS, &
        MOMZ, &
@@ -218,6 +223,22 @@ contains
        ATMOS_PHY_MP_TYPE
     use scale_atmos_thermodyn, only: &
        ATMOS_THERMODYN_specific_heat
+
+    use mod_atmos_admin, only: &
+       ATMOS_sw_dyn_DGM
+    use scale_fem_element_base, only: &
+       FEM_ElementBase3D => ElementBase3D
+    use scale_fem_localmesh_3d, only: &
+       FEM_LocalMesh3D => LocalMesh3D
+    use scale_fem_localmeshfield_base, only: &
+       FEM_LocalMeshFieldBaseList => LocalMeshFieldBaseList
+    use scale_fem_meshfield_base, only: &
+       FEM_MeshField3D => MeshField3D
+    use scale_atmos_dyn_dgm_operator, only: &
+       dg_mesh3D => mesh3D, &
+       dg_dyn_bnd => dyn_bnd
+    use mod_atmos_dyn_vars, only: &
+       dyn_dg_vars
     implicit none
 
     logical :: USE_SFC_DIAGNOSES          = .false. !> use surface diagnoses
@@ -250,7 +271,8 @@ contains
        SAME_MP_TYPE,               &
        UPPER_QV_TYPE,              &
        INTRP_TYPE,                 &
-       SKIP_VERTICAL_RANGE_CHECK
+       SKIP_VERTICAL_RANGE_CHECK,  &
+       INTRP_ORDER_DGDYN_FV2DG
 
     character(len=6) :: basename_num
     character(len=H_LONG) :: basename_out_mod
@@ -273,8 +295,19 @@ contains
     real(RP) :: VELZ_in(KA,IA,JA) ! staggered point
     real(RP) :: VELX_in(KA,IA,JA) ! staggered point
     real(RP) :: VELY_in(KA,IA,JA) ! staggered point
+    real(RP) :: W_in(KA,IA,JA)
+    real(RP) :: U_in(KA,IA,JA)
+    real(RP) :: V_in(KA,IA,JA)
     real(RP) :: PT_in  (KA,IA,JA)
     real(RP) :: PRES_in(KA,IA,JA)
+
+    class(FEM_LocalMesh3D), pointer :: lcmesh3D
+    class(FEM_ElementBase3D), pointer :: elem3D
+    real(RP), allocatable :: DG_DDENS(:,:), DG_MOMX(:,:), DG_MOMY(:,:), DG_MOMZ(:,:), DG_DRHOT(:,:)
+    real(RP), allocatable :: DG_DENS_hyd(:,:), DG_PRES_hyd(:,:)
+    type(FEM_MeshField3D), target :: DG_QTRC(QA)
+    type(FEM_LocalMeshFieldBaseList) :: DG_QTRC_list(QA)
+    logical :: DG_qtrc_flag(QA)
 
     real(RP) :: Qdry (KA,IA,JA)
     real(RP) :: Rtot (KA,IA,JA)
@@ -343,6 +376,18 @@ contains
        NUMBER_OF_TSTEPS = timelen
     end if
 
+    if ( ATMOS_sw_dyn_DGM ) then
+      lcmesh3D => dg_mesh3d%lcmesh_list(1)
+      elem3D => lcmesh3D%refElem3D
+      allocate( DG_DDENS(elem3D%Np,lcmesh3D%NeA), DG_MOMX(elem3D%Np,lcmesh3D%NeA), DG_MOMY(elem3D%Np,lcmesh3D%NeA), DG_MOMZ(elem3D%Np,lcmesh3D%NeA), DG_DRHOT(elem3D%Np,lcmesh3D%NeA) )
+      allocate( DG_DENS_hyd(elem3D%Np,lcmesh3D%NeA), DG_PRES_hyd(elem3D%Np,lcmesh3D%NeA) )
+      do iq=1, QA
+        call DG_QTRC(iq)%Init( "tmp_qtrc", "1", dg_mesh3D )
+        DG_QTRC_list(iq)%ptr => DG_QTRC(iq)%local(1)
+        DG_qtrc_flag(:) = qtrc_flag(:); DG_qtrc_flag(QS_MP:QE_MP) = .true.
+      end do
+    end if
+
     LOG_NEWLINE
     LOG_INFO("REALINPUT_atmos",*) 'Number of temporal data in each file : ', NUMBER_OF_TSTEPS
 
@@ -401,7 +446,11 @@ contains
                                     VELX_in(:,:,:),            & ! [OUT]
                                     VELY_in(:,:,:),            & ! [OUT]
                                     PT_in  (:,:,:),            & ! [OUT]
-                                    PRES_in(:,:,:)             ) ! [OUT]
+                                    PRES_in(:,:,:),            & ! [OUT]
+                                    W_in(:,:,:),               & ! [OUT]
+                                    U_in(:,:,:),               & ! [OUT]
+                                    V_in(:,:,:)                ) ! [OUT]
+
           else
              LOG_PROGRESS('(1x,A,I4,A,I5,A,I6,A)') &
                           '[file,step,cons.] = [', ifile, ',', istep, ',', tall, '] ...skip.'
@@ -411,6 +460,13 @@ contains
           if ( t == 1 ) then
              LOG_NEWLINE
              LOG_INFO("REALINPUT_atmos",*) 'store initial state.'
+
+             if ( ATMOS_sw_dyn_DGM ) then
+               call dyn_dg_vars%SetVars_from_FV( DENS_in, U_in, V_in, W_in, PT_in, QTRC_in, & ! (in)
+                  INTRP_ORDER_DGDYN_FV2DG )                                                   ! (in)
+               call dyn_dg_vars%Get_prgvars_FV( DENS_in, MOMX_in, MOMY_in, MOMZ_in, RHOT_in, QTRC_in, & ! (out)
+                  dg_dyn_bnd, FILL_BND=.true., qtrc_flag=DG_qtrc_flag(:)                              ) ! (in)
+             end if
 
              !$omp parallel do collapse(2)
              !$acc kernels
@@ -440,7 +496,6 @@ contains
              enddo
              enddo
              !$acc end kernels
-
           endif
 
           !--- output boundary data
@@ -478,6 +533,24 @@ contains
                 end do
              end if
 
+             if ( ATMOS_sw_dyn_DGM .and. t > 1 ) then
+               call dyn_dg_vars%SetVars_from_FV_lc( DENS_in, U_in, V_in, W_in, PT_in, QTRC_in,           & ! (in)
+                  DG_DDENS, DG_MOMX, DG_MOMY, DG_MOMZ, DG_DRHOT, DG_QTRC_list, DG_DENS_hyd, DG_PRES_hyd, & ! (out)      
+                  INTRP_ORDER_DGDYN_FV2DG, lcmesh3D, elem3D )                                              ! (in)
+               
+               call dyn_dg_vars%Get_prgvars_FV( DENS_in, MOMX_in, MOMY_in, MOMZ_in, RHOT_in, QTRC_in,    & ! (out)
+                  DG_DDENS, DG_MOMX, DG_MOMY, DG_MOMZ, DG_DRHOT, DG_QTRC_list, DG_DENS_hyd, DG_PRES_hyd, & ! (in)
+                  lcmesh3D, elem3D, dg_dyn_bnd, FILL_BND=.true., qtrc_flag=DG_qtrc_flag(:)               ) ! (in)
+               !$omp parallel do collapse(2)
+               do j = 1, JA
+               do i = 1, IA
+               do k = KS, KE
+                 PT_in(k,i,j) = RHOT_in(k,i,j) / DENS_in(k,i,j)
+               end do
+               end do
+               end do
+             end if
+
              call BoundaryAtmosOutput( DENS_in(:,:,:),     & ! [IN]
                                        VELZ_in(:,:,:),     & ! [IN]
                                        VELX_in(:,:,:),     & ! [IN]
@@ -493,6 +566,12 @@ contains
 
        enddo ! istep loop
     enddo ! ifile loop
+
+    if ( ATMOS_sw_dyn_DGM ) then
+      do iq=1, QA
+        call DG_QTRC(iq)%Final()
+      end do
+    end if
 
     call ParentAtmosFinalize( FILETYPE_ORG ) ![IN]
 
@@ -1470,7 +1549,8 @@ contains
        QTRC,                &
        VELZ, VELX, VELY,    &
        POTT,                &
-       PRES                 )
+       PRES,                &
+       W, U, V              )
     use scale_const, only: &
        UNDEF   => CONST_UNDEF, &
        PI      => CONST_PI, &
@@ -1555,12 +1635,12 @@ contains
     real(RP), intent(out) :: VELY(KA,IA,JA)
     real(RP), intent(out) :: POTT(KA,IA,JA)
     real(RP), intent(out) :: PRES(KA,IA,JA)
+    real(RP), intent(out) :: U(KA,IA,JA)
+    real(RP), intent(out) :: V(KA,IA,JA)
+    real(RP), intent(out) :: W(KA,IA,JA)
 
     real(RP) :: PRES2(KA,IA,JA)
     real(RP) :: TEMP (KA,IA,JA)
-    real(RP) :: W    (KA,IA,JA)
-    real(RP) :: U    (KA,IA,JA)
-    real(RP) :: V    (KA,IA,JA)
     real(RP) :: QV   (KA,IA,JA)
     real(RP) :: QC   (KA,IA,JA)
     real(RP) :: DENS2(KA,IA,JA)

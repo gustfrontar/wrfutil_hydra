@@ -148,6 +148,8 @@ contains
     endif
     LOG_NML(PARAM_BUBBLE)
 
+    error = .false.
+
     if ( abs(BBL_RZ*BBL_RX*BBL_RY) <= 0.0_RP ) then
        LOG_INFO("BUBBLE_setup",*) 'no bubble'
        !$acc kernels
@@ -173,8 +175,6 @@ contains
           Domain_RY = FYG(JAG-JHALO) - FYG(JHALO)
        endif
 
-       error = .false.
-
        ! make bubble coefficient
        !$acc kernels
        !$acc loop independent collapse(3) reduction(.or.:error)
@@ -198,11 +198,11 @@ contains
           case('GAUSSIAN')
              bubble(k,i,j) = exp( -(distz+distx+disty) )
           case default
-#ifdef _OPENACC
-            LOG_ERROR("BUBBLE_setup",*) 'Not appropriate BBL_functype. Check!', BBL_functype
-#else
             LOG_ERROR("BUBBLE_setup",*) 'Not appropriate BBL_functype. Check!', trim(BBL_functype)
-            call PRC_abort                  
+#ifdef _OPENACC
+            error = .true.
+#else
+            call PRC_abort
 #endif
           end select
        enddo
@@ -273,8 +273,10 @@ contains
     endif
     LOG_NML(PARAM_BUBBLE)
 
+    error = .false.
+
     if ( abs(BBL_RZ*BBL_RX*BBL_RY) <= 0.0_RP ) then
-       LOG_INFO("BUBBLE_setup",*) 'no bubble'
+       LOG_INFO("BUBBLE_setup_DG",*) 'no bubble'
        do ldomid=1, fem_mesh3D%LOCAL_MESH_NUM
          DG_bubble%local(ldomid)%val(:,:) = 0.0_RP
        end do       
@@ -299,8 +301,6 @@ contains
             Domain_RY = FYG(JAG-JHALO) - FYG(JHALO)
          endif
 
-         error = .false.
-
          ! make bubble coefficient
          !$omp parallel do private( distx, disty, distz )
          do kelem = lmesh%NeS, lmesh%NeE
@@ -322,8 +322,12 @@ contains
                DG_bubble%local(ldomid)%val(:,kelem) = exp( -(distz+distx+disty) )
             case default
                LOG_ERROR("BUBBLE_setup_DG",*) 'Not appropriate BBL_functype. Check!', trim(BBL_functype)
-               call PRC_abort                  
-            end select
+#ifdef _OPENACC
+               error = .true.
+#else
+               call PRC_abort
+#endif
+           end select
          enddo
          deallocate( distx, disty, distz )         
       enddo

@@ -2,9 +2,9 @@
 !> module FElib / Fluid dyn solver / Atmosphere / Boundary
 !!
 !! @par Description
-!!          A module for setting halo data based on boundary conditions. 
+!!          A module for setting halo data at boundaries with DGM
 !!
-!! @author Team SCALE
+!! @author Yuta Kawai, Team SCALE
 !<
 !-------------------------------------------------------------------------------
 #include "scalelib.h"
@@ -23,7 +23,8 @@ module scale_atmos_dyn_dgm_bnd
     CPdry => CONST_CPdry, &
     CVdry => CONST_CVdry, &
     PRES00 => CONST_PRE00
-
+  use scale_tracer, only: &
+    QA
   use scale_fem_element_base, only: &
     ElementBase, ElementBase2D, ElementBase3D
   use scale_fem_mesh_base, only: MeshBase
@@ -53,15 +54,30 @@ module scale_atmos_dyn_dgm_bnd
     integer, allocatable:: velBC_ids(:)
     integer, allocatable :: thermalBC_ids(:)
     real(RP), allocatable :: thermal_fixval(:)
+
+    ! Flag for lateral nudging
+    logical :: BND_W
+    logical :: BND_E
+    logical :: BND_S
+    logical :: BND_N
+    ! Boundary data for lateral nudging
+    real(RP), allocatable :: bnd_data(:,:)
+    real(RP), allocatable :: bnd_data_qtrc(:,:)
+    real(RP), allocatable :: bnd_velz_sw(:)
+    integer, allocatable :: iM_bnd(:)
+
+    class(MeshBase3D), pointer :: mesh3D
   contains
     procedure :: Init => ATMOS_dyn_bnd_setup
     procedure :: Final => ATMOS_dyn_bnd_finalize
     procedure :: SetBCInfo => ATMOS_dyn_bnd_setBCInfo
     procedure :: ApplyBC_PROGVARS_lc => ATMOS_dyn_bnd_applyBC_prgvars_lc
+    procedure :: ApplyBC_TRCVAR_lc => ATMOS_dyn_bnd_applyBC_trcvar_lc
     ! procedure :: ApplyBC_numdiff_odd_lc => ATMOS_dyn_bnd_applyBC_numdiff_odd_lc
     ! procedure :: ApplyBC_numdiff_even_lc => ATMOS_dyn_bnd_applyBC_numdiff_even_lc
     procedure :: ApplyBC_Grad_TBVARS_lc => ATMOS_dyn_bnd_applyBC_tbvars_lc
     procedure :: ApplyBC_Grad_TBStress_lc => ATMOS_dyn_bnd_applyBC_tbstress_lc
+    procedure :: Store_nuding_FV_bnddata => ATMOS_dyn_bnd_store_nuding_bnddata_fv
     procedure :: Inquire_bound_flag => ATMOS_dyn_bnd_inquire_bound_flag
   end type
 
@@ -79,12 +95,25 @@ module scale_atmos_dyn_dgm_bnd
   integer, parameter :: domBnd_Top_ID   = 6
   integer, parameter :: DOM_BND_NUM     = 6
 
+  integer, parameter :: BND_PRGVAR_NUM = 5
+  integer, parameter :: BND_DENS_ID    = 1
+  integer, parameter :: BND_MOMX_ID    = 2
+  integer, parameter :: BND_MOMY_ID    = 3
+  integer, parameter :: BND_MOMZ_ID    = 4
+  integer, parameter :: BND_RHOT_ID    = 5
+
 contains
 
 !OCL SERIAL
-  subroutine ATMOS_dyn_bnd_setup( this )
+  subroutine ATMOS_dyn_bnd_setup( this, mesh3D )
     use scale_const, only: &
-      UNDEF8 => CONST_UNDEF8    
+      UNDEF8 => CONST_UNDEF8   
+    use scale_prc_cartesC, only: &
+      PRC_TwoD,  &
+      PRC_HAS_E, &
+      PRC_HAS_W, &
+      PRC_HAS_N, &
+      PRC_HAS_S       
     use scale_fem_mesh_bndinfo, only: &
       BND_TYPE_NOSPEC_NAME, &
       BND_TYPE_PERIODIC_ID, &
@@ -92,6 +121,7 @@ contains
     implicit none
     
     class(AtmDynBnd), intent(inout) :: this
+    class(MeshBase3D), intent(in), target :: mesh3D
 
     character(len=H_SHORT) :: btm_vel_bc, top_vel_bc
     character(len=H_SHORT) :: north_vel_bc, south_vel_bc
@@ -110,6 +140,12 @@ contains
       btm_thermal_fixval, top_thermal_fixval, north_thermal_fixval, south_thermal_fixval, east_thermal_fixval, west_thermal_fixval
     
     integer :: ierr
+
+    integer :: ldomid
+    type(LocalMesh3D), pointer :: lmesh3D
+    class(ElementBase3D), pointer :: elem
+
+    integer :: kelem, p, i
     !-----------------------------------------------
 
     btm_vel_bc   = BND_TYPE_NOSPEC_NAME
@@ -168,7 +204,28 @@ contains
     this%thermal_fixval(domBnd_East_ID) = east_thermal_fixval
     this%thermal_fixval(domBnd_West_ID) = west_thermal_fixval
 
-    !------
+    !- Boundary nudging
+
+    this%BND_W = ( .NOT. PRC_HAS_W ) .and. ( .NOT. PRC_TwoD )
+    this%BND_E = ( .NOT. PRC_HAS_E ) .and. ( .NOT. PRC_TwoD )
+    this%BND_S = .NOT. PRC_HAS_S
+    this%BND_N = .NOT. PRC_HAS_N
+
+    ldomid = 1
+    lmesh3D => mesh3D%lcmesh_list(ldomid)
+    elem => lmesh3D%refElem3D
+
+    allocate( this%iM_bnd(elem%Nfp_h*(2*lmesh3D%NeX+2*lmesh3D%NeY)*lmesh3D%NeZ+elem%Nfp_v*lmesh3D%NeX*lmesh3D%NeY*2) )
+    !$omp parallel do private(kelem, p, i)
+    do kelem=lmesh3D%NeS, lmesh3D%NeE
+    do p=1, elem%NfpTot
+      i = lmesh3D%vmapP(p,kelem) - elem%Np*lmesh3D%NeE
+      if (i > 0) this%iM_bnd(i) = lmesh3D%vmapM(p,kelem)
+    end do
+    end do
+
+    !-
+    this%mesh3D => mesh3D
 
     return
   end subroutine ATMOS_dyn_bnd_setup
@@ -191,42 +248,57 @@ contains
       deallocate( this%velBC_ids, this%thermalBC_ids )
     end if
 
+    deallocate( this%bnd_data, this%bnd_data_qtrc )
+    deallocate( this%bnd_velz_sw )
+    deallocate( this%iM_bnd )
+
     return
   end subroutine ATMOS_dyn_bnd_finalize  
 
+!> Setup the information of boundary condition
+!! Note: 
+!! Before calling this subroutine, registering tracers should be finished. 
 !OCL SERIAL
-  subroutine ATMOS_dyn_bnd_setBCInfo( this, mesh )
+  subroutine ATMOS_dyn_bnd_setBCInfo( this )
 
     implicit none
 
     class(AtmDynBnd), intent(inout) :: this
-    class(MeshBase), target, intent(in) :: mesh
     
-    integer :: n
+    integer :: ldomID
     integer :: b
     class(LocalMeshBase), pointer :: ptr_lcmesh
-    class(LocalMesh3D), pointer :: lcmesh3D
+
+    type(LocalMesh3D), pointer :: lmesh3D
+    class(ElementBase3D), pointer :: elem
     !--------------------------------------------------
 
 
-    allocate( this%VelBC_list(mesh%LOCAL_MESH_NUM) )
-    allocate( this%ThermalBC_list(mesh%LOCAL_MESH_NUM) )
+    allocate( this%VelBC_list(this%mesh3D%LOCAL_MESH_NUM) )
+    allocate( this%ThermalBC_list(this%mesh3D%LOCAL_MESH_NUM) )
 
-    nullify( lcmesh3D )
+    nullify( lmesh3D )
 
-    do n=1, mesh%LOCAL_MESH_NUM
-      call mesh%GetLocalMesh( n, ptr_lcmesh )
+    do ldomID=1, this%mesh3D%LOCAL_MESH_NUM
+      call this%mesh3D%GetLocalMesh( ldomID, ptr_lcmesh )
       select type (ptr_lcmesh)
       type is (LocalMesh3D)
-        lcmesh3D => ptr_lcmesh
+        lmesh3D => ptr_lcmesh
       end select
 
       call bnd_Init_lc( &
-        this%VelBC_list(n), this%ThermalBC_list(n),        & ! (inout)
-        this%velBC_ids(:), this%thermalBC_ids(:),          & ! (in)
-        this%thermal_fixval(:),                            & ! (in)
-        lcmesh3D%VMapB, mesh, lcmesh3D, lcmesh3D%refElem3D ) ! (in)
+        this%VelBC_list(ldomID), this%ThermalBC_list(ldomID),  & ! (inout)
+        this%velBC_ids(:), this%thermalBC_ids(:),              & ! (in)
+        this%thermal_fixval(:),                                & ! (in)
+        lmesh3D%VMapB, this%mesh3D, lmesh3D, lmesh3D%refElem3D ) ! (in)
     end do
+
+    ldomid = 1
+    lmesh3D => this%mesh3D%lcmesh_list(ldomid)
+    elem => lmesh3D%refElem3D
+    allocate( this%bnd_data     (elem%Nfp_h*(2*lmesh3D%NeX+2*lmesh3D%NeY)*lmesh3D%NeZ,BND_PRGVAR_NUM) )
+    allocate( this%bnd_velz_sw  (elem%Nfp_h*(2*lmesh3D%NeX+2*lmesh3D%NeY)*lmesh3D%NeZ) )
+    allocate( this%bnd_data_qtrc(elem%Nfp_h*(2*lmesh3D%NeX+2*lmesh3D%NeY)*lmesh3D%NeZ,max(QA,1)) )
 
     return
   end subroutine ATMOS_dyn_bnd_setBCInfo
@@ -242,7 +314,6 @@ contains
     use scale_fem_mesh_bndinfo, only: &
       BND_TYPE_SLIP_ID, BND_TYPE_NOSLIP_ID, &
       BND_TYPE_ADIABAT_ID
-        
     implicit none
 
     class(AtmDynBnd), intent(in) :: this    
@@ -314,15 +385,83 @@ contains
         case ( BND_TYPE_NOSLIP_ID )
           MOMX(iP) = - MOMX(iM)
           MOMY(iP) = - MOMY(iM)
-          MOMZ(iP) = - MOMZ(iM)          
+          MOMZ(iP) = - MOMZ(iM)                  
         end select
       end if
+    end do
+    end do
 
-    end do
-    end do
-    
+    if ( this%BND_W ) then
+      call set_nudging_bnddata_lc( this,  & 
+        DDENS, MOMX, MOMY, MOMZ, THERM,            & ! (inout)
+        DENS_hyd, PRES_hyd, domID, 1, lmesh, elem  ) ! (in)
+    end if
+    if ( this%BND_S ) then
+      call set_nudging_bnddata_lc( this,  & 
+        DDENS, MOMX, MOMY, MOMZ, THERM,            & ! (inout)
+        DENS_hyd, PRES_hyd, domID, 2, lmesh, elem  ) ! (in)
+    end if
+    if ( this%BND_E ) then
+      call set_nudging_bnddata_lc( this,  & 
+        DDENS, MOMX, MOMY, MOMZ, THERM,            & ! (inout)
+        DENS_hyd, PRES_hyd, domID, 3, lmesh, elem  ) ! (in)
+    end if
+    if ( this%BND_N ) then
+      call set_nudging_bnddata_lc( this,  & 
+        DDENS, MOMX, MOMY, MOMZ, THERM,            & ! (inout)
+        DENS_hyd, PRES_hyd, domID, 4, lmesh, elem  ) ! (in)
+    end if
+
     return
   end  subroutine ATMOS_dyn_bnd_applyBC_prgvars_lc
+
+!OCL SERIAL
+  subroutine ATMOS_dyn_bnd_applyBC_trcvar_lc( this,  &
+    domID, iq,                                          & ! (in)
+    QTRC,                                               & ! (inout)
+    vmapM, vmapP, vmapB, lmesh, elem, lmesh2D, elem2D   ) ! (in)
+
+    use scale_fem_mesh_bndinfo, only: &
+      BND_TYPE_SLIP_ID, BND_TYPE_NOSLIP_ID, &
+      BND_TYPE_ADIABAT_ID        
+    implicit none
+
+    class(AtmDynBnd), intent(in) :: this    
+    integer, intent(in) :: domID
+    integer, intent(in) :: iq
+    class(LocalMesh3D), intent(in) :: lmesh
+    class(ElementBase3D), intent(in) :: elem
+    class(LocalMesh2D), intent(in) :: lmesh2D
+    class(ElementBase2D), intent(in) :: elem2D
+    real(RP), intent(inout) :: QTRC(elem%Np*lmesh%NeA)
+    integer, intent(in) :: vmapM(elem%NfpTot*lmesh%Ne)
+    integer, intent(in) :: vmapP(elem%NfpTot*lmesh%Ne)
+    integer, intent(in) :: vmapB(:)
+    !-----------------------------------------------
+
+    if ( this%BND_W ) then
+      call set_nudging_bnddata_qtrc_lc( this,  & 
+        QTRC,                      & ! (inout)
+        domID, 1, iq, lmesh, elem  ) ! (in)
+    end if
+    if ( this%BND_S ) then
+      call set_nudging_bnddata_qtrc_lc( this,  & 
+        QTRC,                      & ! (inout)
+        domID, 2, iq, lmesh, elem  ) ! (in)
+    end if
+    if ( this%BND_E ) then
+      call set_nudging_bnddata_qtrc_lc( this,  & 
+        QTRC,                      & ! (inout)
+        domID, 3, iq, lmesh, elem  ) ! (in)
+    end if
+    if ( this%BND_N ) then
+      call set_nudging_bnddata_qtrc_lc( this,  & 
+        QTRC,                      & ! (inout)
+        domID, 4, iq, lmesh, elem  ) ! (in)
+    end if
+
+    return
+  end  subroutine ATMOS_dyn_bnd_applyBC_trcvar_lc
 
 !> Set exterior values at boundaries for the turbulent schemes 
 !!
@@ -557,6 +696,166 @@ contains
     return
   end  subroutine ATMOS_dyn_bnd_applyBC_tbstress_lc
 
+!OCL SERAIL
+!> Set exterior data for boundary nuding using FV data 
+!!
+  subroutine ATMOS_dyn_bnd_store_nuding_bnddata_fv( this, &
+    DAMP_DENS_dg, DAMP_VELX_fv, DAMP_VELY_fv, DAMP_VELZ_fv, DAMP_RHOT_dg, DAMP_QTRC_fv, &
+    MAPF_fv, DAMP_alpha_VELZ_fv, BND_QA, BND_IQ, &
+    lcmesh3D, elem3D )
+    use scale_const, only: &
+      EPS => CONST_EPS
+    use scale_atmos_grid_cartesC_index, only: &
+      KS, KE, KA, IS, IE, IA, JS, JE, JA, &
+      IHALO, JHALO, KHALO, &
+      I_UY, I_XV   
+    implicit none
+    class(AtmDynBnd), intent(inout) :: this
+    class(LocalMesh3D), intent(in) :: lcmesh3D
+    class(ElementBase3D), intent(in) :: elem3D
+    integer,  intent(in) :: BND_QA
+    integer,  intent(in) :: BND_IQ(QA)
+    real(RP), intent(in) :: DAMP_DENS_dg(elem3D%Np*lcmesh3D%NeA)
+    real(RP), intent(in) :: DAMP_VELX_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_VELY_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_VELZ_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_RHOT_dg(elem3D%Np*lcmesh3D%NeA)
+    real(RP), intent(in) :: DAMP_QTRC_fv(KA,IA,JA,BND_QA)
+    real(RP), intent(in) :: DAMP_alpha_VELZ_fv(KA,IA,JA)
+    real(RP), intent(in) :: MAPF_fv(IA,JA,2,4)
+
+    integer :: kelem, ke_h, ke_z, p
+    integer :: m, mos
+    integer :: i, j, k
+    integer :: iq, iqb
+    integer :: i_, iM, iP
+
+    real(RP) :: VELZ_sw
+    !--------------------------------------------------
+    
+    if ( this%BND_W ) then
+      mos = elem3D%Nfp_h * ( lcmesh3D%NeY + 2 * lcmesh3D%NeX ) * lcmesh3D%NeZ
+      !$omp parallel do private(ke_z,ke_h,i,j,k,p,iq,iqb,m,iM,VELZ_sw) collapse(2)
+      do ke_z=1, lcmesh3D%NeZ
+      do ke_h=1, lcmesh3D%NeY
+        i = IHALO; j = JHALO + ke_h; k = KHALO + ke_z
+        VELZ_sw = 0.5_RP + sign( 0.5_RP, DAMP_alpha_VELZ_fv(k,i,j)-EPS )
+        do p=1, elem3D%Nfp_h
+          m = mos + p + (ke_h-1)*elem3D%Nfp_h + (ke_z-1)*elem3D%Nfp_h*lcmesh3D%NeY
+          iM = this%iM_bnd(m)
+          this%bnd_velz_sw(m) = VELZ_sw
+          this%bnd_data(m,BND_DENS_ID) = DAMP_DENS_dg(iM)
+          this%bnd_data(m,BND_MOMX_ID) = DAMP_DENS_dg(iM) * DAMP_VELX_fv(k,i,j) * MAPF_fv(i,j,1,I_UY)
+          this%bnd_data(m,BND_MOMY_ID) = DAMP_DENS_dg(iM) * 0.25_RP * ( DAMP_VELY_fv(k,i,j-1) + DAMP_VELY_fv(k,i,j) + DAMP_VELY_fv(k,i+1,j-1) + DAMP_VELY_fv(k,i+1,j) ) * MAPF_fv(i,j,2,I_UY)
+          this%bnd_data(m,BND_MOMZ_ID) = DAMP_DENS_dg(iM) * 0.25_RP * ( DAMP_VELZ_fv(k-1,i,j) + DAMP_VELZ_fv(k,i,j) + DAMP_VELZ_fv(k-1,i+1,j) + DAMP_VELZ_fv(k,i+1,j) )
+          this%bnd_data(m,BND_RHOT_ID) = DAMP_RHOT_dg(iM)
+        end do
+        do iq=1, QA
+          iqb = BND_IQ(iq)
+          if ( iqb > 0 ) then
+            do p=1, elem3D%Nfp_h
+              m = mos + p + (ke_h-1)*elem3D%Nfp_h + (ke_z-1)*elem3D%Nfp_h*lcmesh3D%NeY
+              this%bnd_data_qtrc(m,iq) = 0.5_RP * ( DAMP_QTRC_fv(k,i,j,iqb) + DAMP_QTRC_fv(k,i+1,j,iqb) ) 
+            end do
+          end if
+        end do
+      end do
+      end do
+    end if
+
+    if ( this%BND_S ) then
+      mos = 0
+      !$omp parallel do private(ke_z,ke_h,i,j,k,p,iq,iqb,m,iM,VELZ_sw) collapse(2)
+      do ke_z=1, lcmesh3D%NeZ
+      do ke_h=1, lcmesh3D%NeX
+        i = IHALO + ke_h; j = JHALO; k = KHALO + ke_z
+        VELZ_sw = 0.5_RP + sign( 0.5_RP, DAMP_alpha_VELZ_fv(k,i,j)-EPS )
+        do p=1, elem3D%Nfp_h
+          m = mos + p + (ke_h-1)*elem3D%Nfp_h + (ke_z-1)*elem3D%Nfp_h*lcmesh3D%NeX
+          iM = this%iM_bnd(m)
+          this%bnd_velz_sw(m) = VELZ_sw
+          this%bnd_data(m,BND_DENS_ID) = DAMP_DENS_dg(iM) 
+          this%bnd_data(m,BND_MOMX_ID) = DAMP_DENS_dg(iM) * 0.25_RP * ( DAMP_VELX_fv(k,i-1,j) + DAMP_VELX_fv(k,i,j) + DAMP_VELX_fv(k,i-1,j+1) + DAMP_VELX_fv(k,i,j+1) ) * MAPF_fv(i,j,1,I_XV)
+          this%bnd_data(m,BND_MOMY_ID) = DAMP_DENS_dg(iM) * DAMP_VELY_fv(k,i,j) * MAPF_fv(i,j,2,I_XV)
+          this%bnd_data(m,BND_MOMZ_ID) = DAMP_DENS_dg(iM) * 0.25_RP * ( DAMP_VELZ_fv(k-1,i,j) + DAMP_VELZ_fv(k,i,j) + DAMP_VELZ_fv(k-1,i,j+1) + DAMP_VELZ_fv(k,i,j+1) )
+          this%bnd_data(m,BND_RHOT_ID) = DAMP_RHOT_dg(iM)
+        end do
+        do iq=1, QA
+          iqb = BND_IQ(iq)
+          if ( iqb > 0 ) then
+            do p=1, elem3D%Nfp_h
+              m = mos + p + (ke_h-1)*elem3D%Nfp_h + (ke_z-1)*elem3D%Nfp_h*lcmesh3D%NeX
+              this%bnd_data_qtrc(m,iq) = 0.5_RP * ( DAMP_QTRC_fv(k,i,j,iqb) + DAMP_QTRC_fv(k,i,j+1,iqb) )
+            end do
+          end if
+        end do        
+      end do
+      end do
+    end if
+
+    if ( this%BND_E ) then
+      mos = elem3D%Nfp_h * lcmesh3D%NeX * lcmesh3D%NeZ
+      !$omp parallel do private(ke_z,ke_h,i,j,k,p,iq,iqb,m,iM,VELZ_sw) collapse(2)
+      do ke_z=1, lcmesh3D%NeZ
+      do ke_h=1, lcmesh3D%NeY
+        i = IE+1; j = JHALO + ke_h; k = KHALO + ke_z
+        VELZ_sw = 0.5_RP + sign( 0.5_RP, DAMP_alpha_VELZ_fv(k,i,j)-EPS )
+        do p=1, elem3D%Nfp_h
+          m = mos + p + (ke_h-1)*elem3D%Nfp_h + (ke_z-1)*elem3D%Nfp_h*lcmesh3D%NeY
+          iM = this%iM_bnd(m)
+          this%bnd_velz_sw(m) = VELZ_sw
+          this%bnd_data(m,BND_DENS_ID) = DAMP_DENS_dg(iM)
+          this%bnd_data(m,BND_MOMX_ID) = DAMP_DENS_dg(iM) * DAMP_VELX_fv(k,i-1,j) * MAPF_fv(i-1,j,1,I_UY)
+          this%bnd_data(m,BND_MOMY_ID) = DAMP_DENS_dg(iM) * 0.25_RP * ( DAMP_VELY_fv(k,i-1,j-1) + DAMP_VELY_fv(k,i-1,j) + DAMP_VELY_fv(k,i,j-1) + DAMP_VELY_fv(k,i,j) ) * MAPF_fv(i-1,j,2,I_UY)
+          this%bnd_data(m,BND_MOMZ_ID) = DAMP_DENS_dg(iM) * 0.25_RP * ( DAMP_VELZ_fv(k-1,i-1,j) + DAMP_VELZ_fv(k,i-1,j) + DAMP_VELZ_fv(k-1,i,j) + DAMP_VELZ_fv(k,i,j) )
+          this%bnd_data(m,BND_RHOT_ID) = DAMP_RHOT_dg(iM)
+        end do
+        do iq=1, QA
+          iqb = BND_IQ(iq)
+          if ( iqb > 0 ) then
+            do p=1, elem3D%Nfp_h
+              m = mos + p + (ke_h-1)*elem3D%Nfp_h + (ke_z-1)*elem3D%Nfp_h*lcmesh3D%NeY
+              this%bnd_data_qtrc(m,iq) = 0.5_RP * ( DAMP_QTRC_fv(k,i-1,j,iqb) + DAMP_QTRC_fv(k,i,j,iqb) )
+            end do
+          end if
+        end do        
+      end do
+      end do
+    end if
+
+    if ( this%BND_N ) then
+      mos = elem3D%Nfp_h * ( lcmesh3D%NeY + lcmesh3D%NeX ) * lcmesh3D%NeZ
+      !$omp parallel do private(ke_z,ke_h,i,j,k,p,iq,m,iM,VELZ_sw) collapse(2)
+      do ke_z=1, lcmesh3D%NeZ
+      do ke_h=1, lcmesh3D%NeX
+        i = IHALO + ke_h; j = JE+1; k = KHALO + ke_z
+        VELZ_sw = 0.5_RP + sign( 0.5_RP, DAMP_alpha_VELZ_fv(k,i,j)-EPS )
+        do p=1, elem3D%Nfp_h
+          m = mos + p + (ke_h-1)*elem3D%Nfp_h + (ke_z-1)*elem3D%Nfp_h*lcmesh3D%NeX
+          iM = this%iM_bnd(m)
+          this%bnd_velz_sw(m) = VELZ_sw
+          this%bnd_data(m,BND_DENS_ID) = DAMP_DENS_dg(iM)
+          this%bnd_data(m,BND_MOMX_ID) = DAMP_DENS_dg(iM) * 0.25_RP * ( DAMP_VELX_fv(k,i-1,j-1) + DAMP_VELX_fv(k,i,j-1) + DAMP_VELX_fv(k,i-1,j) + DAMP_VELX_fv(k,i,j) ) * MAPF_fv(i,j-1,1,I_XV)
+          this%bnd_data(m,BND_MOMY_ID) = DAMP_DENS_dg(iM) * DAMP_VELY_fv(k,i,j-1) * MAPF_fv(i,j-1,2,I_XV)
+          this%bnd_data(m,BND_MOMZ_ID) = DAMP_DENS_dg(iM) * 0.25_RP * ( DAMP_VELZ_fv(k-1,i,j-1) + DAMP_VELZ_fv(k,i,j-1) + DAMP_VELZ_fv(k-1,i,j) + DAMP_VELZ_fv(k,i,j) )
+          this%bnd_data(m,BND_RHOT_ID) = DAMP_RHOT_dg(iM)
+        end do
+        do iq=1, QA
+          iqb = BND_IQ(iq)
+          if ( iqb > 0 ) then
+            do p=1, elem3D%Nfp_h
+              m = mos + p + (ke_h-1)*elem3D%Nfp_h + (ke_z-1)*elem3D%Nfp_h*lcmesh3D%NeX
+              this%bnd_data_qtrc(m,iq) = 0.5_RP * ( DAMP_QTRC_fv(k,i,j-1,iqb) + DAMP_QTRC_fv(k,i,j,iqb) )
+            end do
+          end if
+        end do        
+      end do
+      end do
+    end if
+
+    return
+  end subroutine ATMOS_dyn_bnd_store_nuding_bnddata_fv
+
 !OCL SERIAL
   subroutine ATMOS_dyn_bnd_inquire_bound_flag(  this,      & ! (in)
     is_bound,                                              & ! (out)
@@ -652,5 +951,107 @@ contains
 
     return
   end  subroutine bnd_Init_lc
+
+!> Set exterior values for boundary nudging
+!! @param bndID 1: BND_W, 2: BND_E, 3: BND_S, 4: BND_N
+!OCL SERIAL
+  subroutine set_nudging_bnddata_lc( this, DDENS, MOMX, MOMY, MOMZ, THERM, &
+    DENS_hyd, PRES_hyd, domID, bndID, lmesh, elem )
+    implicit none
+    class(AtmDynBnd), intent(in) :: this
+    class(LocalMesh3D), intent(in) :: lmesh
+    class(ElementBase3D), intent(in) :: elem
+    real(RP), intent(inout) :: DDENS(elem%Np*lmesh%NeA)
+    real(RP), intent(inout) :: MOMX(elem%Np*lmesh%NeA)
+    real(RP), intent(inout) :: MOMY(elem%Np*lmesh%NeA)
+    real(RP), intent(inout) :: MOMZ(elem%Np*lmesh%NeA)
+    real(RP), intent(inout) :: THERM(elem%Np*lmesh%NeA)
+    real(RP), intent(in) :: DENS_hyd(elem%Np*lmesh%NeA)
+    real(RP), intent(in) :: PRES_hyd(elem%Np*lmesh%NeA)    
+    integer, intent(in) :: domID
+    integer, intent(in) :: bndID
+
+    integer :: mos
+    integer :: Neh
+    integer :: iM, iP
+    integer :: ke_h, ke_z, p, i_
+    !--------------
+
+    select case(bndID)
+    case(1) ! BND_W
+      mos = elem%Nfp_h * ( lmesh%NeY + 2 * lmesh%NeX ) * lmesh%NeZ; Neh = lmesh%NeY
+    case(2) ! BND_S
+      mos = 0; Neh = lmesh%NeX
+    case(3) ! BND_E
+      mos = elem%Nfp_h * lmesh%NeX * lmesh%NeZ; Neh = lmesh%NeY
+    case(4) ! BND_N
+      mos = elem%Nfp_h * ( lmesh%NeY + lmesh%NeX ) * lmesh%NeZ; Neh = lmesh%NeX
+    end select
+
+    !$omp parallel do private(ke_z, ke_h, p, i_, iP, iM) collapse(2)
+    do ke_z=1, lmesh%NeZ
+    do ke_h=1, Neh
+      do p=1, elem%Nfp_h
+        i_ = mos + p + (ke_h-1)*elem%Nfp_h + (ke_z-1)*elem%Nfp_h*lmesh%NeY
+        iP = elem%Np*lmesh%NeE + i_
+        iM = this%iM_bnd(i_)
+        DDENS(iP) = 2.0_RP * this%bnd_data(i_,BND_DENS_ID) - DDENS(iM) - 2.0_RP * DENS_hyd(iM)
+        MOMX (iP) = 2.0_RP * this%bnd_data(i_,BND_MOMX_ID ) - MOMX(iM)
+        MOMY (iP) = 2.0_RP * this%bnd_data(i_,BND_MOMY_ID ) - MOMY(iM) 
+        MOMZ (iP) = this%bnd_velz_sw(i_) * ( 2.0_RP * this%bnd_data(i_,BND_MOMZ_ID ) - MOMZ(iM) ) &
+                  + ( 1.0_RP - this%bnd_velz_sw(i_) ) * MOMZ(iM)
+        THERM(iP) = 2.0_RP * this%bnd_data(i_,BND_RHOT_ID) - THERM(iM) - 2.0_RP * PRES00 / Rdry * ( PRES_hyd(iM) / PRES00 )**(CvDry/CpDry)
+      end do
+    end do
+    end do    
+
+    return
+  end subroutine set_nudging_bnddata_lc  
+
+!> Set exterior values (tracer) for boundary nudging
+!! @param bndID 1: BND_W, 2: BND_E, 3: BND_S, 4: BND_N
+!OCL SERIAL
+  subroutine set_nudging_bnddata_qtrc_lc( this, QTRC, &
+    domID, bndID, iq, lmesh, elem )
+    implicit none
+    class(AtmDynBnd), intent(in) :: this
+    class(LocalMesh3D), intent(in) :: lmesh
+    class(ElementBase3D), intent(in) :: elem
+    real(RP), intent(inout) :: QTRC(elem%Np*lmesh%NeA)
+    integer, intent(in) :: domID
+    integer, intent(in) :: bndID
+    integer, intent(in) :: iq
+
+    integer :: mos
+    integer :: Neh
+    integer :: iM, iP
+    integer :: ke_h, ke_z, p, i_
+    !--------------
+
+    select case(bndID)
+    case(1) ! BND_W
+      mos = elem%Nfp_h * ( lmesh%NeY + 2 * lmesh%NeX ) * lmesh%NeZ; Neh = lmesh%NeY
+    case(2) ! BND_S
+      mos = 0; Neh = lmesh%NeX
+    case(3) ! BND_E
+      mos = elem%Nfp_h * lmesh%NeX * lmesh%NeZ; Neh = lmesh%NeY
+    case(4) ! BND_N
+      mos = elem%Nfp_h * ( lmesh%NeY + lmesh%NeX ) * lmesh%NeZ; Neh = lmesh%NeX
+    end select
+
+    !$omp parallel do private(ke_z, ke_h, p, i_, iP, iM) collapse(2)
+    do ke_z=1, lmesh%NeZ
+    do ke_h=1, Neh
+      do p=1, elem%Nfp_h
+        i_ = mos + p + (ke_h-1)*elem%Nfp_h + (ke_z-1)*elem%Nfp_h*lmesh%NeY
+        iP = elem%Np*lmesh%NeE + i_
+        iM = this%iM_bnd(i_)
+        QTRC(iP) = 2.0_RP * this%bnd_data_qtrc(i_,iq) - QTRC(iM)
+      end do
+    end do
+    end do    
+
+    return
+  end subroutine set_nudging_bnddata_qtrc_lc  
 
 end module scale_atmos_dyn_dgm_bnd

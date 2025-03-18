@@ -250,9 +250,8 @@ contains
     !--------------------------------------------------------------
 
     if ( this%in_basename == '' ) then
-      LOG_INFO(trim(this%comp_name)//"_vars_restart_open",*) 'restart file is not specified. Check!'
+       LOG_ERROR(trim(this%comp_name)//"_vars_restart_open",*) 'restart file is not specified. Check!'
       call PRC_abort
-      return
     end if
 
     if ( this%in_postfix_timelabel ) then

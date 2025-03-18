@@ -196,6 +196,7 @@ contains
   !-----------------------------------------------------------------------------
   !> Calculation tendency
   subroutine ATMOS_driver_calc_tendency( force )
+    use scale_tracer, only: QA
     use mod_atmos_vars, only: &
        DENS_tp, &
        MOMZ_tp, &
@@ -299,7 +300,7 @@ contains
       call dyn_dg_vars%Flush_phytend()
       call dyn_dg_vars%Exchange_prgvars()
       call dyn_dg_vars%Exchange_auxvars()
-      call dyn_dg_vars%Exchange_qtrcvars()
+      if (QA > 0) call dyn_dg_vars%Exchange_qtrcvars()
     endif
 
 

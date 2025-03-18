@@ -116,8 +116,10 @@ contains
        ATMOS_GRID_CARTESC_METRIC_finalize, &
        ATMOS_GRID_CARTESC_METRIC_MAPF
     use scale_atmos_dyn_dgm_operator, only: &
-       ATMOS_DYN_DGM_operator_setup, &
-       ATMOS_DYN_DGM_operator_finalize       
+       ATMOS_DYN_DGM_operator_setup,        &
+       ATMOS_DYN_DGM_operator_finalize,     &
+       ATMOS_DYN_DGM_operator_setup_metric_bc, &       
+       DG_topography => topography
     use scale_ocean_grid_cartesC_index, only: &
        OCEAN_GRID_CARTESC_INDEX_setup
     use scale_ocean_grid_cartesC, only: &
@@ -420,6 +422,7 @@ contains
 
     ! setup topography
     call TOPOGRAPHY_setup
+    if ( ATMOS_sw_dyn_DGM ) call DG_topography%Read()    
     ! setup land use category index/fraction
     call LANDUSE_setup( OCEAN_do, (.not. URBAN_land), LAKE_do )
 
@@ -428,6 +431,7 @@ contains
        call ATMOS_GRID_CARTESC_REAL_setup
        ! setup grid transfer metrics (uses in ATMOS_dynamics)
        call ATMOS_GRID_CARTESC_METRIC_setup
+       if ( ATMOS_sw_dyn_DGM ) call ATMOS_DYN_DGM_operator_setup_metric_bc
        call ATMOS_GRID_CARTESC_REAL_calc_areavol( ATMOS_GRID_CARTESC_METRIC_MAPF(:,:,:,:) )
     endif
     if ( OCEAN_do ) then

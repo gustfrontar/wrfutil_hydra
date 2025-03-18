@@ -1,4 +1,0 @@
-[submodule "letkf"]
-	path = letkf
-	url = https://github.com/SCALE-LETKF-RIKEN/scale-letkf
-	branch = main

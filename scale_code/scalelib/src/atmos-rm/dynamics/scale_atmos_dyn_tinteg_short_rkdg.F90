@@ -122,8 +122,9 @@ contains
       ATMOS_DYN_Tstep_tracer_dgm_heve_save_massflux, &
       ATMOS_DYN_Tstep_tracer_dgm_heve_calc_fct_coef
     use scale_atmos_dyn_dgm_operator, only: &
-      ATMOS_DYN_DGM_operator_apply_modalfilter, &
-      ATMOS_DYN_DGM_operator_addtend_spongelayer
+      ATMOS_DYN_DGM_operator_apply_modalfilter,   &
+      ATMOS_DYN_DGM_operator_addtend_spongelayer, &
+      mapprojection
     
     implicit none
     class(AtmosDynDGM_vars), intent(inout), target :: dyn_vars
@@ -249,7 +250,8 @@ contains
           DRHOT%local(ldomID)%val, dyn_vars%DPRES%local(ldomID)%val,                                                     & ! (in)
           DENS_hyd%local(ldomID)%val, PRES_hyd%local(ldomID)%val, PRES_hyd_ref%local(ldomID)%val,                        & ! (in)
           dyn_vars%Coriolis%local(ldomID)%val, Rtot%local(ldomID)%val, CVtot%local(ldomID)%val, CPtot%local(ldomID)%val, & ! (in)
-          Dx, Dy, Dz, Lift, lmesh3D, lmesh3D%refElem3D, lmesh3D%lcmesh2D, lmesh3D%lcmesh2D%refElem2D ) 
+          Dx, Dy, Dz, Lift, mapprojection%local(ldomID)%Gam,                                                             & ! (in)
+          lmesh3D, lmesh3D%refElem3D, lmesh3D%lcmesh2D, lmesh3D%lcmesh2D%refElem2D                                       ) ! (in)
         call PROF_rapend( 'ATM_DYN_update_caltend_ex', 2)
 
         !- Sponge layer
@@ -286,7 +288,7 @@ contains
         !- Save mass flux
         if ( QA > 0 ) then
           call PROF_rapstart( 'ATM_DYN_tavg_mflx', 2)
-          if ( tint(1)%imex_flag ) then
+          if ( hevi_flag ) then
             tavg_coef_MFLXZ(:) = tint(ldomID)%coef_b_im(:)
           else
             tavg_coef_MFLXZ(:) = tint(ldomID)%coef_b_ex(:)
@@ -300,7 +302,8 @@ contains
             dyn_vars%DPRES%local(ldomID)%val, DENS_hyd%local(ldomID)%val, PRES_hyd%local(ldomID)%val,        & ! (in)
             Rtot%local(ldomID)%val, CVtot%local(ldomID)%val, CPtot%local(ldomID)%val,                        & ! (in)
             lmesh3D, lmesh3D%refElem3D,                                                                                  & ! (in)
-            rkstage==1 .and. step==1, tint(ldomID)%coef_b_ex(rkstage)/real(nstep,kind=RP), tavg_coef_MFLXZ(rkstage)/real(nstep,kind=RP) ) ! (in)
+            rkstage==1 .and. step==1, tint(ldomID)%coef_b_ex(rkstage)/real(nstep,kind=RP), tavg_coef_MFLXZ(rkstage)/real(nstep,kind=RP), &
+            hevi_flag ) ! (in)
           call PROF_rapend( 'ATM_DYN_tavg_mflx', 2)
         end if        
         

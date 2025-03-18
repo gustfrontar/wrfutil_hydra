@@ -140,7 +140,7 @@ module scale_atmos_dyn_tstep_short
       DDENS_, MOMX_, MOMY_, MOMZ_, THERM_, DPRES_,               & ! (in) 
       DENS_hyd, PRES_hyd, PRES_hyd_ref, CORIOLIS,                & ! (in)
       Rtot, CVtot, CPtot,                                        & ! (in)
-      Dx, Dy, Dz, Lift, lmesh, elem, lmesh2D, elem2D             ) ! (in)
+      Dx, Dy, Dz, Lift, Gam, lmesh, elem, lmesh2D, elem2D        ) ! (in)
 
       import RP
       import LocalMesh3D
@@ -154,7 +154,6 @@ module scale_atmos_dyn_tstep_short
       class(ElementBase3D), intent(in) :: elem
       class(LocalMesh2D), intent(in) :: lmesh2D
       class(ElementBase2D), intent(in) :: elem2D
-      type(SparseMat), intent(in) :: Dx, Dy, Dz, Lift
       real(RP), intent(out) :: DENS_dt(elem%Np,lmesh%NeA)
       real(RP), intent(out) :: MOMX_dt(elem%Np,lmesh%NeA)
       real(RP), intent(out) :: MOMY_dt(elem%Np,lmesh%NeA)
@@ -173,6 +172,8 @@ module scale_atmos_dyn_tstep_short
       real(RP), intent(in)  :: Rtot(elem%Np,lmesh%NeA)
       real(RP), intent(in)  :: CVtot(elem%Np,lmesh%NeA)
       real(RP), intent(in)  :: CPtot(elem%Np,lmesh%NeA)
+      real(RP), intent(in)  :: Gam(elem2D%Np,2,2,lmesh2D%Ne,2)
+      type(SparseMat), intent(in) :: Dx, Dy, Dz, Lift
      end subroutine dg_short_ex
      
      subroutine dg_short_vi( &

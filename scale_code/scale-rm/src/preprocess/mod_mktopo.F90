@@ -27,6 +27,14 @@ module mod_mktopo
      CY => ATMOS_GRID_CARTESC_CY
   use scale_topography, only: &
      TOPOGRAPHY_Zsfc
+
+  use mod_atmos_admin, only: ATMOS_sw_dyn_DGM  
+  use scale_fem_localmesh_2d, only: &
+     FEM_LocalMesh2D => LocalMesh2D
+  use scale_atmos_dyn_dgm_operator, only: &
+     fem_mesh3D => mesh3D,    &
+     fem_topo   => topography
+
   !-----------------------------------------------------------------------------
   implicit none
   private
@@ -276,6 +284,11 @@ contains
 
     integer :: ierr
     integer :: i, j
+
+    type(FEM_LocalMesh2D), pointer :: lmesh
+    integer :: ldomid
+    integer :: kelem
+    integer :: dim_ind
     !---------------------------------------------------------------------------
 
     LOG_NEWLINE
@@ -318,6 +331,24 @@ contains
        enddo
        !$acc end kernels
     endif
+
+    if ( ATMOS_sw_dyn_DGM ) then
+      if ( .NOT. SCHAER_SWAPXY ) then
+         dim_ind = 1
+      else
+         dim_ind = 2
+      end if
+      do ldomid=1, fem_mesh3D%LOCAL_MESH_NUM
+         lmesh => fem_mesh3D%lcmesh_list(ldomid)%lcmesh2D
+         !$omp parallel do private( kelem )
+         do kelem=lmesh%NeS, lmesh%NeE
+            fem_topo%topo%local(ldomid)%val(:,kelem) = &
+                 SCHAER_HEIGHT * exp( -( (lmesh%pos_en(:,kelem,dim_ind) - SCHAER_CX ) / SCHAER_RX )**2 ) &
+               * ( cos( PI * ( lmesh%pos_en(:,kelem,dim_ind) - SCHAER_CX ) / SCHAER_LAMBDA ) )**2                  
+         enddo
+      enddo
+    endif
+
 
     return
   end subroutine MKTOPO_schaer

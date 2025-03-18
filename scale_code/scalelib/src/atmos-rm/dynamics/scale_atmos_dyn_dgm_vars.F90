@@ -159,10 +159,12 @@ module scale_atmos_dyn_dgm_vars
     class(MeshCubeDom3D), pointer :: mesh3D
 
     type(FILE_restart_meshfield_component) :: restart_file
+    !-
   contains
     procedure :: Init => ATMOS_DYN_DGM_vars_setup
     procedure :: Final => ATMOS_DYN_DGM_vars_finalize
-    procedure :: SetVars => ATMOS_DYN_DGM_vars_setvars
+    procedure :: SetVars_from_FV => ATMOS_DYN_DGM_vars_setvars_from_FV
+    procedure :: SetVars_from_FV_lc => ATMOS_DYN_DGM_vars_setvars_from_FV_lc
     procedure :: GetVarsPtr => ATMOS_DYN_DGM_vars_getvars_ptr
     procedure :: GetPhyTendPtr => ATMOS_DYN_DGM_vars_getphytend_ptr
     procedure :: GetTRCVarsPtr => ATMOS_DYN_DGM_trcvars_getvars_ptr
@@ -173,6 +175,9 @@ module scale_atmos_dyn_dgm_vars
     procedure :: Calculate_AuxVars => ATMOS_DYN_DGM_vars_calc_axuvars
     procedure :: Fix_negative_value_qtrc => ATMOS_DYN_DGM_vars_negative_fixer_qtrc
     procedure :: Get_vel_fv => ATMOS_DYN_DGM_vars_get_vel_fv
+    procedure :: Get_prgvars_fv1 => ATMOS_DYN_DGM_vars_get_prgvar_fv1
+    procedure :: Get_prgvars_fv2 => ATMOS_DYN_DGM_vars_get_prgvar_fv2
+    generic :: Get_prgvars_fv => Get_prgvars_fv1, Get_prgvars_fv2
     procedure :: Flush_phytend => ATMOS_DYN_DGM_vars_flush_phytend
     procedure :: Set_FVphytend => ATMOS_DYN_DGM_vars_set_phytend_fv
     procedure :: Exchange_prgvars => ATMOS_DYN_DGM_vars_exchange_prgvars
@@ -210,7 +215,7 @@ module scale_atmos_dyn_dgm_vars
     VariableInfo( PRGVAR_DDENS_ID, 'DG_DDENS', 'deviation of density',         &
                     'kg/m3',  3, 'FEM_XYZ',  'air_density'              ),     &
     VariableInfo( PRGVAR_THERM_ID, 'DG_THERM', 'THERM',                        &
-                    '-', 3, 'FEM_XYZ',  ''                                  ), &
+                    'kg/m3.K', 3, 'FEM_XYZ',  ''                            ), &
     VariableInfo( PRGVAR_MOMZ_ID , 'DG_MOMZ', 'momentum z',                    &
                     'kg/m2/s', 3, 'FEM_XYZ', 'northward_mass_flux_of_air'   ), &
     VariableInfo( PRGVAR_MOMX_ID , 'DG_MOMX', 'momentum x',                    &
@@ -295,7 +300,7 @@ contains
     type(LocalMesh2D), pointer :: lmesh2D
     type(LocalMesh3D), pointer :: lmesh3D
 
-    type(VariableInfo) :: qtrc_vinfo_tmp    
+    type(VariableInfo) :: qtrc_vinfo_tmp  
     !--------------------------------------------------
 
     ! Prepare prognostic variables
@@ -352,10 +357,7 @@ contains
     allocate( this%phy_tend_hist_id(PHYTEND_NUM_TOT) )
 
     do iv=1, PHYTEND_NUM
-      call this%phy_tend(iv)%Init( ATMOS_DYN_PHYTEND_VARINFO(iv)%NAME, ATMOS_DYN_PHYTEND_VARINFO(iv)%UNIT, mesh3D )
-      do ldomid=1, mesh3D%LOCAL_MESH_NUM
-        this%phy_tend(iv)%local(ldomid)%val(:,:) = 0.0_RP
-      enddo
+      call this%phy_tend(iv)%Init( ATMOS_DYN_PHYTEND_VARINFO(iv)%NAME, ATMOS_DYN_PHYTEND_VARINFO(iv)%UNIT, mesh3D, fill_value=0.0_RP )
     enddo
     if (QA > 0) then
       call this%alphaDensM%Init( "alphaDensM", "kg/m3.m/s", mesh3D, LOCAL_MESHFIELD_TYPE_NODES_FACEVAL )
@@ -372,10 +374,7 @@ contains
         qtrc_vinfo_tmp%DESC  = 'tendency of physical process for '//trim(TRACER_DESC(iq))
         qtrc_vinfo_tmp%UNIT  = trim(TRACER_UNIT(iq))//'/s'
 
-        call this%phy_tend(iv)%Init( qtrc_vinfo_tmp%NAME, qtrc_vinfo_tmp%UNIT, mesh3D )
-        do ldomid=1, mesh3D%LOCAL_MESH_NUM
-          this%phy_tend(iv)%local(ldomid)%val(:,:) = 0.0_RP
-        enddo  
+        call this%phy_tend(iv)%Init( qtrc_vinfo_tmp%NAME, qtrc_vinfo_tmp%UNIT, mesh3D, fill_value=0.0_RP )
       enddo
     end if
 
@@ -409,7 +408,8 @@ contains
 !OCL SERIAL
   subroutine ATMOS_DYN_DGM_vars_setup_history( this )
     use scale_file_fem_history, only: &
-      FILE_HISTORY_meshfield_setup
+      FILE_HISTORY_meshfield_setup, &
+      FILE_HISTORY_meshfield_put
     use scale_file_history, only: FILE_HISTORY_reg
     implicit none
     class(AtmosDynDGM_vars), intent(inout), target :: this
@@ -449,7 +449,7 @@ contains
       qtrc_vinfo_tmp%DESC  = 'tendency of physical process for '//trim(TRACER_DESC(iq))
       qtrc_vinfo_tmp%UNIT  = trim(TRACER_UNIT(iq))//'/s'
       call FILE_HISTORY_reg( qtrc_vinfo_tmp%NAME, qtrc_vinfo_tmp%DESC, qtrc_vinfo_tmp%unit, this%phy_tend_hist_id(iv), &
-        dim_type=qtrc_vinfo_tmp%dim_type )      
+        dim_type=qtrc_vinfo_tmp%dim_type )
     enddo
 
     return
@@ -580,7 +580,7 @@ contains
     do iv=1, AUXVAR_DENSHYDRO_ID
       rf_vid = PRGVAR_NUM + iv
       call this%restart_file%Def_var( this%aux_vars(iv), &
-        PRGVAR_VARINFO(iv)%DESC, rf_vid, DIMTYPE_XYZ )
+        AUXVAR_VARINFO(iv)%DESC, rf_vid, DIMTYPE_XYZ )
     enddo
     do iv=1, QA
       rf_vid = PRGVAR_NUM + 2 + iv
@@ -631,43 +631,196 @@ contains
   end subroutine ATMOS_DYN_DGM_vars_close_restart
 
 !OCL SERIAL
-  subroutine ATMOS_DYN_DGM_vars_setvars( this, &
-    DENS, MOMX, MOMY, MOMZ, RHOT, DENS_hyd, PRES_hyd, &
-    lcmesh3D, elem3D )
+  subroutine ATMOS_DYN_DGM_vars_setvars_from_FV( this, &
+    DENS_fv, VELX_fv, VELY_fv, VELZ_fv, POTT_fv, QTRC_fv, &
+    interp_ord )
+    use scale_atmos_grid_cartesC_index, only: &
+      IA, JA, KA, IS, IE, IHALO, JS, JE, JHALO, KS, KE, KHALO
+    implicit none
+    class(AtmosDynDGM_vars), intent(inout), target :: this
+    real(RP), intent(in) :: DENS_fv(KA,IA,JA)
+    real(RP), intent(in) :: VELX_fv(KA,IA,JA)
+    real(RP), intent(in) :: VELY_fv(KA,IA,JA)
+    real(RP), intent(in) :: VELZ_fv(KA,IA,JA)
+    real(RP), intent(in) :: POTT_fv(KA,IA,JA)
+    real(RP), intent(in) :: QTRC_fv(KA,IA,JA,QA)
+    integer, intent(in) :: interp_ord
+
+    integer :: domid, iq
+    class(LocalMesh3D), pointer :: lcmesh3D
+    class(ElementBase3D), pointer :: elem3D
+    type(LocalMeshFieldBaseList) :: lc_QTRC_dg(QA)
+    !--------------------------------------------------
+
+    domid = 1
+    lcmesh3D => this%mesh3D%lcmesh_list(domid)
+    elem3D => lcmesh3D%refElem3D
+
+    do iq=1, QA
+      lc_QTRC_dg(iq)%ptr => this%qtrc_vars(iq)%local(domid)
+    end do
+    call this%SetVars_from_FV_lc( &
+      DENS_fv, VELX_fv, VELY_fv, VELZ_fv, POTT_fv, QTRC_fv,                                                     &
+      this%prg_vars(PRGVAR_DDENS_ID)%local(domid)%val, this%prg_vars(PRGVAR_MOMX_ID)%local(domid)%val,          &
+      this%prg_vars(PRGVAR_MOMY_ID)%local(domid)%val, this%prg_vars(PRGVAR_MOMZ_ID)%local(domid)%val,           &
+      this%prg_vars(PRGVAR_THERM_ID)%local(domid)%val, lc_QTRC_dg,                                              & 
+      this%aux_vars(AUXVAR_DENSHYDRO_ID)%local(domid)%val, this%aux_vars(AUXVAR_PRESHYDRO_ID)%local(domid)%val, &
+      interp_ord, lcmesh3D, elem3D )
+
+    return
+  end subroutine ATMOS_DYN_DGM_vars_setvars_from_FV
+
+!OCL SERIAL
+  subroutine ATMOS_DYN_DGM_vars_setvars_from_FV_lc( this, &
+    DENS_fv, VELX_fv, VELY_fv, VELZ_fv, POTT_fv, QTRC_fv,   &
+    DDENS_dg, MOMX_dg, MOMY_dg, MOMZ_dg, DRHOT_dg, QTRC_dg, &
+    DENS_hyd_dg, PRES_hyd_dg, &
+    interp_ord, lcmesh3D, elem3D )
+    use scale_atmos_grid_cartesC_index, only: &
+      IA, JA, KA, IS, IE, IHALO, JS, JE, JHALO, KS, KE, KHALO
+    use scale_statistics, only: &
+      STATISTICS_horizontal_mean
+    use scale_interp_vert, only: &
+      INTERP_VERT_xi2z
+    use scale_atmos_thermodyn, only: &
+      ATMOS_THERMODYN_specific_heat
+    use scale_fem_meshfield_util, only: &
+      MeshFieldUtil_interp_FVtoDG_3D
+    use scale_atmos_dyn_dgm_hydrostatic, only: &
+      hydrostatic_calc_basicstate_constPT, &
+      hydrostaic_build_rho_XYZ
     implicit none
     class(AtmosDynDGM_vars), intent(inout) :: this
     class(LocalMesh3D), intent(in) :: lcmesh3D
     class(ElementBase3D), intent(in) :: elem3D
-    real(RP), intent(in) :: DENS(elem3D%Np,lcmesh3D%NeA)
-    real(RP), intent(in) :: MOMX(elem3D%Np,lcmesh3D%NeA)
-    real(RP), intent(in) :: MOMY(elem3D%Np,lcmesh3D%NeA)
-    real(RP), intent(in) :: MOMZ(elem3D%Np,lcmesh3D%NeA)
-    real(RP), intent(in) :: RHOT(elem3D%Np,lcmesh3D%NeA)
-    real(RP), intent(in) :: DENS_hyd(elem3D%Np,lcmesh3D%NeA)
-    real(RP), intent(in) :: PRES_hyd(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: DENS_fv(KA,IA,JA)
+    real(RP), intent(in) :: VELX_fv(KA,IA,JA)
+    real(RP), intent(in) :: VELY_fv(KA,IA,JA)
+    real(RP), intent(in) :: VELZ_fv(KA,IA,JA)
+    real(RP), intent(in) :: POTT_fv(KA,IA,JA)
+    real(RP), intent(in) :: QTRC_fv(KA,IA,JA,QA)
+    real(RP), intent(out) :: DDENS_dg(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(out) :: MOMX_dg(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(out) :: MOMY_dg(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(out) :: MOMZ_dg(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(out) :: DRHOT_dg(elem3D%Np,lcmesh3D%NeA)
+    type(LocalMeshFieldBaseList), intent(inout) :: QTRC_dg(QA)
+    real(RP), intent(out) :: DENS_hyd_dg(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(out) :: PRES_hyd_dg(elem3D%Np,lcmesh3D%NeA)
+    integer, intent(in) :: interp_ord
 
-    integer :: domid, ke
+    integer :: domid, kelem, kelem2D, ke_z, pz
+    integer :: i, j, k, ke_x, ke_y
+    integer :: iq
+
+    real(RP) :: DG_VELX(elem3D%Np,lcmesh3D%NeA), DG_VELY(elem3D%Np,lcmesh3D%NeA), DG_VELZ(elem3D%Np,lcmesh3D%NeA)
+    real(RP) :: DG_DENS(elem3D%Np,lcmesh3D%NeA), DG_POTT(elem3D%Np,lcmesh3D%NeA)
+    real(RP) :: DDENS_hyd(elem3D%Np,lcmesh3D%NeA)
+    real(RP) :: POTT_z(elem3D%Np,lcmesh3D%NeZ,lcmesh3D%NeX,lcmesh3D%NeY)
+    real(RP) :: Rtot_z(elem3D%Np,lcmesh3D%NeZ,lcmesh3D%NeX,lcmesh3D%NeY)
+    real(RP) :: CPtot_ov_CVtot_z(elem3D%Np,lcmesh3D%NeZ,lcmesh3D%NeX,lcmesh3D%NeY)
+    real(RP) :: bnd_SFC_pres(lcmesh3D%lcmesh2D%refElem2D%Np,lcmesh3D%lcmesh2D%NeA)
     real(RP) :: RHOT_hyd(elem3D%Np)
+
+    real(RP) :: r_h1(elem3D%Np), r_h2(elem3D%Np)
+
+    real(RP) :: q_tmp(elem3D%Np,QA)
+    real(RP) :: Qdry_el(elem3D%Np), Rtot_el(elem3D%Np), CPtot_el(elem3D%Np), CVtot_el(elem3D%Np)
     !--------------------------------------------------
 
-    domid = lcmesh3D%lcdomID
+    call MeshFieldUtil_interp_FVtoDG_3D( DG_DENS, &
+      DENS_fv, lcmesh3D, elem3D, IS, IE, IA, IHALO, JS, JE, JA, JHALO, KS, KE, KA, KHALO, &
+      interp_ord )
+    call MeshFieldUtil_interp_FVtoDG_3D( DG_VELX, &
+      VELX_fv, lcmesh3D, elem3D, IS, IE, IA, IHALO, JS, JE, JA, JHALO, KS, KE, KA, KHALO, &
+      interp_ord )
+    call MeshFieldUtil_interp_FVtoDG_3D( DG_VELY, &
+      VELY_fv, lcmesh3D, elem3D, IS, IE, IA, IHALO, JS, JE, JA, JHALO, KS, KE, KA, KHALO, &
+      interp_ord )
+    call MeshFieldUtil_interp_FVtoDG_3D( DG_VELZ, &
+      VELZ_fv, lcmesh3D, elem3D, IS, IE, IA, IHALO, JS, JE, JA, JHALO, KS, KE, KA, KHALO, &
+      interp_ord )
+    call MeshFieldUtil_interp_FVtoDG_3D( DG_POTT, &
+      POTT_fv, lcmesh3D, elem3D, IS, IE, IA, IHALO, JS, JE, JA, JHALO, KS, KE, KA, KHALO, &
+      interp_ord )
+    do iq=1, QA
+      call MeshFieldUtil_interp_FVtoDG_3D( QTRC_dg(iq)%ptr%val, &
+        QTRC_fv(:,:,:,iq), lcmesh3D, elem3D, IS, IE, IA, IHALO, JS, JE, JA, JHALO, KS, KE, KA, KHALO, &
+        interp_ord )
+    end do    
 
-    !$omp parallel do private(ke, RHOT_hyd)
-    do ke=lcmesh3D%NeS, lcmesh3D%NeE
-      this%aux_vars(AUXVAR_DENSHYDRO_ID)%local(domid)%val(:,ke) = DENS_hyd(:,ke)
-      this%aux_vars(AUXVAR_PRESHYDRO_ID)%local(domid)%val(:,ke) = PRES_hyd(:,ke)
+    !$omp parallel do private( ke_x, ke_y, ke_z, kelem, iq, &
+    !$omp q_tmp, Qdry_el, Rtot_el, CVtot_el, CPtot_el) collapse(3)
+    do ke_z=1, lcmesh3D%NeZ
+    do ke_y=1, lcmesh3D%NeY
+    do ke_x=1, lcmesh3D%NeX
+      kelem = ke_x + (ke_y-1)*lcmesh3D%NeX + (ke_z-1)*lcmesh3D%NeX*lcmesh3D%NeY
+      do iq = 1, QA
+        q_tmp(:,iq) = QTRC_dg(iq)%ptr%val(:,kelem)
+      end do
+      call ATMOS_THERMODYN_specific_heat( &
+        elem3D%Np, 1, elem3D%Np, QA,                                         & ! (in)
+        q_tmp(:,:), TRACER_MASS(:), TRACER_R(:), TRACER_CV(:), TRACER_CP(:), & ! (in)
+        Qdry_el(:), Rtot_el(:), CVtot_el(:), CPtot_el(:)                     ) ! (out)
 
-      this%prg_vars(PRGVAR_DDENS_ID)%local(domid)%val(:,ke) = DENS(:,ke) - DENS_hyd(:,ke)
-      this%prg_vars(PRGVAR_MOMX_ID)%local(domid)%val(:,ke) = MOMX(:,ke)
-      this%prg_vars(PRGVAR_MOMY_ID)%local(domid)%val(:,ke) = MOMY(:,ke)
-      this%prg_vars(PRGVAR_MOMZ_ID)%local(domid)%val(:,ke) = MOMZ(:,ke)
+      POTT_z(:,ke_z,ke_x,ke_y) = DG_POTT(:,kelem)
+      CPtot_ov_CVtot_z(:,ke_z,ke_x,ke_y) = CPtot_el(:) / CVtot_el(:)
+      Rtot_z(:,ke_z,ke_x,ke_y) = Rtot_el(:)
+    end do
+    end do
+    end do
 
-      RHOT_hyd(:) = PRES00 / Rdry * ( PRES_hyd(:,ke) / PRES00 )**(CvDry/CpDry)
-      this%prg_vars(PRGVAR_DRHOT_ID)%local(domid)%val(:,ke) = RHOT(:,ke) - RHOT_hyd(:)
+    ! Construct hydrostatic state
+    
+    ! allocate( FZ(elem3D%Nnode_v,lcmesh3D%NeZ) )
+    ! allocate( work(elem3D%Nnode_v*))
+    ! do ke_z=1, lcmesh3D%NeZ
+    !   FZ(:,ke_z) = lcmesh3D%pos_en(elem3D%Colmask(:,1),1+(ke_z-1)*lcmesh3D%NeX*lcmesh3D%NeY,3)
+    ! end do
+    ! call INTERP_VERT_xi2z( KA, KS, KE, IA, IS, IE, JA, JS, JE, &
+    !   FZ(:,:), lcmesh3D%zlev(:,:), DG_POTT(:,lcmesh3D%NeS:lcmesh3D%NeS), & ! [IN]
+    !   work(:,:,:)                         ) ! [OUT]
+    ! call STATISTICS_horizontal_mean( KA, KS, KE, IA, IS, IE, JA, JS, JE, &
+    !   work(:,:,:), area(:,:),  & ! [IN]
+    !   ATMOS_REFSTATE1D_pott(:) ) ! [OUT]
+
+    call hydrostatic_calc_basicstate_constPT( DENS_hyd_dg, PRES_hyd_dg,                      &
+      300.0_RP, 1E5_RP, lcmesh3D%pos_en(:,:,1), lcmesh3D%pos_en(:,:,2), lcmesh3D%zlev(:,:),  &
+      lcmesh3D, elem3D )
+
+    !$omp parallel private(kelem)
+    !$omp do collapse(2)
+    do ke_y=1, lcmesh3D%NeY
+    do ke_x=1, lcmesh3D%NeX
+      kelem = ke_x + (ke_y-1)*lcmesh3D%NeX
+      bnd_SFC_pres(:,kelem) = PRES00 * ( DG_DENS(elem3D%Hslice(:,1),kelem) * Rtot_z(elem3D%Hslice(:,1),1,ke_x,ke_y) * POTT_z(elem3D%Hslice(:,1),1,ke_x,ke_y) / PRES00 )**CPtot_ov_CVtot_z(elem3D%Hslice(:,1),1,ke_x,ke_y)
+    end do
+    end do
+    !$omp end parallel
+
+    call hydrostaic_build_rho_XYZ( DDENS_hyd, &
+      DENS_hyd_dg, PRES_hyd_dg, POTT_z, Rtot_z, CPtot_ov_CVtot_z, &
+      lcmesh3D%pos_en(:,:,1), lcmesh3D%pos_en(:,:,2), lcmesh3D%pos_en(:,:,3), &
+      lcmesh3D, elem3D, bnd_SFC_PRES=bnd_SFC_pres)
+    
+    !$omp parallel do private(kelem, kelem2D, RHOT_hyd, r_h1, r_h2)
+    do kelem=lcmesh3D%NeS, lcmesh3D%NeE
+      kelem2D = lcmesh3D%EMap3Dto2D(kelem)
+      r_h1(:) = sqrt( lcmesh3D%G_ij(elem3D%IndexH2Dto3D,kelem2D,1,1) )
+      r_h2(:) = sqrt( lcmesh3D%G_ij(elem3D%IndexH2Dto3D,kelem2D,2,2) )
+
+      DG_DENS(:,kelem) = DENS_hyd_dg(:,kelem) + DDENS_hyd(:,kelem)
+      DDENS_dg(:,kelem) = DG_DENS(:,kelem) - DENS_hyd_dg(:,kelem)
+      MOMX_dg(:,kelem) = DG_DENS(:,kelem) * r_h1(:) * DG_VELX(:,kelem)
+      MOMY_dg(:,kelem) = DG_DENS(:,kelem) * r_h2(:) * DG_VELY(:,kelem)
+      MOMZ_dg(:,kelem) = DG_DENS(:,kelem) * DG_VELZ(:,kelem)
+
+      RHOT_hyd(:) = PRES00 / Rdry * ( PRES_hyd_dg(:,kelem) / PRES00 )**(CvDry/CpDry)
+      DRHOT_dg(:,kelem) = DG_DENS(:,kelem) * DG_POTT(:,kelem) - RHOT_hyd(:)
     enddo
-
+    
     return
-  end subroutine ATMOS_DYN_DGM_vars_setvars
+  end subroutine ATMOS_DYN_DGM_vars_setvars_from_FV_lc  
 
 !OCL SERIAL
   subroutine ATMOS_DYN_DGM_vars_finalize( this )
@@ -993,6 +1146,87 @@ contains
     return
   end subroutine ATMOS_DYN_DGM_vars_get_vel_fv
 
+!OCL SERIAL
+  subroutine ATMOS_DYN_DGM_vars_get_prgvar_fv1( this, DENS_fv, MOMX_fv, MOMY_fv, MOMZ_fv, RHOT_fv, QTRC_fv, &
+    dyn_bnd, FILL_BND, qtrc_flag )
+    use scale_atmos_grid_cartesC_index, only: &
+      IA, JA, KA
+    use scale_atmos_dyn_dgm_bnd, only: &
+      AtmDynBnd      
+    implicit none
+    class(AtmosDynDGM_vars), intent(inout), target :: this
+    real(RP), intent(inout) :: DENS_fv(KA,IA,JA)
+    real(RP), intent(inout) :: MOMX_fv(KA,IA,JA)
+    real(RP), intent(inout) :: MOMY_fv(KA,IA,JA)
+    real(RP), intent(inout) :: MOMZ_fv(KA,IA,JA)
+    real(RP), intent(inout) :: RHOT_fv(KA,IA,JA)
+    real(RP), intent(inout) :: QTRC_fv(KA,IA,JA,QA)
+    class(AtmDynBnd), intent(in) :: dyn_bnd
+    logical, intent(in), optional :: FILL_BND
+    logical, intent(in), optional :: qtrc_flag(QA)
+
+    integer :: lcdomid
+    class(LocalMesh3D), pointer :: lcmesh3D
+
+    type(LocalMeshFieldBaseList) :: lc_QTRC_fv(QA)
+    integer :: iq
+    !----------------------------------------------------
+
+    do lcdomid=1, this%mesh3D%LOCAL_MESH_NUM      
+      lcmesh3D => this%mesh3D%lcmesh_list(lcdomid)
+      do iq=1, QA
+        lc_QTRC_fv(iq)%ptr => this%qtrc_vars(iq)%local(lcdomid)
+      end do
+      call ATMOS_DYN_DGM_vars_get_prgvar_fv2( this, DENS_fv, MOMX_fv, MOMY_fv, MOMZ_fv, RHOT_fv, QTRC_fv,             & ! (out)
+        this%prg_vars(PRGVAR_DDENS_ID)%local(lcdomid)%val, this%prg_vars(PRGVAR_MOMX_ID)%local(lcdomid)%val,          & ! (in)
+        this%prg_vars(PRGVAR_MOMY_ID)%local(lcdomid)%val, this%prg_vars(PRGVAR_MOMZ_ID)%local(lcdomid)%val,           & ! (in)
+        this%prg_vars(PRGVAR_THERM_ID)%local(lcdomid)%val, lc_QTRC_fv,                                                & ! (in)
+        this%aux_vars(AUXVAR_DENSHYDRO_ID)%local(lcdomid)%val, this%aux_vars(AUXVAR_PRESHYDRO_ID)%local(lcdomid)%val, & ! (in)
+        lcmesh3D, lcmesh3D%refElem3D, dyn_bnd, FILL_BND, qtrc_flag                                                    ) ! (in)
+    enddo
+
+    return
+  end subroutine ATMOS_DYN_DGM_vars_get_prgvar_fv1
+
+!OCL SERIAL
+  subroutine ATMOS_DYN_DGM_vars_get_prgvar_fv2( this, DENS_fv, MOMX_fv, MOMY_fv, MOMZ_fv, RHOT_fv, QTRC_fv, &
+    lc_DENS_dg, lc_MOMX_dg, lc_MOMY_dg, lc_MOMZ_dg, lc_RHOT_dg, lc_QTRC_dg, lc_DENS_hyd_dg, lc_PRES_hyd_dg, lcmesh3D, elem3D, &
+    dyn_bnd, FILL_BND, qtrc_flag )
+    use scale_atmos_grid_cartesC_index, only: &
+      IA, JA, KA
+    use scale_atmos_dyn_dgm_bnd, only: &
+      AtmDynBnd
+    implicit none
+    class(AtmosDynDGM_vars), intent(inout), target :: this
+    class(LocalMesh3D), intent(in) :: lcmesh3D
+    class(ElementBase3D), intent(in) :: elem3D
+    real(RP), intent(inout) :: DENS_fv(KA,IA,JA)
+    real(RP), intent(inout) :: MOMX_fv(KA,IA,JA)
+    real(RP), intent(inout) :: MOMY_fv(KA,IA,JA)
+    real(RP), intent(inout) :: MOMZ_fv(KA,IA,JA)
+    real(RP), intent(inout) :: RHOT_fv(KA,IA,JA)
+    real(RP), intent(inout) :: QTRC_fv(KA,IA,JA,QA)
+    real(RP), intent(in) :: lc_DENS_dg(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: lc_MOMX_dg(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: lc_MOMY_dg(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: lc_MOMZ_dg(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: lc_RHOT_dg(elem3D%Np,lcmesh3D%NeA)
+    type(LocalMeshFieldBaseList), intent(in) :: lc_QTRC_dg(QA)
+    real(RP), intent(in) :: lc_DENS_hyd_dg(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: lc_PRES_hyd_dg(elem3D%Np,lcmesh3D%NeA)
+    class(AtmDynBnd), intent(in) :: dyn_bnd
+    logical, intent(in), optional :: FILL_BND
+    logical, intent(in), optional :: qtrc_flag(QA)
+    !----------------------------------------------------
+
+    call cal_progvars_fv( DENS_fv, MOMX_fv, MOMY_fv, MOMZ_fv, RHOT_fv, QTRC_fv,     & ! (inout)
+      lc_DENS_dg, lc_MOMX_dg, lc_MOMY_dg, lc_MOMZ_dg, lc_RHOT_dg, lc_QTRC_dg,       & ! (in)
+      lc_DENS_hyd_dg, lc_PRES_hyd_dg,                                               & ! (in)
+      lcmesh3D, elem3D, dyn_bnd%BND_W, dyn_bnd%BND_E, dyn_bnd%BND_S, dyn_bnd%BND_N, & ! (in)
+      FILL_BND, qtrc_flag )
+
+    return
+  end subroutine ATMOS_DYN_DGM_vars_get_prgvar_fv2
 
 !OCL SERAIL
   subroutine ATMOS_DYN_DGM_vars_exchange_prgvars( this )
@@ -1078,10 +1312,11 @@ contains
 
 !OCL SERAIL
   subroutine ATMOS_DYN_DGM_vars_set_phytend_fv( this, &
-    DENS_tp_fv, RHOU_tp_fv, RHOV_tp_fv, MOMZ_tp_fv, RHOT_tp_fv )
+    DENS_tp_fv, RHOU_tp_fv, RHOV_tp_fv, MOMX_tp_fv, MOMY_tp_fv, MOMZ_tp_fv, RHOT_tp_fv, &
+    MAPF_fv )
     use scale_atmos_grid_cartesC_index, only: &
       KS, KE, KA, IS, IE, IA, JS, JE, JA, &
-      IHALO, JHALO, KHALO
+      IHALO, JHALO, KHALO, I_XY
     use scale_atmos_dyn_dgm_operator, only: &
       set_fv_phytend => ATMOS_DYN_DGM_operator_set_fv_phytend
     implicit none
@@ -1089,30 +1324,43 @@ contains
     real(RP), intent(in) :: DENS_tp_fv(KA,IA,JA)
     real(RP), intent(in) :: RHOU_tp_fv(KA,IA,JA)
     real(RP), intent(in) :: RHOV_tp_fv(KA,IA,JA)
+    real(RP), intent(in) :: MOMX_tp_fv(KA,IA,JA)
+    real(RP), intent(in) :: MOMY_tp_fv(KA,IA,JA)
     real(RP), intent(in) :: MOMZ_tp_fv(KA,IA,JA)
     real(RP), intent(in) :: RHOT_tp_fv(KA,IA,JA)
+    real(RP), intent(in) :: MAPF_fv(IA,JA,2,4)  !< map factor
+
     integer :: lcdomid
     class(LocalMesh3D), pointer :: lcmesh3D
+    class(ElementBase3D), pointer :: elem3D
 
-    real(RP) :: RHOW_tp_fv(KA,IA,JA)
+    real(RP) :: RHOU_tp_fv_tmp(KA,IA,JA)
+    real(RP) :: RHOV_tp_fv_tmp(KA,IA,JA)
+    real(RP) :: RHOW_tp_fv_tmp(KA,IA,JA)
+
     integer :: i, j, k
+    integer :: kelem, ke2D
     !--------------------------------------------------
 
     lcdomID=1
     lcmesh3D => this%mesh3D%lcmesh_list(lcdomID)
+    elem3D => lcmesh3D%refElem3D
 
     !$omp parallel do private(i,j,k) collapse(2)
-    do j=1, JA
-    do i=1, IA
+    do j=JS, JE
+    do i=IS, IE
     do k=KS, KE
-      RHOW_tp_fv(k,i,j) = 0.5_RP * ( MOMZ_tp_fv(k-1,i,j) + MOMZ_tp_fv(k,i,j) )
+      RHOU_tp_fv_tmp(k,i,j) = ( 0.5_RP * ( MOMX_tp_fv(k,i-1,j) + MOMX_tp_fv(k,i,j) ) + RHOU_tp_fv(k,i,j) ) * MAPF_fv(i,j,1,I_XY)
+      RHOV_tp_fv_tmp(k,i,j) = ( 0.5_RP * ( MOMY_tp_fv(k,i,j-1) + MOMY_tp_fv(k,i,j) ) + RHOV_tp_fv(k,i,j) ) * MAPF_fv(i,j,2,I_XY)
+      RHOW_tp_fv_tmp(k,i,j) = 0.5_RP * ( MOMZ_tp_fv(k-1,i,j) + MOMZ_tp_fv(k,i,j) )
     enddo
     enddo
     enddo
+
     call set_fv_phytend( this%phy_tend(PHYTEND_DENS_ID)%local(lcdomid)%val, DENS_tp_fv, lcmesh3D, lcmesh3D%refElem3D )
-    call set_fv_phytend( this%phy_tend(PHYTEND_MOMX_ID)%local(lcdomid)%val, RHOU_tp_fv, lcmesh3D, lcmesh3D%refElem3D )
-    call set_fv_phytend( this%phy_tend(PHYTEND_MOMY_ID)%local(lcdomid)%val, RHOV_tp_fv, lcmesh3D, lcmesh3D%refElem3D )
-    call set_fv_phytend( this%phy_tend(PHYTEND_MOMZ_ID)%local(lcdomid)%val, RHOW_tp_fv, lcmesh3D, lcmesh3D%refElem3D )
+    call set_fv_phytend( this%phy_tend(PHYTEND_MOMX_ID)%local(lcdomid)%val, RHOU_tp_fv_tmp, lcmesh3D, lcmesh3D%refElem3D )
+    call set_fv_phytend( this%phy_tend(PHYTEND_MOMY_ID)%local(lcdomid)%val, RHOV_tp_fv_tmp, lcmesh3D, lcmesh3D%refElem3D )
+    call set_fv_phytend( this%phy_tend(PHYTEND_MOMZ_ID)%local(lcdomid)%val, RHOW_tp_fv_tmp, lcmesh3D, lcmesh3D%refElem3D )
     call set_fv_phytend( this%phy_tend(PHYTEND_RHOT_ID)%local(lcdomid)%val, RHOT_tp_fv, lcmesh3D, lcmesh3D%refElem3D )
 
     return
@@ -1282,7 +1530,7 @@ contains
       InternalEn(:) = InternalEn0(:)
 
       int_w(:) = lmesh%Gsqrt(:,kelem) * lmesh%J(:,kelem) * elem%IntWeight_lgl(:)
-      do iq = 1, 1 + QLA + QIA  
+      do iq = 1, QA !1 + QLA + QIA  
         TRCMASS0(:) = DENS(:) * QTRC_tmp(:,iq)
         TRCMASS1(:,iq) = max( TRC_EPS, TRCMASS0(:) )
 
@@ -1351,19 +1599,20 @@ contains
 
     integer :: ke_x, ke_y, ke_z
     integer :: i, j, k
-    integer :: kelem
+    integer :: kelem, kelem2D
     real(RP) :: IntWeight(elem3D%Np)
     real(RP) :: vol
     real(RP) :: r_dens
     !--------------------------------------------------------------------
 
-    !$omp parallel private( ke_x, ke_y, ke_z, i, j, k, kelem, IntWeight, vol, r_dens ) 
+    !$omp parallel private( ke_x, ke_y, ke_z, i, j, k, kelem, kelem2D, IntWeight, vol, r_dens ) 
 
     !$omp do collapse(2)
     do ke_z=1, lcmesh3D%NeZ
     do ke_y=1, lcmesh3D%NeY
     do ke_x=1, lcmesh3D%NeX
       kelem = ke_x + (ke_y-1)*lcmesh3D%NeX + (ke_z-1)*lcmesh3D%NeX*lcmesh3D%NeY
+      kelem2D = lcmesh3D%EMap3Dto2D(kelem)
       i = IHALO + ke_x
       j = JHALO + ke_y
       k = KHALO + ke_z
@@ -1373,8 +1622,8 @@ contains
       IntWeight(:) = IntWeight(:) / vol
 
       r_dens = 1.0_RP / sum( IntWeight(:) * ( DENS_hyd(:,kelem) + DDENS(:,kelem) ) )
-      U_fv(k,i,j) = r_dens * sum( IntWeight(:) * MOMX(:,kelem) )
-      V_fv(k,i,j) = r_dens * sum( IntWeight(:) * MOMY(:,kelem) )
+      U_fv(k,i,j) = r_dens * sum( IntWeight(:) * MOMX(:,kelem) * sqrt(lcmesh3D%GIJ(elem3D%IndexH2Dto3D(:),kelem2D,1,1)) )
+      V_fv(k,i,j) = r_dens * sum( IntWeight(:) * MOMY(:,kelem) * sqrt(lcmesh3D%GIJ(elem3D%IndexH2Dto3D(:),kelem2D,2,2)))
       W_fv(k,i,j) = r_dens * sum( IntWeight(:) * MOMZ(:,kelem) )
     enddo
     enddo
@@ -1407,5 +1656,193 @@ contains
 
     return
   end subroutine cal_vel_fv
+
+!OCL SERIAL
+  subroutine cal_progvars_fv( DENS_fv, MOMX_fv, MOMY_fv, MOMZ_fv, RHOT_fv, QTRC_fv, &
+    DDENS, MOMX, MOMY, MOMZ, DRHOT, QTRC, DENS_hyd, PRES_hyd, &
+    lcmesh3D, elem3D, BND_W, BND_E, BND_S, BND_N, &
+    FILL_BND, qtrc_flag )
+    use scale_atmos_grid_cartesC_index, only: &
+      KS, KE, KA, IS, IE, IA, JS, JE, JA, &
+      IHALO, JHALO, KHALO
+    use scale_comm_cartesC, only: &
+       COMM_vars8, &
+       COMM_wait    
+    implicit none
+    class(LocalMesh3D), intent(in) :: lcmesh3D
+    class(ElementBase3D), intent(in) :: elem3D
+    real(RP), intent(inout) :: DENS_fv(KA,IA,JA)
+    real(RP), intent(inout) :: MOMX_fv(KA,IA,JA)
+    real(RP), intent(inout) :: MOMY_fv(KA,IA,JA)
+    real(RP), intent(inout) :: MOMZ_fv(KA,IA,JA)
+    real(RP), intent(inout) :: RHOT_fv(KA,IA,JA)
+    real(RP), intent(inout) :: QTRC_fv(KA,IA,JA,QA)
+    real(RP), intent(in) :: DDENS(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: MOMX(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: MOMY(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: MOMZ(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: DRHOT(elem3D%Np,lcmesh3D%NeA)
+    type(LocalMeshFieldBaseList), intent(in) :: QTRC(QA)
+    real(RP), intent(in) :: DENS_hyd(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: PRES_hyd(elem3D%Np,lcmesh3D%NeA)
+    logical,  intent(in)    :: BND_W
+    logical,  intent(in)    :: BND_E
+    logical,  intent(in)    :: BND_S
+    logical,  intent(in)    :: BND_N
+    logical, intent(in), optional :: FILL_BND
+    logical, intent(in), optional :: qtrc_flag(QA)
+
+    integer :: ke_x, ke_y, ke_z
+    integer :: i, j, k
+    integer :: iq
+    integer :: kelem, kelem2D
+    real(RP) :: IntWeight(elem3D%Np)
+    real(RP) :: vol(lcmesh3D%Ne)
+    real(RP) :: RHOT_hyd(elem3D%Np)
+    real(RP) :: r_dens
+    real(RP) :: MOMX_c(KA,IA,JA)
+    real(RP) :: MOMY_c(KA,IA,JA)
+    real(RP) :: MOMZ_c(KA,IA,JA)
+
+    integer :: IS_, IE_, JS_, JE_
+
+    logical :: fill_bnd_
+    logical :: qtrc_flag_(QA)
+    !--------------------------------------------------------------------
+
+    fill_bnd_ = .false.
+    qtrc_flag_(:) = .true.
+    if ( present(FILL_BND) ) fill_bnd_ = FILL_BND
+    if ( present(qtrc_flag) ) qtrc_flag_(:) = qtrc_flag(:)
+
+    !$omp parallel private( &
+    !$omp ke_x, ke_y, ke_z, i, j, k, kelem, kelem2D, iq, IntWeight, RHOT_hyd ) 
+    
+    !$omp do collapse(2)
+    do ke_z=1, lcmesh3D%NeZ
+    do ke_y=1, lcmesh3D%NeY
+    do ke_x=1, lcmesh3D%NeX
+      kelem = ke_x + (ke_y-1)*lcmesh3D%NeX + (ke_z-1)*lcmesh3D%NeX*lcmesh3D%NeY
+      kelem2D = lcmesh3D%EMap3Dto2D(kelem)
+      i = IHALO + ke_x; j = JHALO + ke_y; k = KHALO + ke_z
+
+      IntWeight(:) = elem3D%IntWeight_lgl(:) * lcmesh3D%J(:,kelem) * lcmesh3D%Gsqrt(:,kelem)
+      vol(kelem) = sum(IntWeight(:))
+      IntWeight(:) = IntWeight(:) / vol(kelem)
+
+      DENS_fv(k,i,j) = sum( IntWeight(:) * ( DENS_hyd(:,kelem) + DDENS(:,kelem) ) )
+      MOMX_c(k,i,j) = sum( IntWeight(:) * MOMX(:,kelem) * sqrt(lcmesh3D%GIJ(elem3D%IndexH2Dto3D(:),kelem2D,1,1)) )
+      MOMY_c(k,i,j) = sum( IntWeight(:) * MOMY(:,kelem) * sqrt(lcmesh3D%GIJ(elem3D%IndexH2Dto3D(:),kelem2D,2,2)) )
+      MOMZ_c(k,i,j) = sum( IntWeight(:) * MOMZ(:,kelem) )
+
+      RHOT_hyd(:) = PRES00 / Rdry * ( PRES_hyd(:,kelem) / PRES00 )**(CvDry/CpDry)
+      RHOT_fv(k,i,j) = sum( IntWeight(:) * ( RHOT_hyd(:) + DRHOT(:,kelem) ) )
+    enddo
+    enddo
+    enddo
+
+    do iq=1, QA
+      if ( qtrc_flag_(iq) ) then
+        !$omp do collapse(2)
+        do ke_z=1, lcmesh3D%NeZ
+        do ke_y=1, lcmesh3D%NeY
+        do ke_x=1, lcmesh3D%NeX
+          kelem = ke_x + (ke_y-1)*lcmesh3D%NeX + (ke_z-1)*lcmesh3D%NeX*lcmesh3D%NeY
+          i = IHALO + ke_x; j = JHALO + ke_y; k = KHALO + ke_z
+
+          IntWeight(:) = elem3D%IntWeight_lgl(:) * lcmesh3D%J(:,kelem) * lcmesh3D%Gsqrt(:,kelem) &
+                      / vol(kelem)
+          QTRC_fv(k,i,j,iq) = sum( IntWeight(:) * ( DENS_hyd(:,kelem) + DDENS(:,kelem) ) * QTRC(iq)%ptr%val(:,kelem) ) &
+                            / DENS_fv(k,i,j)
+        enddo
+        enddo
+        enddo
+      end if
+    enddo
+
+    !$omp end parallel
+
+    call COMM_vars8( DENS_fv(:,:,:), 1 )
+    call COMM_vars8( MOMX_c(:,:,:), 2 )
+    call COMM_vars8( MOMY_c(:,:,:), 3 )
+    call COMM_vars8( RHOT_fv(:,:,:), 4 )
+
+    call COMM_wait ( DENS_fv(:,:,:), 1, fill_bnd_  )
+    call COMM_wait ( MOMX_c(:,:,:), 2, fill_bnd_  )
+    call COMM_wait ( MOMY_c(:,:,:), 3, fill_bnd_  )
+    call COMM_wait ( RHOT_fv(:,:,:), 4, fill_bnd_ )
+
+    do iq=1, QA
+      if ( qtrc_flag_(iq) ) then
+        call COMM_vars8( QTRC_fv(:,:,:,iq), iq )
+      end if
+    enddo
+
+    if ( BND_W ) then
+      IS_ = IS
+    else
+      IS_ = IS-1
+    end if
+    if ( BND_E ) then
+      IE_ = IE-1
+    else
+      IE_ = IE
+    end if
+    if ( BND_S ) then
+      JS_ = JS
+    else
+      JS_ = JS-1
+    end if
+    if ( BND_N ) then
+      JE_ = JE-1
+    else
+      JE_ = JE
+    end if
+
+    !$omp parallel private(i,j,k)
+    !$omp do collapse(2)
+    do j=JS, JE
+    do i=IS_, IE_
+    do k=KS, KE
+      MOMX_fv(k,i,j) = 0.5_RP * ( MOMX_c(k,i,j) + MOMX_c(k,i+1,j) )
+    enddo
+    enddo
+    enddo
+
+    !$omp do collapse(2)
+    do j=JS_, JE_
+    do i=IS, IE
+    do k=KS, KE
+      MOMY_fv(k,i,j) = 0.5_RP * ( MOMY_c(k,i,j) + MOMY_c(k,i,j+1) )
+    enddo
+    enddo
+    enddo
+    !$omp do collapse(2)
+    do j=JS, JE
+    do i=IS, IE
+      do k=KS, KE-1
+        MOMZ_fv(k,i,j) = 0.5_RP * ( MOMZ_c(k,i,j) + MOMZ_c(k+1,i,j) )
+      enddo
+      MOMZ_fv(1:KS-1,i,j) = 0.0_RP; MOMZ_fv(KE:KA,i,j) = 0.0_RP
+    enddo
+    enddo 
+    !$omp end parallel
+
+    do iq = 1, QA
+      if ( qtrc_flag_(iq) ) then
+        call COMM_wait ( QTRC_fv(:,:,:,iq), iq, fill_bnd_ )
+      end if
+    enddo
+    
+    call COMM_vars8( MOMZ_fv(:,:,:), 1 )
+    call COMM_vars8( MOMX_fv(:,:,:), 2 )
+    call COMM_vars8( MOMY_fv(:,:,:), 3 )
+
+    call COMM_wait ( MOMZ_fv(:,:,:), 1, fill_bnd_ )
+    call COMM_wait ( MOMX_fv(:,:,:), 2, fill_bnd_ )
+    call COMM_wait ( MOMY_fv(:,:,:), 3, fill_bnd_ )
+
+    return
+  end subroutine cal_progvars_fv
 
 end module scale_atmos_dyn_dgm_vars

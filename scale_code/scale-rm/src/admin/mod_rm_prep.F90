@@ -154,8 +154,10 @@ contains
        ATMOS_GRID_CARTESC_METRIC_finalize, &
        ATMOS_GRID_CARTESC_METRIC_MAPF
     use scale_atmos_dyn_dgm_operator, only: &
-       ATMOS_DYN_DGM_operator_setup, &
-       ATMOS_DYN_DGM_operator_finalize
+       ATMOS_DYN_DGM_operator_setup,        &
+       ATMOS_DYN_DGM_operator_finalize,     &
+       ATMOS_DYN_DGM_operator_setup_metric_bc, &
+       DG_topography => topography
     use scale_statistics, only: &
        STATISTICS_setup
     use scale_coriolis, only: &
@@ -360,6 +362,7 @@ contains
 
     ! setup topography
     call TOPOGRAPHY_setup
+    if ( ATMOS_sw_dyn_DGM ) call DG_topography%Read()
     ! setup land use category index/fraction
     call LANDUSE_setup( OCEAN_do, (.not. URBAN_land), LAKE_do )
 
@@ -447,6 +450,7 @@ contains
     ! re-setup
     call ATMOS_GRID_CARTESC_REAL_calc_Z
     call ATMOS_GRID_CARTESC_METRIC_setup
+    if ( ATMOS_sw_dyn_DGM ) call ATMOS_DYN_DGM_operator_setup_metric_bc
     call ATMOS_GRID_CARTESC_REAL_calc_areavol( ATMOS_GRID_CARTESC_METRIC_MAPF(:,:,:,:) )
     if ( OCEAN_do ) call OCEAN_GRID_CARTESC_REAL_set_areavol
     if ( LAND_do  ) call LAND_GRID_CARTESC_REAL_set_areavol
@@ -461,6 +465,7 @@ contains
 
     ! output
     call TOPOGRAPHY_write
+    if ( ATMOS_sw_dyn_DGM ) call DG_topography%Write()
     call LANDUSE_write
 
 

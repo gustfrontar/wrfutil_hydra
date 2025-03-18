@@ -18,7 +18,8 @@ PPNAME   = scale-rm_pp
 BINS = $(BINDIR)/$(BINNAME)$(POSTFIX)  \
        $(BINDIR)/$(INITNAME)$(POSTFIX) \
        $(BINDIR)/$(PPNAME)$(POSTFIX)
-LIBS = $(LIBDIR)/libscale$(POSTFIX).a \
+LIBS = $(LIBDIR)/libscale$(POSTFIX).a 
+#LIBS = $(LIBDIR)/libscale$(POSTFIX).a \
        $(AMPSDIR)/libamps$(POSTFIX).a \
        $(SDMDIR)/libsdm$(POSTFIX).a
 

@@ -67,22 +67,14 @@ module scale_atmos_dyn_tstep_large_dgm_heve
   !
   !++ Private procedure
   !
+  private :: set_FVvars
+  private :: interp_FVtoDG_DAMP_vars
+  private :: add_nudge_forcing
+
   !-----------------------------------------------------------------------------
   !
   !++ Private parameters & variables
   !
-
-  ! tendency
-  real(RP), private, allocatable :: DENS_damp(:,:,:)
-  real(RP), private, allocatable, target :: RHOQ_t(:,:,:,:)
-
-  ! flux
-  real(RP), private, allocatable, target :: mflx(:,:,:,:) ! rho * vel(x,y,z) * GSQRT / mapf
-
-  ! reference
-  real(RP), private, allocatable :: qflx_ref(:,:,:,:)
-  logical,  private, allocatable :: ref_save(:)
-  integer,  private              :: ref_id
 
   ! for communication
   integer :: I_COMM_DENS
@@ -98,12 +90,23 @@ module scale_atmos_dyn_tstep_large_dgm_heve
   integer, allocatable :: I_COMM_RHOQ_t(:)
   integer, allocatable :: I_COMM_QTRC(:)
 
-  ! for history
-  ! for monitor
-
-  character(len=H_SHORT) :: EVAL_TYPE_NUMFILTER = 'FILTER'
-
   type(AtmosDynDGM_vars), pointer :: dyn_vars
+
+  ! For boundary grid nudging
+  integer, public, parameter :: BGN_TEND_DENS_ID     = 1
+  integer, public, parameter :: BGN_TEND_MOMX_ID     = 2
+  integer, public, parameter :: BGN_TEND_MOMY_ID     = 3
+  integer, public, parameter :: BGN_TEND_MOMZ_ID     = 4
+  integer, public, parameter :: BGN_TEND_RHOT_ID     = 5
+  integer, public, parameter :: BGN_TEND_NUM         = 5
+
+  type(MeshField3D) :: bgn_tend_dg(BGN_TEND_NUM)
+  integer :: HIST_bgn_tend_dg(BGN_TEND_NUM)
+  integer, allocatable :: HIST_damp_QTRC(:)
+
+  integer :: GRID_NUDGING_FV2DG_INTERP_ORDER = 1
+  type(MeshField3D) :: DAMP_DENS_dg
+  type(MeshField3D) :: DAMP_RHOT_dg
 
   !-----------------------------------------------------------------------------
 contains
@@ -129,9 +132,14 @@ contains
     use scale_file_history, only: &
        FILE_HISTORY_reg, &
        FILE_HISTORY_put
+    use scale_file_fem_history, only: &
+       FILE_HISTORY_meshfield_put
     use scale_monitor, only: &
        MONITOR_reg, &
        MONITOR_put
+    use scale_fem_variableinfo, only: &
+      VariableInfo
+
     implicit none
 
     ! MPI_RECV_INIT requires intent(inout)
@@ -145,8 +153,22 @@ contains
 
     integer :: iv, iq
 
+    type(VariableInfo) :: BGN_TEND_VARINFO(BGN_TEND_NUM)
+    DATA BGN_TEND_VARINFO / &
+      VariableInfo( BGN_TEND_DENS_ID, 'DG_DENS_BGN_t', 'tendency of boundary grid nudging for DENS', &
+                    'kg/m3/s',  3, 'FEM_XYZ',  '' ), &
+      VariableInfo( BGN_TEND_MOMX_ID, 'DG_MOMX_BGN_t', 'tendency of boundary grid nudging for MOMX', &
+                    'kg/m3.m/s.s-1',  3, 'FEM_XYZ',  '' ), &
+      VariableInfo( BGN_TEND_MOMY_ID, 'DG_MOMY_BGN_t', 'tendency of boundary grid nudging for MOMY', &
+                    'kg/m3.m/s.s-1',  3, 'FEM_XYZ',  '' ), &
+      VariableInfo( BGN_TEND_MOMZ_ID, 'DG_MOMZ_BGN_t', 'tendency of boundary grid nudging for MOMZ', &
+                    'kg/m3.m/s.s-1',  3, 'FEM_XYZ',  '' ), &
+      VariableInfo( BGN_TEND_RHOT_ID, 'DG_RHOT_BGN_t', 'tendency of boundary grid nudging for RHOT', &
+                    'K.s-1',  3, 'FEM_XYZ',  '' ) /
+
+
     namelist /ATMOS_DYN_TSTEP_LARGE_DGM_HEVE/ &
-      EVAL_TYPE_NUMFILTER
+      GRID_NUDGING_FV2DG_INTERP_ORDER
 
     integer :: ierr
     !---------------------------------------------------------------------------
@@ -161,12 +183,6 @@ contains
        call PRC_abort
     endif
     LOG_NML(ATMOS_DYN_TSTEP_LARGE_DGM_HEVE)
-
-
-    allocate( RHOQ_t(KA,IA,JA,QA) )
-
-    allocate( I_COMM_QTRC(QA) )
-    allocate( I_COMM_RHOQ_t(QA) )
 
     I_COMM_DENS = 1
     I_COMM_MOMZ = 2
@@ -185,13 +201,27 @@ contains
     call COMM_vars8_init( 'MOMX_c', MOMX_c, I_COMM_MOMX_c )
     call COMM_vars8_init( 'MOMY_c', MOMY_c, I_COMM_MOMY_c )
 
+    allocate( I_COMM_QTRC(QA) )
     do iq = 1, QA
-      I_COMM_RHOQ_t(iq) = 5 + VA + iq
       I_COMM_QTRC(iq) = 5 + VA + iq
-
-      call COMM_vars8_init( 'RHOQ_t', RHOQ_t(:,:,:,iq), I_COMM_RHOQ_t(iq) )
       call COMM_vars8_init( 'QTRC',   QTRC  (:,:,:,iq), I_COMM_QTRC(iq) )
     end do
+
+    ! Initialize variables for boundary grid nudging
+
+    do iv = 1, BGN_TEND_NUM
+      call bgn_tend_dg(iv)%Init( BGN_TEND_VARINFO(iv)%NAME, BGN_TEND_VARINFO(iv)%UNIT, mesh3D, fill_value=0.0_RP )
+
+      call FILE_HISTORY_reg( BGN_TEND_VARINFO(iv)%NAME, BGN_TEND_VARINFO(iv)%DESC, BGN_TEND_VARINFO(iv)%unit, HIST_bgn_tend_dg(iv), &
+        dim_type=BGN_TEND_VARINFO(iv)%dim_type )    
+      call FILE_HISTORY_meshfield_put( HIST_bgn_tend_dg(iv), bgn_tend_dg(iv) )  
+    end do
+
+    call DAMP_DENS_dg%Init( "DAMP_DENS", "kg/m3", mesh3D )
+    call DAMP_RHOT_dg%Init( "DAMP_DENS", "kg/m3", mesh3D )
+
+    ! Put zero data as physics tendencies on DG nodes at t=0
+    call dyn_vars%Put_hist_phytend()
 
     return
   end subroutine ATMOS_DYN_Tstep_large_dgm_heve_setup
@@ -201,14 +231,17 @@ contains
 !OCL SERIAL
   subroutine ATMOS_DYN_Tstep_large_dgm_heve_finalize
     implicit none
+    integer :: iv
     !-----------------------------
 
-    deallocate( RHOQ_t )
-
     deallocate( MOMX_c, MOMY_c )
+    do iv=1, BGN_TEND_NUM
+      call bgn_tend_dg(iv)%Final()
+    end do
+    call DAMP_DENS_dg%Final()
+    call DAMP_RHOT_dg%Final()
 
     deallocate( I_COMM_QTRC )
-    deallocate( I_COMM_RHOQ_t )
 
     return
   end subroutine ATMOS_DYN_Tstep_large_dgm_heve_finalize
@@ -262,7 +295,11 @@ contains
     use scale_const, only: &
        EPS    => CONST_EPS
     use scale_file_history, only: &
+      FILE_HISTORY_query, &
+      FILE_HISTORY_put,   &
       FILE_HISTORY_set_disable
+    use scale_file_fem_history, only: &
+      FILE_HISTORY_meshfield_put      
     use scale_atmos_dyn_tinteg_short_rkdg, only: &
       ATMOS_DYN_Tinteg_short_rkdg
     use scale_atmos_dyn_tinteg_tracer_rkdg, only: &
@@ -388,6 +425,7 @@ contains
     integer  :: nstep
 
     integer :: iq, step
+    integer :: iv
 
     integer :: lcdomid
     class(LocalMesh3D), pointer :: lcmesh3D
@@ -399,7 +437,9 @@ contains
     type(MeshField3D), pointer :: QTRC_tmp_dg, FCT_coef_dg, DDENS_TRC_dg, DDENS0_TRC_dg
     type(MeshField3D), pointer :: MFLX_x_tavg_dg, MFLX_y_tavg_dg, MFLX_z_tavg_dg
     type(MeshField3D), pointer :: alphDensM_dg, alphDensP_dg
+
     type(LocalMeshFieldBaseList) :: lc_QTRC_dg(QA)
+    type(LocalMeshFieldBaseList) :: lc_RHOQ_tp_dg(QA)
 
     integer :: kelem
     !---------------------------------------------------------------------------
@@ -412,14 +452,26 @@ contains
     dts   = dtl / nstep                    ! dts is divisor of dtl and smaller or equal to dtss
     if ( ONLY_TRCADV_FLAG ) nstep = -1
 
+    !
     call dyn_vars%GetVarsPtr( DDENS_dg, MOMX_dg, MOMY_dg, MOMZ_dg, DRHOT_dg, &
        DENS_hyd_dg, PRES_hyd_dg )
-      
-    if ( QA > 0 ) call dyn_vars%Calculate_specific_heat()
-    call dyn_vars%Exchange_auxvars() 
-
+  
+    call dyn_vars%GetPhyTendPtr( DENS_tp_dg, MOMX_tp_dg, MOMY_tp_dg, MOMZ_tp_dg, RHOT_tp_dg, RHOH_tp_dg )
+    
     lcdomID=1
     lcmesh3D => mesh3D%lcmesh_list(lcdomID)
+
+    do iq=1, QA
+      call dyn_vars%GetTRCVarsPtr( iq, QTRC_dg, RHOQ_tp_dg )
+      lc_RHOQ_tp_dg(iq)%ptr => RHOQ_tp_dg%local(lcdomid)
+      lc_QTRC_dg(iq)%ptr => QTRC_dg%local(lcdomid)
+    end do
+
+    ! Update specific heat
+    if ( QA > 0 ) call dyn_vars%Calculate_specific_heat()
+    ! Exchange halo data of auxiliary variables
+    call dyn_vars%Exchange_auxvars() 
+
     call PROF_rapend  ("DYN_Large_Preparation", 2)
 
     !###########################################################################
@@ -430,12 +482,44 @@ contains
     call PROF_rapend  ("DYN_Large_Tendency", 2)
 
     call PROF_rapstart("DYN_Large_Boundary", 2)
+
+    lcdomID=1
+    lcmesh3D => mesh3D%lcmesh_list(lcdomID)  
+
+    ! Store FV boundary data for boundary grid nuding
+    call interp_FVtoDG_DAMP_vars( DAMP_DENS_dg%local(lcdomid)%val, DAMP_RHOT_dg%local(lcdomid)%val, & ! (out)
+      DAMP_DENS, DAMP_VELX, DAMP_VELY, DAMP_VELZ, DAMP_POTT, DAMP_QTRC,  & ! (in)
+      BND_QA, lcmesh3D, elem3D )
+
+    ! Set boundary data of computational domain
+    call dyn_bnd%Store_nuding_FV_bnddata( &
+      DAMP_DENS_dg%local(lcdomid)%val, DAMP_VELX, DAMP_VELY, DAMP_VELZ, DAMP_RHOT_dg%local(lcdomid)%val, DAMP_QTRC, &
+      MAPF, DAMP_alpha_VELZ, BND_QA, BND_IQ, lcmesh3D, lcmesh3D%refElem3D )
+
+    ! Calculate the tendencies with boundary grid nudging and add it to DG forcing
+    call add_nudge_forcing( &
+      DENS_tp_dg%local(lcdomid)%val, MOMX_tp_dg%local(lcdomid)%val, MOMY_tp_dg%local(lcdomid)%val,        & ! (inout)
+      MOMZ_tp_dg%local(lcdomid)%val, RHOT_tp_dg%local(lcdomid)%val, lc_RHOQ_tp_dg,                        & ! (inout)
+      bgn_tend_dg(BGN_TEND_DENS_ID)%local(lcdomid)%val, bgn_tend_dg(BGN_TEND_MOMX_ID)%local(lcdomid)%val, & ! (inout)
+      bgn_tend_dg(BGN_TEND_MOMY_ID)%local(lcdomid)%val, bgn_tend_dg(BGN_TEND_MOMZ_ID)%local(lcdomid)%val, & ! (inout)
+      bgn_tend_dg(BGN_TEND_RHOT_ID)%local(lcdomid)%val,                                            & ! (in)
+      DENS, MOMX, MOMY, MOMZ, RHOT, QTRC,                                                          & ! (in)
+      DAMP_DENS, DAMP_VELX, DAMP_VELY, DAMP_VELZ, DAMP_POTT, DAMP_QTRC,                            & ! (in)
+      DAMP_DENS_dg%local(lcdomid)%val, DAMP_RHOT_dg%local(lcdomid)%val,                            & ! (in)
+      DAMP_alpha_DENS, DAMP_alpha_VELX, DAMP_alpha_VELY, DAMP_alpha_VELZ, DAMP_alpha_POTT, DAMP_alpha_QTRC, & ! (in)
+      BND_QA, BND_IQ, BND_SMOOTHER_FACT, DENS,                                                     & ! (in)
+      DDENS_dg%local(lcdomid)%val, MOMX_dg%local(lcdomid)%val, MOMY_dg%local(lcdomid)%val,         & ! (in)
+      MOMZ_dg%local(lcdomid)%val, DRHOT_dg%local(lcdomid)%val,                                     & ! (in)
+      lc_QTRC_dg, DENS_hyd_dg%local(lcdomid)%val, PRES_hyd_dg%local(lcdomid)%val, lcmesh3D,        & ! (in) 
+      lcmesh3D%refElem3D )                     ! (in)
+
     call PROF_rapend  ("DYN_Large_Boundary", 2)    
+    
     do step = 1, nstep
       !-----< prepare tendency >-----
 
-      call PROF_rapstart("DYN_Large_Tendency", 2)
-      call PROF_rapend  ("DYN_Large_Tendency", 2)
+      ! call PROF_rapstart("DYN_Large_Tendency", 2)
+      ! call PROF_rapend  ("DYN_Large_Tendency", 2)
       
       call FILE_HISTORY_set_disable( .not. ( Llast .and. ( step==nstep ) ) )
 
@@ -495,9 +579,9 @@ contains
           DDENS_TRC_dg%local(lcdomID)%val(:,:),                                                                    & ! (inout)
           MFLX_x_tavg_dg%local(lcdomID)%val, MFLX_y_tavg_dg%local(lcdomID)%val, MFLX_z_tavg_dg%local(lcdomID)%val, & ! (inout)
           DRHOT_dg%local(lcdomID)%val,                                                                             & ! (inout)
-          DENS_hyd_dg%local(lcdomID)%val, PRES_hyd_dg%local(lcdomID)%val,                                          & ! (in)
+          DENS_hyd_dg%local(lcdomID)%val, PRES_hyd_dg%local(lcdomID)%val,                                                 & ! (in)
           lcmesh3D%Gsqrt(:,:), lcmesh3D%GsqrtH(:,:), lcmesh3D%GIJ(:,:,1,1), lcmesh3D%GIJ(:,:,1,2), lcmesh3D%GIJ(:,:,2,2), & ! (in) 
-          lcmesh3D%GI3(:,:,1), lcmesh3D%GI3(:,:,2), & ! (in)
+          lcmesh3D%GI3(:,:,1), lcmesh3D%GI3(:,:,2),                                           & ! (in)
           lcmesh3D%normal_fn(:,:,1), lcmesh3D%normal_fn(:,:,2), lcmesh3D%normal_fn(:,:,3),    & ! (in)
           lcmesh3D%vmapM, lcmesh3D%vmapP, lcmesh3D%vmapB,                                     & ! (in)
           lcmesh3D, lcmesh3D%refElem3D, lcmesh3D%lcmesh2D, lcmesh3D%lcmesh2D%refElem2D        ) ! (in)
@@ -515,8 +599,7 @@ contains
       call dyn_vars%GetTRCVarsPtr( iq, QTRC_dg, RHOQ_tp_dg )
 
       lcdomID=1
-      lcmesh3D => mesh3D%lcmesh_list(lcdomID)  
-      lc_QTRC_dg(iq)%ptr => QTRC_dg%local(lcdomid)
+      lcmesh3D => mesh3D%lcmesh_list(lcdomID)
       call set_fv_phytend( RHOQ_tp_dg%local(lcdomid)%val, &
         RHOQ_tp(:,:,:,iq), lcmesh3D, elem3D )
 
@@ -526,10 +609,11 @@ contains
         MFLX_x_tavg_dg, MFLX_y_tavg_dg, MFLX_z_tavg_dg,     &
         RHOQ_tp_dg, alphDensM_dg, alphDensP_dg,             &
         DENS_hyd_dg, DDENS_dg, DDENS_TRC_dg, DDENS0_TRC_dg, &
-        dyn_vars, Llast )
+        dyn_vars, BND_QA, BND_IQ, Llast )
       call PROF_rapend  ("DYN_Tracer_Tinteg", 2)
-
     enddo
+
+    call PROF_rapstart( 'ATM_DYN_trc_update_post', 2)
 
     ! Update specific heat and pressure
     call dyn_vars%Calculate_specific_heat()
@@ -543,20 +627,28 @@ contains
       end if
     end if
 
+    call PROF_rapend( 'ATM_DYN_trc_update_post', 2)
+
     !---
 
     if ( Llast ) then
-      call PROF_rapstart("DYN_DG2FVvar", 2)
+      call PROF_rapstart("ATM_DYN_DG2FVvar", 2)
       lcdomID=1
       lcmesh3D => mesh3D%lcmesh_list(lcdomID)
       call set_FVvars( DENS, MOMX, MOMY, MOMZ, RHOT, QTRC, &
         DDENS_dg%local(lcdomID)%val, MOMX_dg%local(lcdomID)%val, MOMY_dg%local(lcdomID)%val, &
         MOMZ_dg%local(lcdomID)%val, DRHOT_dg%local(lcdomID)%val, lc_QTRC_dg,                 &
         DENS_hyd_dg%local(lcdomID)%val, PRES_hyd_dg%local(lcdomID)%val,                      &
-        lcmesh3D, lcmesh3D%refElem3D                                                         )
-      call PROF_rapend("DYN_DG2FVvar", 2)
+        lcmesh3D, lcmesh3D%refElem3D, BND_W, BND_E, BND_S, BND_N                             )
+      call PROF_rapend("ATM_DYN_DG2FVvar", 2)
+      
+      !- history ---------------------------------------
 
-      call dyn_vars%Put_hist_phytend()      
+      call dyn_vars%Put_hist_phytend()
+
+      do iv=1, BGN_TEND_NUM
+        call FILE_HISTORY_meshfield_put( HIST_bgn_tend_dg(iv), bgn_tend_dg(iv) )
+      end do
     endif
 
     return
@@ -566,19 +658,19 @@ contains
 
   subroutine set_FVvars( DENS_fv, MOMX_fv, MOMY_fv, MOMZ_fv, RHOT_fv, QTRC_fv, &
     DDENS, MOMX, MOMY, MOMZ, DRHOT, QTRC, DENS_hyd, PRES_hyd, &
-    lcmesh3D, elem3D )
+    lcmesh3D, elem3D, BND_W, BND_E, BND_S, BND_N )
     use scale_comm_cartesC, only: &
        COMM_vars8, &
        COMM_wait    
     implicit none
     class(LocalMesh3D), intent(in) :: lcmesh3D
     class(ElementBase3D), intent(in) :: elem3D
-    real(RP), intent(out) :: DENS_fv(KA,IA,JA)
-    real(RP), intent(out) :: MOMX_fv(KA,IA,JA)
-    real(RP), intent(out) :: MOMY_fv(KA,IA,JA)
-    real(RP), intent(out) :: MOMZ_fv(KA,IA,JA)
-    real(RP), intent(out) :: RHOT_fv(KA,IA,JA)
-    real(RP), intent(out) :: QTRC_fv(KA,IA,JA,QA)
+    real(RP), intent(inout) :: DENS_fv(KA,IA,JA)
+    real(RP), intent(inout) :: MOMX_fv(KA,IA,JA)
+    real(RP), intent(inout) :: MOMY_fv(KA,IA,JA)
+    real(RP), intent(inout) :: MOMZ_fv(KA,IA,JA)
+    real(RP), intent(inout) :: RHOT_fv(KA,IA,JA)
+    real(RP), intent(inout) :: QTRC_fv(KA,IA,JA,QA)
     real(RP), intent(in) :: DDENS(elem3D%Np,lcmesh3D%NeA)
     real(RP), intent(in) :: MOMX(elem3D%Np,lcmesh3D%NeA)
     real(RP), intent(in) :: MOMY(elem3D%Np,lcmesh3D%NeA)
@@ -587,26 +679,33 @@ contains
     type(LocalMeshFieldBaseList), intent(in) :: QTRC(QA)
     real(RP), intent(in) :: DENS_hyd(elem3D%Np,lcmesh3D%NeA)
     real(RP), intent(in) :: PRES_hyd(elem3D%Np,lcmesh3D%NeA)
+    logical,  intent(in)    :: BND_W
+    logical,  intent(in)    :: BND_E
+    logical,  intent(in)    :: BND_S
+    logical,  intent(in)    :: BND_N
 
     integer :: ke_x, ke_y, ke_z
     integer :: i, j, k
     integer :: iq
-    integer :: kelem
+    integer :: kelem, kelem2D
     real(RP) :: IntWeight(elem3D%Np)
     real(RP) :: vol(lcmesh3D%Ne)
     real(RP) :: RHOT_hyd(elem3D%Np)
     real(RP) :: r_dens
     real(RP) :: MOMZ_c(KA,IA,JA)
+
+    integer :: IS_, IE_, JS_, JE_
     !--------------------------------------------------------------------
 
     !$omp parallel private( &
-    !$omp ke_x, ke_y, ke_z, i, j, k, kelem, iq, IntWeight, RHOT_hyd ) 
+    !$omp ke_x, ke_y, ke_z, i, j, k, kelem, kelem2D, iq, IntWeight, RHOT_hyd ) 
     
     !$omp do collapse(2)
     do ke_z=1, lcmesh3D%NeZ
     do ke_y=1, lcmesh3D%NeY
     do ke_x=1, lcmesh3D%NeX
       kelem = ke_x + (ke_y-1)*lcmesh3D%NeX + (ke_z-1)*lcmesh3D%NeX*lcmesh3D%NeY
+      kelem2D = lcmesh3D%EMap3Dto2D(kelem)
       i = IHALO + ke_x; j = JHALO + ke_y; k = KHALO + ke_z
 
       IntWeight(:) = elem3D%IntWeight_lgl(:) * lcmesh3D%J(:,kelem) * lcmesh3D%Gsqrt(:,kelem)
@@ -614,8 +713,8 @@ contains
       IntWeight(:) = IntWeight(:) / vol(kelem)
 
       DENS_fv(k,i,j) = sum( IntWeight(:) * ( DENS_hyd(:,kelem) + DDENS(:,kelem) ) )
-      MOMX_c(k,i,j) = sum( IntWeight(:) * MOMX(:,kelem) )
-      MOMY_c(k,i,j) = sum( IntWeight(:) * MOMY(:,kelem) )
+      MOMX_c(k,i,j) = sum( IntWeight(:) * MOMX(:,kelem) * sqrt(lcmesh3D%GIJ(elem3D%IndexH2Dto3D(:),kelem2D,1,1)) )
+      MOMY_c(k,i,j) = sum( IntWeight(:) * MOMY(:,kelem) * sqrt(lcmesh3D%GIJ(elem3D%IndexH2Dto3D(:),kelem2D,2,2)) )
       MOMZ_c(k,i,j) = sum( IntWeight(:) * MOMZ(:,kelem) )
 
       RHOT_hyd(:) = PRES00 / Rdry * ( PRES_hyd(:,kelem) / PRES00 )**(CvDry/CpDry)
@@ -658,17 +757,39 @@ contains
       call COMM_vars8( QTRC_fv(:,:,:,iq), I_COMM_QTRC(iq) )
     enddo
 
+    if ( BND_W ) then
+      IS_ = IS
+    else
+      IS_ = IS-1
+    end if
+    if ( BND_E ) then
+      IE_ = IE-1
+    else
+      IE_ = IE
+    end if
+    if ( BND_S ) then
+      JS_ = JS
+    else
+      JS_ = JS-1
+    end if
+    if ( BND_N ) then
+      JE_ = JE-1
+    else
+      JE_ = JE
+    end if
+
     !$omp parallel private(i,j,k)
     !$omp do collapse(2)
     do j=JS, JE
-    do i=IS-1, IE
+    do i=IS_, IE_
     do k=KS, KE
       MOMX_fv(k,i,j) = 0.5_RP * ( MOMX_c(k,i,j) + MOMX_c(k,i+1,j) )
     enddo
     enddo
     enddo
+
     !$omp do collapse(2)
-    do j=JS-1, JE
+    do j=JS_, JE_
     do i=IS, IE
     do k=KS, KE
       MOMY_fv(k,i,j) = 0.5_RP * ( MOMY_c(k,i,j) + MOMY_c(k,i,j+1) )
@@ -700,5 +821,418 @@ contains
 
     return
   end subroutine set_FVvars
+
+!OCL SERIAL
+  subroutine interp_FVtoDG_DAMP_vars( DAMP_DENS_dg_, DAMP_RHOT_dg_, & ! (out)
+    DAMP_DENS_fv, DAMP_VELX_fv, DAMP_VELY_fv, DAMP_VELZ_fv, DAMP_POTT_fv, DAMP_QTRC_fv,  & ! (in)
+    BND_QA, lcmesh3D, elem3D )
+    use scale_atmos_grid_cartesC_index, only: &
+      KS, KE, KA, IS, IE, IA, JS, JE, JA, &
+      IHALO, JHALO, KHALO, &
+      I_UY, I_XV
+    use scale_fem_meshfield_util, only: &
+      MeshFieldUtil_interp_FVtoDG_3D
+    implicit none
+    class(LocalMesh3D), intent(in) :: lcmesh3D
+    class(ElementBase3D), intent(in) :: elem3D
+    integer, intent(in) :: BND_QA
+    real(RP), intent(inout) :: DAMP_DENS_dg_(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(inout) :: DAMP_RHOT_dg_(elem3D%Np,lcmesh3D%NeA)    
+    real(RP), intent(in) :: DAMP_DENS_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_VELX_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_VELY_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_VELZ_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_POTT_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_QTRC_fv(KA,IA,JA,BND_QA)   
+    
+    real(RP) :: DAMP_MOMX_tmp(KA,IA,JA)
+    real(RP) :: DAMP_MOMY_tmp(KA,IA,JA)
+    real(RP) :: DAMP_MOMZ_tmp(KA,IA,JA)
+    real(RP) :: DAMP_RHOT_tmp(KA,IA,JA)
+    integer :: i, j, k
+    !--------------------------------------------------
+    
+    !$omp parallel do private(i,j,k) collapse(2)
+    do j=JS, JE
+    do i=IS, IE
+      do k=KS, KE
+        DAMP_RHOT_tmp(k,i,j) = DAMP_DENS_fv(k,i,j) * DAMP_POTT_fv(k,i,j)
+      end do
+    end do
+    end do
+
+    call MeshFieldUtil_interp_FVtoDG_3D( DAMP_DENS_dg_, &
+      DAMP_DENS_fv, lcmesh3D, elem3D, IS, IE, IA, IHALO, JS, JE, JA, JHALO, KS, KE, KA, KHALO, &
+      GRID_NUDGING_FV2DG_INTERP_ORDER )
+    call MeshFieldUtil_interp_FVtoDG_3D( DAMP_RHOT_dg_, &
+      DAMP_RHOT_tmp, lcmesh3D, elem3D, IS, IE, IA, IHALO, JS, JE, JA, JHALO, KS, KE, KA, KHALO, &
+      GRID_NUDGING_FV2DG_INTERP_ORDER )
+
+    return
+  end subroutine interp_FVtoDG_DAMP_vars
+
+!OCL SERIAL
+  subroutine add_nudge_forcing( DENS_tp, MOMX_tp, MOMY_tp, MOMZ_tp, RHOT_tp, RHOQ_tp,                   & ! (inout)
+    DENS_bgn_t, MOMX_bgn_t, MOMY_bgn_t, MOMZ_bgn_t, RHOT_bgn_t,                                         & ! (inout)
+    DENS_fv, MOMX_fv, MOMY_fv, MOMZ_fv, RHOT_fv, QTRC_fv,                                               & ! (in)
+    DAMP_DENS_fv, DAMP_VELX_fv, DAMP_VELY_fv, DAMP_VELZ_fv, DAMP_POTT_fv, DAMP_QTRC_fv,                 & ! (in)
+    DAMP_DENS_dg_, DAMP_RHOT_dg_,                                                                       & ! (in)
+    DAMP_alpha_DENS_fv, DAMP_alpha_VELX_fv, DAMP_alpha_VELY_fv, DAMP_alpha_VELZ_fv, DAMP_alpha_POTT_fv, & ! (in)
+    DAMP_alpha_QTRC_fv,                                                                                 & ! (in)
+    BND_QA, BND_IQ, BND_SMOOTHER_FACT, DENS00_fv,                                                       & ! (in)
+    DG_DDENS, DG_MOMX, DG_MOMY, DG_MOMZ, DG_DRHOT, DG_QTRC, DG_DENS_hyd, DG_PRES_hyd, lcmesh3D, elem3D )  ! (in)
+    use scale_const, only: &
+       EPS    => CONST_EPS
+    implicit none
+    class(LocalMesh3D), intent(in) :: lcmesh3D
+    class(ElementBase3D), intent(in) :: elem3D
+    integer,  intent(in) :: BND_QA
+    real(RP), intent(inout) :: DENS_tp(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(inout) :: MOMX_tp(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(inout) :: MOMY_tp(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(inout) :: MOMZ_tp(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(inout) :: RHOT_tp(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(inout) :: DENS_bgn_t(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(inout) :: MOMX_bgn_t(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(inout) :: MOMY_bgn_t(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(inout) :: MOMZ_bgn_t(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(inout) :: RHOT_bgn_t(elem3D%Np,lcmesh3D%NeA)
+    type(LocalMeshFieldBaseList), intent(inout) :: RHOQ_tp(QA)
+    real(RP), intent(in) :: DENS_fv(KA,IA,JA)
+    real(RP), intent(in) :: MOMX_fv(KA,IA,JA)
+    real(RP), intent(in) :: MOMY_fv(KA,IA,JA)
+    real(RP), intent(in) :: MOMZ_fv(KA,IA,JA)
+    real(RP), intent(in) :: RHOT_fv(KA,IA,JA)
+    real(RP), intent(in) :: QTRC_fv(KA,IA,JA,QA)
+    real(RP), intent(in) :: DAMP_DENS_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_VELX_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_VELY_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_VELZ_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_POTT_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_QTRC_fv(KA,IA,JA,BND_QA)
+    real(RP), intent(in) :: DAMP_DENS_dg_(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: DAMP_RHOT_dg_(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: DAMP_alpha_DENS_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_alpha_VELX_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_alpha_VELY_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_alpha_VELZ_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_alpha_POTT_fv(KA,IA,JA)
+    real(RP), intent(in) :: DAMP_alpha_QTRC_fv(KA,IA,JA,BND_QA)
+    integer,  intent(in) :: BND_IQ(QA)
+    real(RP), intent(in) :: BND_SMOOTHER_FACT
+    real(RP), intent(in) :: DENS00_fv(KA,IA,JA)
+    real(RP), intent(in) :: DG_DDENS(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: DG_MOMX(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: DG_MOMY(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: DG_MOMZ(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: DG_DRHOT(elem3D%Np,lcmesh3D%NeA)
+    type(LocalMeshFieldBaseList), intent(inout) :: DG_QTRC(QA)
+    real(RP), intent(in) :: DG_DENS_hyd(elem3D%Np,lcmesh3D%NeA)
+    real(RP), intent(in) :: DG_PRES_hyd(elem3D%Np,lcmesh3D%NeA)
+
+    integer :: kelem, ke2D
+    integer :: ke_x, ke_y, ke_z
+    integer :: i, j, k
+    integer :: iq, iqb
+
+    real(RP) :: diff_fv(KA,IA,JA)
+    real(RP) :: damp_tmp_fv(KA,IA,JA)
+    real(RP) :: damp_tmp_qtrc(elem3D%Np)
+    real(RP) :: DENS_tq_fv(KA,IA,JA)
+
+    real(RP) :: var_avg, vol
+    real(RP) :: int_w(elem3D%Np,lcmesh3D%ne)
+
+    real(RP) :: RHOT_hyd(elem3D%Np)
+    real(RP) :: sqrt_G_11(elem3D%Np), sqrt_G_22(elem3D%Np)
+    !--------------------------------------------
+
+    !$omp parallel private(kelem,vol)
+    !$omp workshare
+    DENS_tq_fv(:,:,:) = 0.0_RP
+    !$omp end workshare
+    !$omp do 
+    do kelem=lcmesh3D%NeS, lcmesh3D%NeE
+      int_w(:,kelem) = lcmesh3D%Gsqrt(:,kelem)*lcmesh3D%J(:,kelem)*elem3D%IntWeight_lgl(:)
+      vol = sum( int_w(:,kelem) )      
+      int_w(:,kelem) = int_w(:,kelem) / vol
+    end do
+    !$omp end parallel
+
+    do iq = 1, QA
+      iqb = BND_IQ(iq)
+      if ( iqb > 0 ) then
+        !$omp parallel private(i,j,k,ke_x,ke_y,ke_z,kelem, var_avg, damp_tmp_qtrc)
+        !$omp do OMP_SCHEDULE_ collapse(2)
+        do j = JS-1, JE+1
+        do i = max(IS-1,1), min(IE+1,IA)
+        do k = KS, KE
+            diff_fv(k,i,j) = QTRC_fv(k,i,j,iq) - DAMP_QTRC_fv(k,i,j,iqb)
+        enddo
+        enddo
+        enddo
+        !$omp do OMP_SCHEDULE_ collapse(2)
+        do ke_y=1, lcmesh3D%NeY
+        do ke_x=1, lcmesh3D%NeX
+        do ke_z=1, lcmesh3D%NeZ
+          kelem = ke_x + (ke_y-1)*lcmesh3D%NeX + (ke_z-1)*lcmesh3D%NeX*lcmesh3D%NeY
+          i = IHALO + ke_x; j = JHALO + ke_y; k = KHALO + ke_z
+
+          damp_tmp_qtrc(:) = - DAMP_alpha_QTRC_fv(k,i,j,iqb) &
+              * ( diff_fv(k,i,j)                                                                                        & ! rayleigh damping
+                - ( diff_fv(k,i-1,j) + diff_fv(k,i+1,j) + diff_fv(k,i,j-1) + diff_fv(k,i,j+1) - diff_fv(k,i,j)*4.0_RP ) & ! horizontal smoother
+                 * 0.125_RP * BND_SMOOTHER_FACT ) 
+          !- Damp higher modes in DG
+          ! var_avg = sum( int_w(:,kelem) * ( DG_QTRC(iq)%ptr%val(:,kelem) ) )
+          ! damp_tmp_qtrc(:) = damp_tmp_qtrc(:) &
+          !   - DAMP_alpha_QTRC_fv(k,i,j,iqb) &
+          !     * ( ( DG_QTRC(iq)%ptr%val(:,kelem) - var_avg ) * BND_SMOOTHER_FACT )
+
+          RHOQ_tp(iq)%ptr%val(:,kelem) = RHOQ_tp(iq)%ptr%val(:,kelem) + damp_tmp_qtrc(:)  * DENS00_fv(k,i,j)          
+          DENS_tq_fv(k,i,j) = DENS_tq_fv(k,i,j) + sum( int_w(:,kelem) * damp_tmp_qtrc(:) ) * DENS00_fv(k,i,j) * TRACER_MASS(iq) ! only for mass tracer
+        enddo
+        enddo
+        enddo        
+        !$omp end parallel
+      end if
+    end do
+    
+    !$omp parallel private(i,j,k,ke_x,ke_y,ke_z,kelem,var_avg)
+    !$omp do OMP_SCHEDULE_ collapse(2)
+    do j = JS-1, JE+1
+    do i = max(IS-1,1), min(IE+1,IA)
+    do k = KS, KE
+      diff_fv(k,i,j) = DENS_fv(k,i,j) - DAMP_DENS_fv(k,i,j)
+    enddo
+    enddo
+    enddo
+    !$omp do OMP_SCHEDULE_ collapse(2)
+    do ke_z=1, lcmesh3D%NeZ
+    do ke_y=1, lcmesh3D%NeY
+    do ke_x=1, lcmesh3D%NeX
+      kelem = ke_x + (ke_y-1)*lcmesh3D%NeX + (ke_z-1)*lcmesh3D%NeX*lcmesh3D%NeY
+      i = IHALO + ke_x; j = JHALO + ke_y; k = KHALO + ke_z
+      
+      DENS_bgn_t(:,kelem) = - DAMP_alpha_DENS_fv(k,i,j) &
+                          * ( diff_fv(k,i,j)                                                                                        & ! rayleigh damping
+                            - ( diff_fv(k,i-1,j) + diff_fv(k,i+1,j) + diff_fv(k,i,j-1) + diff_fv(k,i,j+1) - diff_fv(k,i,j)*4.0_RP ) & ! horizontal smoother
+                              * 0.125_RP * BND_SMOOTHER_FACT ) &
+                          + DENS_tq_fv(k,i,j) * ( 0.5_RP - sign( 0.5_RP, DAMP_alpha_DENS_fv(k,i,j)-EPS ) ) ! density change due to rayleigh damping for tracers
+
+      !- Alternative procedure
+      ! DENS_bgn_t(:,kelem) = &
+      !     DENS_damp_fv(k,i,j) &
+      !   - DAMP_alpha_DENS_fv(k,i,j) * ( &
+      !    ( DG_DENS_hyd(:,kelem) + DG_DDENS(:,kelem) - DAMP_DENS_dg_(:,kelem) ) )
+
+      !- Damp higher modes in DG
+      ! var_avg = sum( int_w(:,kelem) * ( DG_DENS_hyd(:,kelem) + DG_DDENS(:,kelem) ) )
+      ! DENS_bgn_t(:,kelem) = DENS_bgn_t(:,kelem) &
+      !   - DAMP_alpha_DENS_fv(k,i,j) * ( DG_DENS_hyd(:,kelem) + DG_DDENS(:,kelem) - var_avg ) * BND_SMOOTHER_FACT )
+
+      DENS_tp(:,kelem) = DENS_tp(:,kelem) + DENS_bgn_t(:,kelem)
+    enddo
+    enddo
+    enddo
+    !$omp end parallel
+    
+    !- MOMZ -------
+
+    !$omp parallel private(i,j,k,ke_x,ke_y,ke_z,kelem,var_avg)
+    !$omp do OMP_SCHEDULE_ collapse(2)
+    do j = JS-1, JE+1
+    do i = IS-1, IE+1
+    do k = KS, KE-1
+        diff_fv(k,i,j) = MOMZ_fv(k,i,j) - DAMP_VELZ_fv(k,i,j) * ( DENS_fv(k,i,j)+DENS_fv(k+1,i,j) ) * 0.5_RP
+    enddo
+    enddo
+    enddo
+    !$omp do OMP_SCHEDULE_ collapse(2)
+    do j = JS, JE
+    do i = IS, IE
+      do k = KS, KE-1
+        damp_tmp_fv(k,i,j) = - DAMP_alpha_VELZ_fv(k,i,j) * ( &
+              - ( diff_fv(k,i-1,j) + diff_fv(k,i+1,j) + diff_fv(k,i,j-1) + diff_fv(k,i,j+1) - diff_fv(k,i,j)*4.0_RP ) &
+              * 0.125_RP * BND_SMOOTHER_FACT ) ! horizontal smoother
+      enddo
+      damp_tmp_fv(KS-1,i,j) = 0.0_RP
+      damp_tmp_fv(KE,i,j) = 0.0_RP
+    enddo
+    enddo
+    !$omp do OMP_SCHEDULE_ collapse(2)
+    do ke_z=1, lcmesh3D%NeZ
+    do ke_y=1, lcmesh3D%NeY
+    do ke_x=1, lcmesh3D%NeX
+      kelem = ke_x + (ke_y-1)*lcmesh3D%NeX + (ke_z-1)*lcmesh3D%NeX*lcmesh3D%NeY
+      i = IHALO + ke_x; j = JHALO + ke_y; k = KHALO + ke_z
+
+      diff_fv(k,i,j) = 0.5_RP * ( ( MOMZ_fv(k-1,i,j) + MOMZ_fv(k,i,j) ) - DENS_fv(k,i,j) * ( DAMP_VELZ_fv(k-1,i,j) + DAMP_VELZ_fv(k,i,j) ) )
+      MOMZ_bgn_t(:,kelem) = &
+          - 0.5_RP * ( DAMP_alpha_VELZ_fv(k-1,i,j) + DAMP_alpha_VELZ_fv(k,i,j) ) * ( &
+              diff_fv(k,i,j) )                                                       & ! rayleigh damping
+          + 0.5_RP * ( damp_tmp_fv(k-1,i,j) + damp_tmp_fv(k,i,j) )                   & ! horizontal smoother
+          + DENS_bgn_t(:,kelem) * 0.5_RP * ( MOMZ_fv(k-1,i,j) + MOMZ_fv(k,i,j) ) / DENS_fv(k,i,j)
+      
+      !- Damp higher modes in DG
+      ! var_avg = sum( int_w(:,kelem) * ( DG_MOMZ(:,kelem) ) )
+      ! MOMZ_bgn_t(:,kelem) = MOMZ_bgn_t(:,kelem) &
+      !   - 0.5_RP * ( DAMP_alpha_VELZ_fv(k-1,i,j) + DAMP_alpha_VELZ_fv(k,i,j) ) &
+      !     * ( ( DG_MOMZ(:,kelem) - var_avg ) * BND_SMOOTHER_FACT )
+
+      MOMZ_tp(:,kelem) = MOMZ_tp(:,kelem) + MOMZ_bgn_t(:,kelem)
+    enddo
+    enddo
+    enddo
+    !$omp end parallel
+
+    !- MOMX -------
+    !$omp parallel private(i,j,k,ke_x,ke_y,ke_z,kelem,ke2D,var_avg,sqrt_G_11)
+    !$omp do OMP_SCHEDULE_ collapse(2)
+    do j = JS-1, JE+1
+    do i = IS-2, IE+1
+    do k = KS, KE
+        diff_fv(k,i,j) = MOMX_fv(k,i,j) - DAMP_VELX_fv(k,i,j) * ( DENS_fv(k,i,j)+DENS_fv(k,i+1,j) ) * 0.5_RP
+    enddo
+    enddo
+    enddo
+    !$omp do OMP_SCHEDULE_ collapse(2)
+    do j = JS, JE
+    do i = IS-1, IE
+    do k = KS, KE
+      damp_tmp_fv(k,i,j) = - DAMP_alpha_VELX_fv(k,i,j) * ( &
+              - ( diff_fv(k,i-1,j) + diff_fv(k,i+1,j) + diff_fv(k,i,j-1) + diff_fv(k,i,j+1) - diff_fv(k,i,j)*4.0_RP ) &
+              * 0.125_RP * BND_SMOOTHER_FACT ) ! horizontal smoother
+    enddo
+    enddo
+    enddo
+    !$omp do OMP_SCHEDULE_ collapse(2)
+    do ke_z=1, lcmesh3D%NeZ
+    do ke_y=1, lcmesh3D%NeY
+    do ke_x=1, lcmesh3D%NeX
+      kelem = ke_x + (ke_y-1)*lcmesh3D%NeX + (ke_z-1)*lcmesh3D%NeX*lcmesh3D%NeY
+      ke2D = lcmesh3D%EMap3Dto2D(kelem)
+      i = IHALO + ke_x; j = JHALO + ke_y; k = KHALO + ke_z
+
+      diff_fv(k,i,j) = 0.5_RP * ( ( MOMX_fv(k,i-1,j) + MOMX_fv(k,i,j) ) - DENS_fv(k,i,j) * ( DAMP_VELX_fv(k,i-1,j) + DAMP_VELX_fv(k,i,j) ) )
+      sqrt_G_11(:) = sqrt(lcmesh3D%G_ij(elem3D%IndexH2Dto3D(:),ke2D,1,1))
+
+      MOMX_bgn_t(:,kelem) = &
+          - 0.5_RP * ( DAMP_alpha_VELX_fv(k,i-1,j) + DAMP_alpha_VELX_fv(k,i,j) ) * ( &
+            diff_fv(k,i,j) * sqrt_G_11(:) )                                          & ! rayleigh damping
+          + ( 0.5_RP * ( damp_tmp_fv(k,i-1,j) + damp_tmp_fv(k,i,j) )                 & ! horizontal smoother
+          + DENS_bgn_t(:,kelem) * 0.5_RP * ( MOMX_fv(k,i-1,j) + MOMX_fv(k,i,j) ) / DENS_fv(k,i,j) ) * sqrt_G_11(:)
+
+      !- Damp higher modes in DG
+      ! var_avg = sum( int_w(:,kelem) * ( DG_MOMX(:,kelem) ) )
+      ! MOMX_bgn_t(:,kelem) = MOMX_bgn_t(:,kelem) &
+      !   - 0.5_RP * ( DAMP_alpha_VELX_fv(k,i-1,j) + DAMP_alpha_VELX_fv(k,i,j) ) &
+      !     * ( ( DG_MOMX(:,kelem) - var_avg ) * BND_SMOOTHER_FACT )
+          
+      MOMX_tp(:,kelem) = MOMX_tp(:,kelem) + MOMX_bgn_t(:,kelem)
+    enddo
+    enddo
+    enddo
+    !$omp end parallel
+
+    !- MOMY -------
+
+    !$omp parallel private(i,j,k,ke_x,ke_y,ke_z,kelem,ke2D,var_avg,sqrt_G_22)
+    !$omp do OMP_SCHEDULE_ collapse(2)
+    do j = JS-2, JE+1
+    do i = IS, IE
+    do k = KS, KE
+        diff_fv(k,i,j) = MOMY_fv(k,i,j) - DAMP_VELY_fv(k,i,j) * ( DENS_fv(k,i,j)+DENS_fv(k,i,j+1) ) * 0.5_RP
+    enddo
+    enddo
+    enddo
+    !$omp do OMP_SCHEDULE_ collapse(2)
+    do j = JS-1, JE
+    do i = IS, IE
+    do k = KS, KE
+        damp_tmp_fv(k,i,j) = - DAMP_alpha_VELY_fv(k,i,j) * ( &
+              - ( diff_fv(k,i-1,j) + diff_fv(k,i+1,j) + diff_fv(k,i,j-1) + diff_fv(k,i,j+1) - diff_fv(k,i,j)*4.0_RP ) &
+              * 0.125_RP * BND_SMOOTHER_FACT ) ! horizontal smoother
+    enddo
+    enddo
+    enddo
+    !$omp do OMP_SCHEDULE_ collapse(2)
+    do ke_z=1, lcmesh3D%NeZ
+    do ke_y=1, lcmesh3D%NeY
+    do ke_x=1, lcmesh3D%NeX
+      kelem = ke_x + (ke_y-1)*lcmesh3D%NeX + (ke_z-1)*lcmesh3D%NeX*lcmesh3D%NeY
+      ke2D = lcmesh3D%EMap3Dto2D(kelem)
+      i = IHALO + ke_x; j = JHALO + ke_y; k = KHALO + ke_z
+
+      diff_fv(k,i,j) = 0.5_RP * ( ( MOMY_fv(k,i,j-1) + MOMY_fv(k,i,j) ) - DENS_fv(k,i,j) * ( DAMP_VELY_fv(k,i,j-1) + DAMP_VELY_fv(k,i,j) ) )
+      sqrt_G_22(:) = sqrt(lcmesh3D%G_ij(elem3D%IndexH2Dto3D(:),ke2D,2,2))
+
+      MOMY_bgn_t(:,kelem) = &
+          - 0.5_RP * ( DAMP_alpha_VELY_fv(k,i,j-1) + DAMP_alpha_VELY_fv(k,i,j) ) * ( &
+            diff_fv(k,i,j) * sqrt_G_22(:) )                            & ! rayleigh damping
+          + ( 0.5_RP * ( damp_tmp_fv(k,i,j-1) + damp_tmp_fv(k,i,j) )   & ! horizontal smoother
+          + DENS_bgn_t(:,kelem) * 0.5_RP * ( MOMY_fv(k,i,j-1) + MOMY_fv(k,i,j) ) / DENS_fv(k,i,j) ) * sqrt_G_22(:) 
+
+      !- Damp higher modes in DG
+      ! var_avg = sum( int_w(:,kelem) * ( DG_MOMY(:,kelem) ) )
+      ! MOMY_bgn_t(:,kelem) = MOMY_bgn_t(:,kelem) &
+      !   - 0.5_RP * ( DAMP_alpha_VELY_fv(k,i,j-1) + DAMP_alpha_VELY_fv(k,i,j) ) &
+      !     * ( ( DG_MOMY(:,kelem) - var_avg ) * BND_SMOOTHER_FACT )
+
+      MOMY_tp(:,kelem) = MOMY_tp(:,kelem) + MOMY_bgn_t(:,kelem)
+    enddo
+    enddo
+    enddo
+    !$omp end parallel
+
+    !- RHOT --------
+
+    !$omp parallel private(i,j,k,ke_x,ke_y,ke_z,kelem,var_avg,RHOT_hyd)
+    !$omp do OMP_SCHEDULE_ collapse(2)
+    do j = JS-1, JE+2
+    do i = max(IS-1,1), min(IE+2,IA)
+    do k = KS, KE
+        diff_fv(k,i,j) = RHOT_fv(k,i,j) - DAMP_POTT_fv(k,i,j) * DENS_fv(k,i,j)
+    enddo
+    enddo
+    enddo
+    !$omp do OMP_SCHEDULE_ collapse(2)
+    do ke_z=1, lcmesh3D%NeZ
+    do ke_y=1, lcmesh3D%NeY
+    do ke_x=1, lcmesh3D%NeX
+      kelem = ke_x + (ke_y-1)*lcmesh3D%NeX + (ke_z-1)*lcmesh3D%NeX*lcmesh3D%NeY
+      i = IHALO + ke_x; j = JHALO + ke_y; k = KHALO + ke_z
+
+      RHOT_hyd(:) = PRES00 / Rdry * ( DG_PRES_hyd(:,kelem) / PRES00 )**(CvDry/CpDry)
+
+      damp_tmp_fv(k,i,j) = - DAMP_alpha_POTT_fv(k,i,j) &
+                      * ( diff_fv(k,i,j)                                                                                        & ! rayleigh damping
+                        - ( diff_fv(k,i-1,j) + diff_fv(k,i+1,j) + diff_fv(k,i,j-1) + diff_fv(k,i,j+1) - diff_fv(k,i,j)*4.0_RP ) & ! horizontal smoother
+                        * 0.125_RP * BND_SMOOTHER_FACT )
+      
+      RHOT_bgn_t(:,kelem) = &
+          + damp_tmp_fv(k,i,j) &
+          + DENS_bgn_t(:,kelem) * RHOT_fv(k,i,j) / DENS_fv(k,i,j)
+
+      !- Alternative procedure
+      ! RHOT_bgn_t(:,kelem) = &
+      !      + damp_fv(k,i,j) &
+      !     - DAMP_alpha_POTT_fv(k,i,j) * ( &
+      !       + ( RHOT_hyd(:) + DG_DRHOT(:,kelem) - DAMP_RHOT_dg_(:,kelem) )  ) &
+      !     + DENS_damp_dg(:,kelem) * ( RHOT_hyd(:) + DG_DRHOT(:,kelem) ) / ( DG_DENS_hyd(:,kelem) + DG_DDENS(:,kelem) )
+          
+      !- Damp higher modes in DG
+      ! var_avg = sum( int_w(:,kelem) * ( RHOT_hyd(:) + DG_DRHOT(:,kelem) ) )
+      ! RHOT_bgn_t(:,kelem) = RHOT_bgn_t(:,kelem) &
+      !   - 0.5_RP * DAMP_alpha_POTT_fv(k,i,j) &
+      !     * ( ( RHOT_hyd(:) + DG_DRHOT(:,kelem) - var_avg ) * BND_SMOOTHER_FACT )
+
+      RHOT_tp(:,kelem) = RHOT_tp(:,kelem) + RHOT_bgn_t(:,kelem)
+    enddo
+    enddo
+    enddo
+    !$omp end parallel
+
+    return
+  end subroutine add_nudge_forcing
 
 end module scale_atmos_dyn_tstep_large_dgm_heve

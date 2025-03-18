@@ -131,6 +131,9 @@ OBJS = \
 	$(BUILD_DIR)/scale_fem_meshutil_1d.o \
 	$(BUILD_DIR)/scale_fem_meshutil_2d.o \
 	$(BUILD_DIR)/scale_fem_meshutil_3d.o \
+	$(BUILD_DIR)/scale_fem_mesh_topography.o \
+	$(BUILD_DIR)/scale_fem_mesh_mapprojection.o \
+	$(BUILD_DIR)/scale_fem_meshutil_vcoord.o \
 	$(BUILD_DIR)/scale_fem_mesh_bndinfo.o \
 	$(BUILD_DIR)/scale_fem_mesh_base.o \
 	$(BUILD_DIR)/scale_fem_mesh_base1d.o \
@@ -141,6 +144,7 @@ OBJS = \
 	$(BUILD_DIR)/scale_fem_variableinfo.o \
 	$(BUILD_DIR)/scale_fem_localmeshfield_base.o \
 	$(BUILD_DIR)/scale_fem_meshfield_base.o \
+	$(BUILD_DIR)/scale_fem_meshfield_util.o \
 	$(BUILD_DIR)/scale_comm_fem_meshfield_base.o \
 	$(BUILD_DIR)/scale_comm_fem_meshfield_rectdom2d.o \
 	$(BUILD_DIR)/scale_comm_fem_meshfield_cubedom3d.o \
@@ -233,8 +237,6 @@ OBJS = \
 	$(BUILD_DIR)/scale_atmos_phy_mp_sn14.o	\
 	$(BUILD_DIR)/scale_atmos_phy_mp_suzuki10.o \
 	$(BUILD_DIR)/scale_atmos_phy_mp_tomita08.o \
-	$(BUILD_DIR)/scale_atmos_phy_mp_amps.o	\
-	$(BUILD_DIR)/scale_atmos_phy_mp_sdm.o \
 	$(BUILD_DIR)/scale_atmos_phy_rd_common.o \
 	$(BUILD_DIR)/scale_atmos_phy_rd_mstrnx.o \
 	$(BUILD_DIR)/scale_atmos_phy_rd_offline.o	\
@@ -292,6 +294,9 @@ OBJS = \
 	$(BUILD_DIR)/scale_da_read_pawr_toshiba.o \
 	$(BUILD_DIR)/scale_da_read_mp_pawr_toshiba.o \
 	$(BUILD_DIR)/scale_letkf.o
+
+#	$(BUILD_DIR)/scale_atmos_phy_mp_amps.o	
+#	$(BUILD_DIR)/scale_atmos_phy_mp_sdm.o 
 
 OBJS_FOR_DYN = \
 	$(BUILD_DIR)/scale_atmos_dyn.o \
@@ -378,27 +383,27 @@ modules: $(MODS)
 	install $? $(MODDIR)
 
 makedir:
-	$(MAKE) -C $(AMPSDIR) makedir
-	$(MAKE) -C $(SDMDIR) makedir
+#	$(MAKE) -C $(AMPSDIR) makedir
+#	$(MAKE) -C $(SDMDIR) makedir
 	mkdir -p $(BUILD_DIR)
 
-ifeq ($(SCALE_IGNORE_SRCDEP),T)
-makeobjs: makeamps makesdm $(OBJS)
-else
+#ifeq ($(SCALE_IGNORE_SRCDEP),T)
+#makeobjs: makeamps makesdm $(OBJS)
+#else
 makeobjs: $(OBJS)
-endif
+#endif
 
-$(AMPSDIR)/libamps$(POSTFIX).a: makeamps
-makeamps: $(OBJS_CORE)
-	$(MAKE) -C $(AMPSDIR) SCALE_BUILD_DIR=$(BUILD_DIR)
+#$(AMPSDIR)/libamps$(POSTFIX).a: makeamps
+#makeamps: $(OBJS_CORE)
+#	$(MAKE) -C $(AMPSDIR) SCALE_BUILD_DIR=$(BUILD_DIR)
 
-$(SDMDIR)/libsdm$(POSTFIX).a: makesdm
-makesdm: $(OBJS_CORE)
-	$(MAKE) -C $(SDMDIR) SCALE_BUILD_DIR=$(BUILD_DIR)
+#$(SDMDIR)/libsdm$(POSTFIX).a: makesdm
+#makesdm: $(OBJS_CORE)
+#	$(MAKE) -C $(SDMDIR) SCALE_BUILD_DIR=$(BUILD_DIR)
 
 allclean: distclean
-	$(MAKE) -C $(AMPSDIR) allclean
-	$(MAKE) -C $(SDMDIR) allclean
+#	$(MAKE) -C $(AMPSDIR) allclean
+#	$(MAKE) -C $(SDMDIR) allclean
 	rm -rf $(MODDIR)
 	rm -rf $(LIBDIR)
 
@@ -408,8 +413,8 @@ distclean: clean
 	rm -rf ./.libs*
 
 clean:
-	$(MAKE) -C $(AMPSDIR) clean
-	$(MAKE) -C $(SDMDIR) clean
+#	$(MAKE) -C $(AMPSDIR) clean
+#	$(MAKE) -C $(SDMDIR) clean
 	rm -rf $(BUILD_DIR)
 	rm -f *.o *.mod *.lst *~
 
@@ -468,8 +473,8 @@ include $(TOPDIR)/utils/make/Make_environments
 ifneq ($(SCALE_IGNORE_SRCDEP),T)
 -include depend
 
-$(BUILD_DIR)/scale_atmos_phy_mp_amps.o: $(AMPSDIR)/libamps$(POSTFIX).a
-$(BUILD_DIR)/scale_atmos_phy_mp_sdm.o: $(SDMDIR)/libsdm$(POSTFIX).a
+#$(BUILD_DIR)/scale_atmos_phy_mp_amps.o: $(AMPSDIR)/libamps$(POSTFIX).a
+#$(BUILD_DIR)/scale_atmos_phy_mp_sdm.o: $(SDMDIR)/libsdm$(POSTFIX).a
 endif
 
 

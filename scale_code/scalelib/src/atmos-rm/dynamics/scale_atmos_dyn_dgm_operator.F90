@@ -21,18 +21,19 @@ module scale_atmos_dyn_dgm_operator
   use scale_prc
 
   use scale_sparsemat, only: SparseMat
+
   use scale_fem_element_base, only: &
-    ElementBase3D
-  use scale_fem_element_hexahedral, only: &
-    HexahedralElement
-  use scale_fem_localmesh_3d, only: &
-    LocalMesh3D
-  use scale_fem_mesh_cubedom3d, only: &
-    MeshCubeDom3D
-  use scale_fem_element_modalfilter, only: &
-    ModalFilter
-  use scale_atmos_dyn_dgm_bnd, only: &
-    AtmDynBnd
+    ElementBase2D, ElementBase3D
+  use scale_fem_element_hexahedral, only:  HexahedralElement
+  use scale_fem_localmesh_2d, only: LocalMesh2D
+  use scale_fem_localmesh_3d, only: LocalMesh3D
+  use scale_fem_mesh_cubedom3d, only: MeshCubeDom3D
+  use scale_fem_mesh_topography, only: MeshTopography
+  use scale_fem_mesh_mapprojection, only: MeshMapProjection
+  use scale_fem_element_modalfilter, only: ModalFilter
+
+  use scale_atmos_dyn_dgm_bnd, only: AtmDynBnd
+
 #ifdef DEBUG
   use scale_debug, only: &
      CHECK
@@ -51,6 +52,8 @@ module scale_atmos_dyn_dgm_operator
   public :: ATMOS_DYN_DGM_operator_finalize
 
   public :: ATMOS_DYN_DGM_operator_setup_vi
+  public :: ATMOS_DYN_DGM_operator_setup_metric_bc
+
   public :: ATMOS_DYN_DGM_operator_set_fv_phytend
   public :: ATMOS_DYN_DGM_operator_apply_modalfilter
   public :: ATMOS_DYN_DGM_operator_addtend_spongelayer
@@ -62,6 +65,9 @@ module scale_atmos_dyn_dgm_operator
   type(HexahedralElement), public :: elem3D
   type(MeshCubeDom3D), public, target :: mesh3D
   type(AtmDynBnd), public :: dyn_bnd
+
+  type(MeshTopography), public :: topography
+  type(MeshMapProjection), public :: mapprojection
 
   character(len=H_SHORT) :: SpMV_storage_format = 'ELL' ! CSR or ELL  
   type(SparseMat), public :: Dx
@@ -101,6 +107,9 @@ module scale_atmos_dyn_dgm_operator
   logical :: hevi_flag
   integer :: PHYTEND_interp_order
 
+  integer :: vcoord_type_id
+  integer :: FV_TOPO_interp_order
+  
 contains
 
 !OCL SERIAL
@@ -118,15 +127,21 @@ contains
       FXG => ATMOS_GRID_CARTESC_FXG, &
       FYG => ATMOS_GRID_CARTESC_FYG, &
       FZ => ATMOS_GRID_CARTESC_FZ
+    use scale_fem_mesh_base2d, only: MeshBase2D
+    use scale_fem_meshutil_vcoord, only: &
+      MeshUtil_get_VCoord_TypeID
     implicit none
 
     integer  :: PolyOrder_h       = 3
     integer  :: PolyOrder_v       = 3
     logical  :: LumpedMassMatFlag = .false.
+    character(len=H_MID) :: VERTICAL_COORD_NAME = "TERRAIN_FOLLOWING"
 
     namelist / PARAM_ATMOS_DYN_DGM / &
       PolyOrder_h, PolyOrder_v, &
       LumpedMassMatFlag,        &
+      VERTICAL_COORD_NAME,      &
+      FV_TOPO_interp_order,     &
       MODALFILTER_FLAG,         &
       ONLY_TRCADV_FLAG,         &
       TRCADV_MODALFILTER_FLAG,  &
@@ -139,17 +154,13 @@ contains
     integer :: p1, p2, p_
     real(RP), allocatable :: invV_VPOrdM1(:,:)
 
-
-    real(RP), allocatable :: intWeight_lgl1DPts_h(:)
-    real(RP), allocatable :: intWeight_lgl1DPts_v(:)   
-    real(RP), allocatable :: intWeight_h(:) 
-    real(RP), allocatable :: intWeight_v(:)
-    real(RP), allocatable :: IntWeight(:,:)
+    class(MeshBase2D), pointer :: mesh2D 
     !---------------------------------------
     
     LOG_NEWLINE
     LOG_INFO("PARAM_ATMOS_DYN_DGM",*) 'Setup'
 
+    FV_TOPO_interp_order = 0
     PHYTEND_interp_order = 2
     
     rewind(IO_FID_CONF)
@@ -172,6 +183,14 @@ contains
        PRC_PERIODIC_X, PRC_PERIODIC_Y, .false.,                                  &
        elem3D, 1, PRC_NUM_X, PRC_NUM_Y, PRC_nprocs, PRC_myrank, FZ(KS-1:KE) )
     call mesh3D%Generate()
+
+    ! Setup object for managing topography
+    call mesh3D%GetMesh2D( mesh2D )
+    call topography%Init( "topo", mesh2D )
+    vcoord_type_id = MeshUtil_get_VCoord_TypeID(VERTICAL_COORD_NAME)
+
+    ! Setup object for managing map projeciton
+    call mapprojection%Init( mesh2D )
 
     ! Setup spatial operators with DGM 
     call Dx%Init( elem3D%Dx1, storage_format=SpMV_storage_format )
@@ -202,9 +221,8 @@ contains
     end do
     IntrpMat_VPOrdM1(:,:) = matmul(elem3D%V, invV_VPOrdM1)
 
-    ! Setup boundary conditions for DG dycore
-    call dyn_bnd%Init()
-    call dyn_bnd%SetBCInfo( mesh3D )
+    ! Initialize a object for boundary conditions for DG dycore
+    call dyn_bnd%Init( mesh3D )
 
     !
     hevi_flag = .false.
@@ -223,6 +241,9 @@ contains
     call Dx%Final(); call Dy%Final(); call Dz%Final()
     call Lift%Final()
 
+    call topography%Final()
+    call mapprojection%Final()
+
     call mesh3D%Final()
     call elem3D%Final()
 
@@ -240,31 +261,62 @@ contains
     return
   end subroutine ATMOS_DYN_DGM_operator_setup_vi
   
+!> Setup metric & BC information
+!OCL SERIAL
+  subroutine ATMOS_DYN_DGM_operator_setup_metric_bc() 
+    use scale_atmos_grid_cartesC_index, only: &
+      KS, KE, KA, IS, IE, IA, JS, JE, JA, &
+      IHALO, JHALO, KHALO
+    use scale_comm_fem_meshfield_rectdom2d, only: MeshFieldCommRectDom2D
+    use scale_comm_fem_meshfield_cubedom3d, only: MeshFieldCommCubeDom3D
+
+    use scale_const, only: &
+      PI => CONST_PI
+    implicit none
+
+    ! type(LocalMesh2D), pointer :: lcmesh2D
+    type(MeshFieldCommCubeDom3D) :: comm3D
+    type(MeshFieldCommRectDom2D) :: comm2D
+    !------------------------------------------------------
+    
+    !--- Setup terrain follwoing coordinate
+    
+    call comm2D%Init( 1, 0, 0, mesh3D%mesh2D )
+    call comm3D%Init( 2, 1, 0, mesh3D )
+
+    call topography%SetVCoordinate( mesh3D, &
+      vcoord_type_id, mesh3D%zmax_gl, comm3D, comm2D )
+    
+    call comm2D%Final()
+    call comm3D%Final()    
+
+    !--- Setup map projection
+
+    call comm2D%Init( 2, 0, 0, mesh3D%mesh2D )
+    call mapprojection%SetHCoordinate( mesh3D, comm2D )
+    call comm2D%Final()
+
+    !--- Setup BC information
+        
+    call dyn_bnd%SetBCInfo()
+
+    return
+  end subroutine ATMOS_DYN_DGM_operator_setup_metric_bc
+
 !OCL SERIAL
   subroutine ATMOS_DYN_DGM_operator_set_fv_phytend( tend_dg, &
       tend_fv, lcmesh3D, elem3D_, phytend_interp_ord )
     use scale_atmos_grid_cartesC_index, only: &
       KS, KE, KA, IS, IE, IA, JS, JE, JA, &
       IHALO, JHALO, KHALO
-    use scale_comm_cartesC, only: &
-       COMM_vars8, &
-       COMM_wait    
-    use scale_prc
+    use scale_fem_meshfield_util, only: &
+      MeshFieldUtil_interp_FVtoDG_3D
     implicit none
     class(LocalMesh3D), intent(in) :: lcmesh3D
     class(ElementBase3D), intent(in) :: elem3D_
     real(RP), intent(out) :: tend_dg(elem3D_%Np,lcmesh3D%NeA)
     real(RP), intent(in) :: tend_fv(KA,IA,JA)
     integer, intent(in), optional :: phytend_interp_ord
-
-    integer :: ke_x, ke_y, ke_z
-    integer :: i, j, k
-    integer :: kelem 
-
-    real(RP) :: tend_fv_cp(KA,IA,JA)
-    real(RP) :: dqdx(KA,IA,JA), dqdy(KA,IA,JA), dqdz(KA,IA,JA)
-    real(RP) :: dqdxx(KA,IA,JA), dqdyy(KA,IA,JA), dqdzz(KA,IA,JA)
-    real(RP) :: dqdxy(KA,IA,JA), dqdxz(KA,IA,JA), dqdyz(KA,IA,JA)
 
     integer :: phytend_interp_ord_
     !----------------------------------
@@ -274,138 +326,13 @@ contains
     else
       phytend_interp_ord_ = PHYTEND_interp_order
     end if
-
-    tend_fv_cp(:,:,:) = tend_fv(:,:,:)
-    if ( phytend_interp_ord_ > 0 ) then
-      call COMM_vars8( tend_fv_cp(:,:,:), 1 )
-      call COMM_wait( tend_fv_cp(:,:,:), 1, .false. )
-    end if
-
-    !$omp parallel private(ke_x,ke_y,ke_z,kelem, i,j,k) 
-
-    if ( phytend_interp_ord_ > 0 ) then
-      !$omp do collapse(2)
-      do j=JS-1, JE+1
-      do i=IS, IE
-      do k=KS, KE
-        dqdx(k,i,j) = 0.25_RP * ( tend_fv_cp(k,i+1,j) - tend_fv_cp(k,i-1,j) )
-      enddo
-      enddo
-      enddo
-      !$omp do collapse(2)
-      do j=JS, JE
-      do i=IS-1, IE+1
-      do k=KS, KE
-        dqdy(k,i,j) = 0.25_RP * ( tend_fv_cp(k,i,j+1) - tend_fv_cp(k,i,j-1) )
-      enddo
-      enddo
-      enddo
-      !$omp do collapse(2)
-      do j=JS, JE
-      do i=IS, IE
-        do k=KS+1, KE-1
-          dqdz(k,i,j) = 0.25_RP * ( tend_fv_cp(k+1,i,j) - tend_fv_cp(k-1,i,j) )
-        enddo
-        dqdz(KS,i,j) = 0.25_RP * ( - tend_fv_cp(KS+2,i,j) + 4.0_RP * tend_fv_cp(KS+1,i,j) - 3.0_RP * tend_fv_cp(KS,i,j) )
-        dqdz(KE,i,j) = 0.25_RP * ( 3.0_RP * tend_fv_cp(KE,i,j) - 4.0_RP * tend_fv_cp(KE-1,i,j) + tend_fv_cp(KE-2,i,j) )
-      enddo
-      enddo       
-    end if
-    if ( phytend_interp_ord_ > 1 ) then
-      !$omp do collapse(2)
-      do j=JS, JE
-      do i=IS, IE
-      do k=KS, KE
-        dqdxx(k,i,j) = 0.25_RP * ( tend_fv_cp(k,i+1,j) - 2.0_RP * tend_fv_cp(k,i,j) + tend_fv_cp(k,i-1,j) )
-      enddo
-      enddo
-      enddo
-      !$omp do collapse(2)
-      do j=JS, JE
-      do i=IS, IE
-      do k=KS, KE
-        dqdyy(k,i,j) = 0.25_RP * ( tend_fv_cp(k,i,j+1) - 2.0_RP * tend_fv_cp(k,i,j) + tend_fv_cp(k,i,j-1) )
-      enddo
-      enddo
-      enddo
-      !$omp do collapse(2)
-      do j=JS, JE
-      do i=IS, IE
-      do k=KS, KE
-        dqdxy(k,i,j) = 0.25_RP * ( dqdx(k,i,j+1) - dqdx(k,i,j-1) )
-      enddo
-      enddo
-      enddo 
-      !$omp do collapse(2)
-      do j=JS, JE
-      do i=IS, IE
-        do k=KS+1, KE-1
-          dqdzz(k,i,j) = 0.25_RP * ( tend_fv_cp(k+1,i,j) - 2.0_RP * tend_fv_cp(k,i,j) + tend_fv_cp(k-1,i,j) )
-          dqdxz(k,i,j) = 0.25_RP * ( dqdx(k+1,i,j) - dqdx(k-1,i,j) )
-          dqdyz(k,i,j) = 0.25_RP * ( dqdy(k+1,i,j) - dqdy(k-1,i,j) )
-        enddo
-        dqdzz(KS,i,j) = dqdzz(KS+1,i,j); dqdzz(KE,i,j) = dqdzz(KE-1,i,j); 
-        dqdxz(KS,i,j) = 0.5_RP * ( dqdx(KS+1,i,j) - dqdx(KS,i,j) ); dqdxz(KE,i,j) = 0.5_RP * ( dqdx(KE,i,j) - dqdx(KE-1,i,j) ); 
-        dqdyz(KS,i,j) = 0.5_RP * ( dqdy(KS+1,i,j) - dqdy(KS,i,j) ); dqdyz(KE,i,j) = 0.5_RP * ( dqdy(KE,i,j) - dqdy(KE-1,i,j) ); 
-      enddo
-      enddo
-    end if
-
-    select case(phytend_interp_ord_)
-    case(0) !- Piecewise constant
-      !$omp do collapse(2)
-      do ke_z=1, lcmesh3D%NeZ
-      do ke_y=1, lcmesh3D%NeY
-      do ke_x=1, lcmesh3D%NeX
-        kelem = ke_x + (ke_y-1)*lcmesh3D%NeX + (ke_z-1)*lcmesh3D%NeX*lcmesh3D%NeY
-        i = IHALO + ke_x; j = JHALO + ke_y; k = KHALO + ke_z
-        tend_dg(:,kelem) = tend_dg(:,kelem) &
-                         + tend_fv(k,i,j)
-      enddo
-      enddo
-      enddo    
-    case(1) !- Piecewise linear reconstruction
-      !$omp do collapse(2)
-      do ke_z=1, lcmesh3D%NeZ
-      do ke_y=1, lcmesh3D%NeY
-      do ke_x=1, lcmesh3D%NeX
-        kelem = ke_x + (ke_y-1)*lcmesh3D%NeX + (ke_z-1)*lcmesh3D%NeX*lcmesh3D%NeY
-        i = IHALO + ke_x; j = JHALO + ke_y; k = KHALO + ke_z
-        tend_dg(:,kelem) = tend_dg(:,kelem) &
-                          + tend_fv(k,i,j)             &
-                          + dqdx(k,i,j) * elem3D_%x1(:) &
-                          + dqdy(k,i,j) * elem3D_%x2(:) &
-                          + dqdz(k,i,j) * elem3D_%x3(:)
-      enddo
-      enddo
-      enddo          
-    case(2) !- Piecewise quadratic reconstruction
-      !$omp do collapse(2)
-      do ke_z=1, lcmesh3D%NeZ
-      do ke_y=1, lcmesh3D%NeY
-      do ke_x=1, lcmesh3D%NeX
-        kelem = ke_x + (ke_y-1)*lcmesh3D%NeX + (ke_z-1)*lcmesh3D%NeX*lcmesh3D%NeY
-        i = IHALO + ke_x; j = JHALO + ke_y; k = KHALO + ke_z
-        tend_dg(:,kelem) = tend_dg(:,kelem) &
-                          + tend_fv(k,i,j)      &
-                          + dqdx(k,i,j) * elem3D_%x1(:) &
-                          + dqdy(k,i,j) * elem3D_%x2(:) &
-                          + dqdz(k,i,j) * elem3D_%x3(:) &
-                          + dqdxy(k,i,j) * elem3D_%x1(:) * elem3D_%x2(:) &
-                          + dqdxz(k,i,j) * elem3D_%x1(:) * elem3D_%x3(:) &
-                          + dqdyz(k,i,j) * elem3D_%x2(:) * elem3D_%x3(:) &
-                          + 0.5_RP * dqdxx(k,i,j) * ( elem3D_%x1(:)**2 - 1.0_RP / 3.0_RP ) &
-                          + 0.5_RP * dqdyy(k,i,j) * ( elem3D_%x2(:)**2 - 1.0_RP / 3.0_RP ) &
-                          + 0.5_RP * dqdzz(k,i,j) * ( elem3D_%x3(:)**2 - 1.0_RP / 3.0_RP )
-      enddo
-      enddo
-      enddo 
-    end select
-    !$omp end parallel
+    call MeshFieldUtil_interp_FVtoDG_3D( tend_dg, &
+      tend_fv, lcmesh3D, elem3D_, IS, IE, IA, IHALO, JS, JE, JA, JHALO, KS, KE, KA, KHALO, &
+      phytend_interp_ord_, out_dg_flush_flag=.false. )
 
     return
   end subroutine ATMOS_DYN_DGM_operator_set_fv_phytend
-  
+
 !> Apply modal filter
 !OCL SERIAL
   subroutine ATMOS_DYN_DGM_operator_apply_modalfilter(  &
@@ -739,5 +666,4 @@ contains
     end do
     return
   end subroutine calc_wdampcoef
-
 end module scale_atmos_dyn_dgm_operator

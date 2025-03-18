@@ -309,7 +309,7 @@ module scale_file_history
   integer                    :: FILE_HISTORY_nvar_inputs
   type(var_in),  allocatable :: FILE_HISTORY_var_inputs(:)
 
-  integer,       parameter   :: FILE_HISTORY_dim_max = 30
+  integer,       parameter   :: FILE_HISTORY_dim_max = 50
   integer                    :: FILE_HISTORY_ndims = 0
   type(dim)                  :: FILE_HISTORY_dims(FILE_HISTORY_dim_max)
 

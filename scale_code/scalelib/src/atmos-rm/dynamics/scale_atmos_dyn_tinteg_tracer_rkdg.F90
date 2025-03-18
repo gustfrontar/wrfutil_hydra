@@ -4,7 +4,7 @@
 !! @par Description
 !!          Temporal integration scheme selecter for dynamical tracer advection based on DGM
 !!
-!! @author Team SCALE
+!! @author Yuta Kawai, Team SCALE
 !!
 !<
 !-------------------------------------------------------------------------------
@@ -98,10 +98,10 @@ contains
 !OCL SERIAL
   subroutine ATMOS_DYN_Tinteg_tracer_short_rkdg( &
       QTRC, QTRC_tmp, FCT_coef, iq,                &
-       MFLX_x_tavg, MFLX_y_tavg, MFLX_z_tavg,      &
+      MFLX_x_tavg, MFLX_y_tavg, MFLX_z_tavg,       &
       RHOQ_tp, alphDensM, alphDensP,               &
       DENS_hyd, DDENS, DDENS_TRC, DDENS0_TRC,      &
-      dyn_vars,                                    &
+      dyn_vars, BND_QA, BND_IQ,                    &
       last                                         )
     use scale_fem_meshfield_base, only: &
       MeshField3D, MeshField2D
@@ -127,7 +127,9 @@ contains
     type(MeshField3D), intent(in) :: DDENS_TRC
     type(MeshField3D), intent(in) :: DDENS0_TRC
     class(AtmosDynDGM_vars), intent(inout), target :: dyn_vars
-    logical,  intent(in)         :: last   
+    integer,  intent(in)    :: BND_QA
+    integer,  intent(in)    :: BND_IQ(QA)
+    logical,  intent(in)    :: last   
     
     integer :: rkstage
     integer :: tintbuf_ind
@@ -157,6 +159,12 @@ contains
         do lcdomID=1, mesh3D%LOCAL_MESH_NUM
           lcmesh3D => mesh3D%lcmesh_list(lcdomID)
 
+          if ( BND_IQ(iq) > 0 ) then
+            call dyn_bnd%ApplyBC_TRCVAR_lc( lcdomID, iq, & ! (in)
+              QTRC_tmp%local(lcdomid)%val,                                                        & ! (inout)
+              lcmesh3D%vmapM, lcmesh3D%vmapP, lcmesh3D%vmapB,                                     & ! (in)
+              lcmesh3D, lcmesh3D%refElem3D, lcmesh3D%lcmesh2D, lcmesh3D%lcmesh2D%refElem2D        ) ! (in)
+          end if
           dt = tint(lcdomID)%Get_deltime()
           dttmp_trc = dt * tint(lcdomID)%coef_gam_ex(rkstage+1,rkstage) &
                        / tint(lcdomID)%coef_sig_ex(rkstage+1,rkstage)

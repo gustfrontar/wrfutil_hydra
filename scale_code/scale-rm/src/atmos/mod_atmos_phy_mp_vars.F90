@@ -398,8 +398,8 @@ contains
        FILE_CARTESC_flush
     use mod_atmos_admin, only: &
        ATMOS_PHY_MP_TYPE
-    use scale_atmos_phy_mp_sdm, only: &
-       ATMOS_PHY_MP_sdm_restart_read
+!    use scale_atmos_phy_mp_sdm, only: &
+!       ATMOS_PHY_MP_sdm_restart_read
     implicit none
     real(RP), intent(inout) :: DENS(KA,IA,JA)
     real(RP), intent(inout) :: RHOT(KA,IA,JA)
@@ -407,10 +407,10 @@ contains
 
     !---------------------------------------------------------------------------
 
-    if(ATMOS_PHY_MP_TYPE .eq. 'SDM') then
-       call ATMOS_PHY_MP_sdm_restart_read(KA, KS, KE, IA, IS, IE, JA, JS, JE, &
-                                          DENS, RHOT, QTRC)
-    end if
+!    if(ATMOS_PHY_MP_TYPE .eq. 'SDM') then
+!       call ATMOS_PHY_MP_sdm_restart_read(KA, KS, KE, IA, IS, IE, JA, JS, JE, &
+!                                          DENS, RHOT, QTRC)
+!    end if
 
 !!$    if ( restart_fid /= -1 ) then
 !!$       LOG_NEWLINE
@@ -537,15 +537,15 @@ contains
        ATMOS_PHY_MP_TYPE
     use scale_time, only: &
        NOWSEC => TIME_NOWSEC
-    use scale_atmos_phy_mp_sdm, only: &
-       sd_rest_flg_out, &
-       ATMOS_PHY_MP_sdm_restart_write
+!    use scale_atmos_phy_mp_sdm, only: &
+!       sd_rest_flg_out, &
+!       ATMOS_PHY_MP_sdm_restart_write
     implicit none
     !---------------------------------------------------------------------------
 
-    if( ( ATMOS_PHY_MP_TYPE .eq. 'SDM' ) .and. sd_rest_flg_out ) then
-       call ATMOS_PHY_MP_sdm_restart_write(NOWSEC)
-    endif
+!    if( ( ATMOS_PHY_MP_TYPE .eq. 'SDM' ) .and. sd_rest_flg_out ) then
+!       call ATMOS_PHY_MP_sdm_restart_write(NOWSEC)
+!    endif
 
 !!$    if ( restart_fid /= -1 ) then
 !!$
@@ -571,8 +571,8 @@ contains
        FILE_HISTORY_put
     use mod_atmos_admin, only: &
        ATMOS_PHY_MP_TYPE
-    use scale_atmos_phy_mp_sdm, only: &
-       ATMOS_PHY_MP_sdm_additional_output
+!    use scale_atmos_phy_mp_sdm, only: &
+!       ATMOS_PHY_MP_sdm_additional_output
 
     implicit none
 
@@ -673,12 +673,12 @@ contains
 
     !$acc end data
 
-    ! SDM additional data output (SDs, moments, etc.)
-    if( ATMOS_PHY_MP_TYPE == 'SDM' ) then
-       call ATMOS_PHY_MP_sdm_additional_output( &
-            KA, KS, KE, IA, IS, IE, JA, JS, JE, &
-            DENS(:,:,:), RHOT(:,:,:), QTRC(:,:,:,QS_MP:QE_MP) ) ! [IN]
-    end if
+!    ! SDM additional data output (SDs, moments, etc.)
+!    if( ATMOS_PHY_MP_TYPE == 'SDM' ) then
+!       call ATMOS_PHY_MP_sdm_additional_output( &
+!            KA, KS, KE, IA, IS, IE, JA, JS, JE, &
+!            DENS(:,:,:), RHOT(:,:,:), QTRC(:,:,:,QS_MP:QE_MP) ) ! [IN]
+!    end if
     return
   end subroutine ATMOS_PHY_MP_vars_history
 
@@ -711,16 +711,16 @@ contains
        ATMOS_PHY_MP_suzuki10_qtrc2nhyd, &
        ATMOS_PHY_MP_suzuki10_effective_radius, &
        ATMOS_PHY_MP_suzuki10_cloud_fraction
-    use scale_atmos_phy_mp_amps, only: &
-       ATMOS_PHY_MP_amps_qtrc2qhyd, &
-       ATMOS_PHY_MP_amps_qtrc2nhyd, &
-       ATMOS_PHY_MP_amps_effective_radius, &
-       ATMOS_PHY_MP_amps_cloud_fraction
-    use scale_atmos_phy_mp_sdm, only: &
-       ATMOS_PHY_MP_sdm_qtrc2qhyd, &
-       ATMOS_PHY_MP_sdm_qtrc2nhyd, &
-       ATMOS_PHY_MP_sdm_effective_radius, &
-       ATMOS_PHY_MP_sdm_cloud_fraction
+!    use scale_atmos_phy_mp_amps, only: &
+!       ATMOS_PHY_MP_amps_qtrc2qhyd, &
+!       ATMOS_PHY_MP_amps_qtrc2nhyd, &
+!       ATMOS_PHY_MP_amps_effective_radius, &
+!       ATMOS_PHY_MP_amps_cloud_fraction
+!    use scale_atmos_phy_mp_sdm, only: &
+!       ATMOS_PHY_MP_sdm_qtrc2qhyd, &
+!       ATMOS_PHY_MP_sdm_qtrc2nhyd, &
+!       ATMOS_PHY_MP_sdm_effective_radius, &
+!       ATMOS_PHY_MP_sdm_cloud_fraction
     use mod_atmos_admin, only: &
        ATMOS_PHY_MP_TYPE
     implicit none
@@ -763,20 +763,20 @@ contains
                   QTRC(:,:,:,QS_MP+1:QE_MP), ATMOS_PHY_MP_cldfrac_thleshold, & ! [IN]
                   ATMOS_PHY_MP_CLDFRAC(:,:,:)                                ) ! [OUT]
              !$acc update device(ATMOS_PHY_MP_CLDFRAC)
-          case ( 'AMPS' )
-             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
-             call ATMOS_PHY_MP_amps_cloud_fraction( &
-                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
-                  QTRC(:,:,:,QS_MP+1:QE_MP), ATMOS_PHY_MP_cldfrac_thleshold, & ! [IN]
-                  ATMOS_PHY_MP_CLDFRAC(:,:,:)                                ) ! [OUT]
-             !$acc update device(ATMOS_PHY_MP_CLDFRAC)
-          case ( 'SDM' )
-             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
-             call ATMOS_PHY_MP_sdm_cloud_fraction( &
-                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
-                  ATMOS_PHY_MP_cldfrac_thleshold, DENS, & ! [IN]
-                  ATMOS_PHY_MP_CLDFRAC(:,:,:)                                ) ! [OUT]
-             !$acc update device(ATMOS_PHY_MP_CLDFRAC)
+!          case ( 'AMPS' )
+!             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
+!             call ATMOS_PHY_MP_amps_cloud_fraction( &
+!                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
+!                  QTRC(:,:,:,QS_MP+1:QE_MP), ATMOS_PHY_MP_cldfrac_thleshold, & ! [IN]
+!                  ATMOS_PHY_MP_CLDFRAC(:,:,:)                                ) ! [OUT]
+!             !$acc update device(ATMOS_PHY_MP_CLDFRAC)
+!          case ( 'SDM' )
+!             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
+!             call ATMOS_PHY_MP_sdm_cloud_fraction( &
+!                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
+!                  ATMOS_PHY_MP_cldfrac_thleshold, DENS, & ! [IN]
+!                  ATMOS_PHY_MP_CLDFRAC(:,:,:)                                ) ! [OUT]
+!             !$acc update device(ATMOS_PHY_MP_CLDFRAC)
           case default
 !OCL XFILL
              !$acc kernels
@@ -827,19 +827,19 @@ contains
                   DENS(:,:,:), TEMP(:,:,:), QTRC(:,:,:,QS_MP+1:QE_MP), & ! [IN]
                   ATMOS_PHY_MP_Re(:,:,:,:)                             ) ! [OUT]
              !$acc update device(ATMOS_PHY_MP_Re)
-          case ( 'AMPS' )
-             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
-             call ATMOS_PHY_MP_amps_effective_radius( &
-                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
-                  DENS(:,:,:), TEMP(:,:,:), QTRC(:,:,:,QS_MP+1:QE_MP), & ! [IN]
-                  ATMOS_PHY_MP_Re(:,:,:,:)                             ) ! [OUT]
-             !$acc update device(ATMOS_PHY_MP_Re)
-          case ( 'SDM' )
-             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
-             call ATMOS_PHY_MP_sdm_effective_radius( &
-                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
-                  ATMOS_PHY_MP_Re(:,:,:,:)                             ) ! [OUT]
-             !$acc update device(ATMOS_PHY_MP_Re)
+!          case ( 'AMPS' )
+!             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
+!             call ATMOS_PHY_MP_amps_effective_radius( &
+!                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
+!                  DENS(:,:,:), TEMP(:,:,:), QTRC(:,:,:,QS_MP+1:QE_MP), & ! [IN]
+!                  ATMOS_PHY_MP_Re(:,:,:,:)                             ) ! [OUT]
+!             !$acc update device(ATMOS_PHY_MP_Re)
+!          case ( 'SDM' )
+!             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
+!             call ATMOS_PHY_MP_sdm_effective_radius( &
+!                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
+!                  ATMOS_PHY_MP_Re(:,:,:,:)                             ) ! [OUT]
+!             !$acc update device(ATMOS_PHY_MP_Re)
           case default
 !OCL XFILL
              !$acc kernels
@@ -892,20 +892,20 @@ contains
                   QTRC(:,:,:,QS_MP+1:QE_MP), & ! [IN]
                   ATMOS_PHY_MP_Qe(:,:,:,:)   ) ! [OUT]
              !$acc update device(ATMOS_PHY_MP_Qe)
-          case ( 'AMPS' )
-             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
-             call ATMOS_PHY_MP_amps_qtrc2qhyd( &
-                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
-                  DENS(:,:,:),QTRC(:,:,:,QS_MP+1:QE_MP), & ! [IN]
-                  ATMOS_PHY_MP_Qe(:,:,:,:)   ) ! [OUT]
-             !$acc update device(ATMOS_PHY_MP_Qe)
-          case ( 'SDM' )
-             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
-             call ATMOS_PHY_MP_sdm_qtrc2qhyd( &
-                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
-                  DENS,                      & ! [IN]
-                  ATMOS_PHY_MP_Qe(:,:,:,:)   ) ! [OUT]
-             !$acc update device(ATMOS_PHY_MP_Qe)
+!          case ( 'AMPS' )
+!             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
+!             call ATMOS_PHY_MP_amps_qtrc2qhyd( &
+!                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
+!                  DENS(:,:,:),QTRC(:,:,:,QS_MP+1:QE_MP), & ! [IN]
+!                  ATMOS_PHY_MP_Qe(:,:,:,:)   ) ! [OUT]
+!             !$acc update device(ATMOS_PHY_MP_Qe)
+!          case ( 'SDM' )
+!             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
+!             call ATMOS_PHY_MP_sdm_qtrc2qhyd( &
+!                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
+!                  DENS,                      & ! [IN]
+!                  ATMOS_PHY_MP_Qe(:,:,:,:)   ) ! [OUT]
+!             !$acc update device(ATMOS_PHY_MP_Qe)
           case default
 !OCL XFILL
              !$acc kernels
@@ -950,19 +950,19 @@ contains
                   DENS(:,:,:), QTRC(:,:,:,QS_MP+1:QE_MP), & ! [IN]
                   ATMOS_PHY_MP_Ne(:,:,:,:)                ) ! [OUT]
              !$acc update device(ATMOS_PHY_MP_Ne)
-          case ( 'AMPS' )
-             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
-             call ATMOS_PHY_MP_amps_qtrc2nhyd( &
-                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
-                  DENS(:,:,:), QTRC(:,:,:,QS_MP+1:QE_MP), & ! [IN]
-                  ATMOS_PHY_MP_Ne(:,:,:,:)                ) ! [OUT]
-             !$acc update device(ATMOS_PHY_MP_Ne)
-          case ( 'SDM' )
-             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
-             call ATMOS_PHY_MP_sdm_qtrc2nhyd( &
-                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
-                  ATMOS_PHY_MP_Ne(:,:,:,:)                ) ! [OUT]
-             !$acc update device(ATMOS_PHY_MP_Ne)
+!          case ( 'AMPS' )
+!             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
+!             call ATMOS_PHY_MP_amps_qtrc2nhyd( &
+!                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
+!                  DENS(:,:,:), QTRC(:,:,:,QS_MP+1:QE_MP), & ! [IN]
+!                  ATMOS_PHY_MP_Ne(:,:,:,:)                ) ! [OUT]
+!             !$acc update device(ATMOS_PHY_MP_Ne)
+!          case ( 'SDM' )
+!             !$acc update host(QTRC(:,:,:,QS_MP+1:QE_MP))
+!             call ATMOS_PHY_MP_sdm_qtrc2nhyd( &
+!                  KA, KS, KE, IA, ISB, IEB, JA, JSB, JEB, &
+!                  ATMOS_PHY_MP_Ne(:,:,:,:)                ) ! [OUT]
+!             !$acc update device(ATMOS_PHY_MP_Ne)
           end select
           DIAG_Ne = .true.
        end if

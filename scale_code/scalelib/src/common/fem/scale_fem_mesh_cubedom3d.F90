@@ -24,9 +24,9 @@ module scale_fem_mesh_cubedom3d
     MeshBase2D, MeshBase2D_Init, MeshBase2D_Final, &
     MeshBase2D_setGeometricInfo
 
-  use scale_fem_localmesh_3d, only: &
-    LocalMesh3D
-  use scale_fem_element_base, only: ElementBase3D
+  use scale_fem_localmesh_2d, only: LocalMesh2D
+  use scale_fem_localmesh_3d, only: LocalMesh3D
+  use scale_fem_element_base, only: ElementBase2D, ElementBase3D
   use scale_fem_element_hexahedral, only: HexahedralElement
 
   use scale_fem_mesh_rectdom2d, only: &
@@ -70,6 +70,7 @@ module scale_fem_mesh_cubedom3d
     procedure :: Final => MeshCubeDom3D_Final
     procedure :: Generate => MeshCubeDom3D_generate
     procedure :: GetMesh2D => MeshCubeDom3D_getMesh2D
+    procedure :: Set_geometric_with_hcoord => MeshCubeDom3D_set_geometric_with_hcoord
     procedure :: Set_geometric_with_vcoord => MeshCubeDom3D_set_geometric_with_vcoord
   end type MeshCubeDom3D
 
@@ -318,6 +319,62 @@ contains
 
     return
   end subroutine MeshCubeDom3D_set_geometric_with_vcoord
+
+  subroutine MeshCubeDom3D_set_geometric_with_hcoord(this, lcdomID, &
+    h1_lc, h2_lc )
+    implicit none
+    class(MeshCubeDom3D), intent(inout), target :: this
+    integer, intent(in) :: lcdomID
+    real(RP), intent(in) :: h1_lc(this%mesh2D%refElem2D%Np,this%lcmesh_list(lcdomID)%lcmesh2D%NeA)
+    real(RP), intent(in) :: h2_lc(this%mesh2D%refElem2D%Np,this%lcmesh_list(lcdomID)%lcmesh2D%NeA)
+
+    class(LocalMesh2D), pointer :: lcmesh2D
+    class(ElementBase2D), pointer :: elem2D
+    class(LocalMesh3D), pointer :: lcmesh3D
+    class(ElementBase3D), pointer :: elem3D
+
+    integer :: ke, ke2D, p
+    real(RP), allocatable :: GsqrtH_tmp(:,:)
+    !-------------------------------------------------------
+
+    lcmesh3D => this%lcmesh_list(lcdomID)
+    elem3D => lcmesh3D%refElem3D
+    lcmesh2D => lcmesh3D%lcmesh2D
+    elem2D => lcmesh2D%refElem2D
+
+    allocate( GsqrtH_tmp(elem3D%Np,lcmesh3D%NeA) )
+
+    !$omp parallel private(ke2D, ke)
+
+    !$omp do
+    do ke2D=lcmesh2D%NeS, lcmesh2D%NeE
+      lcmesh2D%Gsqrt(:,ke2D) = h1_lc(:,ke2D) * h2_lc(:,ke2D)
+      lcmesh2D%G_ij(:,ke2D,1,1) = h1_lc(:,ke2D)**2
+      lcmesh2D%G_ij(:,ke2D,2,2) = h2_lc(:,ke2D)**2
+      lcmesh2D%GIJ(:,ke2D,1,1) = 1.0_RP / h1_lc(:,ke2D)**2
+      lcmesh2D%GIJ(:,ke2D,2,2) = 1.0_RP / h2_lc(:,ke2D)**2
+
+      lcmesh3D%GsqrtH(:,ke2D) = lcmesh2D%Gsqrt(:,ke2D)
+      lcmesh3D%G_ij(:,ke2D,1,1) =  lcmesh2D%G_ij(:,ke2D,1,1)
+      lcmesh3D%G_ij(:,ke2D,2,2) =  lcmesh2D%G_ij(:,ke2D,2,2)
+      lcmesh3D%GIJ(:,ke2D,1,1) =  lcmesh2D%GIJ(:,ke2D,1,1)
+      lcmesh3D%GIJ(:,ke2D,2,2) =  lcmesh2D%GIJ(:,ke2D,2,2)
+    end do
+
+    !$omp do
+    do ke=lcmesh3D%NeS, lcmesh3D%NeE
+      ke2D = lcmesh3D%EMap3Dto2D(ke)
+      GsqrtH_tmp(:,ke) = lcmesh3D%GsqrtH(elem3D%IndexH2Dto3D(:),ke2D)
+    end do
+    !$omp end parallel
+    call fill_halo_metric( GsqrtH_tmp, lcmesh3D%VMapM, lcmesh3D%VMapP, lcmesh3D, elem3D)
+    !$omp parallel do
+    do ke=lcmesh3D%NeS, lcmesh3D%NeA
+      lcmesh3D%Gsqrt(:,ke) = lcmesh3D%Gsqrt(:,ke) * GsqrtH_tmp(:,ke)
+    end do
+
+    return
+  end subroutine MeshCubeDom3D_set_geometric_with_hcoord
 
   !- private ------------------------------------------------------
 
@@ -571,4 +628,26 @@ contains
     return
   end subroutine MeshCubeDom3D_calc_normal 
 
+!OCL SERIAL
+  subroutine fill_halo_metric( Gsqrt, vmapM, vmapP, lmesh, elem )
+    implicit none
+    class(LocalMesh3D), intent(in) :: lmesh
+    class(ElementBase3D), intent(in) :: elem
+    integer, intent(in) :: vmapM(elem%NfpTot*lmesh%Ne)
+    integer, intent(in) :: vmapP(elem%NfpTot*lmesh%Ne)
+    real(RP), intent(inout) :: Gsqrt(elem%Np*lmesh%NeA)
+
+    integer :: i, iM, iP
+    !------------------------------------------------
+
+    !$omp parallel do private(i, iM, iP)
+    do i=1, elem%NfpTot*lmesh%Ne
+      iM = vmapM(i); iP = vmapP(i)
+      if ( iP > elem%Np * lmesh%Ne ) then
+        Gsqrt(iP) = Gsqrt(iM)
+      end if
+    end do  
+    return
+  end subroutine fill_halo_metric
+  
 end module scale_fem_mesh_cubedom3d

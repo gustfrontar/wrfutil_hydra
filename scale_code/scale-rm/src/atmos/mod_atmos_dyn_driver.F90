@@ -204,6 +204,12 @@ contains
           LOG_INFO("ATMOS_DYN_driver_setup",*) 'Scheme for Large time step  : ', trim(ATMOS_DYN_TINTEG_LARGE_TYPE)
           LOG_INFO("ATMOS_DYN_driver_setup",*) 'Scheme for Short time step  : ', trim(ATMOS_DYN_TINTEG_SHORT_TYPE)
           LOG_INFO("ATMOS_DYN_driver_setup",*) 'Scheme for Tracer advection : ', trim(ATMOS_DYN_TINTEG_TRACER_TYPE)
+
+          if ( ATMOS_DYN_TSTEP_LARGE_TYPE(1:3) .ne. ATMOS_DYN_TYPE(1:3) ) then
+             LOG_ERROR("ATMOS_DYN_driver_setup",*) 'ATMOS_DYN_TSTEP_LARGE_TYPE is inconsistent with ATMOS_DYN_TYPE: ', trim(ATMOS_DYN_TSTEP_LARGE_TYPE), ', ', trim(ATMOS_DYN_TYPE)
+             call PRC_abort
+          end if
+
        endif
 
        call ATMOS_DYN_setup( ATMOS_DYN_TINTEG_SHORT_TYPE,        & ! [IN]
@@ -340,6 +346,9 @@ contains
     logical, intent(in) :: do_flag
 
     integer :: k, i, j, iq
+
+    real(RP) :: MOMX_tp_save(KA,IA,JA)
+    real(RP) :: MOMY_tp_save(KA,IA,JA)
     !---------------------------------------------------------------------------
 
 #if defined DEBUG || defined QUICKDEBUG
@@ -352,6 +361,13 @@ contains
 #endif
 
     if ( do_flag ) then
+
+       if ( ATMOS_sw_dyn_DGM ) then
+         !$omp parallel workshare
+         MOMX_tp_save(:,:,:) = MOMX_tp(:,:,:)
+         MOMY_tp_save(:,:,:) = MOMY_tp(:,:,:)
+         !$omp end parallel workshare
+       end if
 
        !$acc data &
        !$acc copy(DENS,MOMZ,MOMX,MOMY,RHOT,QTRC) &
@@ -443,9 +459,10 @@ contains
        call COMM_wait ( MOMX_tp, 1 )
        call COMM_wait ( MOMY_tp, 2 )
 
-       ! Set FV physics tendencies evaluated at cell center to DG dynamical core
-       if ( ATMOS_sw_dyn_DGM ) call dyn_dg_vars%Set_FVphytend( DENS_tp, RHOU_tp, RHOV_tp, MOMZ_tp, RHOT_tp )
        
+       ! Set FV physics tendencies evaluated at cell center to DG dynamical core
+       if ( ATMOS_sw_dyn_DGM ) call dyn_dg_vars%Set_FVphytend( DENS_tp, RHOU_tp, RHOV_tp, MOMX_tp_save, MOMY_tp_save, MOMZ_tp, RHOT_tp, MAPF )
+
        call ATMOS_DYN( DENS, MOMZ, MOMX, MOMY, RHOT, QTRC,                   & ! [INOUT]
                        PROG,                                                 & ! [IN]
                        DENS_av, MOMZ_av, MOMX_av, MOMY_av, RHOT_av, QTRC_av, & ! [INOUT]

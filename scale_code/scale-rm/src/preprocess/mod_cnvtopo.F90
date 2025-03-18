@@ -67,6 +67,8 @@ module mod_cnvtopo
 
   logical,  private :: CNVTOPO_copy_parent           = .false.
 
+  integer, private :: CNVTOPO_FVtoDG_interp_order    = 1
+
 
   !-----------------------------------------------------------------------------
 contains
@@ -102,7 +104,8 @@ contains
        CNVTOPO_smooth_local,          &
        CNVTOPO_smooth_itelim,         &
        CNVTOPO_smooth_type,           &
-       CNVTOPO_copy_parent
+       CNVTOPO_copy_parent,           &
+       CNVTOPO_FVtoDG_interp_order
 
     real(RP) :: minslope(IA,JA)
     real(RP) :: DXL(IA-1)
@@ -278,6 +281,10 @@ contains
     use scale_topography, only: &
        TOPOGRAPHY_fillhalo, &
        TOPOGRAPHY_Zsfc
+    use mod_atmos_admin, only: &
+       ATMOS_sw_dyn_DGM
+    use scale_atmos_dyn_dgm_operator, only: &
+       dg_topography => topography
     use mod_copytopo, only: &
        COPYTOPO
     use scale_atmos_grid_cartesC_real, only: &
@@ -325,6 +332,11 @@ contains
        call TOPOGRAPHY_fillhalo( FILL_BND=.true. )
 
        if( CNVTOPO_copy_parent ) call COPYTOPO( TOPOGRAPHY_Zsfc )
+
+       if ( ATMOS_sw_dyn_DGM ) then
+         call dg_topography%Set_from_FVtopo( TOPOGRAPHY_Zsfc, CNVTOPO_FVtoDG_interp_order, &
+            IA, IS, IE, IHALO, JA, JS, JE, JHALO )
+       end if
 
        LOG_PROGRESS(*) 'end   convert topography data'
 

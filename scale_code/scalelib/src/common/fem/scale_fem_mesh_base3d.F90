@@ -41,6 +41,7 @@ module scale_fem_mesh_base3d
   contains
     procedure(MeshBase3D_generate), deferred :: Generate 
     procedure(MeshBase3D_getMesh2D), deferred  :: GetMesh2D
+    procedure(MeshBase3D_set_geometric_with_hcoord), deferred :: Set_geometric_with_hcoord
     procedure(MeshBase3D_set_geometric_with_vcoord), deferred :: Set_geometric_with_vcoord
     procedure :: GetLocalMesh => MeshBase3D_get_localmesh
   end type MeshBase3D
@@ -57,6 +58,15 @@ module scale_fem_mesh_base3d
       class(MeshBase3D), intent(in), target :: this
       class(MeshBase2D), pointer, intent(out) :: ptr_mesh2D
     end subroutine MeshBase3D_getMesh2D
+
+    subroutine MeshBase3D_set_geometric_with_hcoord(this, lcdomID, h1_lc, h2_lc)
+      import RP
+      import MeshBase3D
+      class(MeshBase3D), intent(inout), target :: this
+      integer, intent(in) :: lcdomID
+      real(RP), intent(in) :: h1_lc(this%lcmesh_list(lcdomID)%lcmesh2D%refElem2D%Np,this%lcmesh_list(lcdomID)%lcmesh2D%NeA)
+      real(RP), intent(in) :: h2_lc(this%lcmesh_list(lcdomID)%lcmesh2D%refElem2D%Np,this%lcmesh_list(lcdomID)%lcmesh2D%NeA)
+    end subroutine MeshBase3D_set_geometric_with_hcoord
 
     subroutine MeshBase3D_set_geometric_with_vcoord(this, lcdomID, GsqrtV_lc, zlev_lc, G13_lc, G23_lc)
       import RP

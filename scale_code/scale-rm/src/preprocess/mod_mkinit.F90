@@ -154,7 +154,7 @@ module mod_mkinit
   integer, public, parameter :: I_BOMEX            = 31
 
   integer, public, parameter :: I_MPACE            = 32
-  integer, public, parameter :: I_BOXAMPS          = 33
+!  integer, public, parameter :: I_BOXAMPS          = 33
 
   integer, public, parameter :: I_SONDE_PERTURB    = 34
 
@@ -201,7 +201,7 @@ module mod_mkinit
   private :: MKINIT_warmbubbleaero
 
   private :: MKINIT_MPACE
-  private :: MKINIT_boxamps
+!  private :: MKINIT_boxamps
 
   !-----------------------------------------------------------------------------
   !
@@ -322,6 +322,7 @@ contains
     case('MOUNTAINWAVE')
        MKINIT_TYPE = I_MOUNTAINWAVE
        call MKINIT_common_BUBBLE_setup( bubble )
+       if ( ATMOS_sw_dyn_DGM ) call MKINIT_common_BUBBLE_setup_DG( DG_bubble )
     case('WARMBUBBLE')
        MKINIT_TYPE = I_WARMBUBBLE
        call MKINIT_common_BUBBLE_setup( bubble )
@@ -376,8 +377,8 @@ contains
        MKINIT_TYPE = I_BAROCWAVE
     case('MPACE')
        MKINIT_TYPE = I_MPACE
-    case('BOXAMPS')
-       MKINIT_TYPE = I_BOXAMPS
+!    case('BOXAMPS')
+!       MKINIT_TYPE = I_BOXAMPS
     case('SONDE_PERTURB')
        MKINIT_TYPE = I_SONDE_PERTURB
        call MKINIT_common_BUBBLE_setup( bubble )
@@ -447,8 +448,8 @@ contains
        ATMOS_PHY_MP_TYPE
     use mod_atmos_phy_mp_driver, only: &
        ATMOS_PHY_MP_driver_qhyd2qtrc
-    use scale_atmos_phy_mp_sdm, only: &
-       ATMOS_PHY_MP_sdm_random_setup
+!    use scale_atmos_phy_mp_sdm, only: &
+!       ATMOS_PHY_MP_sdm_random_setup
     implicit none
     logical, intent(out) :: output
 
@@ -527,9 +528,9 @@ contains
 
       convert_qtrc = .true.
 
-      if( ATMOS_PHY_MP_TYPE .eq. 'SDM' ) then
-         call ATMOS_PHY_MP_sdm_random_setup
-      end if
+!      if( ATMOS_PHY_MP_TYPE .eq. 'SDM' ) then
+!         call ATMOS_PHY_MP_sdm_random_setup
+!      end if
 
       select case(MKINIT_TYPE)
       case(I_PLANESTATE)
@@ -607,8 +608,8 @@ contains
          call MKINIT_barocwave
       case(I_MPACE)
          call MKINIT_MPACE
-      case(I_BOXAMPS)
-         call MKINIT_boxamps
+!      case(I_BOXAMPS)
+!         call MKINIT_boxamps
          convert_qtrc = .false.
       case(I_SONDE_PERTURB)
          call MKINIT_sonde_perturb
@@ -908,9 +909,13 @@ contains
     use mod_atmos_phy_tb_vars, only: &
        I_TKE
     use mod_atmos_phy_bl_vars, only: &
-       Zi => ATMOS_PHY_BL_Zi
+       Zi => ATMOS_PHY_BL_Zi, &
+       QS_BL => QS, &
+       QE_BL => QE
     use mod_atmos_phy_bl_driver, only: &
        atmos_phy_bl_driver_mkinit
+    use scale_fem_meshfield_util, only: &
+       MeshFieldUtil_interp_FVtoDG_3D
     implicit none
 
     real(RP) :: TKE_CONST
@@ -920,8 +925,11 @@ contains
        TKE_CONST, &
        Zi_CONST
 
-    integer :: k, i, j
+    integer :: k, i, j, iq
     integer :: ierr
+
+    integer :: ldomID
+    class(FEM_LocalMesh3D), pointer :: lcmesh3D
     !---------------------------------------------------------------------------
 
     TKE_CONST = EPS
@@ -963,6 +971,16 @@ contains
 
     ! BL
     call atmos_phy_bl_driver_mkinit( TKE_CONST )
+
+    if ( ATMOS_sw_dyn_DGM ) then
+      ldomID = 1
+      lcmesh3D => fem_mesh3d%lcmesh_list(ldomID)
+      do iq=QS_BL, QE_BL
+         call MeshFieldUtil_interp_FVtoDG_3D( dyn_dg_vars%qtrc_vars(iq)%local(ldomID)%val, &
+            QTRC(:,:,:,iq), lcmesh3D, fem_elem3d, IS, IE, IA, IHALO, JE, JE, JA, JHALO, KS, KE, KA, KHALO, &
+            0 )
+      end do
+    end if
 
     return
   end subroutine tke_setup
@@ -1071,138 +1089,138 @@ contains
     return
   end subroutine MKINIT_MPACE
 
-  !-----------------------------------------------------------------------------
-  !> Make initial state of Box model experiment for collision-coalescence in AMPS
-  subroutine MKINIT_boxamps
-    use scale_const, only: &
-       Rdry  => CONST_Rdry, &
-       Rvap  => CONST_Rvap, &
-       CVdry => CONST_CVdry, &
-       CVvap => CONST_CVvap, &
-       CPdry => CONST_CPdry, &
-       CPvap => CONST_CPvap, &
-       CPliq => CONST_CL, &
-       EPSvap => CONST_EPSvap
-    use scale_atmos_hydrometeor, only: &
-       ATMOS_HYDROMETEOR_dry
-    use scale_atmos_thermodyn, only: &
-       ATMOS_THERMODYN_rhot2temp_pres, &
-       ATMOS_THERMODYN_temp_pres2pott
-    use mod_atmos_admin, only: &
-       ATMOS_PHY_MP_TYPE
-    use mod_atmos_phy_mp_vars, only: &
-       QS_MP, &
-       QE_MP
-    use scale_atmos_phy_mp_amps, only: &
-       ATMOS_PHY_MP_amps_init_qtrc_BOX
-    implicit none
-
-    real(RP) :: init_dens  = 1.00_RP   ![kg/m3]
-    real(RP) :: init_temp  = 300.00_RP ![K]
-    real(RP) :: init_pres  = 1.E+5_RP  ![Pa]
-    real(RP) :: init_ssliq = 0.0_RP   ![%]
-    real(RP) :: box_initial_conc = 100.0_RP
-    real(RP) :: box_m_knot = 4.18e-9_RP
-    integer  :: switch_rh_or_sq = 0
-
-    namelist / PARAM_MKINIT_BOXAMPS / &
-       init_dens, &
-       init_temp, &
-       init_pres, &
-       init_ssliq, &
-       switch_rh_or_sq, &
-       box_initial_conc, &
-       box_m_knot
-
-    real(RP) :: rtot (KA,IA,JA)
-    real(RP) :: cvtot(KA,IA,JA)
-    real(RP) :: cptot(KA,IA,JA)
-    real(RP) :: qdry
-    real(RP) :: psat, qsat
-    integer  :: i, j, k, ierr
-
-    real(RP) :: estbar(150), esitbar(111), psat_AMPS, qs_AMPS, qv_AMPS
-    !---------------------------------------------------------------------------
-
-    if ( ATMOS_PHY_MP_TYPE /= 'AMPS' ) then
-       LOG_INFO("MKINIT_boxamps",*) 'For [Box model of AMPS],'
-       LOG_INFO("MKINIT_boxamps",*) 'ATMOS_PHY_MP_TYPE should be AMPS. Stop! ', trim(ATMOS_PHY_MP_TYPE)
-       call PRC_abort
-    endif
-
-    if ( ATMOS_HYDROMETEOR_dry ) then
-       LOG_ERROR("MKINIT_boxamps",*) 'QV is not registered'
-       call PRC_abort
-    end if
-
-    LOG_NEWLINE
-    LOG_INFO("MKINIT_boxamps",*) 'Setup initial state'
-
-    !--- read namelist
-    rewind(IO_FID_CONF)
-    read(IO_FID_CONF,nml=PARAM_MKINIT_BOXAMPS,iostat=ierr)
-    if( ierr < 0 ) then !--- missing
-       LOG_INFO("MKINIT_boxamps",*) 'Not found namelist. Default used.'
-    elseif( ierr > 0 ) then !--- fatal error
-       LOG_ERROR("MKINIT_boxamps",*) 'Not appropriate names in namelist PARAM_MKINIT_BOXAMPS. Check!'
-       call PRC_abort
-    endif
-    LOG_NML(PARAM_MKINIT_BOXAMPS)
-
-    ! SCALE way
-    call SATURATION_psat_all( init_temp, psat )
-    qsat = EPSvap * psat / ( init_pres - ( 1.0_RP-EPSvap ) * psat )
-    ! AMPS way
-    call QSPARM2(estbar,esitbar)
-    psat_AMPS = get_sat_vapor_pres_lk2(1, init_temp, estbar, esitbar )/10.0_RP
-    qs_AMPS = psat_AMPS/(init_pres - psat_AMPS)*0.622D0
-    qv_AMPS = psat_AMPS*0.622_RP*init_ssliq/100.0_RP / (init_pres - psat_AMPS*init_ssliq/100.0_RP)
- 
-    do j = 1, JA
-    do i = 1, IA
-    do k = 1, KA
-       MOMX(k,i,j) = 0.0_RP
-       MOMY(k,i,j) = 0.0_RP
-       MOMZ(k,i,j) = 0.0_RP
-
-       if (switch_rh_or_sq == 1) then
-          ! from specific humidity
-          qv(k,i,j) = ( init_ssliq + 1.0_RP ) * qsat
-       else if (switch_rh_or_sq == 0) then
-          ! from relative humidity
-          !rh = 100*pq/(e+q)/s
-          !rh/100*(e+q)s = pq
-          !q (p - rh*s/100) = s*e*rh/100
-          !q = s*e*rh/100 / (p - rh*s/100)
-          qv(k,i,j) = psat_AMPS*0.622_RP*init_ssliq/100.0_RP / (init_pres - psat_AMPS*init_ssliq/100.0_RP)
-       endif
-       QTRC(k,i,j,QS_MP) = qv(k,i,j)
-       
-       qdry = 1.0 - qv(k,i,j) - box_initial_conc*box_m_knot*1000.0/init_dens
-       rtot (k,i,j) = Rdry  * qdry + Rvap  * qv(k,i,j)
-       cvtot(k,i,j) = CVdry * qdry + CVvap * qv(k,i,j) + CPliq*box_initial_conc*box_m_knot*1000.0/init_dens
-       cptot(k,i,j) = CPdry * qdry + CPvap * qv(k,i,j) + CPliq*box_initial_conc*box_m_knot*1000.0/init_dens
-       call ATMOS_THERMODYN_temp_pres2pott(init_temp, init_pres, cptot(k,i,j), rtot(k,i,j), pott(k,i,j))
-       DENS(k,i,j) = init_pres / (init_temp * rtot(k,i,j))
-       RHOT(k,i,j) = DENS(k,i,j) * pott(k,i,j)
-
-       !nc(k,i,j) = -1.0_RP ! temperory indicator for box model calculations
-    enddo
-    enddo
-    enddo
-
-    !call ATMOS_THERMODYN_rhot2temp_pres( KA, 1, KA, IA, 1, IA, JA, 1, JA, &
-    !                                     DENS(:,:,:), RHOT(:,:,:),                & ! (in)
-    !                                     rtot(:,:,:), cvtot(:,:,:), cptot(:,:,:), & ! (in)
-    !                                     temp(:,:,:), pres(:,:,:)                 ) ! (out)
-
-    call ATMOS_PHY_MP_amps_init_qtrc_BOX( KA, KS, KE, IA, IS, IE, JA, JS, JE, &
-                                          DENS(:,:,:), QTRC(:,:,:,QS_MP+1:QE_MP), &
-                                          box_initial_conc, &
-                                          box_m_knot )
-
-    return
-  end subroutine MKINIT_boxamps
+!  !-----------------------------------------------------------------------------
+!  !> Make initial state of Box model experiment for collision-coalescence in AMPS
+!  subroutine MKINIT_boxamps
+!    use scale_const, only: &
+!       Rdry  => CONST_Rdry, &
+!       Rvap  => CONST_Rvap, &
+!       CVdry => CONST_CVdry, &
+!       CVvap => CONST_CVvap, &
+!       CPdry => CONST_CPdry, &
+!       CPvap => CONST_CPvap, &
+!       CPliq => CONST_CL, &
+!       EPSvap => CONST_EPSvap
+!    use scale_atmos_hydrometeor, only: &
+!       ATMOS_HYDROMETEOR_dry
+!    use scale_atmos_thermodyn, only: &
+!       ATMOS_THERMODYN_rhot2temp_pres, &
+!       ATMOS_THERMODYN_temp_pres2pott
+!    use mod_atmos_admin, only: &
+!       ATMOS_PHY_MP_TYPE
+!    use mod_atmos_phy_mp_vars, only: &
+!       QS_MP, &
+!       QE_MP
+!    use scale_atmos_phy_mp_amps, only: &
+!       ATMOS_PHY_MP_amps_init_qtrc_BOX
+!    implicit none
+!
+!    real(RP) :: init_dens  = 1.00_RP   ![kg/m3]
+!    real(RP) :: init_temp  = 300.00_RP ![K]
+!    real(RP) :: init_pres  = 1.E+5_RP  ![Pa]
+!    real(RP) :: init_ssliq = 0.0_RP   ![%]
+!    real(RP) :: box_initial_conc = 100.0_RP
+!    real(RP) :: box_m_knot = 4.18e-9_RP
+!    integer  :: switch_rh_or_sq = 0
+!
+!    namelist / PARAM_MKINIT_BOXAMPS / &
+!       init_dens, &
+!       init_temp, &
+!       init_pres, &
+!       init_ssliq, &
+!       switch_rh_or_sq, &
+!       box_initial_conc, &
+!       box_m_knot
+!
+!    real(RP) :: rtot (KA,IA,JA)
+!    real(RP) :: cvtot(KA,IA,JA)
+!    real(RP) :: cptot(KA,IA,JA)
+!    real(RP) :: qdry
+!    real(RP) :: psat, qsat
+!    integer  :: i, j, k, ierr
+!
+!    real(RP) :: estbar(150), esitbar(111), psat_AMPS, qs_AMPS, qv_AMPS
+!    !---------------------------------------------------------------------------
+!
+!    if ( ATMOS_PHY_MP_TYPE /= 'AMPS' ) then
+!       LOG_INFO("MKINIT_boxamps",*) 'For [Box model of AMPS],'
+!       LOG_INFO("MKINIT_boxamps",*) 'ATMOS_PHY_MP_TYPE should be AMPS. Stop! ', trim(ATMOS_PHY_MP_TYPE)
+!       call PRC_abort
+!    endif
+!
+!    if ( ATMOS_HYDROMETEOR_dry ) then
+!       LOG_ERROR("MKINIT_boxamps",*) 'QV is not registered'
+!       call PRC_abort
+!    end if
+!
+!    LOG_NEWLINE
+!    LOG_INFO("MKINIT_boxamps",*) 'Setup initial state'
+!
+!    !--- read namelist
+!    rewind(IO_FID_CONF)
+!    read(IO_FID_CONF,nml=PARAM_MKINIT_BOXAMPS,iostat=ierr)
+!    if( ierr < 0 ) then !--- missing
+!       LOG_INFO("MKINIT_boxamps",*) 'Not found namelist. Default used.'
+!    elseif( ierr > 0 ) then !--- fatal error
+!       LOG_ERROR("MKINIT_boxamps",*) 'Not appropriate names in namelist PARAM_MKINIT_BOXAMPS. Check!'
+!       call PRC_abort
+!    endif
+!    LOG_NML(PARAM_MKINIT_BOXAMPS)
+!
+!    ! SCALE way
+!    call SATURATION_psat_all( init_temp, psat )
+!    qsat = EPSvap * psat / ( init_pres - ( 1.0_RP-EPSvap ) * psat )
+!    ! AMPS way
+!    call QSPARM2(estbar,esitbar)
+!    psat_AMPS = get_sat_vapor_pres_lk2(1, init_temp, estbar, esitbar )/10.0_RP
+!    qs_AMPS = psat_AMPS/(init_pres - psat_AMPS)*0.622D0
+!    qv_AMPS = psat_AMPS*0.622_RP*init_ssliq/100.0_RP / (init_pres - psat_AMPS*init_ssliq/100.0_RP)
+! 
+!    do j = 1, JA
+!    do i = 1, IA
+!    do k = 1, KA
+!       MOMX(k,i,j) = 0.0_RP
+!       MOMY(k,i,j) = 0.0_RP
+!       MOMZ(k,i,j) = 0.0_RP
+!
+!       if (switch_rh_or_sq == 1) then
+!          ! from specific humidity
+!          qv(k,i,j) = ( init_ssliq + 1.0_RP ) * qsat
+!       else if (switch_rh_or_sq == 0) then
+!          ! from relative humidity
+!          !rh = 100*pq/(e+q)/s
+!          !rh/100*(e+q)s = pq
+!          !q (p - rh*s/100) = s*e*rh/100
+!          !q = s*e*rh/100 / (p - rh*s/100)
+!          qv(k,i,j) = psat_AMPS*0.622_RP*init_ssliq/100.0_RP / (init_pres - psat_AMPS*init_ssliq/100.0_RP)
+!       endif
+!       QTRC(k,i,j,QS_MP) = qv(k,i,j)
+!       
+!       qdry = 1.0 - qv(k,i,j) - box_initial_conc*box_m_knot*1000.0/init_dens
+!       rtot (k,i,j) = Rdry  * qdry + Rvap  * qv(k,i,j)
+!       cvtot(k,i,j) = CVdry * qdry + CVvap * qv(k,i,j) + CPliq*box_initial_conc*box_m_knot*1000.0/init_dens
+!       cptot(k,i,j) = CPdry * qdry + CPvap * qv(k,i,j) + CPliq*box_initial_conc*box_m_knot*1000.0/init_dens
+!       call ATMOS_THERMODYN_temp_pres2pott(init_temp, init_pres, cptot(k,i,j), rtot(k,i,j), pott(k,i,j))
+!       DENS(k,i,j) = init_pres / (init_temp * rtot(k,i,j))
+!       RHOT(k,i,j) = DENS(k,i,j) * pott(k,i,j)
+!
+!       !nc(k,i,j) = -1.0_RP ! temperory indicator for box model calculations
+!    enddo
+!    enddo
+!    enddo
+!
+!    !call ATMOS_THERMODYN_rhot2temp_pres( KA, 1, KA, IA, 1, IA, JA, 1, JA, &
+!    !                                     DENS(:,:,:), RHOT(:,:,:),                & ! (in)
+!    !                                     rtot(:,:,:), cvtot(:,:,:), cptot(:,:,:), & ! (in)
+!    !                                     temp(:,:,:), pres(:,:,:)                 ) ! (out)
+!
+!    call ATMOS_PHY_MP_amps_init_qtrc_BOX( KA, KS, KE, IA, IS, IE, JA, JS, JE, &
+!                                          DENS(:,:,:), QTRC(:,:,:,QS_MP+1:QE_MP), &
+!                                          box_initial_conc, &
+!                                          box_m_knot )
+!
+!    return
+!  end subroutine MKINIT_boxamps
 
   SUBROUTINE QSPARM2(ESTBAR,ESITBAR)
 !        based on Murphy and Koop (2005)
@@ -2294,6 +2312,8 @@ contains
   !-----------------------------------------------------------------------------
   !> Make initial state ( horizontally uniform )
   subroutine MKINIT_mountainwave
+   use scale_atmos_dyn_dgm_hydrostatic, only: &
+      dg_hydrostatic_calc_basicstate_constBVFreq => hydrostatic_calc_basicstate_constBVFreq
     implicit none
 
     ! Surface state
@@ -2318,6 +2338,10 @@ contains
 
     integer :: ierr
     integer :: k, i, j
+
+    type(FEM_LocalMesh3D), pointer :: lmesh
+    integer :: ldomid
+    integer :: kelem, ke_x, ke_y, ke_z
     !---------------------------------------------------------------------------
 
     LOG_NEWLINE
@@ -2382,6 +2406,30 @@ contains
     enddo
     enddo
     !$acc end kernels
+
+    if ( ATMOS_sw_dyn_DGM ) then
+      do ldomid=1, fem_mesh3D%LOCAL_MESH_NUM
+         lmesh => fem_mesh3D%lcmesh_list(ldomid)
+
+         call dg_hydrostatic_calc_basicstate_constBVFreq( DG_DENS_hyd%local(ldomid)%val, DG_PRES_hyd%local(ldomid)%val, &
+            sqrt(N2), SFC_THETA, SFC_PRES, lmesh%pos_en(:,:,1), lmesh%pos_en(:,:,2), lmesh%zlev(:,:),                   &
+            lmesh, lmesh%refElem3D )
+         
+         !$omp parallel do collapse(3) private( kelem, ke_x, ke_y, ke_z )
+         do ke_y=1, lmesh%NeY
+         do ke_x=1, lmesh%NeX
+         do ke_z=1, lmesh%NeZ
+            kelem = ke_x + (ke_y-1)*lmesh%NeX + (ke_z-1)*lmesh%NeX*lmesh%NeY
+            DG_DDENS%local(ldomid)%val(:,kelem) = 0.0_RP
+            DG_DRHOT%local(ldomid)%val(:,kelem) = 0.0_RP
+            DG_MOMX%local(ldomid)%val(:,kelem) = ENV_U * DG_DENS_hyd%local(ldomid)%val(:,kelem)
+            DG_MOMY%local(ldomid)%val(:,kelem) = ENV_V * DG_DENS_hyd%local(ldomid)%val(:,kelem)
+            DG_MOMZ%local(ldomid)%val(:,kelem) = 0.0_RP
+         enddo
+         enddo
+         enddo
+      enddo
+    endif
 
     ! optional : add tracer bubble
     if ( BBL_PTracer > 0.0_RP ) then

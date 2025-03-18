@@ -4,7 +4,7 @@
 !! @par Description
 !!      Construct hydrostatic state for Atmospheric dynamical process. 
 !!
-!! @author Team SCALE
+!! @author Yuta Kawai, Team SCALE
 !<
 !-------------------------------------------------------------------------------
 #include "scalelib.h"
@@ -367,6 +367,7 @@ contains
     integer :: PmatDlu_ipiv(elem%Np,lcmesh%NeZ)
     real(RP) :: PmatL(elem%Np,elem%Np,lcmesh%NeZ)
     real(RP) :: PmatU(elem%Np,elem%Np,lcmesh%NeZ)
+    real(RP) :: GsqrtV_z(elem%Np,lcmesh%NeZ)
 
     real(RP) :: linf_b
 
@@ -429,6 +430,7 @@ contains
 
         DENS_hyd_z(:,ke_z) = DENS_hyd(:,ke)
         PRES_hyd_z(:,ke_z) = PRES_hyd(:,ke)
+        GsqrtV_z(:,ke_z) = lcmesh%Gsqrt(:,ke) / lcmesh%GsqrtH(elem%IndexH2Dto3D(:),ke2D)
       end do
 
       do itr_nlin=1, 10
@@ -462,7 +464,7 @@ contains
         call construct_pmatInv( PmatDlu, PmatDlu_ipiv, PmatL, PmatU,  & ! (out)
           VARS0, POT(:,:,ke_x,ke_y), Rtot(:,:,ke_x,ke_y),             & ! (in)
           CPtot_ov_CVtot(:,:,ke_x,ke_y), DENS_hyd_z, PRES_hyd_z,      & ! (in)
-          Dz, Lift, IntrpMat_VPOrdM1, lcmesh, elem,                   & ! (in)
+          Dz, Lift, IntrpMat_VPOrdM1, GsqrtV_z, lcmesh, elem,         & ! (in)
           nz, vmapM_z1D, vmapP_z1D, ke_x, ke_y  )
 
         do itr_lin=1, 2*int(N/m)
@@ -730,11 +732,13 @@ contains
     real(RP) :: del_flux(elem%NfpTot,lmesh%NeZ)
 
     integer :: ke_z
-    integer :: ke
+    integer :: ke, ke2D
 
     real(RP) :: gamm
     real(RP) :: RdOvP00
     real(RP) :: rP0
+
+    real(RP) :: GsqrtV(elem%Np)
     !-------------------------------------------
 
     gamm = CpDry / CvDry
@@ -746,9 +750,12 @@ contains
       DENS_hyd, PRES_hyd, bnd_SFC_PRES, & ! (in)        
       nz, vmapM, vmapP, lmesh, elem     ) ! (in)
 
-    !$omp parallel do private(ke, DPRES, DENS, Fz, LiftDelFlx)
+    !$omp parallel do private(ke, ke2D, DPRES, DENS, Fz, LiftDelFlx, GsqrtV)
     do ke_z=1, lmesh%NeZ
       ke = Ke_x + (Ke_y-1)*lmesh%NeX + (ke_z-1)*lmesh%NeX*lmesh%NeY
+      ke2D = lmesh%EMap3Dto2D(ke)
+
+      GsqrtV(:)  = lmesh%Gsqrt(:,ke) / lmesh%GsqrtH(elem%IndexH2Dto3D,ke2D)
 
       DENS(:) = DENS_hyd(:,ke_z) + DDENS(:,ke_z)
       DPRES(:) = PRES00 * ( Rtot(:,ke_z) * rP0 * DENS(:) * POT(:,ke_z) )**CPtot_ov_CVtot(:,ke_z) !&
@@ -758,7 +765,7 @@ contains
 
       ! Ax(:,ke_z) = lmesh%Escale(:,ke,3,3) * Fz(:) + LiftDelFlx(:) &
       !            + Grav * matmul(IntrpMat_VPOrdM1, DDENS(:,ke_z))
-      Ax(:,ke_z) = lmesh%Escale(:,ke,3,3) * Fz(:) + LiftDelFlx(:) &
+      Ax(:,ke_z) = ( lmesh%Escale(:,ke,3,3) * Fz(:) + LiftDelFlx(:) ) / GsqrtV(:) &
                  + Grav * matmul(IntrpMat_VPOrdM1, DENS(:)) !DDENS(:,ke_z))
     end do
 
@@ -866,10 +873,12 @@ contains
     real(RP) :: del_flux(elem%NfpTot,lmesh%NeZ)
 
     integer :: ke_z
-    integer :: ke
+    integer :: ke, ke2D
 
     real(RP) :: gamm
     real(RP) :: rP0
+
+    real(RP) :: GsqrtV(elem%Np)
     !-------------------------------------------
 
     gamm = CpDry/CvDry
@@ -880,9 +889,12 @@ contains
       DENS_hyd, PRES_hyd,                       & ! (in)        
       nz, vmapM, vmapP, lmesh, elem             ) ! (in)
 
-    !$omp parallel do private(ke, PRES, PRES0, DPRES, Fz, LiftDelFlx)
+    !$omp parallel do private(ke, ke2D, PRES, PRES0, DPRES, Fz, LiftDelFlx, GsqrtV)
     do ke_z=1, lmesh%NeZ
       ke = Ke_x + (Ke_y-1)*lmesh%NeX + (ke_z-1)*lmesh%NeX*lmesh%NeY
+      ke2D = lmesh%EMap3Dto2D(ke)
+
+      GsqrtV(:)  = lmesh%Gsqrt(:,ke) / lmesh%GsqrtH(elem%IndexH2Dto3D,ke2D)
 
       PRES0(:) = PRES00 * ( Rtot(:,ke_z) * rP0 * (DENS_hyd(:,ke_z) + DDENS0(:,ke_z)) * POT(:,ke_z) )**CPtot_ov_CVtot(:,ke_z)
       DPRES(:) = CPtot_ov_CVtot(:,ke_z) * PRES0(:) / (DENS_hyd(:,ke_z) + DDENS0(:,ke_z)) * DDENS(:,ke_z)
@@ -890,7 +902,7 @@ contains
       call sparsemat_matmul(Dz, DPRES(:), Fz)
       call sparsemat_matmul(Lift, lmesh%Fscale(:,ke)*del_flux(:,ke_z), LiftDelFlx)
       
-      Ax(:,ke_z) = lmesh%Escale(:,ke,3,3) * Fz(:) + LiftDelFlx(:) &
+      Ax(:,ke_z) = ( lmesh%Escale(:,ke,3,3) * Fz(:) + LiftDelFlx(:) ) / GsqrtV(:) &
                  + Grav * matmul(IntrpMat_VPOrdM1, DDENS(:,ke_z))
     end do
 
@@ -977,7 +989,7 @@ contains
 !OCL SERIAL
   subroutine construct_pmatInv( PmatDlu, PmatDlu_ipiv, PmatL, PmatU, &
     DDENS0, POT, Rtot, CPtot_ov_CVtot, DENS_hyd, PRES_hyd,           & ! (in)
-    Dz, Lift, IntrpMat_VPOrdM1, lmesh, elem,                         & ! (in)
+    Dz, Lift, IntrpMat_VPOrdM1, GsqrtV, lmesh, elem,                 & ! (in)
     nz, vmapM, vmapP, ke_x, ke_y )
 
     use scale_matrix, only: MATRIX_LU
@@ -997,6 +1009,7 @@ contains
     real(RP), intent(in)  :: PRES_hyd(elem%Np,lmesh%NeZ)
     class(SparseMat), intent(in) :: Dz, Lift
     real(RP), intent(in) :: IntrpMat_VPOrdM1(elem%Np,elem%Np)
+    real(RP), intent(in) ::  GsqrtV(elem%Np,lmesh%NeZ)
     real(RP), intent(in) :: nz(elem%NfpTot,lmesh%NeZ)
     integer, intent(in) :: vmapM(elem%NfpTot,lmesh%NeZ)
     integer, intent(in) :: vmapP(elem%NfpTot,lmesh%NeZ)    
@@ -1005,7 +1018,7 @@ contains
     real(RP) :: DENS0(elem%Np,lmesh%NeZ)
     real(RP) :: PRES0(elem%Np,lmesh%NeZ)
     integer :: ke_z, ke_z2
-    integer :: ke, p, fp, v
+    integer :: ke, ke2D, p, fp, v
     real(RP) :: gamm, rgamm, rP0
     real(RP) :: dz_p(elem%Np)
     real(RP) :: PmatD(elem%Np,elem%Np)
@@ -1033,12 +1046,13 @@ contains
       PRES0(:,ke_z) = PRES00 * ( Rtot(:,ke_z) * rP0 * DENS0(:,ke_z) * POT(:,ke_z) )**CPtot_ov_CVtot(:,ke_z)
     end do
 
-!   !$omp parallel do private(ke, p, fp, v, f1, f2, ke_z2, dz_p, &
+!   !$omp parallel do private(ke, ke2D, p, fp, v, f1, f2, ke_z2, dz_p, &
 !   !$omp tmp, lift_, lift_2, fac, &
 !   !$omp PmatD, FmV, FmV2, fp_s, fp_e)
     do ke_z=1, lmesh%NeZ
       ke = Ke_x + (Ke_y-1)*lmesh%NeX + (ke_z-1)*lmesh%NeX*lmesh%NeY
-
+      ke2D = lmesh%EMap3Dto2D(ke)
+      
       !-----
       PmatD(:,:) = 0.0_RP
       PmatL(:,:,ke_z) = 0.0_RP
@@ -1046,7 +1060,7 @@ contains
 
       do p=1, elem%Np
         dz_p(:) = lmesh%Escale(p,ke,3,3) * elem%Dx3(p,:) 
-        PmatD(p,:) = dz_p(:) * CPtot_ov_CVtot(:,ke_z) * PRES0(:,ke_z) / DENS0(:,ke_z) &
+        PmatD(p,:) = dz_p(:) * CPtot_ov_CVtot(:,ke_z) * PRES0(:,ke_z) / ( DENS0(:,ke_z) * GsqrtV(:,ke_z) ) &
                    + Grav * IntrpMat_VPOrdM1(p,:)
       end do
 
@@ -1072,7 +1086,7 @@ contains
         do fp=fp_s, fp_e
           p = fp-fp_s+1
 
-          fac = 0.5_RP * ( 1.0_RP - sign(1.0_RP,nz(fp,ke_z)) )
+          fac = 0.5_RP * ( 1.0_RP - sign(1.0_RP,nz(fp,ke_z)) ) / GsqrtV(FmV(p),ke_z)
           tmp(:) = lift_op(FmV,fp) * lmesh%Fscale(fp,ke) * nz(fp,ke_z) * fac
           lift_ (FmV,FmV (p)) = tmp(:) * CPtot_ov_CVtot(FmV (p),ke_z ) * PRES0(FmV (p),ke_z ) / DENS0(FmV (p),ke_z )
           lift_2(FmV,FmV2(p)) = tmp(:) * CPtot_ov_CVtot(FmV2(p),ke_z2) * PRES0(FmV2(p),ke_z2) / DENS0(FmV2(p),ke_z2)

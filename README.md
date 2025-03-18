@@ -8,7 +8,7 @@
 
 The origins of the codes used in this branch are as follows: 
 
-SCALE: A branch [develop](https://github.com/scale-met/scale-dev/tree/feature/develop) (commit: 2b26cbd) of a private repository [scale-dev](https://github.com/scale-met/scale-dev).   
+SCALE: A branch [develop](https://github.com/scale-met/scale-dev/tree/develop) (commit: 16101ec) of a private repository [scale-dev](https://github.com/scale-met/scale-dev) with slight modification (opt out unused functions SDM and AMPS).
 SCALE-LETKF: A private repository [scale-letkf](https://github.com/SCALE-LETKF-SMN/scale-letkf) (commit: 4d79eff) of a version for the PREVENIR project. 
 
 [SCALE User's guide](https://scale.riken.jp/archives/scale_users_guide_En.v5.5.4.pdf) is available online.
@@ -38,13 +38,12 @@ export SCALE_NETCDF_F=`spack location --install-dir /${NF_HASH}`
 export SCALE_PNETCDF=`spack location --install-dir /${PN_HASH}`
 
 export SCALE_NETCDF_INCLUDE="-I${SCALE_NETCDF_C}/include -I${SCALE_NETCDF_F}/include"
-export SCALE_NETCDF_LIBS="-L${SCALE_NETCDF_C}/lib -L${SCALE_NETCDF_F}/lib -L${SCALE_HDF}/lib -L${SCALE_PNETCDF}/lib -lpnetcdf -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lfjprofmpi -lmpi_cxx"
+export SCALE_NETCDF_LIBS="-L${SCALE_NETCDF_C}/lib -L${SCALE_NETCDF_F}/lib -L${SCALE_HDF}/lib -L${SCALE_PNETCDF}/lib -lpnetcdf -lnetcdff -lnetcdf -lhdf5_hl -lhdf5"
 
 # for hdf_fortran
 export HDF2=(your netcdf library)
 
 export PATH=$SCALE_NETCDF_C/bin:$PATH
-export LD_LIBRARY_PATH=$GRIB2/lib:$SCALE_NETCDF_C/lib:$SCALE_NETCDF_F/lib:$SCALE_PNETCDF/lib:$SCALE_HDF/lib:$HDF2/lib:/vol0004/apps/oss/spack-v0.21/opt/spack/linux-rhel8-a64fx/fj-4.10.0/hdf5-1.14.3-yhazdvld6vknkhmbcqrbl34ifsac2hao/lib:$LD_LIBRARY_PATH
 ```
 
 You can build SCALE-RM and SNO with GNU make. 
