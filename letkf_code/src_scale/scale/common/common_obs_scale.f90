@@ -2436,7 +2436,7 @@ SUBROUTINE read_obs_radar(cfile,obs)
   REAL(r_sngl) :: wk(8)
   INTEGER :: nrec
   REAL(r_sngl) :: tmp
-  REAL(r_sngl) :: radarlon,radarlat,radarz
+  REAL(r_size) :: radarlon,radarlat,radarz
   REAL(r_size) :: az, el, ra
   INTEGER :: n,iunit,ios
 
@@ -2456,12 +2456,15 @@ SUBROUTINE read_obs_radar(cfile,obs)
   END IF
   iunit=91
   OPEN(iunit,FILE=cfile,FORM='unformatted',ACCESS='sequential',CONVERT=trim(c_endian))
-  READ(iunit, iostat=ios)radarlon
+  READ(iunit, iostat=ios) tmp
   IF(ios /= 0) RETURN
-  READ(iunit, iostat=ios)radarlat
+  radarlon=real(tmp,r_size)
+  READ(iunit, iostat=ios) tmp
   IF(ios /= 0) RETURN
-  READ(iunit, iostat=ios)radarz
+  radarlat=real(tmp,r_size)
+  READ(iunit, iostat=ios) tmp
   IF(ios /= 0) RETURN
+  radarz=real(tmp,r_size)
   DO n=1,obs%nobs
     READ(iunit) wk(1:nrec)
     obs%elm(n) = NINT(wk(1))

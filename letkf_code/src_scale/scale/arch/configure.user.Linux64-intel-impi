@@ -1,5 +1,5 @@
 # Precision
-LETKF_SINGLE_FP = F
+LETKF_SINGLE_FP = T
 
 # Libraries
 #-----------------
