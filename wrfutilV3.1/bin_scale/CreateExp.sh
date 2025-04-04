@@ -45,7 +45,7 @@ mkdir -p $SCALEDIR
 mkdir -p $SCALEPPDIR
 mkdir -p $LETKFDIR
 mkdir -p $OBSDIR
-cp -r $WRFUTILDIR/bin $EXPDIR
+cp -r $WRFUTILDIR/bin_scale $EXPDIR/bin
 cp -r $WRFUTILDIR/lib $EXPDIR
 mkdir -p $NAMELISTDIR
 cp    $WRFUTILDIR/namelists/$MODEL_CONF_SET/* $NAMELISTDIR/

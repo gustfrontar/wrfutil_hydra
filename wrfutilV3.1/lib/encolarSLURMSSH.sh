@@ -1,3 +1,36 @@
+adjust_format(){
+
+  input_nodelist=${1}
+
+  if [[ "$input_nodelist" =~ "[" ]]; then
+    cnode=$(echo $input_nodelist | cut -d "[" -f 1)
+    output_nodelist=""
+    nodenums=$(echo $input_nodelist | cut -d "[" -f 2 | cut -d "]" -f 1)
+    for nodenum in $(echo $nodenums | sed -e "s#\,#\ #g"); do
+      echo $nodenum >> check.log
+      if [[ "$nodenum" =~ "-" ]]; then
+        inodes=$(echo $nodenum | cut -d "-" -f 1)
+        inodee=$(echo $nodenum | cut -d "-" -f 2)
+      else
+        inodes=$nodenum
+        inodee=$nodenum
+      fi
+      cnum=${#inodes}
+      for i in $(seq -f %$(printf %02g ${cnum})g $((10#${inodes})) $((10#${inodee})) ) ;do
+        if [ "$output_nodelist" == "" ]; then
+          output_nodelist=$cnode$inodes
+        else
+          output_nodelist=$output_nodelist","$cnode$i
+        fi
+      done
+    done
+  else
+    output_nodelist="$input_nodelist"
+  fi
+
+  echo $output_nodelist 
+}
+
 queue (){
 	#In the context of this function:
 	#QPROC means how many cores do we need for each ensemble member (or for the job in case a unique member is indicated)
@@ -14,7 +47,57 @@ queue (){
 	#Construct the machine files, write the scripts and run them. 
 
         #1 - Create machine files
-	IFS=', ' read -r -a NODES <<< $SLURM_JOB_NODELIST
+
+        TOT_CORES=$(( 10#$INODE * 10#$ICORE ))                        #Total number of available cores
+        MAX_JOBS=$(( 10#$TOT_CORES / 10#$QPROC ))                     #Maximum number of simultaneous jobs
+
+        if [ $QPROC -gt $ICORE ] ; then
+           #Round QPROC so that the number of nodes per job is integer.
+           QPROC=$(( 10#$ICORE * ( 10#$QPROC / 10#$ICORE ) ))
+        fi
+        if [ $(( $QPROC % $QSKIP )) -ne 0 ] ; then
+           echo "Error: QSKIP=$QSKIP must divide QPROC=$QPROC."
+           echo "Check the configuration in machine.conf"
+           exit 1
+        fi
+
+        echo MAX_JOBS = $MAX_JOBS
+        if [ $MAX_JOBS -gt 128 ] ; then
+          echo "WARNING: Maximum number of simultaneous runs is 128, this may produce problems!!!"
+        fi
+
+        NCORE=0
+        NNODE=0
+        NODES=()
+        while [ $NCORE -le $TOT_CORES ] ; do
+           NODES+=( $NNODE )
+           NCORE=$(($NCORE+1))
+           if [ $(( NCORE % ICORE )) -eq 0 ] ; then
+              NNODE=$(($NNODE+1))
+           fi
+        done
+
+#        NPCORE=0        #Counter for the number of cores on current job
+#        NJOB=1          #Counter for the number of jobs.
+#        NMEM=$ini_mem   #Counter for the ensemble member
+#        rm -fr machine.*
+#        while [ $NMEM -le $end_mem ]; do
+#            NCORE=$(( ($NJOB-1)*( 10#$QPROC ) + ( 10#$NPCORE ) ))
+#            SMEM=$(printf "$mem_print_format" $((10#$NMEM)))
+#            echo "(${NODES[$NCORE]}) core=$QSKIP" >> ./machine.$SMEM
+#            NPCORE=$(($NPCORE + $QSKIP ))
+#            if [ $NPCORE -ge $QPROC ] ; then
+#               NMEM=$(($NMEM + 1 ))
+#               NJOB=$(($NJOB + 1 ))
+#               NPCORE=0
+#            fi
+#            if [ $NJOB -gt $MAX_JOBS ] ; then
+#               NPCORE=0
+#               NJOB=1
+#            fi
+#        done
+
+	IFS=', ' read -r -a NODES <<< $( adjust_format $SLURM_JOB_NODELIST )
 	echo NODES="${NODES[@]}"
 	TOT_CORES=$(( $ICORE * $INODE ))
         MAX_JOBS=$(( $TOT_CORES / $QPROC ))  #Floor rounding (bash default)
@@ -51,14 +134,19 @@ queue (){
         for IMEM in $(seq -w $ini_mem $end_mem) ; do
 		echo "source $BASEDIR/conf/config.env"                                                           > ${QPROC_NAME}_${IMEM}.pbs 
                 echo "source $BASEDIR/conf/machine.conf"                                                        >> ${QPROC_NAME}_${IMEM}.pbs
-                echo "source $BASEDIR/conf/$QCONF"                                                              >> ${QPROC_NAME}_${IMEM}.pbs
-                echo "source $BASEDIR/lib/errores.env"                                                          >> ${QPROC_NAME}_${IMEM}.pbs
 		echo "ERROR=0                        "                                                          >> ${QPROC_NAME}_${IMEM}.pbs
-		test $QTHREAD  && echo "export OMP_NUM_THREADS=${QTHREAD}"                                      >> ${QPROC_NAME}_${IMEM}.pbs
+                if [ $QOMP -eq 1 ] ; then
+                  echo "export OMP_NUM_THREADS=${QSKIP}"                                         >> ${QPROC_NAME}_${IMEM}.pbs
+                  echo "export PARALLEL=${QSKIP}"                                                >> ${QPROC_NAME}_${IMEM}.pbs
+                else
+                  echo "export OMP_NUM_THREADS=1"                                                >> ${QPROC_NAME}_${IMEM}.pbs
+                  echo "export PARALLEL=1"                                                       >> ${QPROC_NAME}_${IMEM}.pbs
+                fi
                 echo "MEM=$IMEM "                                                                             >> ${QPROC_NAME}_${IMEM}.pbs
 	        echo "export MPIEXESERIAL=\"\$MPIEXEC -np 1 -machinefile ../machine.$IMEM -bootstrap slurm \" ">> ${QPROC_NAME}_${IMEM}.pbs
          	echo "export MPIEXE=\"mpiexec -np ${QPROC} -machinefile ../machine.$IMEM -bootstrap slurm  \" ">> ${QPROC_NAME}_${IMEM}.pbs                   ## Comando MPIRUN con cantidad de nodos y cores por nodos           
-	       	test $QWORKPATH &&  echo "cd ${QWORKPATH}/${IMEM}"                                             >> ${QPROC_NAME}_${IMEM}.pbs
+	       	echo "mkdir -p ${QWORKPATH}/${IMEM}"                                                           >> ${QPROC_NAME}_${IMEM}.pbs
+	       	echo "cd ${QWORKPATH}/${IMEM}"                                                                 >> ${QPROC_NAME}_${IMEM}.pbs
 	        echo "${QSCRIPTCMD}"                                                                            >> ${QPROC_NAME}_${IMEM}.pbs
 	        echo "if [[ -z \${ERROR} ]] || [[ \${ERROR} -eq 0 ]] ; then"                                    >> ${QPROC_NAME}_${IMEM}.pbs
 	        echo "touch $PROCSDIR/${QPROC_NAME}_${IMEM}_ENDOK  "                                           >> ${QPROC_NAME}_${IMEM}.pbs  #Si existe la variable RES en el script la usamos
