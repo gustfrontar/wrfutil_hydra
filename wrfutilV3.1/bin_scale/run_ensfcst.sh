@@ -8,11 +8,17 @@
 
 ### CONFIGURACION
 #Load experiment configuration
+BASEDIR=$(pwd)/../
 source $BASEDIR/conf/config.env
+source $BASEDIR/conf/exp.conf
 source $BASEDIR/conf/step.conf
 source $BASEDIR/conf/machine.conf
 source $BASEDIR/conf/model.conf
-source ${BASEDIR}/lib/encolar${QUEUESYS}.sh       
+source $BASEDIR/lib/encolar${QUEUESYS}.sh       
+if [ $MACHINE == "FUGAKU" ] ;then
+  source $TOPDIR/setup_spack.sh
+fi
+
 
 ##### To use Fugaku's shared filesystem  ######
 if [ ! -z ${PJM_SHAREDTMP} ] && [  ${USETMPDIR} -eq 1 ] ; then 
@@ -20,7 +26,7 @@ if [ ! -z ${PJM_SHAREDTMP} ] && [  ${USETMPDIR} -eq 1 ] ; then
    WRFDIR=${PJM_SHAREDTMP}/WRF
 fi
 
-cd $WRFDIR
+cd $SCALEDIR
 echo "=========================="
 echo "Forecast for STEP " $STEP
 echo "Starting at " $INI_DATE_FCST
@@ -30,255 +36,170 @@ echo "Ending   at " $END_DATE_FCST
 read -r IY IM ID IH Im Is  <<< $(date -u -d "$INI_DATE_FCST UTC" +"%Y %m %d %H %M %S")
 read -r FY FM FD FH Fm Fs  <<< $(date -u -d "$END_DATE_FCST UTC" +"%Y %m %d %H %M %S")
 
-
 #Prepare the namelists
 if [ $MULTIMODEL -eq 0 ] ; then  
    MULTIMODEL_CONF_INI=$MODEL_CONF;MULTIMODEL_CONF_FIN=$MODEL_CONF
    echo "We will run a single configuration ensemble"
 else 
-   echo "We will run a multimodel configuration ensemble with $NCONF configurations"
-   MULTIMODEL_CONF_INI=1;MULTIMODEL_CONF_FIN=$NCONF
+   echo "SCALE does not support multimodel configuration. MULTIMODEL is set to 0."
+   MULTIMODEL=0
+   MULTIMODEL_CONF_INI=$MODEL_CONF;MULTIMODEL_CONF_FIN=$MODEL_CONF
+   echo "We will run a single configuration ensemble"
 fi
 
-for ICONF in $(seq -w $MULTIMODEL_CONF_INI $MULTIMODEL_CONF_FIN) ; do
-   WRFCONF=$(printf '%03d' $((10#$ICONF)))
-   cp $NAMELISTDIR/namelist.input.${WRFCONF} $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__START_YEAR__|$IY|g"                               $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__START_MONTH__|$IM|g"                              $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__START_DAY__|$ID|g"                                $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__START_HOUR__|$IH|g"                               $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__START_MINUTE__|$Im|g"                             $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__START_SECOND__|$Is|g"                             $WRFDIR/namelist.input.${WRFCONF} 
-   sed -i -e "s|__END_YEAR__|$FY|g"                                 $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__END_MONTH__|$FM|g"                                $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__END_DAY__|$FD|g"                                  $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__END_HOUR__|$FH|g"                                 $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__END_MINUTE__|$Fm|g"                               $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__END_SECOND__|$Fs|g"                               $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__INTERVALO_WPS__|$FCST_BDY_FREQ|g"                 $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__INTERVALO_WRF__|$((10#$FCST_OFREQ/60))|g"         $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__E_WE__|$E_WE|g"                                   $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__E_SN__|$E_SN|g"                                   $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__DX__|$DX|g"                                       $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__DY__|$DY|g"                                       $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__DT__|$DT|g"                                       $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__IOTYPE__|$IOTYPE|g"                               $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__METLEV__|$METLEV|g"                               $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__NUMTILE__|$NUMTILE|g"                             $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__NIOT__|$NIOT|g"                                   $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__NIOG__|$NIOG|g"                                   $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__E_VERT__|$E_VERT|g"                               $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__P_TOP__|$P_TOP|g"                                 $WRFDIR/namelist.input.${WRFCONF}
-   sed -i -e "s|__RADT__|$RADT|g"                                   $WRFDIR/namelist.input.${WRFCONF}
-done
+# Edit the namelist.
+cp $NAMELISTDIR/namelist.scale $SCALEDIR/
+cp $NAMELISTDIR/namelist.sno_fcst $SCALEDIR/
 
-#Untar executables
-if [ ! -e $WRFDIR/code/real.exe ] ; then
-   echo "Decompressing executables ..."
-   mkdir -p $WRFDIR/code
-   cd $WRFDIR
-   tar -xf wrf.tar -C $WRFDIR/code
-   tar -xf wrfda.tar -C $WRFDIR/code
-   tar -xf pert_met_em.tar -C $WRFDIR/code
-   if [ -e $WRFDIR/code/namelist.input ] ; then
-      rm -f $WRFDIR/code/namelist.input
-   fi
+#Edit the namelist from the template
+
+if [ $MAP_PROJ == "lambert" ];then
+  MAP_PROJ_SCALE="LC"
 fi
 
+SCALEDATA="$SCALEPATH/data"
+INI_SCALE="$(date -ud "$INI_DATE_FCST" +'%Y,%m,%d,%H,%M,%S' )"
+E_WE_LOC=$((E_WE / NPROC_X))
+E_SN_LOC=$((E_SN / NPROC_Y))
+FCSTLEN=$(( $(date -ud "$END_DATE_FCST" +%s) - $(date -ud "$INI_DATE_FCST" +%s) ))
+INT_R_SCALE=$FCSTLEN
+if [ $EXPTYPE == "DACYCLE" ] ;then
+   INT_F_SCALE=$ANALYSIS_WIN_STEP
+else 
+   INT_F_SCALE=$FCST_OFREQ
+fi
 
-#Build the script to run REAL/DA-UPDATE-BC/WRF
+sed -i -e "s|__INI_SCALE__|$INI_SCALE|g"      $SCALEDIR/namelist.scale
+sed -i -e "s|__LEN__|$FCSTLEN|g"              $SCALEDIR/namelist.scale
+sed -i -e "s|__INT_R_SCALE__|$INT_R_SCALE|g"   $SCALEDIR/namelist.scale
+sed -i -e "s|__INT_F_SCALE__|$INT_F_SCALE|g"   $SCALEDIR/namelist.scale
+sed -i -e "s|__E_WE_LOC__|$E_WE_LOC|g"        $SCALEDIR/namelist.scale
+sed -i -e "s|__E_SN_LOC__|$E_SN_LOC|g"        $SCALEDIR/namelist.scale
+sed -i -e "s|__NPROC_X__|$NPROC_X|g"          $SCALEDIR/namelist.scale
+sed -i -e "s|__NPROC_Y__|$NPROC_Y|g"          $SCALEDIR/namelist.scale
+sed -i -e "s|__DX__|$DX|g"                    $SCALEDIR/namelist.scale
+sed -i -e "s|__DY__|$DY|g"                    $SCALEDIR/namelist.scale
+sed -i -e "s|__MAP_PROJ__|$MAP_PROJ_SCALE|g"  $SCALEDIR/namelist.scale
+sed -i -e "s|__REF_LAT__|$REF_LAT|g"          $SCALEDIR/namelist.scale
+sed -i -e "s|__REF_LON__|$REF_LON|g"          $SCALEDIR/namelist.scale
+sed -i -e "s|__TRUELAT1__|$TRUELAT1|g"        $SCALEDIR/namelist.scale
+sed -i -e "s|__TRUELAT2__|$TRUELAT2|g"        $SCALEDIR/namelist.scale
+sed -i -e "s|__SCALEDATA__|$SCALEDATA|g"      $SCALEDIR/namelist.scale
+sed -i -e "s|__HISTDIR__|fcst|g"              $SCALEDIR/namelist.scale
+sed -i -e "s|__DT__|$DT|g"                    $SCALEDIR/namelist.scale
+sed -i -e "s|__RADT__|$RADT|g"                $SCALEDIR/namelist.scale
+sed -i -e "s|__DYNDT__|$DYNDT|g"              $SCALEDIR/namelist.scale
+sed -i -e "s|__LNDDT__|$DT2|g"                $SCALEDIR/namelist.scale
+sed -i -e "s|__OCNDT__|$DT2|g"                $SCALEDIR/namelist.scale
+sed -i -e "s|__URBDT__|$DT2|g"                $SCALEDIR/namelist.scale
+
+###
+# Create the script that will run scale for each ensemble member.
+###
+echo "Running the scale for the step" $STEP
+
 read -r -d '' QSCRIPTCMD << "EOF"
 ulimit -s unlimited
 source $BASEDIR/conf/model.conf
 source $BASEDIR/conf/step.conf
 source $BASEDIR/conf/exp.conf
-echo "Processing member $MEM" 
+echo "Processing member $MEM"
 
-if [ ! -z ${PJM_SHAREDTMP} ] && [  ${USETMPDIR} -eq 1 ] ; then
-   echo "Using Fugaku's shared dir to run WRF"
-   WRFDIR=${PJM_SHAREDTMP}/WRF/    #WRFDIR is redefined here
-fi
+mkdir -p $SCALEDIR/$MEM
+cd $SCALEDIR/$MEM
 
-if [ $MULTIMODEL -eq 0 ] ; then
-   NLCONF=$(printf '%03d' ${MODEL_CONF} )
-else 
-   NLCONF=$(printf '%03d' $(( ( ( 10#$MEM - 1 ) % 10#$NCONF ) + 1 )) )
-fi
-cp $WRFDIR/namelist.input.${NLCONF} $WRFDIR/$MEM/namelist.input
+ln -sf $SCALEDIR/scale-rm${SCALE_opt} ./scale-rm
+ln -sf $SCALEDIR/sno${SCALE_opt} ./sno
+cp $SCALEDIR/namelist.scale . 
+cp $SCALEDIR/namelist.sno_fcst . 
 
-ln -sf $WRFDIR/code/* . 
-
-if [ ! -z ${PJM_SHAREDTMP} ] && [  ${USETMPDIR} -eq 1 ] ; then
-   MET_EM_DIR=${PJM_SHAREDTMP}/HIST/WPS/met_em/$(date -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")/$MEM/    #MET_EM_DIR is redefined here
-else 
-   MET_EM_DIR=$HISTDIR/WPS/met_em/$(date -d "$INI_BDY_DATE" +"%Y%m%d%H%M%S")/$MEM/
-fi
-
-#Loop over the expected output files. If all the files are present then skip WPS step.
-CDATE=$INI_DATE_FCST
-FILE_COUNTER=0
-while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$END_DATE_FCST" +"%Y%m%d%H%M%S") ] ; do
-   MYPATH=./
-   MYFILE=$MYPATH/wrfout_d01_$(date -u -d "$CDATE UTC" +"%Y-%m-%d_%H:%M:%S" )
-   if ! [[ -e $MYFILE ]] ; then #My file do not exist
-      echo "Not found file: " $MYFILE
-      FILE_COUNTER=$(( $FILE_COUNTER + 1 ))
-   fi
-   CDATE=$(date -u -d "$CDATE UTC + $FCST_OFREQ seconds" +"%Y-%m-%d %T")
-done
-
-if [ $FILE_COUNTER -eq 0 ] ; then 
-   #All the required files are already there. 
-   echo "We found all the required wrfout files for member $MEM, skiping DA_UPDATE_BC, REAL and WRF."
-   ERROR=0
-
+ln -sf  $HISTDIR/const/topo .
+ln -sf  $HISTDIR/const/landuse .
+mkdir -p bdy
+mkdir -p init
+mkdir -p fcst
+mkdir -p log/scale
+mkdir -p log/sno
+DIR_DATE_INI=$(date -u -d "$INI_DATE_FCST UTC" +"%Y%m%d%H%M%S")
+if [ "$EXPTYPE" == "DAFCST" ]; then
+   ln -sf $HISTDIR/ANAL/${DIR_DATE_INI}/$MEM/*.nc ./init/
+elif [ "$EXPTYPE" == "DACYCLE" ] && [ $STEP -gt 0 ]; then 
+   ln -sf $HISTDIR/ANAL/${DIR_DATE_INI}/$MEM/*.nc ./init/
 else
-   #We need to run DA_UPDATE_BC, REAL and WRF.
-   if [ $FCST_BDY_FREQ -eq $BDY_FREQ ] ; then
-      ln -sf $MET_EM_DIR/met_em* $WRFDIR/$MEM/
-   else    
-      #We will conduct interpolation of the met_em files.
-      echo "Interpolating files in time to reach $FCST_BDY_FREQ time frequency."
-      CDATE=$INI_DATE_FCST
-      WPS_FILE_DATE_FORMAT="%Y-%m-%d_%H:%M:%S"
+   ln -sf $HISTDIR/init/${DIR_DATE_INI}/$MEM/*.nc ./init/
+fi
+ln -sf $HISTDIR/bdy/${DIR_DATE_INI}/$MEM/*.nc ./bdy/
 
-      while [ $(date -d "$CDATE" +"%Y%m%d%H%M%S") -le $(date -d "$END_DATE_FCST" +"%Y%m%d%H%M%S") ] ; do
-        FILE_TAR=met_em.d01.$(date -u -d "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" ).nc
+export FORT90L=${SCALE_RUNTIME_FLAGS}
 
-        if [ -e $MET_EM_DIR/$FILE_TAR ] ; then #Target file exists. 
-           ln -sf $MET_EM_DIR/$FILE_TAR  ./
-        else 
-           DATE_INI=$(date_floor "$CDATE" $BDY_FREQ )
-           DATE_END=$(date -u -d "$DATE_INI UTC + $BDY_FREQ seconds" +"%Y-%m-%d %T")
-           FILE_INI=met_em.d01.$(date -u -d "$DATE_INI UTC" +"$WPS_FILE_DATE_FORMAT" ).nc
-           FILE_END=met_em.d01.$(date -u -d "$DATE_END UTC" +"$WPS_FILE_DATE_FORMAT" ).nc
-           #File does not exist. Interpolate data in time to create it.  
-           echo "&general                         "  > ./pertmetem.namelist
-           echo "/                                " >> ./pertmetem.namelist
-           echo "&interp                          " >> ./pertmetem.namelist
-           echo "time_ini=0                       " >> ./pertmetem.namelist
-           echo "time_end=$BDY_FREQ               " >> ./pertmetem.namelist
-           echo "time_tar=$((($(date -d "$CDATE" +%s) - $(date -d "$DATE_INI" +%s))))    " >> ./pertmetem.namelist
-           echo "date_tar='$(date -u -d "$CDATE UTC" +"$WPS_FILE_DATE_FORMAT" )'         " >> ./pertmetem.namelist
-           echo "file_ini='$MET_EM_DIR/$FILE_INI'   " >> ./pertmetem.namelist
-           echo "file_end='$MET_EM_DIR/$FILE_END'   " >> ./pertmetem.namelist
-           echo "file_tar='$WRFDIR/$MEM/$FILE_TAR' " >> ./pertmetem.namelist
-           echo "/                                " >> ./pertmetem.namelist
-           echo "Running INTERP_MET_EM for member $MEM"
-           $MPIEXESERIAL ./interp_met_em.exe > interp_met_em.log 
-           ERROR=$(( $ERROR + $? ))
-           #ln -sf $WPSDIR/$MEM/$FILE_TAR  ./
-           #TODO: Check if would be better to create the new files in the WPS_MET_EM_DIR so
-           #Interpolated files can be used again in the next cycle.
-        fi
-        #Update CDATE
-        CDATE=$(date -u -d "$CDATE UTC + $FCST_BDY_FREQ seconds" +"%Y-%m-%d %T")
-     done
-     if [ $ERROR -gt 0 ] ; then
-        echo "Error: INTERP MET EM step finished with errors"   
-     fi
-   fi
+export LD_LIBRARY_PATH=/lib64:/usr/lib64:/opt/FJSVxtclanga/tcsds-latest/lib64:/opt/FJSVxtclanga/tcsds-latest/lib:${SCALE_NETCDF_C}/lib:${SCALE_NETCDF_F}/lib:${SCALE_PNETCDF}/lib:${SCALE_HDF}/lib:$LD_LIBRARY_PATH
 
-   #If there are no errors so far proceed with the REAL
-   if [ $ERROR -eq 0 ] ; then 
-      echo "Running REAL for member $MEM"
-      time $MPIEXE $WRFDIR/$MEM/real.exe 
-      ERROR=$(( $ERROR + $? ))
-      mv rsl.error.0000 ./real_${STEP}_${MEM}.log
-      if [ $ERROR -gt 0 ] ; then
-         echo "Error: REAL step finished with errors"   
-      fi
-   fi
+echo "Running scale for member $MEM"
+$MPIEXE ./scale-rm namelist.scale
+ERROR=$(( $ERROR + $? ))
 
-   #If there are no errors so far proceed with the DA_UPDATE_BC
-   if [ $EXPTYPE == "DACYCLE" ] || [ $EXPTYPE == "DAFCST" ] ; then
-      if [ $STEP -gt 0 ] ; then
-        if [ $ERROR -eq 0 ] ; then
-           echo "Running update_bc"
-           cp $NAMELISTDIR/parame* .
-           mv $WRFDIR/$MEM/wrfinput_d01 $WRFDIR/$MEM/wrfinput_d01.org
-           cp $HISTDIR/ANAL/$(date -u -d "$INI_DATE_FCST" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MEM))) $WRFDIR/$MEM/wrfinput_d01
-           ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MEM/da_update_bc.exe
-           echo "Running DA_UPDATE_BC for member $MEM"
-           time $MPIEXESERIAL $WRFDIR/$MEM/da_update_bc.exe > ./da_update_bc_${STEP}_${MEM}.log
-           ERROR=$(( $ERROR + $? ))
-        fi
-        if [ $ERROR -gt 0 ] ; then
-           echo "Error: DA_UPDATE_BC step finished with errors"   
-        fi  
-      fi
-   fi
+if [ $ERROR -gt 0 ] ; then
+   echo "Error: SCALE step finished with errors"   
+fi
 
-   #If there are no errors so far proceed with WRF
-   if [ $ERROR -eq 0 ] ; then
-      echo "Running WRF for member $MEM"
-      time $MPIEXE $WRFDIR/$MEM/wrf.exe 
-      ERROR=$(( $ERROR + $? ))
-      mv rsl.error.0000 ./wrf_${STEP}_${MEM}.log
-      if [ $ERROR -gt 0 ] ; then
-         echo "Error: WRF step finished with errors"   
-      fi
-   fi
 
-   if [ $ERROR -gt 0 ] ; then
-      echo "Error: WRF step finished with errors"   
-   fi 
+echo "Running SNO for member $MEM"
+$MPIEXESERIAL ./sno namelist.sno_fcst
+if [ $? -gt 0 ] ; then
+   echo "Warning: SNO finished with errors"
+fi
+
 
    #If there are no errors so far copy the files to their final destination
    if [ $ERROR -eq 0 ] ; then
-      if [ $EXPTYPE == "DACYCLE" ] ; then 
+      ANALYSIS_DATE_PFMT=$(date -u -d "$ANALYSIS_DATE UTC" +"%Y%m%d%H%M%S")    
+      ANALYSIS_DATE_SFMT=$(date -u -d "$ANALYSIS_DATE UTC" +"%Y%m%d-%H%M%S.000")     
+      if [ $EXPTYPE == "DACYCLE" ] ; then
          #Copy the guess files corresponding to the analysis time.
          if [[ ! -z "$SAVEGUESS" ]] && [[ $SAVEGUESS -eq 1 ]] ; then
-            OUTPUTPATH="$HISTDIR/GUES/$(date -u -d "$ANALYSIS_DATE UTC" +"%Y%m%d%H%M%S")/"
+            OUTPUTPATH="$HISTDIR/GUES/$ANALYSIS_DATE_PFMT/$MEM"
             mkdir -p $OUTPUTPATH
-            echo "Copying file $WRFDIR/$MEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T" )"
-            cp $WRFDIR/$MEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T") $OUTPUTPATH/gues$(printf %05d $((10#$MEM)))
-            mv $WRFDIR/$MEM/*.log*                                                  $OUTPUTPATH
-            mv $WRFDIR/$MEM/namelist*                                               $OUTPUTPATH
+            echo "Copying first guess files"
+            cp $SCALEDIR/$MEM/init/init_${ANALYSIS_DATE_SFMT}*.nc $OUTPUTPATH/
+            mv $SCALEDIR/$MEM/log/scale/* $OUTPUTPATH/
+            mv $SCALEDIR/$MEM/namelist*   $OUTPUTPATH/
+
          fi
          if [ $STEP -eq 0  ] ; then  #Copy the spin up output as the analysis for the next cycle.
-            OUTPUTPATH="$HISTDIR/ANAL/$(date -u -d "$ANALYSIS_DATE UTC" +"%Y%m%d%H%M%S")/"
+            OUTPUTPATH="$HISTDIR/ANAL/$ANALYSIS_DATE_PFMT/$MEM"
             mkdir -p $OUTPUTPATH
-            echo "Copying file $WRFDIR/$MEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T" )"
-            mv $WRFDIR/$MEM/wrfout_d01_$(date -u -d "$ANALYSIS_DATE UTC" +"%Y-%m-%d_%T")   $OUTPUTPATH/anal$(printf %05d $((10#$MEM)))
-            mv $WRFDIR/$MEM/*.log                                                     $OUTPUTPATH
-            mv $WRFDIR/$MEM/namelist*                                                 $OUTPUTPATH
+            echo "Copying spinup files"
+            mv $SCALEDIR/$MEM/init/init_${ANALYSIS_DATE_SFMT}*.nc   $OUTPUTPATH/
+            mv $SCALEDIR/$MEM/log/scale/* $OUTPUTPATH/
+            mv $SCALEDIR/$MEM/namelist*   $OUTPUTPATH/
          fi
       elif [ $EXPTYPE == "DAFCST" ] || [ $EXPTYPE == "FCST" ] ; then
-         #Copy the guess files corresponding to the analysis time.
-         OUTPUTPATH="$HISTDIR/$EXPTYPE/$(date -u -d "$INI_DATE_FCST UTC" +"%Y%m%d%H%M%S")/$MEM/"
+         #Copy history files to its final destionation.
+         OUTPUTPATH="$HISTDIR/$EXPTYPE/${DIR_DATE_INI}/${MEM}/"
          mkdir -p $OUTPUTPATH
-         mv $WRFDIR/$MEM/wrfout_d01_* $OUTPUTPATH/
-         mv $WRFDIR/$MEM/*.log*       $OUTPUTPATH/
-         mv $WRFDIR/$MEM/namelist*    $OUTPUTPATH/
+         mv $SCALEDIR/$MEM/fcst/*.nc   $OUTPUTPATH/
+         mv $SCALEDIR/$MEM/log/scale/* $OUTPUTPATH/
+         mv $SCALEDIR/$MEM/namelist*   $OUTPUTPATH/
       fi
    fi
-fi
+
 
 EOF
 
 #Node / core distribution parameters
-QNODE=$WRFNODE
-QPROC=$WRFPROC
-QSKIP=$WRFSKIP
-QOMP=$WRFOMP
-TPROC=$WRFTPROC
-QWALLTIME=$WRFWALLTIME
+QNODE=$SCALENODE
+QPROC=$SCALEPROC
+QSKIP=$SCALESKIP
+QOMP=$SCALEOMP
+QWALLTIME=$SCALEWALLTIME
 QPROC_NAME=ENSFCST_${STEP}
-QWORKPATH=$WRFDIR
+QWORKPATH=$SCALEDIR
 
 #Execute the job 
-queue $MEM_INI $MEM_END
+echo "Time taken by scale"
+echo "queue $MEM_INI $MEM_END "
+queue $MEM_INI $MEM_END 
 time check_proc $MEM_INI $MEM_END
-if [ $? -ne 0 ] ; then
-   echo "Error: Some members do not finish OK"
-   echo "Aborting this step"
-   exit 1
-fi
-
-
-
-
 
 
 

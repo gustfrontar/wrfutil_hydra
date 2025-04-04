@@ -24,16 +24,20 @@ BASEDIR=$(pwd)/../
 source $BASEDIR/conf/config.env
 source $BASEDIR/conf/exp.conf
 source $BASEDIR/conf/machine.conf
+if [ $MACHINE == "FUGAKU" ] ;then
+  source $TOPDIR/setup_spack.sh
+fi
 
-rm $BASEDIR/PROCS/*_ERROR
-rm $BASEDIR/PROCS/*_ENDOK
+rm -f $BASEDIR/PROCS/*_ERROR
+rm -f $BASEDIR/PROCS/*_ENDOK
+
 
 ####################################
 #Calculamos la cantidad de pasos
 ####################################
 STEP=$INI_STEP
 
-REMAINING_STEPS=$((($(date -d "$DA_END_DATE" +%s) - $(date -d "$DA_INI_DATE" +%s) - $SPIN_UP_LENGTH )/$ANALYSIS_FREQ + 1)) 
+REMAINING_STEPS=$((($(date -d "$DA_END_DATE" +%s) - $(date -d "$DA_INI_DATE" +%s) - $SPIN_UP_LENGTH )/$ANALYSIS_FREQ + 1))
 REMAINING_STEPS=$((10#$REMAINING_STEPS-10#$STEP))
 
 echo "The first assimilation cycle starts at $DA_INI_DATE "
@@ -42,19 +46,22 @@ echo "We did $STEP assimilation cycles and we need to perform $REMAINING_STEPS c
 
 rm -f $PROCSDIR/*_ENDOK #Remove control files from previous runs.
 
-if [ ! -z ${PJM_SHAREDTMP} ] && [  ${USETMPDIR} -eq 1 ] ; then 
+
+if [ ! -z ${PJM_SHAREDTMP} -a  ${USETMPDIR} -eq 1 ] ; then 
    echo "We will use Fugaku's temporary directory to speed up IO"
    echo "Copying the data to ${PJM_SHAREDTMP}"
    mkdir -p ${PJM_SHAREDTMP}/HIST   
-   cp -r ${HISTDIR}/WPS        ${PJM_SHAREDTMP}/HIST/  &
+   cp -r ${HISTDIR}/const      ${PJM_SHAREDTMP}/HIST/  &
+   cp -r ${HISTDIR}/init       ${PJM_SHAREDTMP}/HIST/  &
+   cp -r ${HISTDIR}/bdy        ${PJM_SHAREDTMP}/HIST/  &
    cp -r ${HISTDIR}/ANAL       ${PJM_SHAREDTMP}/HIST/  &
    cp -r ${HISTDIR}/GUES       ${PJM_SHAREDTMP}/HIST/  &
-   mkdir -p ${PJM_SHAREDTMP}/WRF    ; cp -r $WRFDIR/* ${PJM_SHAREDTMP}/WRF      &
-   mkdir -p ${PJM_SHAREDTMP}/LETKF  ; cp -r $LETKFDIR/* ${PJM_SHAREDTMP}/LETKF  &
-   mkdir -p ${PJM_SHAREDTMP}/WPS    ; cp -r $WPSDIR/* ${PJM_SHAREDTMP}/WPS      &
+   mkdir -p ${PJM_SHAREDTMP}/SCALE   ; cp -r $SCALEDIR/*   ${PJM_SHAREDTMP}/SCALE     &
+   mkdir -p ${PJM_SHAREDTMP}/LETKF   ; cp -r $LETKFDIR/*   ${PJM_SHAREDTMP}/LETKF     &
+   mkdir -p ${PJM_SHAREDTMP}/SCALEPP ; cp -r $SCALEPPDIR/* ${PJM_SHAREDTMP}/SCALEPP   &
    time wait
    echo "Finish copying the data"
-   echo $( ls ${PJM_SHAREDTMP}/WRF/ )
+   echo $( ls ${PJM_SHAREDTMP}/SCALE/ )
 fi
 
 
@@ -66,49 +73,47 @@ while [ $REMAINING_STEPS -gt 0 ] ; do
    ###### 1st assimilation cycle only
    if [ $STEP == 0 ]; then
       echo " Step | TimeStamp" > $LOGDIR/cycles.log
-      echo "$(printf "%02d" $STEP)  | $(date +'%T')"  >>  $LOGDIR/cycles.log
-      if [ ! -z ${EXTWPSPATH} ] && [ $RUN_WPS -eq 0 ] ; then 
-	 mkdir $HISTDIR/WPS/                           > $LOGDIR/pert_met_em_${STEP}.log  2>&1
-	 rm -fr $HISTDIR/WPS/met_em                   >> $LOGDIR/pert_met_em_${STEP}.log  2>&1  
-         ln -sf ${EXTWPSPATH} $HISTDIR/WPS/met_em_ori >> $LOGDIR/pert_met_em_${STEP}.log  2>&1  #We will use existing met_ems from a previous experiment      
-      fi
-   fi  #End of the special case in which WPS is run at the begining of the experiment
+      echo "$(printf "%02d" $STEP)  | $(date +'%T')" >>  $LOGDIR/cycles.log
+   fi
 
-   #####  all forecasts cycles
+   #####  all assimilation cycles
    echo "Running data assimilation cycle: $STEP"
    echo "$(printf "%02d" $STEP)  | $(date +'%T')" >>  $LOGDIR/cycles.log
 
    if [ $RUN_WPS == 1 ] ; then 
       write_step_conf "WPS" #Generate step.conf
-      echo "Running WPS" > $LOGDIR/wps_${STEP}.log
-      time $BASEDIR/bin/run_WPS.sh                        >> $LOGDIR/wps_${STEP}.log 2>&1
+      echo "Running SCALE_prep" > $LOGDIR/prep_${STEP}.log
+      time $BASEDIR/bin/run_prep.sh >> $LOGDIR/prep_${STEP}.log
       if [ $? -ne 0 ] ; then
-         echo "Error: run_WPS finished with errors!"
+         echo "Error: run_prep finished with errors!"
          echo "Aborting this step"
          exit 1 
       fi
-      echo "Succesfully run WPS"
+      echo "Succesfully run scale_pp and scale_init"
    fi
 
-   if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
-      echo "Running Pert met em"                           > $LOGDIR/pert_met_em_${STEP}.log
-      time $BASEDIR/bin/run_Pert.sh                       >> $LOGDIR/pert_met_em_${STEP}.log   2>&1
-      if [ $? -ne 0 ] ; then
-         echo "Error: run_Pert finished with errors!"
-         echo "Aborting this step"
-         exit 1 
-      fi
-      echo "Succesfully run Pert met em"
 
-   elif [ $BDY_PERT == 0 ] && [ $STEP == 0 ] ; then
-      echo "Linking met_em directory"                     >> $LOGDIR/pert_met_em_${STEP}.log
-      ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em  >> $LOGDIR/pert_met_em_${STEP}.log  2>&1
-   fi
+
+#   if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
+#      echo "Running Pert init bdy"                           > $LOGDIR/pert_init_bdy_${STEP}.log
+#      time $BASEDIR/bin/run_Pert_scale.sh                       >> $LOGDIR/pert_init_bdy_${STEP}.log   2>&1
+#      if [ $? -ne 0 ] ; then
+#         echo "Error: run_Pert finished with errors!"
+#         echo "Aborting this step"
+#         exit 1 
+#      fi
+#      echo "Succesfully run Pert met em"
+#
+#   elif [ $BDY_PERT == 0 ] && [ $STEP == 0 ] ; then
+#      echo "Linking met_em directory"                     >> $LOGDIR/pert_init_bdy_${STEP}.log
+#      ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em  >> $LOGDIR/pert_init_bdy_${STEP}.log  2>&1
+#   fi
+   
 
    if [ $RUN_FCST -eq 1 ] ; then
       echo "Running forecast for STEP: $STEP " > $LOGDIR/guess_${STEP}.log
       write_step_conf "GUESS" #Generate step.conf
-      time $BASEDIR/bin/run_ensfcst.sh         >> $LOGDIR/guess_${STEP}.log  2>&1
+      time $BASEDIR/bin/run_ensfcst.sh   >> $LOGDIR/guess_${STEP}.log  2>&1
       if [ $? -ne 0 ] ; then
          echo "Error: run_Guess finished with errors!"
          echo "Aborting this step"
@@ -128,12 +133,10 @@ while [ $REMAINING_STEPS -gt 0 ] ; do
 
    REMAINING_STEPS=$((10#$REMAINING_STEPS-1))
    STEP=$((10#$STEP+1))
-   #echo "Update STEP in the configuration file."
-   #sed -i -e "/export STEP=/c\\export STEP=$STEP" $BASEDIR/conf/${EXPTYPE}.conf
 
 done
 
-echo "Exiting... hasta la proxima!"
+echo "Exiting. . .  . hasta la proxima!"
 echo "We finished running @:"$(date )
 exit 0
 

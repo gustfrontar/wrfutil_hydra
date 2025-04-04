@@ -12,7 +12,7 @@
 
 read -r -d '' USO << EOF
 
-Use: createExpFCST.sh  "TEMPLATE_NAME" "BASEDIR"
+Use: createExp.sh  "TEMPLATE_NAME" "BASEDIR"
 
 EOF
 : ${2?"$USO"}

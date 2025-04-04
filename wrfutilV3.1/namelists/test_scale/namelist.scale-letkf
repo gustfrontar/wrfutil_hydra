@@ -18,9 +18,15 @@ OBS_IN_NAME = __OBS_IN_NAME__
 OBS_IN_FORMAT = __OBS_IN_FORMAT__
 OBSDA_RUN=__OBSDA_RUN__
  HISTORY_IN_BASENAME="hist/<member>/history",
- SLOT_START = 1, 
- SLOT_END = __NSLOTS__,
- SLOT_BASE = __NBSLOT__,
+
+!!! SLOT_START = 1, 
+!!! SLOT_END = __NSLOTS__,
+!!! SLOT_BASE = __NBSLOT__,
+ SLOT_START = 2, 
+ SLOT_END   = 2,
+ SLOT_BASE  = 2,
+
+
  SLOT_TINTERVAL =__WIN_STEP__, 
 /
 

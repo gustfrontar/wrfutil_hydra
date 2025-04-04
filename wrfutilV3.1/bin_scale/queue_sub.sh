@@ -19,10 +19,10 @@ fi
 if [ "$QUEUESYS" = "SLURMSSH" ] ; then
    if [ ! -z ${INTERACTIVE_JOB} ] && [ ${INTERACTIVE_JOB} -eq 1 ] ; then
       echo "Submitting an interactive SLURM JOB"
-      srun --time=${TOTAL_TIME_LIMIT} -N $INODE -c $ICORE -e error.log -p ${QUEUE} ${EXCLUDE} ${COMMAND}
+      srun --time=${TOTAL_TIME_LIMIT} -N $INODE -c $ICORE -e error.log -p ${QUEUE} ${COMMAND}
    else
       echo "Submitting an regular SLURM JOB"
-      sbatch --time=${TOTAL_TIME_LIMIT} -N $INODE -c $ICORE -e error.log -p ${QUEUE} ${EXCLUDE} ${COMMAND}
+      sbatch --time=${TOTAL_TIME_LIMIT} -N $INODE -c $ICORE -e error.log -p ${QUEUE} ${COMMAND}
    fi
 fi
 
