@@ -83,7 +83,11 @@ write_step_conf() (
 
     BDY_INI_DATE=$(date_floor "$INI_DATE_FCST" $BDY_FREQ )
     BDY_END_DATE=$(date_ceil  "$END_DATE_FCST" $BDY_FREQ )
-    INI_BDY_DATE=$(date_floor "$INI_DATE_FCST" $BDY_INI_FREQ )
+    if [ $WPS_CYCLE -eq 1 ] ; then
+       INI_BDY_DATE=$(date_floor "$INI_DATE_FCST" $BDY_INI_FREQ )
+    else 
+       INI_BDY_DATE=$(date_floor "$DA_INI_DATE" $BDY_INI_FREQ )
+    fi
     echo "Generating step.conf"
     echo "# This namelist is authomatically generated  " >  $BASEDIR/conf/step.conf
     echo "STEP=$STEP"                                    >> $BASEDIR/conf/step.conf 
