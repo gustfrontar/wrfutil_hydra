@@ -336,6 +336,20 @@ MODULE common_nml
   real(r_size)          :: OBSSIM_RADAR_LAT = 0.0d0
   real(r_size)          :: OBSSIM_RADAR_Z = 0.0d0
 
+  !--- PARAM_PERT_INIT_BDY
+  integer,parameter     :: MAX_NUM_PERT = 24
+  integer               :: NITER_PERT = 0
+  integer               :: NUM_PERT_RESTART = 0
+  integer               :: NUM_PERT_BOUNDARY = 0
+  character(filelenmax) :: PERT_RESTART_IN_BASENAME(MAX_NUM_PERT)=""
+  character(filelenmax) :: PERT_RESTART_OUT_BASENAME(MAX_NUM_PERT)=""
+  character(filelenmax) :: PERT_BOUNDARY_IN_BASENAME(MAX_NUM_PERT)=""
+  character(filelenmax) :: PERT_BOUNDARY_OUT_BASENAME(MAX_NUM_PERT)=""
+  real(r_size)          :: PERT_SIGMA = 1.0d-3
+  integer               :: MEMBER_TAR = 1
+  integer               :: PERT_METHOD = 1
+
+
   interface filename_replace_mem
     module procedure filename_replace_mem_int
     module procedure filename_replace_mem_str
@@ -1012,6 +1026,46 @@ subroutine read_nml_obssim
   return
 end subroutine read_nml_obssim
 
+!-------------------------------------------------------------------------------
+! PARAM_OBSSIM
+!-------------------------------------------------------------------------------
+subroutine read_nml_pert_init_bdy
+  implicit none
+  integer :: ierr
+
+  namelist /PARAM_PERT_INIT_BDY/ &
+    PERT_RESTART_IN_BASENAME, &
+    PERT_RESTART_OUT_BASENAME, &
+    PERT_BOUNDARY_IN_BASENAME, &
+    PERT_BOUNDARY_OUT_BASENAME, &
+    PERT_SIGMA, &
+    MEMBER_TAR, &
+    PERT_METHOD
+
+  PERT_RESTART_IN_BASENAME = ""
+  PERT_RESTART_OUT_BASENAME = ""
+  PERT_BOUNDARY_IN_BASENAME = ""
+  PERT_BOUNDARY_OUT_BASENAME = ""
+
+  rewind(IO_FID_CONF)
+  read(IO_FID_CONF,nml=PARAM_PERT_INIT_BDY,iostat=ierr)
+  if (ierr < 0) then !--- missing
+    if ( LOG_OUT ) write(6,*) '[Warning] /PARAM_PERT_INIT_BDY/ is not found in namelist.'
+!    stop
+  elseif (ierr > 0) then !--- fatal error
+    write(6,*) '[Error] xxx Not appropriate names in namelist PARAM_PERT_INIT_BDY. Check!'
+    stop
+  endif
+
+  NUM_PERT_RESTART  = count(PERT_RESTART_IN_BASENAME  /= "")
+  NUM_PERT_BOUNDARY = count(PERT_BOUNDARY_IN_BASENAME /= "")
+
+  NITER_PERT = ( MEMBER_TAR - 1 ) / MEMBER + 1
+
+
+  return
+end subroutine read_nml_pert_init_bdy
+ 
 !-------------------------------------------------------------------------------
 ! Replace the member notation in 'filename' with 'mem' (as an integer)
 !-------------------------------------------------------------------------------

@@ -5,9 +5,11 @@ all:
 	$(MAKE) -C ensmodel
 	$(MAKE) -C obs
 	$(MAKE) -C letkf
+	$(MAKE) -C pert
 
 clean:
 	$(MAKE) -C common            clean
 	$(MAKE) -C ensmodel          clean
 	$(MAKE) -C obs               clean
 	$(MAKE) -C letkf             clean
+	$(MAKE) -C pert              clean

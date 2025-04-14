@@ -1,0 +1,73 @@
+!-------------------------------------------------------------------------------
+! Read ensemble first guess data and distribute to processes
+!-------------------------------------------------------------------------------
+subroutine read_ens_mpi(v3d, v2d, EFSO )
+  implicit none
+
+  real(r_size), intent(out) :: v3d(nij1,nlev,nens,nv3d)
+  real(r_size), intent(out) :: v2d(nij1,nens,nv2d)
+  logical, intent(in), optional :: EFSO
+ 
+  real(RP) :: v3dg(nlev,nlon,nlat,nv3d)
+  real(RP) :: v2dg(nlon,nlat,nv2d)
+  character(len=filelenmax) :: filename
+  integer :: it, im, mstart, mend
+
+  logical :: EFSO_ = .false.
+
+  call mpi_timer('', 2)
+
+  if ( present( EFSO ) ) EFSO_ = EFSO
+
+  do it = 1, nitmax
+    im = myrank_to_mem(it)
+
+    ! Note: read all members + mdetin
+    ! 
+    if ( ( im >= 1 .and. im <= MEMBER ) .or. im == mmdetin ) then
+      if (im <= MEMBER) then
+        filename = GUES_IN_BASENAME
+        if ( EFSO_ ) then
+          filename = EFSO_EFCST_FROM_ANAL_BASENAME
+        endif
+        call filename_replace_mem(filename, im)
+      else if (im == mmean) then
+        filename = GUES_MEAN_INOUT_BASENAME
+      else if (im == mmdet) then
+        filename = GUES_MDET_IN_BASENAME
+      end if
+
+#ifdef PNETCDF
+      if (FILE_AGGREGATE) then
+        call read_restart_par(filename, v3dg, v2dg, MPI_COMM_d)
+      else
+#endif
+        call read_restart(filename, v3dg, v2dg)
+#ifdef PNETCDF
+      end if
+#endif
+
+      call mpi_timer('read_ens_mpi:read_restart:', 2)
+
+      call state_trans(v3dg)
+
+      call mpi_timer('read_ens_mpi:state_trans:', 2)
+    else if (im <= nens) then ! This is to avoid the undefined value problem;
+      v3dg = undef            ! it has no impact to the results
+      v2dg = undef            ! 
+    end if
+
+    call mpi_timer('', 2, barrier=MPI_COMM_e)
+
+    mstart = 1 + (it-1)*nprocs_e
+    mend = min(it*nprocs_e, nens)
+    if (mstart <= mend) then
+      call scatter_grd_mpi_alltoall(mstart, mend, v3dg, v2dg, v3d, v2d)
+    end if
+
+    call mpi_timer('read_ens_mpi:scatter_grd_mpi_alltoall:', 2)
+  end do ! [ it = 1, nitmax ]
+
+  return
+end subroutine read_ens_mpi
+

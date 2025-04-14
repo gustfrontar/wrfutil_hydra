@@ -1,0 +1,96 @@
+SUBROUTINE read_restart(filename,v3dg,v2dg)
+  use netcdf
+  use scale_prc, only: &
+    PRC_myrank
+  use scale_prc_cartesC, only: &
+    PRC_HAS_W,  &
+    PRC_HAS_S
+  use scale_atmos_grid_cartesC_index, only: &
+    IHALO, JHALO, &
+    IMAX, JMAX, KMAX
+  use common_mpi, only: myrank
+  use common_ncio
+  IMPLICIT NONE
+
+  CHARACTER(*),INTENT(IN) :: filename
+  REAL(RP),INTENT(OUT) :: v3dg(nlev,nlon,nlat,nv3d)
+  REAL(RP),INTENT(OUT) :: v2dg(nlon,nlat,nv2d)
+  character(len=12) :: filesuffix = '.pe000000.nc'
+  integer :: iv3d, iv2d, ncid, varid
+  integer :: is, js, ks
+
+  integer :: istat
+
+  is = 1
+  js = 1
+  if (.not. PRC_HAS_W) then
+    is = is + IHALO
+  end if
+  if (.not. PRC_HAS_S) then
+    js = js + JHALO
+  end if
+
+!  write (6,'(A,I6.6,3A,I6.6,A)') 'MYRANK ',myrank,' is reading a file ',filename,'.pe',PRC_myrank,'.nc'
+
+  write (filesuffix(4:9),'(I6.6)') PRC_myrank
+  if ( LOG_OUT ) write (6,'(A,I6.6,2A)') 'MYRANK ',myrank,' is reading a file ',trim(filename) // filesuffix
+  call ncio_open(trim(filename) // filesuffix, NF90_NOWRITE, ncid)
+
+  do iv3d = 1, nv3d
+    if ( LOG_LEVEL >= 1 .and. LOG_OUT ) then
+      write(6,'(1x,A,A15)') '*** Read 3D var: ', trim(v3d_name(iv3d))
+    end if
+
+    if (iv3d == iv3d_rhow) then
+      ks = 2 ! ignore zh=1 (the surface where MOMZ = 0.0)
+    else
+      ks = 1
+    endif
+
+    istat = nf90_inq_varid(ncid, trim(v3d_name(iv3d)), varid)
+    if ( istat == 0 ) then
+      call ncio_check(nf90_get_var(ncid, varid, v3dg(:,:,:,iv3d), &
+                                   start = (/ ks, is, js, 1 /),    &
+                                   count = (/ KMAX, IMAX, JMAX, 1 /)))
+    else
+      write(6,'(A,A15,A)') " 3D var ", trim(v3d_name(iv3d))," not found."
+      if ( FILL_BY_ZERO_MISSING_VARIABLES ) then
+        v3dg(:,:,:,iv3d) = 0.0_RP
+      else
+        stop
+      endif
+    end if
+!    call ncio_check(nf90_inq_varid(ncid, trim(v3d_name(iv3d)), varid))
+!    call ncio_check(nf90_get_var(ncid, varid, v3dg(:,:,:,iv3d), &
+!                                 start = (/ ks, is, js, 1 /),    &
+!                                 count = (/ KMAX, IMAX, JMAX, 1 /)))
+  end do
+
+  do iv2d = 1, nv2d
+    if ( LOG_LEVEL >= 1 .and. LOG_OUT ) then
+      write(6,'(1x,A,A15)') '*** Read 2D var: ', trim(v2d_name(iv2d))
+    end if
+    istat = nf90_inq_varid(ncid, trim(v2d_name(iv2d)), varid)
+    if ( istat == 0 ) then
+    call ncio_check(nf90_get_var(ncid, varid, v2dg(:,:,iv2d), &
+                                 start = (/ is, js, 1 /),     &
+                                 count = (/ IMAX, JMAX, 1 /)))
+    else
+      write(6,'(A,A15,A)') " 2D var ", trim(v3d_name(iv3d))," not found."
+      if ( FILL_BY_ZERO_MISSING_VARIABLES ) then
+        v2dg(:,:,iv2d) = 0.0_RP
+      else
+        stop
+      endif
+    end if
+!    call ncio_check(nf90_inq_varid(ncid, trim(v2d_name(iv2d)), varid))
+!    call ncio_check(nf90_get_var(ncid, varid, v2dg(:,:,iv2d), &
+!                                 start = (/ is, js, 1 /),     &
+!                                 count = (/ IMAX, JMAX, 1 /)))
+  end do
+
+  call ncio_close(ncid)
+
+  RETURN
+END SUBROUTINE read_restart
+

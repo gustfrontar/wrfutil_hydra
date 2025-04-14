@@ -822,6 +822,8 @@ subroutine set_scalelib(execname)
   case ('OBSSIM ')
     call read_nml_obssim
     call read_nml_letkf_radar
+  case ('PERT   ')
+    call read_nml_pert_init_bdy
   end select
 
   ! Communicator for all processes for single domains
