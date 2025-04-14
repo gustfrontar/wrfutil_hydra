@@ -36,6 +36,7 @@ cp $LETKFDIR/letkf.exe $LETKFDIRRUN/
 
 mkdir -p $LETKFDIRRUN/obsdep
 mkdir -p $LETKFDIRRUN/log/scale
+mkdir -p $LETKFDIRRUN/log/letkf
 mkdir -p $LETKFDIRRUN/topo
 mkdir -p $LETKFDIRRUN/landuse
 cp $HISTDIR/const/topo/*.nc $LETKFDIRRUN/topo/
@@ -117,7 +118,7 @@ for j in $(seq $OBS_IN_NUM) ;do
   if [  $OBS_TYPE == "RADARC" ] ;then
     OBS_IN_FORMAT=${OBS_IN_FORMAT}"'RADAR', "
     OBSPATHT="'$OBSPATH/${OBS_TYPE}/WRF_${OBS_TYPE}_${RADARC_LIST[$i]}_${CTIME_OFMT}.dat', "
-  elif [ $OBS_TYPE == "ADPAUT" ] ;then
+  elif [ $OBS_TYPE == "ADPAUT" ] || [ $OBS_TYPE == "ADPSFC" ] ;then
     OBS_IN_FORMAT=${OBS_IN_FORMAT}"'AWS', "
     OBSPATHT="'${OBSPATH}/${OBS_TYPE}/WRF_${OBS_TYPE}_${CTIME_OFMT}.dat', "
   else
@@ -170,18 +171,14 @@ read -r -d '' QSCRIPTCMD << "EOF"
 
   export LD_LIBRARY_PATH=/lib64:/usr/lib64:/opt/FJSVxtclanga/tcsds-latest/lib64:/opt/FJSVxtclanga/tcsds-latest/lib:${SCALE_NETCDF_C}/lib:${SCALE_NETCDF_F}/lib:${SCALE_PNETCDF}/lib:${SCALE_HDF}/lib:$LD_LIBRARY_PATH
 
-  $MPIEXE ./letkf.exe namelist.scale-letkf
+  $MPIEXE ./letkf.exe namelist.scale-letkf ./log/letkf/NOUT
   ERROR=$(( $ERROR + $? ))
 EOF
 
 # Parametros de encolamiento
 QPROC_NAME=LETKF_$STEP
 QNODE=$LETKFNODE
-if [ "$QUEUESYS" == "SLURMSSH" ] ;then
-  QPROC=$LETKFTOTPROC
-else
-  QPROC=$LETKFPROC
-fi
+QPROC=$LETKFPROC
 QWALLTIME=$LETKFWALLTIME
 QSKIP=$LETKFSKIP
 QOMP=$LETKFOMP

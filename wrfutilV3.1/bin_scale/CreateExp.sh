@@ -51,7 +51,6 @@ mkdir -p $NAMELISTDIR
 cp    $WRFUTILDIR/namelists/$MODEL_CONF_SET/* $NAMELISTDIR/
 mkdir -p $HISTDIR
 mkdir -p $PERTDIR
-cp    $PERTMETEMPATH $PERTDIR/pert_met_em.tar
 
 ### Link the executables 
 
@@ -61,4 +60,5 @@ ln -s $SCALEPATH/bin/sno${SCALE_opt}           $SCALEPPDIR/
 ln -s $SCALEPATH/bin/scale-rm${SCALE_opt}      $SCALEDIR/
 ln -s $SCALEPATH/bin/sno${SCALE_opt}           $SCALEDIR/
 
-ln -s $SCALELETKFPATH/src_scale/scale/letkf/letkf  $LETKFDIR/
+ln -s $SCALELETKFPATH $LETKFDIR/letkf.exe
+ln -s $SCALEPERTPATH $PERTDIR/pert_init_bdy.exe
