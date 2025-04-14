@@ -20,6 +20,7 @@ module scale_atmos_phy_mp_amps
   use scale_io
   use scale_prof
 
+#ifndef DISABLE_AMPS
   use maxdims, only: mxnbin,npamx,nbamx,ncamx
   use scale_const, only: &
        EPS    => CONST_EPS, &
@@ -33,7 +34,7 @@ module scale_atmos_phy_mp_amps
        EPSvap => CONST_EPSvap
 
   use class_Cloud_Micro, only: Cloud_Micro
-
+#endif
   !-----------------------------------------------------------------------------
   implicit none
   private
@@ -110,6 +111,9 @@ module scale_atmos_phy_mp_amps
 
 
 
+#ifdef DISABLE_AMPS
+  integer, parameter, private :: QA = 2
+#else
   !-----------------------------------------------------------------------------
   !
   !++ Private procedure
@@ -325,21 +329,29 @@ module scale_atmos_phy_mp_amps
   !type (Cloud_Micro)  :: CM
   type (Cloud_Micro), dimension(:), allocatable :: CM
 
+#endif
   !----------------------------------------------------------------------------
 contains
   !-----------------------------------------------------------------------------
   !> Config
   subroutine ATMOS_PHY_MP_amps_tracer_setup
+#ifndef DISABLE_AMPS
     use mod_amps_utility, only: &
        config_varindex
     use com_amps
     use par_amps
+#endif
     use scale_prc, only: &
        PRC_abort, &
        PRC_IsMaster
     implicit none
 
 
+#ifdef DISABLE_AMPS
+    LOG_ERROR("ATMOS_PHY_MP_amps_tracer_setup",*) "Scalelib was compiles without AMPS"
+    LOG_ERROR_CONT(*) "Recompile scalelib with SCALE_DISABLE_AMPS=F"
+    call PRC_abort
+#else
     namelist / PARAM_ATMOS_PHY_MP_AMPS_bin / &
        num_h_bins,         & ! 40 or 80 bins for liquid, ONLY 20 bins for ice
        nbin_h,             & ! number of bins for haze particles, e.x. 20 for 40 liq. bins
@@ -726,12 +738,14 @@ contains
 
     QA = ATMOS_PHY_MP_amps_ntracers
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_amps_tracer_setup
 
   !-----------------------------------------------------------------------------
   !> Setup
   subroutine ATMOS_PHY_MP_amps_setup(KA,KS,KE,IA,IS,IE,JA,JS,JE)
+#ifndef DISABLE_AMPS
     use mod_amps_utility, only: &
        qsparm2
     use mod_amps_lib, only:  &
@@ -755,9 +769,12 @@ contains
        PRC_IsMaster, &
        PRC_myrank, &
        PRC_abort
+#endif
+    implicit none
 
     integer, intent(in) :: KA, KS, KE, IA, IS, IE, JA, JS, JE
 
+#ifndef DISABLE_AMPS
     integer  :: i, j, k
 
 
@@ -857,11 +874,13 @@ contains
        proname_mtd(20)="print out"
     endif
 
-
+#endif
+    return
   end subroutine ATMOS_PHY_MP_amps_setup
 
 
   subroutine init_AMPS(KA,KS,KE,IA,IS,IE,JA,JS,JE,REAL_CZ,REAL_FZ,REAL_FX,REAL_FY)
+#ifndef DISABLE_AMPS
     use mod_amps_utility, only: &
        read_seed
     use mod_amps_lib, only: &
@@ -872,6 +891,8 @@ contains
     use scale_prc, only: &
         PRC_abort, &
         PRC_IsMaster
+#endif
+    implicit none
 
     integer, intent(in) :: KA, KS, KE, IA, IS, IE, JA, JS, JE
     real(RP), dimension(KA,IA,JA),   intent(in) :: REAL_CZ
@@ -879,6 +900,7 @@ contains
     real(RP), dimension(0:IA), intent(in) :: REAL_FX
     real(RP), dimension(0:JA), intent(in) :: REAL_FY
 
+#ifndef DISABLE_AMPS
     ! local variables
     integer :: ier, i, j, k
 
@@ -931,6 +953,7 @@ contains
       call PRC_abort
     endif
 
+#endif
     return
   end subroutine init_AMPS
 
@@ -960,10 +983,13 @@ contains
        pi,     &    ! [IN]     exner function
        ptot,   &    ! [IN]     pressure              (from SCALE)
        ivis,isect,from)
+#ifndef DISABLE_AMPS
     use par_amps
     !use common_physics, only: qsaturation, qisaturation
     use mod_amps_lib, only: get_sat_vapor_pres_lk
     use scale_prc, only: PRC_abort
+#endif
+    implicit none
 
     ! arguments
     integer,  intent(in) :: KS, KE
@@ -981,8 +1007,10 @@ contains
     real(RP), intent(inout), dimension(npr,nbr,ncr,KS-1:KE) :: qrp
     real(RP), intent(inout), dimension(npi,nbi,nci,KS-1:KE) :: qip
     real(RP), intent(inout), dimension(npa,nba,nca,KS-1:KE) :: qap
-    character*(*) :: from
 
+    character(len=*), intent(in) :: from
+
+#ifndef DISABLE_AMPS
 ! newspace
     integer :: k,iter,  &
               ipr,ibr,icr,ipi,ibi,ici,ipa,iba,ica,icit,niter1, &
@@ -1142,6 +1170,8 @@ contains
       enddo
 
     end if
+
+#endif
     return
   end subroutine moistthermo2_scale
 
@@ -1149,6 +1179,7 @@ contains
   !> finalize
   subroutine ATMOS_PHY_MP_amps_finalize
 
+#ifndef DISABLE_AMPS
     deallocate( ADVPPMZ, ADVPPMZE )
 
     deallocate( mmassrv_global, mmassiv_global )
@@ -1159,6 +1190,7 @@ contains
     deallocate( ATMOS_PHY_MP_amps_tracer_descriptions )
     deallocate( ATMOS_PHY_MP_amps_tracer_units )
     deallocate( ATMOS_PHY_MP_amps_tracer_ref )
+#endif
 
     return
   end subroutine ATMOS_PHY_MP_amps_finalize
@@ -1185,7 +1217,7 @@ contains
        RHOV_t,           & ! v momentum tendency output
        SFLX_rain,        & ! surface rain flux output
        SFLX_snow         ) ! surface snow flux output
-
+#ifndef DISABLE_AMPS
     use scale_prc, only: &
        PRC_IsMaster, &
        PRC_myrank, &
@@ -1224,7 +1256,7 @@ contains
        fill_bulk_ap,fill_bin_ap,integ_mictend1,integ_mictend2, &
        srand2, &
        sclsedprz_original,sclsedaer
-
+#endif
     implicit none
 
 !tst    use module_mp_clr_two_moment, only: clr_two_moment_nms
@@ -1263,6 +1295,7 @@ contains
     real(RP), intent(out) :: SFLX_rain(IA,JA)     ! surface rain flux
     real(RP), intent(out) :: SFLX_snow(IA,JA)     ! surface snow flux
 
+#ifndef DISABLE_AMPS
     real(RP),dimension(KS-1:KE) :: thv,thetav,moist_denv,tv,piv,wbv,momv,ptotv,pbv, &
                                    qvv,qcv,qrv,qiv,qtpv, &
                                    waccv
@@ -2946,6 +2979,7 @@ contains
     call FILE_HISTORY_in( QICE(:,:,:,6), 'FROZEN_WATER', &
                          'Mass of frozon water', 'kg/kg', fill_halo=.true. )
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_amps_tendency
   !____________________________________________________________________________________
@@ -2968,6 +3002,7 @@ contains
 
     real(RP), intent(out) :: cldfrac(KA,IA,JA)
 
+#ifndef DISABLE_AMPS
     real(RP) :: qhydro
     integer  :: k, i, j, iq
     !---------------------------------------------------------------------------
@@ -2994,6 +3029,7 @@ contains
     enddo
     enddo
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_amps_cloud_fraction
   !____________________________________________________________________________________
@@ -3030,6 +3066,7 @@ contains
     real(RP), intent(in)  :: QTRC0(KA,IA,JA,QA-1) ! hydrometeor mixing ratio (excluding vapor) [IN]
     real(RP), intent(out) :: Re(KA,IA,JA,N_HYD)   ! hydrometeor effective radius (cm) [OUT]
 
+#ifndef DISABLE_AMPS
     ! following AMPS, the density of water is default 1000 kg/m3
     real(RP), parameter :: den_water=0.001_RP      ! kg/cm3
     ! following AMPS, the density of ice is default 916.68 kg/m3
@@ -3456,6 +3493,7 @@ contains
 
     endif
 
+#endif
     return
   end subroutine
   !____________________________________________________________________________________
@@ -3470,8 +3508,10 @@ contains
        Qe,   &
        QTRC, &
        QNUM  )
+#ifndef DISABLE_AMPS
     use com_amps, only: &
        nbin_h
+#endif
     use scale_prc, only: &
        PRC_abort, &
        PRC_myrank
@@ -3484,6 +3524,7 @@ contains
        I_HG, &
        I_HH
     implicit none
+
     integer, intent(in) :: KA, KS, KE
     integer, intent(in) :: IA, IS, IE
     integer, intent(in) :: JA, JS, JE
@@ -3495,6 +3536,7 @@ contains
 
     real(RP), intent(in), optional :: QNUM(KA,IA,JA,N_HYD) ! number concentration
 
+#ifndef DISABLE_AMPS
     ! liquid bins
     real(RP),parameter :: c_mnm=4.188790205e-15, c_max=6.54498e-8, maxmass_r=5.2359870E-01
     real(RP) :: dsrat, dsrat_h
@@ -3679,6 +3721,7 @@ contains
        end do
     endif
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_amps_qhyd2qtrc
   !____________________________________________________________________________________
@@ -3712,6 +3755,7 @@ contains
     real(RP), intent(in)  :: QTRC0(KA,IA,JA,QA-1)      ! tracer mass concentration [kg/kg]
     real(RP), intent(out) :: Qe   (KA,IA,JA,N_HYD)     ! mixing ratio of each cateory [kg/kg]
 
+#ifndef DISABLE_AMPS
     integer :: ibin
     integer :: k, i, j
     !---------------------------------------------------------------------------
@@ -3763,6 +3807,7 @@ contains
     enddo
     enddo
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_amps_qtrc2qhyd
   !____________________________________________________________________________________
@@ -3794,6 +3839,7 @@ contains
     real(RP), intent(in)  :: QTRC0(KA,IA,JA,QA-1)      ! tracer mass concentration [kg/kg]
     real(RP), intent(out) :: Ne   (KA,IA,JA,N_HYD)     ! number concentration of each cateory [1/m3]
 
+#ifndef DISABLE_AMPS
     real(RP) :: CM32M3
     integer :: ibin, liqConc_index, iceConc_index
     integer :: k, i, j
@@ -3835,6 +3881,7 @@ contains
     enddo
     enddo
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_amps_qtrc2nhyd
   !-----------------------------------------------------------------------------
@@ -3848,6 +3895,7 @@ contains
        QTRC,    &
        y_range, &
        case_number)
+#ifndef DISABLE_AMPS
     use com_amps, only: &
        nbin_h
     use scale_atmos_grid_cartesC, only: &
@@ -3857,7 +3905,9 @@ contains
     use scale_prc, only: &
        PRC_abort, &
        PRC_myrank
+#endif
     implicit none
+
     integer,  intent(in) :: KA, KS, KE
     integer,  intent(in) :: IA, IS, IE
     integer,  intent(in) :: JA, JS, JE
@@ -3868,6 +3918,7 @@ contains
 
     real(RP), intent(out)  :: QTRC(KA,IA,JA,QA-1)
 
+#ifndef DISABLE_AMPS
     real(RP) :: rj
     integer :: JMAX
     integer  :: i, j, k, ibin
@@ -4000,6 +4051,7 @@ contains
     enddo
     enddo
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_amps_init_qtrc_1DMODEL
   !-----------------------------------------------------------------------------
@@ -4013,6 +4065,7 @@ contains
        QTRC, &
        box_initial_conc, &
        box_m_knot )
+#ifndef DISABLE_AMPS
     use com_amps, only: &
        nbin_h
     use scale_prc, only: &
@@ -4026,7 +4079,9 @@ contains
        I_HS, &
        I_HG, &
        I_HH
+#endif
     implicit none
+
     integer, intent(in) :: KA, KS, KE
     integer, intent(in) :: IA, IS, IE
     integer, intent(in) :: JA, JS, JE
@@ -4037,6 +4092,7 @@ contains
 
     real(RP), intent(in) :: box_initial_conc, box_m_knot
 
+#ifndef DISABLE_AMPS
     ! liquid bins
     real(RP),parameter :: c_mnm=4.188790205e-15, c_max=6.54498e-8, maxmass_r=5.2359870E-01
     real(RP) :: dsrat, dsrat_h
@@ -4167,8 +4223,9 @@ contains
     !        QTRC(KS,IS+1,JS+1,ibin) * DENS(KS,IS+1,JS+1), &
     !        QTRC(KS+1,IS+1,JS+1,ibin) * DENS(KS+1,IS+1,JS+1)
     !enddo
-    return
 
-    end subroutine ATMOS_PHY_MP_amps_init_qtrc_BOX
+#endif
+    return
+  end subroutine ATMOS_PHY_MP_amps_init_qtrc_BOX
 
 end module scale_atmos_phy_mp_amps

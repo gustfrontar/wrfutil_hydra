@@ -130,26 +130,26 @@ contains
        ATMOS_PHY_MP_suzuki10_tracer_names,        &
        ATMOS_PHY_MP_suzuki10_tracer_descriptions, &
        ATMOS_PHY_MP_suzuki10_tracer_units
-!    use scale_atmos_phy_mp_amps, only: &
-!       ATMOS_PHY_MP_amps_tracer_setup,        &
-!       ATMOS_PHY_MP_amps_ntracers,            &
-!       ATMOS_PHY_MP_amps_nmasses,             &
-!       ATMOS_PHY_MP_amps_nwaters,             &
-!       ATMOS_PHY_MP_amps_nices,               &
-!       ATMOS_PHY_MP_amps_nccn,                &
-!       ATMOS_PHY_MP_amps_tracer_names,        &
-!       ATMOS_PHY_MP_amps_tracer_descriptions, &
-!       ATMOS_PHY_MP_amps_tracer_units,        &
-!       ATMOS_PHY_MP_amps_tracer_ref
-!    use scale_atmos_phy_mp_sdm, only: &
-!       ATMOS_PHY_MP_SDM_tracer_setup,        &
-!       ATMOS_PHY_MP_SDM_ntracers,            &
-!       ATMOS_PHY_MP_SDM_nwaters,             &
-!       ATMOS_PHY_MP_SDM_nices,               &
-!       ATMOS_PHY_MP_SDM_tracer_names,        &
-!       ATMOS_PHY_MP_SDM_tracer_descriptions, &
-!       ATMOS_PHY_MP_SDM_tracer_units,        &
-!       ATMOS_PHY_MP_SDM_tracer_advc
+    use scale_atmos_phy_mp_amps, only: &
+       ATMOS_PHY_MP_amps_tracer_setup,        &
+       ATMOS_PHY_MP_amps_ntracers,            &
+       ATMOS_PHY_MP_amps_nmasses,             &
+       ATMOS_PHY_MP_amps_nwaters,             &
+       ATMOS_PHY_MP_amps_nices,               &
+       ATMOS_PHY_MP_amps_nccn,                &
+       ATMOS_PHY_MP_amps_tracer_names,        &
+       ATMOS_PHY_MP_amps_tracer_descriptions, &
+       ATMOS_PHY_MP_amps_tracer_units,        &
+       ATMOS_PHY_MP_amps_tracer_ref
+    use scale_atmos_phy_mp_sdm, only: &
+       ATMOS_PHY_MP_SDM_tracer_setup,        &
+       ATMOS_PHY_MP_SDM_ntracers,            &
+       ATMOS_PHY_MP_SDM_nwaters,             &
+       ATMOS_PHY_MP_SDM_nices,               &
+       ATMOS_PHY_MP_SDM_tracer_names,        &
+       ATMOS_PHY_MP_SDM_tracer_descriptions, &
+       ATMOS_PHY_MP_SDM_tracer_units,        &
+       ATMOS_PHY_MP_SDM_tracer_advc
     use mod_atmos_admin, only: &
        ATMOS_PHY_MP_TYPE, &
        ATMOS_sw_phy_mp, &
@@ -228,43 +228,43 @@ contains
                                                                           + 2 : )                         ) ! [IN]
           end if
           QA_MP = ATMOS_PHY_MP_suzuki10_ntracers
-!       case ( 'AMPS' )
-!          call ATMOS_PHY_MP_amps_tracer_setup
-!          
-!          call ATMOS_HYDROMETEOR_regist( &
-!               ATMOS_PHY_MP_amps_nwaters,                & ! [IN]
-!               ATMOS_PHY_MP_amps_nices,                  & ! [IN]
-!               ATMOS_PHY_MP_amps_tracer_names(:),        & ! [IN]
-!               ATMOS_PHY_MP_amps_tracer_descriptions(:), & ! [IN]
-!               ATMOS_PHY_MP_amps_tracer_units(:),        & ! [IN]
-!               QS_MP                                     ) ! [OUT]
-!          call TRACER_regist( &
-!               QS2,                                      & ! [OUT], first index of new tracer group
-!               ATMOS_PHY_MP_amps_ntracers - ATMOS_PHY_MP_amps_nmasses,          & ! [IN]
-!               ATMOS_PHY_MP_amps_tracer_names       ( ATMOS_PHY_MP_amps_nwaters &
-!                                                    + ATMOS_PHY_MP_amps_nices   &
-!                                                    + 2 : ),                    & ! [IN]
-!               ATMOS_PHY_MP_amps_tracer_descriptions( ATMOS_PHY_MP_amps_nwaters &
-!                                                    + ATMOS_PHY_MP_amps_nices   &
-!                                                    + 2 : ),                    & ! [IN]
-!               ATMOS_PHY_MP_amps_tracer_units       ( ATMOS_PHY_MP_amps_nwaters &
-!                                                    + ATMOS_PHY_MP_amps_nices   &
-!                                                    + 2 : ),                    & ! [IN]
-!               ref = ATMOS_PHY_MP_amps_tracer_ref   ( ATMOS_PHY_MP_amps_nwaters &
-!                                                    + ATMOS_PHY_MP_amps_nices   &
-!                                                    + 2 : )                     ) ! [IN] optional
-!          QA_MP = ATMOS_PHY_MP_amps_ntracers
-!       case( 'SDM' )
-!          call ATMOS_PHY_MP_sdm_tracer_setup()
-!
-!          call ATMOS_HYDROMETEOR_regist( &
-!               ATMOS_PHY_MP_SDM_nwaters,                & ! [IN]
-!               ATMOS_PHY_MP_SDM_nices,                  & ! [IN]
-!               ATMOS_PHY_MP_SDM_tracer_names(:),        & ! [IN]
-!               ATMOS_PHY_MP_SDM_tracer_descriptions(:), & ! [IN]
-!               ATMOS_PHY_MP_SDM_tracer_units(:),        & ! [IN]
-!               QS_MP                                    ) ! [OUT]
-!          QA_MP = ATMOS_PHY_MP_SDM_ntracers
+       case ( 'AMPS' )
+          call ATMOS_PHY_MP_amps_tracer_setup
+          
+          call ATMOS_HYDROMETEOR_regist( &
+               ATMOS_PHY_MP_amps_nwaters,                & ! [IN]
+               ATMOS_PHY_MP_amps_nices,                  & ! [IN]
+               ATMOS_PHY_MP_amps_tracer_names(:),        & ! [IN]
+               ATMOS_PHY_MP_amps_tracer_descriptions(:), & ! [IN]
+               ATMOS_PHY_MP_amps_tracer_units(:),        & ! [IN]
+               QS_MP                                     ) ! [OUT]
+          call TRACER_regist( &
+               QS2,                                      & ! [OUT], first index of new tracer group
+               ATMOS_PHY_MP_amps_ntracers - ATMOS_PHY_MP_amps_nmasses,          & ! [IN]
+               ATMOS_PHY_MP_amps_tracer_names       ( ATMOS_PHY_MP_amps_nwaters &
+                                                    + ATMOS_PHY_MP_amps_nices   &
+                                                    + 2 : ),                    & ! [IN]
+               ATMOS_PHY_MP_amps_tracer_descriptions( ATMOS_PHY_MP_amps_nwaters &
+                                                    + ATMOS_PHY_MP_amps_nices   &
+                                                    + 2 : ),                    & ! [IN]
+               ATMOS_PHY_MP_amps_tracer_units       ( ATMOS_PHY_MP_amps_nwaters &
+                                                    + ATMOS_PHY_MP_amps_nices   &
+                                                    + 2 : ),                    & ! [IN]
+               ref = ATMOS_PHY_MP_amps_tracer_ref   ( ATMOS_PHY_MP_amps_nwaters &
+                                                    + ATMOS_PHY_MP_amps_nices   &
+                                                    + 2 : )                     ) ! [IN] optional
+          QA_MP = ATMOS_PHY_MP_amps_ntracers
+       case( 'SDM' )
+          call ATMOS_PHY_MP_sdm_tracer_setup()
+
+          call ATMOS_HYDROMETEOR_regist( &
+               ATMOS_PHY_MP_SDM_nwaters,                & ! [IN]
+               ATMOS_PHY_MP_SDM_nices,                  & ! [IN]
+               ATMOS_PHY_MP_SDM_tracer_names(:),        & ! [IN]
+               ATMOS_PHY_MP_SDM_tracer_descriptions(:), & ! [IN]
+               ATMOS_PHY_MP_SDM_tracer_units(:),        & ! [IN]
+               QS_MP                                    ) ! [OUT]
+          QA_MP = ATMOS_PHY_MP_SDM_ntracers
        case default
           LOG_ERROR("ATMOS_PHY_MP_driver_tracer_setup",*) 'ATMOS_PHY_MP_TYPE is invalud: ', trim(ATMOS_PHY_MP_TYPE)
           call PRC_abort
@@ -312,10 +312,10 @@ contains
        ATMOS_PHY_MP_SN14_setup
     use scale_atmos_phy_mp_suzuki10, only: &
        ATMOS_PHY_MP_suzuki10_setup
-!    use scale_atmos_phy_mp_amps, only: &
-!       ATMOS_PHY_MP_amps_setup
-!    use scale_atmos_phy_mp_sdm, only: &
-!       ATMOS_PHY_MP_sdm_setup
+    use scale_atmos_phy_mp_amps, only: &
+       ATMOS_PHY_MP_amps_setup
+    use scale_atmos_phy_mp_sdm, only: &
+       ATMOS_PHY_MP_sdm_setup
     use scale_file_history, only: &
        FILE_HISTORY_reg
     use scale_monitor, only: &
@@ -476,117 +476,117 @@ contains
                                        HIST_crg_id(iq)                                     ) ! [OUT]
              enddo
           endif
-!       case ( 'AMPS' )
-!          if (MP_do_precipitation) then
-!             LOG_ERROR("ATMOS_PHY_MP_driver_setup",*) 'Precipitation should be off if AMPS is used. Check!'
-!             call PRC_abort
-!          endif
-!          call ATMOS_PHY_MP_amps_setup( &
-!               KA, KS, KE, IA, IS, IE, JA, JS, JE)
-!       case( 'SDM' )
-!          if ( not_init ) then
-!             call ATMOS_PHY_MP_sdm_setup( &
-!                  KA, KS, KE, IA, IS, IE, JA, JS, JE, &
-!                  REAL_FZ, FX, FY,              & ! [IN]
-!                  CDX, CDY, RCDX, RCDY, DX, DY, & ! [IN]
-!                  TIME_DTSEC_ATMOS_PHY_MP,      & ! [IN]
-!                  MP_do_precipitation           ) ! [IN]
-!             calc_precipitation = .false.
-!          end if
-end select
+       case ( 'AMPS' )
+          if (MP_do_precipitation) then
+             LOG_ERROR("ATMOS_PHY_MP_driver_setup",*) 'Precipitation should be off if AMPS is used. Check!'
+             call PRC_abort
+          endif
+          call ATMOS_PHY_MP_amps_setup( &
+               KA, KS, KE, IA, IS, IE, JA, JS, JE)
+       case( 'SDM' )
+          if ( not_init ) then
+             call ATMOS_PHY_MP_sdm_setup( &
+                  KA, KS, KE, IA, IS, IE, JA, JS, JE, &
+                  REAL_FZ, FX, FY,              & ! [IN]
+                  CDX, CDY, RCDX, RCDY, DX, DY, & ! [IN]
+                  TIME_DTSEC_ATMOS_PHY_MP,      & ! [IN]
+                  MP_do_precipitation           ) ! [IN]
+             calc_precipitation = .false.
+          end if
+       end select
 
-! history putput
-if ( calc_precipitation ) then
+       ! history putput
+       if ( calc_precipitation ) then
 
-  allocate( hist_vterm_id(QS_MP+1:QE_MP) )
-  do iq = QS_MP+1, QE_MP
-     call FILE_HISTORY_reg( 'Vterm_'//trim(TRACER_NAME(iq)), 'terminal velocity of '//trim(TRACER_NAME(iq)), 'm/s', hist_vterm_id(iq) )
-  end do
+          allocate( hist_vterm_id(QS_MP+1:QE_MP) )
+          do iq = QS_MP+1, QE_MP
+             call FILE_HISTORY_reg( 'Vterm_'//trim(TRACER_NAME(iq)), 'terminal velocity of '//trim(TRACER_NAME(iq)), 'm/s', hist_vterm_id(iq) )
+          end do
 
-else
+       else
 
-  !$acc kernels
-  SFLX_rain(:,:) = 0.0_RP
-  !$acc end kernels
-  !$acc kernels
-  SFLX_snow(:,:) = 0.0_RP
-  !$acc end kernels
-  !$acc kernels
-  SFLX_ENGI(:,:) = 0.0_RP
-  !$acc end kernels
+          !$acc kernels
+          SFLX_rain(:,:) = 0.0_RP
+          !$acc end kernels
+          !$acc kernels
+          SFLX_snow(:,:) = 0.0_RP
+          !$acc end kernels
+          !$acc kernels
+          SFLX_ENGI(:,:) = 0.0_RP
+          !$acc end kernels
 
-end if
+       end if
 
-! monitor
-if ( MP_do_negative_fixer ) then
-  call FILE_HISTORY_reg( "RHOH_MP_NF",   "latent heat by the negative fixer",            "J/m3/s",  & ! [IN]
-                         hist_nf_rhoh_id                                                            ) ! [OUT]
-  call FILE_HISTORY_reg( "DENS_t_MP_NF", "vapor supply by the negative fixer",           "kg/m3/s", & ! [IN]
-                         hist_nf_dens_id                                                            ) ! [OUT]
-  call FILE_HISTORY_reg( "ENGI_t_MP_NF", "internal energy supply by the negative fixer", "J/m3/s",  & ! [IN]
-                         hist_nf_engi_id                                                            ) ! [OUT]
-  call MONITOR_reg( "QTOTTND_NF", "vapor supply by the negative fixer", "kg",           & ! [IN]
-                    monit_nf_mass_id,                                                   & ! [OUT]
-                    is_tendency=.true.                                                  ) ! [IN]
-  call MONITOR_reg( "ENGITND_NF", "internal energy supply by the negative fixer", "J",  & ! [IN]
-                    monit_nf_engi_id,                                                   & ! [OUT]
-                    is_tendency=.true.                                                  ) ! [IN]
-  ZERO(:,:,:) = 0.0_RP
-  call MONITOR_put( MONIT_nf_mass_id, ZERO(:,:,:) )
-  call MONITOR_put( MONIT_nf_engi_id, ZERO(:,:,:) )
-end if
+       ! monitor
+       if ( MP_do_negative_fixer ) then
+          call FILE_HISTORY_reg( "RHOH_MP_NF",   "latent heat by the negative fixer",            "J/m3/s",  & ! [IN]
+                                 hist_nf_rhoh_id                                                            ) ! [OUT]
+          call FILE_HISTORY_reg( "DENS_t_MP_NF", "vapor supply by the negative fixer",           "kg/m3/s", & ! [IN]
+                                 hist_nf_dens_id                                                            ) ! [OUT]
+          call FILE_HISTORY_reg( "ENGI_t_MP_NF", "internal energy supply by the negative fixer", "J/m3/s",  & ! [IN]
+                                 hist_nf_engi_id                                                            ) ! [OUT]
+          call MONITOR_reg( "QTOTTND_NF", "vapor supply by the negative fixer", "kg",           & ! [IN]
+                            monit_nf_mass_id,                                                   & ! [OUT]
+                            is_tendency=.true.                                                  ) ! [IN]
+          call MONITOR_reg( "ENGITND_NF", "internal energy supply by the negative fixer", "J",  & ! [IN]
+                            monit_nf_engi_id,                                                   & ! [OUT]
+                            is_tendency=.true.                                                  ) ! [IN]
+          ZERO(:,:,:) = 0.0_RP
+          call MONITOR_put( MONIT_nf_mass_id, ZERO(:,:,:) )
+          call MONITOR_put( MONIT_nf_engi_id, ZERO(:,:,:) )
+       end if
 
-else
+    else
 
-LOG_INFO("ATMOS_PHY_MP_driver_setup",*) 'this component is never called.'
-LOG_INFO("ATMOS_PHY_MP_driver_setup",*) 'SFLX_rain and SFLX_snow is set to zero.'
-!$acc kernels
-SFLX_rain(:,:) = 0.0_RP
-!$acc end kernels
-!$acc kernels
-SFLX_snow(:,:) = 0.0_RP
-!$acc end kernels
-!$acc kernels
-SFLX_ENGI(:,:) = 0.0_RP
-!$acc end kernels
+       LOG_INFO("ATMOS_PHY_MP_driver_setup",*) 'this component is never called.'
+       LOG_INFO("ATMOS_PHY_MP_driver_setup",*) 'SFLX_rain and SFLX_snow is set to zero.'
+       !$acc kernels
+       SFLX_rain(:,:) = 0.0_RP
+       !$acc end kernels
+       !$acc kernels
+       SFLX_snow(:,:) = 0.0_RP
+       !$acc end kernels
+       !$acc kernels
+       SFLX_ENGI(:,:) = 0.0_RP
+       !$acc end kernels
 
-endif
+    endif
 
-return
-end subroutine ATMOS_PHY_MP_driver_setup
+    return
+  end subroutine ATMOS_PHY_MP_driver_setup
 
-!-----------------------------------------------------------------------------
-!> finalize
-subroutine ATMOS_PHY_MP_driver_finalize
-use mod_atmos_admin, only: &
-ATMOS_PHY_MP_TYPE, &
-ATMOS_sw_phy_mp
-use scale_atmos_phy_mp_tomita08, only: &
-ATMOS_PHY_MP_Tomita08_finalize
-use scale_atmos_phy_mp_sn14, only: &
-ATMOS_PHY_MP_sn14_finalize
-use scale_atmos_phy_mp_suzuki10, only: &
-ATMOS_PHY_MP_suzuki10_finalize
-!use scale_atmos_phy_mp_amps, only: &
-!ATMOS_PHY_MP_amps_finalize
-implicit none
-!---------------------------------------------------------------------------
+  !-----------------------------------------------------------------------------
+  !> finalize
+  subroutine ATMOS_PHY_MP_driver_finalize
+    use mod_atmos_admin, only: &
+       ATMOS_PHY_MP_TYPE, &
+       ATMOS_sw_phy_mp
+    use scale_atmos_phy_mp_tomita08, only: &
+       ATMOS_PHY_MP_Tomita08_finalize
+    use scale_atmos_phy_mp_sn14, only: &
+       ATMOS_PHY_MP_sn14_finalize
+    use scale_atmos_phy_mp_suzuki10, only: &
+       ATMOS_PHY_MP_suzuki10_finalize
+    use scale_atmos_phy_mp_amps, only: &
+       ATMOS_PHY_MP_amps_finalize
+    implicit none
+    !---------------------------------------------------------------------------
 
-LOG_NEWLINE
-LOG_INFO("ATMOS_PHY_MP_driver_finalize",*) 'Finalize'
+    LOG_NEWLINE
+    LOG_INFO("ATMOS_PHY_MP_driver_finalize",*) 'Finalize'
 
-if ( ATMOS_sw_phy_mp ) then
-select case ( ATMOS_PHY_MP_TYPE )
-case ( 'KESSLER' )
-case ( 'TOMITA08' )
-  call ATMOS_PHY_MP_Tomita08_finalize
-case ( 'SN14' )
-  call ATMOS_PHY_MP_sn14_finalize
-case ( 'SUZUKI10' )
-  call ATMOS_PHY_MP_suzuki10_finalize
-!       case ( 'AMPS' )
-!          call ATMOS_PHY_MP_amps_finalize
-!       case ( 'SDM' )
+    if ( ATMOS_sw_phy_mp ) then
+       select case ( ATMOS_PHY_MP_TYPE )
+       case ( 'KESSLER' )
+       case ( 'TOMITA08' )
+          call ATMOS_PHY_MP_Tomita08_finalize
+       case ( 'SN14' )
+          call ATMOS_PHY_MP_sn14_finalize
+       case ( 'SUZUKI10' )
+          call ATMOS_PHY_MP_suzuki10_finalize
+       case ( 'AMPS' )
+          call ATMOS_PHY_MP_amps_finalize
+       case ( 'SDM' )
        end select
     end if
 
@@ -638,8 +638,8 @@ case ( 'SUZUKI10' )
        FILE_HISTORY_put
     use scale_monitor, only: &
        MONITOR_put
-!    use scale_atmos_phy_mp_sdm, only: &
-!       ATMOS_PHY_MP_sdm_adjustment
+    use scale_atmos_phy_mp_sdm, only: &
+       ATMOS_PHY_MP_sdm_adjustment
     use mod_atmos_phy_ae_vars, only: &
        CCN_t => ATMOS_PHY_AE_CCN_t
 
@@ -778,27 +778,27 @@ case ( 'SUZUKI10' )
        !$acc end kernels
        !$omp end workshare
 
-!       select case ( ATMOS_PHY_MP_TYPE )
-!       case ( 'SDM' )
-!
-!          ! advance SDs for dt_MP
-!          !$acc update host(DENS,MOMZ,MOMX,MOMY,RHOT,QTRC(:,:,:,QS_MP:QE_MP),CCN)
-!          call  ATMOS_PHY_MP_sdm_adjustment( KA, KS, KE, IA, IS, IE, JA, JS, JE, & ! [IN]
-!                                             DENS    (:,:,:),   & ! [INOUT]
-!                                             MOMZ    (:,:,:),   & ! [INOUT]
-!                                             MOMX    (:,:,:),   & ! [INOUT]
-!                                             MOMY    (:,:,:),   & ! [INOUT]
-!                                             RHOT    (:,:,:),   & ! [INOUT]
-!                                             QTRC    (:,:,:,QS_MP:QE_MP), & ! [INOUT]
-!                                             CCN      (:,:,:),  & ! [IN]
-!                                             EVAPORATE(:,:,:),  & ! [OUT]
-!                                             SFLX_rain(:,:),    & ! [OUT]
-!                                             SFLX_snow(:,:),    & ! [OUT]
-!                                             dt_MP              ) ! [IN]
-!          !$acc update device(DENS,MOMZ,MOMX,MOMY,RHOT,QTRC(:,:,:,QS_MP:QE_MP),EVAPORATE,SFLX_rain,SFLX_snow)
-!       case default
+       select case ( ATMOS_PHY_MP_TYPE )
+       case ( 'SDM' )
+
+          ! advance SDs for dt_MP
+          !$acc update host(DENS,MOMZ,MOMX,MOMY,RHOT,QTRC(:,:,:,QS_MP:QE_MP),CCN)
+          call  ATMOS_PHY_MP_sdm_adjustment( KA, KS, KE, IA, IS, IE, JA, JS, JE, & ! [IN]
+                                             DENS    (:,:,:),   & ! [INOUT]
+                                             MOMZ    (:,:,:),   & ! [INOUT]
+                                             MOMX    (:,:,:),   & ! [INOUT]
+                                             MOMY    (:,:,:),   & ! [INOUT]
+                                             RHOT    (:,:,:),   & ! [INOUT]
+                                             QTRC    (:,:,:,QS_MP:QE_MP), & ! [INOUT]
+                                             CCN      (:,:,:),  & ! [IN]
+                                             EVAPORATE(:,:,:),  & ! [OUT]
+                                             SFLX_rain(:,:),    & ! [OUT]
+                                             SFLX_snow(:,:),    & ! [OUT]
+                                             dt_MP              ) ! [IN]
+          !$acc update device(DENS,MOMZ,MOMX,MOMY,RHOT,QTRC(:,:,:,QS_MP:QE_MP),EVAPORATE,SFLX_rain,SFLX_snow)
+       case default
           LOG_ERROR("ATMOS_PHY_MP_driver_adjustment",*) "MP_use_tendency=.false. is not supported for ", trim(ATMOS_PHY_MP_TYPE)
-!       end select
+       end select
 
     end if
 
@@ -864,12 +864,12 @@ case ( 'SUZUKI10' )
        ATMOS_PHY_MP_suzuki10_terminal_velocity, &
        ATMOS_PHY_MP_suzuki10_qtrc2qhyd, &
        ATMOS_PHY_MP_suzuki10_crg_qtrc2qhyd
-!    use scale_atmos_phy_mp_amps, only: &
-!       ATMOS_PHY_MP_amps_tendency
+    use scale_atmos_phy_mp_amps, only: &
+       ATMOS_PHY_MP_amps_tendency
     use scale_atmos_phy_lt_sato2019, only: &
        ATMOS_PHY_LT_sato2019_select_dQCRG_from_LUT
-!    use scale_atmos_phy_mp_sdm, only: &
-!       ATMOS_PHY_MP_sdm_adjustment
+    use scale_atmos_phy_mp_sdm, only: &
+       ATMOS_PHY_MP_sdm_adjustment
     use scale_file_history, only: &
        FILE_HISTORY_query, &
        FILE_HISTORY_put
@@ -1309,131 +1309,131 @@ case ( 'SUZUKI10' )
 
           endif
 
-!       case ( 'AMPS' )
-!
-!          !$acc update host(U,V,W,MOMZ,DENS,PRES,TEMP,POTT,EXNER,QTRC(:,:,:,QS_MP:QE_MP),QDRY,CPtot,CVtot,CCN)
-!          call ATMOS_PHY_MP_amps_tendency( KA, KS, KE, IA, IS, IE, JA, JS, JE, &
-!                                           dt_MP, U(:,:,:), V(:,:,:),              & ! [IN]
-!                                           W(:,:,:), MOMZ(:,:,:),                  & ! [IN]
-!                                           DENS(:,:,:),  PRES(:,:,:), TEMP(:,:,:), & ! [IN]
-!                                           POTT(:,:,:), EXNER(:,:,:),              & ! [IN]
-!                                           QTRC(:,:,:,QS_MP:QE_MP), QDRY(:,:,:),   & ! [IN]
-!                                           CPtot(:,:,:), CVtot(:,:,:),             & ! [IN]
-!                                           CCN(:,:,:),                             & ! [IN]
-!                                           REAL_CZ(:,:,:), REAL_FZ(:,:,:),         & ! [IN]
-!                                           RHOQ_t_MP(:,:,:,QS_MP:QE_MP),           & ! [OUT]
-!                                           RHOE_t(:,:,:),                          & ! [OUT]
-!                                           CPtot_t(:,:,:), CVtot_t(:,:,:),         & ! [OUT]
-!                                           DENS_t_MP(:,:,:), MOMZ_t_MP(:,:,:),     & ! [OUT]
-!                                           RHOU_t_MP(:,:,:), RHOV_t_MP(:,:,:),     & ! [OUT]
-!                                           SFLX_rain(:,:),SFLX_snow(:,:)           ) ! [OUT]
-!          !$acc update device(RHOQ_t_MP(:,:,:,QS_MP:QE_MP),RHOE_t,CPtot_t,CVtot_t,DENS_t_MP,MOMZ_t_MP,RHOU_t_MP,RHOV_t_MP,SFLX_rain,SFLX_snow)
-!       case ( 'SDM' )
-!
-!          ! prepare working variables
-!          !$acc kernels
-!!OCL XFILL
-!          DENS1(:,:,:) = DENS(:,:,:)
-!!OCL XFILL
-!          MOMZ1(:,:,:) = MOMZ(:,:,:)
-!!OCL XFILL
-!          MOMX1(:,:,:) = MOMX(:,:,:)
-!!OCL XFILL
-!          MOMY1(:,:,:) = MOMY(:,:,:)
-!!OCL XFILL
-!          RHOT1(:,:,:) = RHOT(:,:,:)
-!!OCL XFILL
-!          QTRC1(:,:,:,QS_MP:QE_MP) = QTRC(:,:,:,QS_MP:QE_MP)
-!          !$acc end kernels
-!
-!          ! advance the SDs
-!          !$acc update host(DENS1,MOMZ1,MOMX1,MOMY1,RHOT1,QTRC1,CCN)
-!          call  ATMOS_PHY_MP_sdm_adjustment( KA, KS, KE, IA, IS, IE, JA, JS, JE, & ! [IN]
-!                                             DENS1    (:,:,:),   & ! [INOUT]
-!                                             MOMZ1    (:,:,:),   & ! [INOUT]
-!                                             MOMX1    (:,:,:),   & ! [INOUT]
-!                                             MOMY1    (:,:,:),   & ! [INOUT]
-!                                             RHOT1    (:,:,:),   & ! [INOUT]
-!                                             QTRC1    (:,:,:,QS_MP:QE_MP), & ! [INOUT]
-!                                             CCN      (:,:,:),   & ! [IN]
-!                                             EVAPORATE(:,:,:),   & ! [OUT]
-!                                             SFLX_rain(:,:),     & ! [OUT]
-!                                             SFLX_snow(:,:),     & ! [OUT]
-!                                             dt_MP               ) ! [IN]
-!
-!          !acc update device(DENS1,MOMZ1,MOMX1,MOMY1,RHOT1,QTRC1,EVAPORATE,SFLX_rain,SFLX_snow)
-!
-!
-!          ! calculate MP tendency
-!!OCL XFILL
-!          !$omp parallel do default(none) private(i,j,k) OMP_SCHEDULE_ collapse(2) &
-!          !$omp shared(JS,JE,IS,IE,KS,KE,DENS_t_MP,DENS1,DENS,MOMZ_t_MP,MOMZ1,MOMZ,MOMX_t_MP,MOMX1) &
-!          !$omp shared(MOMX,MOMY_t_MP,MOMY1,MOMY,RHOT_t_MP,RHOT1,RHOT,dt_MP)
-!          !$acc kernels
-!          do j  = JS, JE
-!          do i  = IS, IE
-!          do k  = KS, KE
-!             DENS_t_MP(k,i,j) = ( DENS1(k,i,j) - DENS(k,i,j) ) / dt_MP
-!             MOMZ_t_MP(k,i,j) = ( MOMZ1(k,i,j) - MOMZ(k,i,j) ) / dt_MP
-!             MOMX_t_MP(k,i,j) = ( MOMX1(k,i,j) - MOMX(k,i,j) ) / dt_MP
-!             MOMY_t_MP(k,i,j) = ( MOMY1(k,i,j) - MOMY(k,i,j) ) / dt_MP
-!             RHOT_t_MP(k,i,j) = ( RHOT1(k,i,j) - RHOT(k,i,j) ) / dt_MP
-!          enddo
-!          enddo
-!          enddo
-!          !$acc end kernels
-!
-!!OCL XFILL
-!          !$omp parallel do default(none) private(i,j,k) OMP_SCHEDULE_ collapse(3) &
-!          !$omp shared(JS,JE,IS,IE,KS,KE,QS_MP,QE_MP, &
-!          !$omp        RHOQ_t_MP,QTRC1,QTRC,DENS1,DENS,dt_MP)
-!          !$acc kernels
-!          do iq = QS_MP, QE_MP
-!          do j = JS, JE
-!          do i = IS, IE
-!          do k = KS, KE
-!             RHOQ_t_MP(k,i,j,iq) = ( QTRC1(k,i,j,iq)*DENS1(k,i,j) - QTRC(k,i,j,iq)*DENS(k,i,j) ) / dt_MP
-!          enddo
-!          enddo
-!          enddo
-!          enddo
-!          !$acc end kernels
-!
-!          !$omp parallel do collapse(2)
-!          !$acc kernels
-!!OCL XFILL
-!          do j = JS, JE
-!          do i = IS, IE
-!          do k = KS, KE
-!             RHOU_t_MP(k,i,j) = 0.0_RP
-!             RHOV_t_MP(k,i,j) = 0.0_RP
-!          end do
-!          end do
-!          end do
-!          !$acc end kernels
-!
-!          !if( flg_lt ) then
-!             !$omp workshare
-!             !$acc kernels
-!!OCL XFILL
-!             RHOC_t_MP(:,:,:,QS_LT:QE_LT) = 0.0_RP
-!             !$acc end kernels
-!             !$omp end workshare
-!          end if
+       case ( 'AMPS' )
+
+          !$acc update host(U,V,W,MOMZ,DENS,PRES,TEMP,POTT,EXNER,QTRC(:,:,:,QS_MP:QE_MP),QDRY,CPtot,CVtot,CCN)
+          call ATMOS_PHY_MP_amps_tendency( KA, KS, KE, IA, IS, IE, JA, JS, JE, &
+                                           dt_MP, U(:,:,:), V(:,:,:),              & ! [IN]
+                                           W(:,:,:), MOMZ(:,:,:),                  & ! [IN]
+                                           DENS(:,:,:),  PRES(:,:,:), TEMP(:,:,:), & ! [IN]
+                                           POTT(:,:,:), EXNER(:,:,:),              & ! [IN]
+                                           QTRC(:,:,:,QS_MP:QE_MP), QDRY(:,:,:),   & ! [IN]
+                                           CPtot(:,:,:), CVtot(:,:,:),             & ! [IN]
+                                           CCN(:,:,:),                             & ! [IN]
+                                           REAL_CZ(:,:,:), REAL_FZ(:,:,:),         & ! [IN]
+                                           RHOQ_t_MP(:,:,:,QS_MP:QE_MP),           & ! [OUT]
+                                           RHOE_t(:,:,:),                          & ! [OUT]
+                                           CPtot_t(:,:,:), CVtot_t(:,:,:),         & ! [OUT]
+                                           DENS_t_MP(:,:,:), MOMZ_t_MP(:,:,:),     & ! [OUT]
+                                           RHOU_t_MP(:,:,:), RHOV_t_MP(:,:,:),     & ! [OUT]
+                                           SFLX_rain(:,:),SFLX_snow(:,:)           ) ! [OUT]
+          !$acc update device(RHOQ_t_MP(:,:,:,QS_MP:QE_MP),RHOE_t,CPtot_t,CVtot_t,DENS_t_MP,MOMZ_t_MP,RHOU_t_MP,RHOV_t_MP,SFLX_rain,SFLX_snow)
+       case ( 'SDM' )
+
+          ! prepare working variables
+          !$acc kernels
+!OCL XFILL
+          DENS1(:,:,:) = DENS(:,:,:)
+!OCL XFILL
+          MOMZ1(:,:,:) = MOMZ(:,:,:)
+!OCL XFILL
+          MOMX1(:,:,:) = MOMX(:,:,:)
+!OCL XFILL
+          MOMY1(:,:,:) = MOMY(:,:,:)
+!OCL XFILL
+          RHOT1(:,:,:) = RHOT(:,:,:)
+!OCL XFILL
+          QTRC1(:,:,:,QS_MP:QE_MP) = QTRC(:,:,:,QS_MP:QE_MP)
+          !$acc end kernels
+
+          ! advance the SDs
+          !$acc update host(DENS1,MOMZ1,MOMX1,MOMY1,RHOT1,QTRC1,CCN)
+          call  ATMOS_PHY_MP_sdm_adjustment( KA, KS, KE, IA, IS, IE, JA, JS, JE, & ! [IN]
+                                             DENS1    (:,:,:),   & ! [INOUT]
+                                             MOMZ1    (:,:,:),   & ! [INOUT]
+                                             MOMX1    (:,:,:),   & ! [INOUT]
+                                             MOMY1    (:,:,:),   & ! [INOUT]
+                                             RHOT1    (:,:,:),   & ! [INOUT]
+                                             QTRC1    (:,:,:,QS_MP:QE_MP), & ! [INOUT]
+                                             CCN      (:,:,:),   & ! [IN]
+                                             EVAPORATE(:,:,:),   & ! [OUT]
+                                             SFLX_rain(:,:),     & ! [OUT]
+                                             SFLX_snow(:,:),     & ! [OUT]
+                                             dt_MP               ) ! [IN]
+
+          !acc update device(DENS1,MOMZ1,MOMX1,MOMY1,RHOT1,QTRC1,EVAPORATE,SFLX_rain,SFLX_snow)
+
+
+          ! calculate MP tendency
+!OCL XFILL
+          !$omp parallel do default(none) private(i,j,k) OMP_SCHEDULE_ collapse(2) &
+          !$omp shared(JS,JE,IS,IE,KS,KE,DENS_t_MP,DENS1,DENS,MOMZ_t_MP,MOMZ1,MOMZ,MOMX_t_MP,MOMX1) &
+          !$omp shared(MOMX,MOMY_t_MP,MOMY1,MOMY,RHOT_t_MP,RHOT1,RHOT,dt_MP)
+          !$acc kernels
+          do j  = JS, JE
+          do i  = IS, IE
+          do k  = KS, KE
+             DENS_t_MP(k,i,j) = ( DENS1(k,i,j) - DENS(k,i,j) ) / dt_MP
+             MOMZ_t_MP(k,i,j) = ( MOMZ1(k,i,j) - MOMZ(k,i,j) ) / dt_MP
+             MOMX_t_MP(k,i,j) = ( MOMX1(k,i,j) - MOMX(k,i,j) ) / dt_MP
+             MOMY_t_MP(k,i,j) = ( MOMY1(k,i,j) - MOMY(k,i,j) ) / dt_MP
+             RHOT_t_MP(k,i,j) = ( RHOT1(k,i,j) - RHOT(k,i,j) ) / dt_MP
+          enddo
+          enddo
+          enddo
+          !$acc end kernels
+
+!OCL XFILL
+          !$omp parallel do default(none) private(i,j,k) OMP_SCHEDULE_ collapse(3) &
+          !$omp shared(JS,JE,IS,IE,KS,KE,QS_MP,QE_MP, &
+          !$omp        RHOQ_t_MP,QTRC1,QTRC,DENS1,DENS,dt_MP)
+          !$acc kernels
+          do iq = QS_MP, QE_MP
+          do j = JS, JE
+          do i = IS, IE
+          do k = KS, KE
+             RHOQ_t_MP(k,i,j,iq) = ( QTRC1(k,i,j,iq)*DENS1(k,i,j) - QTRC(k,i,j,iq)*DENS(k,i,j) ) / dt_MP
+          enddo
+          enddo
+          enddo
+          enddo
+          !$acc end kernels
+
+          !$omp parallel do collapse(2)
+          !$acc kernels
+!OCL XFILL
+          do j = JS, JE
+          do i = IS, IE
+          do k = KS, KE
+             RHOU_t_MP(k,i,j) = 0.0_RP
+             RHOV_t_MP(k,i,j) = 0.0_RP
+          end do
+          end do
+          end do
+          !$acc end kernels
+
+          if( flg_lt ) then
+             !$omp workshare
+             !$acc kernels
+!OCL XFILL
+             RHOC_t_MP(:,:,:,QS_LT:QE_LT) = 0.0_RP
+             !$acc end kernels
+             !$omp end workshare
+          end if
 
        end select
 
-!       select case ( ATMOS_PHY_MP_TYPE )
-!       case ( 'SDM' )
-!
-!!OCL XFILL
-!          !$omp workshare
-!          !$acc kernels
-!          RHOH_MP(:,:,:) = 0.0_RP
-!          !$acc end kernels
-!          !$omp end workshare
+       select case ( ATMOS_PHY_MP_TYPE )
+       case ( 'SDM' )
 
-!       case default
+!OCL XFILL
+          !$omp workshare
+          !$acc kernels
+          RHOH_MP(:,:,:) = 0.0_RP
+          !$acc end kernels
+          !$omp end workshare
+
+       case default
 
           !$omp parallel do collapse(2)
           !$acc parallel
@@ -1453,7 +1453,7 @@ case ( 'SUZUKI10' )
           end do
           !$acc end parallel
 
-!       end select
+       end select
 
        ! ### for SPRINTARS
        !$omp parallel do collapse(3)
@@ -1588,10 +1588,10 @@ case ( 'SUZUKI10' )
                    call ATMOS_PHY_MP_suzuki10_terminal_velocity( &
                         KA,        & ! [IN]
                         vterm(:,:) ) ! [OUT]
-!                case ( 'AMPS' )
-!                   ! do nothing
-!                case ( 'SDM' )
-!                   ! do nothing
+                case ( 'AMPS' )
+                   ! do nothing
+                case ( 'SDM' )
+                   ! do nothing
                 case default
                    !$acc loop seq
                    do iq = QS_MP+1, QE_MP
@@ -1939,8 +1939,8 @@ case ( 'SUZUKI10' )
        ATMOS_PHY_MP_SN14_qhyd2qtrc
     use scale_atmos_phy_mp_suzuki10, only: &
        ATMOS_PHY_MP_SUZUKI10_qhyd2qtrc
-!    use scale_atmos_phy_mp_amps, only: &
-!       ATMOS_PHY_MP_AMPS_qhyd2qtrc
+    use scale_atmos_phy_mp_amps, only: &
+       ATMOS_PHY_MP_AMPS_qhyd2qtrc
     integer, intent(in) :: KA, KS, KE
     integer, intent(in) :: IA, IS, IE
     integer, intent(in) :: JA, JS, JE
@@ -2026,29 +2026,29 @@ case ( 'SUZUKI10' )
                                              QNUM=QNUM       ) ! [IN]
        !$acc update device(QTRC(:,:,:,2:))
        !$acc update device(QNUM) if(present(QNUM))
-!    case ( "AMPS" )
-!       !$omp parallel do OMP_SCHEDULE_
-!       do j = JS, JE
-!       do i = IS, IE
-!       do k = KS, KE
-!          QTRC(k,i,j,1) = QV(k,i,j)
-!       end do
-!       end do
-!       end do
-!       call ATMOS_PHY_MP_AMPS_qhyd2qtrc( KA, KS, KE, IA, IS, IE, JA, JS, JE, &
-!                                         DENS(:,:,:),    & ! [IN]
-!                                         QHYD(:,:,:,:),  & ! [IN]
-!                                         QTRC(:,:,:,2:), & ! [OUT]
-!                                         QNUM=QNUM       ) ! [IN]
-!    case ( "SDM" )
-!       !$omp parallel do OMP_SCHEDULE_
-!       do j = JS, JE
-!       do i = IS, IE
-!       do k = KS, KE
-!          QTRC(k,i,j,1) = QV(k,i,j)
-!       end do
-!       end do
-!       end do
+    case ( "AMPS" )
+       !$omp parallel do OMP_SCHEDULE_
+       do j = JS, JE
+       do i = IS, IE
+       do k = KS, KE
+          QTRC(k,i,j,1) = QV(k,i,j)
+       end do
+       end do
+       end do
+       call ATMOS_PHY_MP_AMPS_qhyd2qtrc( KA, KS, KE, IA, IS, IE, JA, JS, JE, &
+                                         DENS(:,:,:),    & ! [IN]
+                                         QHYD(:,:,:,:),  & ! [IN]
+                                         QTRC(:,:,:,2:), & ! [OUT]
+                                         QNUM=QNUM       ) ! [IN]
+    case ( "SDM" )
+       !$omp parallel do OMP_SCHEDULE_
+       do j = JS, JE
+       do i = IS, IE
+       do k = KS, KE
+          QTRC(k,i,j,1) = QV(k,i,j)
+       end do
+       end do
+       end do
     case default
        LOG_ERROR("ATMOS_PHY_MP_driver_qhyd2qtrc",*) 'ATMOS_PHY_MP_TYPE (', trim(ATMOS_PHY_MP_TYPE), ') is not supported'
        call PRC_abort

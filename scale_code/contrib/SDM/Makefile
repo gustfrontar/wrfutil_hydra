@@ -57,6 +57,7 @@ all:
 	@echo;echo "Entering contrib/SDM..."
 	$(MAKE) -C $(MTDIR)
 	$(MAKE) -C $(GAGETRYDIR)
+	$(MAKE) makedir
 	$(MAKE) $(LIBNAME)
 
 makedir:

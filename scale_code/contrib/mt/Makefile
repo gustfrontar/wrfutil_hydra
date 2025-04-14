@@ -38,15 +38,15 @@ rng_uniform_mt.o: rng_uniform_mt.F90
 	$(FC) $(FFLAGS) $(FFLAGS_MT) -o $@ -c $<
 
 clean:
-	rm -f $(MODS)
 	rm -f $(OBJS)
+	rm -f *.lst
 
 distclean: clean
 	rm -f $(LIBNAME)
 
 allclean: distclean
 	rm -f $(LIBDIR)/$(LIBNAME)
-	cd $(MODDIR); rm -f $(MODS); rm -f *.lst
+	rm -f $(MODS)
 
 .SUFFIXES:
 .SUFFIXES: .o .f90 .c

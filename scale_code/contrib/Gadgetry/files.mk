@@ -8,6 +8,7 @@ OBJECTS=\
 	gadg_constants.o
 
 MODULES=\
+	gadg_test.mod\
 	gadg_algorithm.mod\
 	gadg_base.mod\
 	gadg_constants.mod\

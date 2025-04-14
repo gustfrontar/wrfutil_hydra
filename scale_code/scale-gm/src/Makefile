@@ -38,7 +38,9 @@ BINS = $(BINDIR)/$(BINNAME)$(POSTFIX)  \
        $(BINDIR)/$(PPNAME11)$(POSTFIX) \
        $(BINDIR)/$(PPNAME12)$(POSTFIX)
 
-LIBS = $(LIBDIR)/libscale$(POSTFIX).a
+LIBS = $(SCALELIB) \
+       $(AMPSLIB) \
+       $(SDMLIB)
 
 ifneq ($(SCALE_IGNORE_SRCDEP),T)
   DEPENDLIB = $(LIBS)

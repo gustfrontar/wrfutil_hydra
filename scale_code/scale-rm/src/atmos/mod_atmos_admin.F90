@@ -135,6 +135,11 @@ contains
        LOG_INFO_CONT(*) '+ Advection            : OFF'
        ATMOS_sw_dyn = .true.
     else ! default
+       ! for backward compatibility
+       if ( ATMOS_DYN_TYPE(4:4) .ne. '-' ) then
+          ATMOS_DYN_TYPE = "FVM-"//trim(ATMOS_DYN_TYPE)
+       end if
+
        LOG_INFO_CONT(*) '+ Dynamical core       : ON, ', trim(ATMOS_DYN_TYPE)
        LOG_INFO_CONT(*) '+ Advection            : ON'
        ATMOS_sw_dyn = .true.

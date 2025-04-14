@@ -4,14 +4,14 @@
 
 . /vol0004/apps/oss/spack/share/spack/setup-env.sh
 
-NC_HASH=`spack find -lx netcdf-c%fj | grep netcdf-c | awk '{print $1}'`
-NF_HASH=`spack find -lx netcdf-fortran%fj | grep netcdf-fortran | awk '{print $1}'`
-PN_HASH=`spack find -lx parallel-netcdf%fj | grep parallel-netcdf | awk '{print $1}'`
-HDF_HASH=`spack find -l --deps /${NC_HASH} | grep hdf5 | awk '{print $1}'`
-export SCALE_HDF=`spack location --install-dir /${HDF_HASH}`
-export SCALE_NETCDF_C=`spack location --install-dir /${NC_HASH}`
-export SCALE_NETCDF_F=`spack location --install-dir /${NF_HASH}`
-export SCALE_PNETCDF=`spack location --install-dir /${PN_HASH}`
+NC_HASH=$(spack find -lx netcdf-c%fj | grep netcdf-c | tail -n 1 | awk '{print $1}')
+NF_HASH=$(spack find -lx netcdf-fortran%fj | grep netcdf-fortran | tail -n 1 | awk '{print $1}')
+PN_HASH=$(spack find -lx parallel-netcdf%fj | grep parallel-netcdf | tail -n 1 | awk '{print $1}')
+HDF_HASH=$(spack find -l --deps /${NC_HASH} | grep hdf5 | tail -n 1 | awk '{print $1}')
+export SCALE_HDF=$(spack location --install-dir /${HDF_HASH})
+export SCALE_NETCDF_C=$(spack location --install-dir /${NC_HASH})
+export SCALE_NETCDF_F=$(spack location --install-dir /${NF_HASH})
+export SCALE_PNETCDF=$(spack location --install-dir /${PN_HASH})
 
 export SCALE_NETCDF_INCLUDE="-I${SCALE_NETCDF_C}/include -I${SCALE_NETCDF_F}/include"
 export SCALE_NETCDF_LIBS="-L${SCALE_NETCDF_C}/lib -L${SCALE_NETCDF_F}/lib -L${SCALE_HDF}/lib -L${SCALE_PNETCDF}/lib -lpnetcdf -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lfjprofmpi -lmpi_cxx"

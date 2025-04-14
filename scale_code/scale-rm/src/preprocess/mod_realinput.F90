@@ -3992,6 +3992,7 @@ contains
     real(RP) :: sst_land(imax,jmax)
     real(RP) :: work (imax,jmax)
     real(RP) :: work2(imax,jmax)
+    real(RP) :: work3(IA,JA)
 
     real(RP) :: lz3d_org(kmax,imax,jmax)
     real(RP) :: lcz_3D(LKMAX,IA,JA)
@@ -4471,11 +4472,11 @@ contains
           do j = 1, JA
           do i = 1, IA
 !             work(i,j) = init_landwater_ratio_each( LANDUSE_index_PFT(i,j,1) )
-             work(i,j) = init_landwater_ratio
+             work3(i,j) = init_landwater_ratio
           end do
           end do
           ! conversion from water saturation [fraction] to volumetric water content [m3/m3]
-          strg(k,:,:) = convert_WS2VWC( work(:,:), critical=soilwater_DS2VC_flag )
+          strg(k,:,:) = convert_WS2VWC( work3(:,:), critical=soilwater_DS2VC_flag )
        end do
 
     endif ! use_file_waterratio

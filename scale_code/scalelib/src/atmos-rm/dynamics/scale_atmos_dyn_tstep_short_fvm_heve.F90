@@ -48,9 +48,9 @@ module scale_atmos_dyn_tstep_short_fvm_heve
   !++ Private procedure
   !
 #if 1
-#define F2H(k,p,idx) (CDZ(k+p-1)*GSQRT(k+p-1,i,j,idx)/(CDZ(k)*GSQRT(k,i,j,idx)+CDZ(k+1)*GSQRT(k+1,i,j,idx)))
+#define F2H(k,p,idx,i,j) (CDZ(k+p-1)*GSQRT(k+p-1,i,j,idx)/(CDZ(k)*GSQRT(k,i,j,idx)+CDZ(k+1)*GSQRT(k+1,i,j,idx)))
 #else
-#define F2H(k,p,idx) 0.5_RP
+#define F2H(k,p,idx,i,j) 0.5_RP
 #endif
 
   !-----------------------------------------------------------------------------
@@ -482,22 +482,22 @@ contains
        ! at (x, y, w)
 
        if ( TwoD ) then
-          !$omp do OMP_SCHEDULE_ collapse(2)
+          !$omp do OMP_SCHEDULE_
           do j = JJS, JJE
-          do i = IIS, IIE
           do k = KS, KE-1
 #ifdef DEBUG
-             call CHECK( __LINE__, MOMZ(k+1,i,j) )
-             call CHECK( __LINE__, MOMZ(k  ,i,j) )
-             call CHECK( __LINE__, MOMZ(k-1,i,j) )
-             call CHECK( __LINE__, num_diff(k,i,j,I_DENS,ZDIR) )
+             call CHECK( __LINE__, MOMZ(k,  IS,j  ) )
+             call CHECK( __LINE__, MOMY(k+1,IS,j  ) )
+             call CHECK( __LINE__, MOMY(k  ,IS,j  ) )
+             call CHECK( __LINE__, MOMY(k+1,IS,j-1) )
+             call CHECK( __LINE__, MOMY(k  ,IS,j-1) )
+             call CHECK( __LINE__, num_diff(k,IS,j,I_DENS,ZDIR) )
 #endif
-             mflx_hi(k,i,j,ZDIR) = J33G * MOMZ(k,i,j) / ( MAPF(i,j,1,I_XY)*MAPF(i,j,2,I_XY) ) &
-                                 + J23G(k,i,j,I_XYW) * 0.25_RP * ( MOMY(k+1,i,j)+MOMY(k+1,i,j-1) &
-                                                                 + MOMY(k  ,i,j)+MOMY(k  ,i,j-1) ) &
-                                 / MAPF(i,j,1,I_XY) & ! [{x,v,z->x,y,w}]
-                                 + GSQRT(k,i,j,I_XYW) * num_diff(k,i,j,I_DENS,ZDIR) / ( MAPF(i,j,1,I_XY)*MAPF(i,j,2,I_XY) )
-          enddo
+             mflx_hi(k,IS,j,ZDIR) = J33G * MOMZ(k,IS,j) / ( MAPF(IS,j,1,I_XY)*MAPF(i,j,2,I_XY) ) &
+                                  + ( J23G(k,IS,j,  I_XVW) * ( F2H(k,1,I_XVZ,IS,j  ) * MOMY(k+1,IS,j  ) + F2H(k,2,I_XVZ,IS,j  ) * MOMY(k,IS,j  ) ) &
+                                    + J23G(k,IS,j-1,I_XVW) * ( F2H(k,1,I_XVZ,IS,j-1) * MOMY(k+1,IS,j-1) + F2H(k,2,I_XVZ,IS,j-1) * MOMY(k,IS,j-1) ) ) * 0.5_RP &
+                                 / MAPF(IS,j,1,I_XY) & ! [{x,v,z->x,y,w}]
+                                 + GSQRT(k,IS,j,I_XYW) * num_diff(k,IS,j,I_DENS,ZDIR) / MAPF(IS,j,2,I_XY)
           enddo
           enddo
           !$omp end do nowait
@@ -513,11 +513,11 @@ contains
              call CHECK( __LINE__, num_diff(k,i,j,I_DENS,ZDIR) )
 #endif
              mflx_hi(k,i,j,ZDIR) = J33G * MOMZ(k,i,j) / ( MAPF(i,j,1,I_XY)*MAPF(i,j,2,I_XY) ) &
-                                 + J13G(k,i,j,I_XYW) * 0.25_RP * ( MOMX(k+1,i,j)+MOMX(k+1,i-1,j) &
-                                                                 + MOMX(k  ,i,j)+MOMX(k  ,i-1,j) ) &
+                                 + ( J13G(k,i,  j,I_UYW) * ( F2H(k,1,I_UYZ,i,  j) * MOMX(k+1,i,  j) + F2H(k,2,I_UYZ,i,  j) * MOMX(k,i,  j) ) &
+                                   + J13G(k,i-1,j,I_UYW) * ( F2H(k,1,I_UYZ,i-1,j) * MOMX(k+1,i-1,j) + F2H(k,2,I_UYZ,i-1,j) * MOMX(k,i-1,j) ) ) * 0.5_RP &
                                  / MAPF(i,j,2,I_XY) & ! [{u,y,z->x,y,w}]
-                                 + J23G(k,i,j,I_XYW) * 0.25_RP * ( MOMY(k+1,i,j)+MOMY(k+1,i,j-1) &
-                                                                 + MOMY(k  ,i,j)+MOMY(k  ,i,j-1) ) &
+                                 + ( J23G(k,i,j,  I_XVW) * ( F2H(k,1,I_XVZ,i,j  ) * MOMY(k+1,i,j  ) + F2H(k,2,I_XVZ,i,j  ) * MOMY(k,i,j  ) ) &
+                                   + J23G(k,i,j-1,I_XVW) * ( F2H(k,1,I_XVZ,i,j-1) * MOMY(k+1,i,j-1) + F2H(k,2,I_XVZ,i,j-1) * MOMY(k,i,j-1) ) ) * 0.5_RP &
                                  / MAPF(i,j,1,I_XY) & ! [{x,v,z->x,y,w}]
                                  + GSQRT(k,i,j,I_XYW) * num_diff(k,i,j,I_DENS,ZDIR) / ( MAPF(i,j,1,I_XY)*MAPF(i,j,2,I_XY) )
           enddo
@@ -1023,11 +1023,11 @@ contains
                             - GSQRT(k,i  ,j,I_XYZ) * DPRES(k,i  ,j) & ! [x,y,z]
                             ) * RFDX(i) &
                           + ( J13G(k  ,i,j,I_UYW) &
-                            * 0.5_RP * ( F2H(k,1,I_UYZ) * ( DPRES(k+1,i+1,j)+DPRES(k+1,i,j) ) &
-                                       + F2H(k,2,I_UYZ) * ( DPRES(k  ,i+1,j)+DPRES(k  ,i,j) ) ) & ! [x,y,z->u,y,w]
+                            * 0.5_RP * ( F2H(k,1,I_UYZ,i,j) * ( DPRES(k+1,i+1,j)+DPRES(k+1,i,j) ) &
+                                       + F2H(k,2,I_UYZ,i,j) * ( DPRES(k  ,i+1,j)+DPRES(k  ,i,j) ) ) & ! [x,y,z->u,y,w]
                             - J13G(k-1,i,j,I_UYW) &
-                            * 0.5_RP * ( F2H(k,1,I_UYZ) * ( DPRES(k  ,i+1,j)+DPRES(k  ,i,j) ) &
-                                       + F2H(k,2,I_UYZ) * ( DPRES(k-1,i+1,j)+DPRES(k-1,i,j) ) ) & ! [x,y,z->u,y,w]
+                            * 0.5_RP * ( F2H(k,1,I_UYZ,i,j) * ( DPRES(k  ,i+1,j)+DPRES(k  ,i,j) ) &
+                                       + F2H(k,2,I_UYZ,i,j) * ( DPRES(k-1,i+1,j)+DPRES(k-1,i,j) ) ) & ! [x,y,z->u,y,w]
                             ) * RCDZ(k) ) &
                         * MAPF(i,j,1,I_UY)
           enddo
@@ -1366,11 +1366,11 @@ contains
                          - GSQRT(k,i,j  ,I_XYZ) * DPRES(k,i,j  ) & ! [x,y,z]
                          ) * RFDY(j) &
                        + ( J23G(k  ,i,j,I_XVW) &
-                         * 0.5_RP * ( F2H(k  ,1,I_XVZ) * ( DPRES(k+1,i,j+1)+DPRES(k+1,i,j) ) &
-                                    + F2H(k  ,2,I_XVZ) * ( DPRES(k  ,i,j+1)+DPRES(k  ,i,j) ) ) & ! [x,y,z->x,v,w]
+                         * 0.5_RP * ( F2H(k  ,1,I_XVZ,i,j) * ( DPRES(k+1,i,j+1)+DPRES(k+1,i,j) ) &
+                                    + F2H(k  ,2,I_XVZ,i,j) * ( DPRES(k  ,i,j+1)+DPRES(k  ,i,j) ) ) & ! [x,y,z->x,v,w]
                          - J23G(k-1,i,j,I_XVW) &
-                         * 0.5_RP * ( F2H(k-1,1,I_XVZ) * ( DPRES(k  ,i,j+1)+DPRES(k  ,i,j) ) &
-                                    + F2H(k-1,2,I_XVZ) * ( DPRES(k-1,i,j+1)+DPRES(k-1,i,j) ) ) & ! [x,y,z->x,v,w]
+                         * 0.5_RP * ( F2H(k-1,1,I_XVZ,i,j) * ( DPRES(k  ,i,j+1)+DPRES(k  ,i,j) ) &
+                                    + F2H(k-1,2,I_XVZ,i,j) * ( DPRES(k-1,i,j+1)+DPRES(k-1,i,j) ) ) & ! [x,y,z->x,v,w]
                          ) * RCDZ(k) ) &
                       * MAPF(i,j,2,I_XV)
        enddo

@@ -87,9 +87,10 @@ MPIEXEC = "mpiexec -np"
 # example:
 # export SCALE_NETCDF_INCLUDE="-I/home/user/tool/cross-K/include"
 # export SCALE_NETCDF_LIBS="-L/home/user/tool/cross-K/lib -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz"
-NC_HASH = $(shell spack find -lx netcdf-c%fj | grep netcdf-c | awk '{print $$1}')
-NF_HASH = $(shell spack find -lx netcdf-fortran%fj | grep netcdf-fortran | awk '{print $$1}')
-HDF_HASH = $(shell spack find -l --deps /${NC_HASH} | grep hdf5 | awk '{print $$1}')
+NC_HASH ?= $(shell spack find -lx netcdf-c%fj | grep netcdf-c | tail -n 1 | awk '{print $$1}')
+NF_HASH ?= $(shell spack find -lx netcdf-fortran%fj | grep netcdf-fortran | tail -n 1 | awk '{print $$1}')
+HDF_HASH ?= $(shell spack find -l --deps /${NC_HASH} | grep hdf5 | tail -n 1 | awk '{print $$1}')
+PN_HASH ?= $(shell spack find -lx parallel-netcdf%fj | grep parallel-netcdf | tail -n 1 | awk '{print $1}')
 SCALE_HDF ?= $(shell spack location --install-dir /${HDF_HASH})
 SCALE_NETCDF_C ?= $(shell spack location --install-dir /${NC_HASH})
 SCALE_NETCDF_F ?= $(shell spack location --install-dir /${NF_HASH})

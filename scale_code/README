@@ -53,8 +53,10 @@ Switch options will be activated only when the value is "T"
 * SCALE_COMPAT_NETCDF3  : Keep compatibility with NetCDF3
 * SCALE_COMPAT_MPI      : Not to use MPI Fortra08 binding interface (for legacy MPI compilers)
 * SCALE_ENABLE_PAPI     : Enable to use PAPI library
-* SCALE_DISABLE_LOCALBIN: Supress to make executables in local directory
 * SCALE_IGNORE_SRCDEP   : Ignore source dependency at the compilation
+* SCALE_DISABLE_AMPS    : Compile without AMPS
+* SCALE_DISABLE_SDM     : Compile without SDM
+* SCALE_USE_LOCALBIN    : Make executables in local directory
 
 If you want to use SCALE_ENABLE_PAPI, please set SCALE_PAPI_INCLUDE and SCALE_PAPI_LIBS for PAPI library path.
 

@@ -36,6 +36,7 @@ OBJS = \
 
 all:
 	@echo;echo "Entering AMPS."
+	$(MAKE) makedir
 	$(MAKE) $(LIBNAME)
 	@echo "Complete making AMPS."
 
@@ -49,9 +50,10 @@ $(LIBNAME): $(OBJS)
 clean:
 	rm -f $(OBJS) $(BUILD_DIR)/*.mod *.lst *~
 
-allclean:
-	$(MAKE) clean
+distclean: clean
 	rm -f $(LIBNAME)
+
+allclean: distclean
 	rm -rf $(BUILD_DIR)
 	rm -rf .libs*
 	rm -f *.a

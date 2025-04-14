@@ -37,8 +37,8 @@ ifneq ($(ORG_SRCS),)
    USELOCALBIN = T
 endif
 
-ifeq ($(SCALE_DISABLE_LOCALBIN),T)
-   USELOCALBIN = F
+ifeq ($(SCALE_USE_LOCALBIN),T)
+   USELOCALBIN = T
 endif
 
 ifeq ($(USELOCALBIN),T)

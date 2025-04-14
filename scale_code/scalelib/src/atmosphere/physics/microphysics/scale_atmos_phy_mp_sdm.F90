@@ -42,8 +42,10 @@ module scale_atmos_phy_mp_sdm
     I_HG,  &
     I_HH
 
+#ifndef DISABLE_SDM
   use m_sdm_common, only: &
     QA_MP_sdm
+#endif
 
   !-----------------------------------------------------------------------------
   implicit none
@@ -88,16 +90,30 @@ module scale_atmos_phy_mp_sdm
   integer :: histitemid(5)
   logical :: initialized
 
+#ifdef DISABLE_SDM
+  integer, parameter, private :: QA_MP_sdm = 1
+#endif
   !-----------------------------------------------------------------------------
 contains
   !-----------------------------------------------------------------------------
   !> Configure
   subroutine ATMOS_PHY_MP_sdm_tracer_setup
+#ifdef DISABLE_SDM
+    use scale_prc, only: &
+         PRC_abort
+#else
     use m_sdm_common, only: &
          I_QV_sdm
+#endif
     implicit none
 
     !---------------------------------------------------------------------------
+
+#ifdef DISABLE_SDM
+    LOG_ERROR("ATMOS_PHY_MP_sdm_tracer_setup",*) "Scalelib was compiled without SDM"
+    LOG_ERROR_CONT(*) "Recompile scalelib with SCALE_DISABLE_SDM=F"
+    call PRC_abort
+#else
 
     LOG_NEWLINE
     LOG_INFO("ATMOS_PHY_MP_sdm_tracer_setup",*) 'Tracer setup for Super Droplet Method'
@@ -127,6 +143,7 @@ contains
 
     I_QV_sdm = 1
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_sdm_tracer_setup
   !-----------------------------------------------------------------------------
@@ -138,6 +155,7 @@ contains
        CDX, CDY, RCDX, RCDY, DX, DY, &
        dt, &
        do_precipitation )
+#ifndef DISABLE_SDM
     use scale_prc_cartesC, only: &
        PRC_next,    &
        PRC_NUM_X,   &
@@ -164,7 +182,7 @@ contains
     use m_sdm_memmgr, only: &
          sdm_allocinit
     use m_sdm_common
-
+#endif
     implicit none
 
     integer, intent(in) :: KA, KS, KE
@@ -183,6 +201,7 @@ contains
     real(DP), intent(in) :: dt
     logical,  intent(in) :: do_precipitation
 
+#ifndef DISABLE_SDM
 !    real(RP) :: dtevl
 !    real(RP) :: n0, dry_r
 !    real(RP) :: delta1, delta2 !, sdn_tmp
@@ -523,6 +542,7 @@ contains
 
     initialized = .false.
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_sdm_setup
   !-----------------------------------------------------------------------------
@@ -548,7 +568,7 @@ contains
     use scale_const, only: &
        rw => CONST_DWATR, &
        Rvap  => CONST_Rvap
-
+#ifndef DISABLE_SDM
     use m_sdm_calc, only: &
        sdm_calc
     use m_sdm_coordtrans, only: &
@@ -562,7 +582,7 @@ contains
     use m_sdm_ptlformation, only: &
          sdm_iniset
     use m_sdm_common
-
+#endif
     implicit none
     integer, intent(in) :: KA, KS, KE
     integer, intent(in) :: IA, IS, IE
@@ -579,6 +599,7 @@ contains
     real(RP), intent(out)   :: SFLX_snow(IA,JA)      !! snow flux at surface (used in land and urban model)
     real(DP), intent(in)    :: dt
 
+#ifndef DISABLE_SDM
     ! Work variables
     logical :: lsdmup       ! flag for updating water hydrometeor by SDM
 
@@ -708,6 +729,8 @@ contains
     ! Section specification for fapp profiler
     call fapp_stop("sdm_all",0,0)
 #endif
+
+#endif
     return
   end subroutine ATMOS_PHY_MP_sdm_adjustment
   !-----------------------------------------------------------------------------
@@ -715,10 +738,11 @@ contains
   subroutine ATMOS_PHY_MP_sdm_Effective_Radius( &
        KA, KS, KE, IA, IS, IE, JA, JS, JE, &
        Re     )
+#ifndef DISABLE_SDM
     use m_sdm_coordtrans, only: &
        sdm_x2ri, sdm_y2rj
     use m_sdm_common
-
+#endif
     implicit none
 
     integer, intent(in) :: KA, KS, KE
@@ -727,6 +751,7 @@ contains
 
     real(RP), intent(out) :: Re   (KA,IA,JA,N_HYD) ! effective radius
 
+#ifndef DISABLE_SDM
     real(RP) :: sum3(KA,IA,JA,I_HC:I_HG), sum2(KA,IA,JA,I_HC:I_HG)
     real(RP) :: drate             ! temporary
     integer  :: k, i, j
@@ -867,6 +892,7 @@ contains
        !$omp end workshare
     end if
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_sdm_Effective_Radius
   !-----------------------------------------------------------------------------
@@ -875,6 +901,7 @@ contains
        KA, KS, KE, IA, IS, IE, JA, JS, JE, &
        mask_criterion, DENS, &
        cldfrac         )
+#ifndef DISABLE_SDM
     use scale_precision
     use m_sdm_common, only: &
          sdm_cold, &
@@ -890,6 +917,7 @@ contains
          sd_itmp1,sd_itmp2,sd_itmp3
     use m_sdm_sd2fluid, only: &
          sdm_sd2qcqr,sdm_sd2qiqsqg
+#endif
     implicit none
 
     integer, intent(in) :: KA, KS, KE
@@ -899,6 +927,7 @@ contains
     real(RP), intent(in) :: DENS(KA,IA,JA)        !! Density [kg/m3]
     real(RP), intent(out) :: cldfrac(KA,IA,JA)
 
+#ifndef DISABLE_SDM
     real(RP) :: qhydro
     integer  :: k, i, j, iq
     real(RP) :: rhoc_scale(KA,IA,JA) ! cloud water density
@@ -949,6 +978,7 @@ contains
     enddo
     enddo
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_sdm_Cloud_Fraction
   !-----------------------------------------------------------------------------
@@ -957,6 +987,7 @@ contains
        KA, KS, KE, IA, IS, IE, JA, JS, JE, &
        DENS, &
        Qe     )
+#ifndef DISABLE_SDM
     use m_sdm_common, only: &
          sdm_cold, &
          QHYD_sdm, &
@@ -971,7 +1002,7 @@ contains
          sd_itmp1,sd_itmp2,sd_itmp3
     use m_sdm_sd2fluid, only: &
          sdm_sd2qcqr,sdm_sd2qiqsqg
-
+#endif
     implicit none
 
     integer, intent(in) :: KA, KS, KE
@@ -981,6 +1012,7 @@ contains
     real(RP), intent(in) :: DENS(KA,IA,JA)        !! Density [kg/m3]
     real(RP), intent(out) :: Qe   (KA,IA,JA,N_HYD) ! mixing ratio of each cateory [kg/kg]
 
+#ifndef DISABLE_SDM
     real(RP) :: rhoc_scale(KA,IA,JA) ! cloud water density
     real(RP) :: rhor_scale(KA,IA,JA) ! rain water density
     real(RP) :: rhoi_scale(KA,IA,JA) ! cloud ice density
@@ -1040,6 +1072,7 @@ contains
     Qe(:,:,:,I_HH) = 0.0_RP
     !$omp end workshare
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_sdm_qtrc2qhyd
   !-----------------------------------------------------------------------------
@@ -1047,10 +1080,12 @@ contains
   subroutine ATMOS_PHY_MP_sdm_qtrc2nhyd( &
        KA, KS, KE, IA, IS, IE, JA, JS, JE, &
        Ne     )
+#ifndef DISABLE_SDM
     use scale_precision
     use m_sdm_coordtrans, only: &
        sdm_x2ri, sdm_y2rj
     use m_sdm_common
+#endif
     implicit none
 
     integer, intent(in) :: KA, KS, KE
@@ -1059,6 +1094,7 @@ contains
 
     real(RP), intent(out) :: Ne   (KA,IA,JA,N_HYD) ! number concentratio [1/kg]
 
+#ifndef DISABLE_SDM
     real(RP) :: drate
     integer  :: ilist_l(1:sdnum_s2c)
     integer  :: tlist_l, lcnt
@@ -1151,12 +1187,14 @@ contains
 
     end if
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_sdm_qtrc2nhyd
   !-----------------------------------------------------------------------------
   subroutine ATMOS_PHY_MP_sdm_restart_read( &
        KA, KS, KE, IA, IS, IE, JA, JS, JE, &
        DENS, RHOT, QTRC )
+#ifndef DISABLE_SDM
     use rng_uniform_mt, only: &
          rng_load_state
     use m_sdm_io, only: &
@@ -1169,7 +1207,7 @@ contains
          sdm_zupper,sdm_calvar,sd_rest_flg_in
     use m_sdm_ptlformation, only: &
          sdm_iniset
-
+#endif
     implicit none
 
     integer, intent(in) :: KA, KS, KE
@@ -1180,6 +1218,7 @@ contains
     real(RP), intent(inout) :: RHOT(KA,IA,JA)        !! DENS * POTT [K*kg/m3]
     real(RP), intent(inout) :: QTRC(KA,IA,JA,QA_MP_sdm)    !! Ratio of mass of tracer to total mass[kg/kg]
 
+#ifndef DISABLE_SDM
     !### Get random generator seed ###!
     !! Random number generator has already been initialized in scale-les/src/preprocess/mod_mkinit.f90
     !! Be careful. If unit (=fid_random_i) is specified, filename is ignored and the object is initialized by the unit.
@@ -1202,10 +1241,12 @@ contains
 
     initialized = .true.
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_sdm_restart_read
   !-----------------------------------------------------------------------------
   subroutine ATMOS_PHY_MP_sdm_restart_write(otime)
+#ifndef DISABLE_SDM
     use scale_time
     use rng_uniform_mt, only: &
          rng_save_state
@@ -1213,10 +1254,12 @@ contains
          sdm_sdrestart_write
     use m_sdm_common, only: &
          rng_s2c,RANDOM_OUT_BASENAME,fid_random_o
-
+#endif
     implicit none
 
     real(DP), intent(in) :: otime
+
+#ifndef DISABLE_SDM
     character(len=17) :: fmt2="(A, '.', A, I*.*)"
     character(len=17) :: fmt3="(3A)"
     character(len=H_LONG) :: ftmp
@@ -1245,18 +1288,22 @@ contains
     call rng_save_state( rng_s2c, trim(basename_random))
 !    call rng_save_state( rng_s2c, trim(basename_random), fid_random_o )
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_sdm_restart_write
   !-------------------------------------------------------------
   ! generate random number set for SDM
   subroutine ATMOS_PHY_MP_sdm_random_setup
+#ifndef DISABLE_SDM
     use rng_uniform_mt,only: &
          rng_init, &
          rng_save_state
     use m_sdm_common, only: &
          rng_s2c
+#endif
     implicit none
 
+#ifndef DISABLE_SDM
     character(len=H_LONG) :: basename = ''
     character(len=H_LONG) :: RANDOM_INIT_BASENAME = '' ! name of randon number
     integer :: RANDOM_NUMBER_SEED = 0
@@ -1297,12 +1344,14 @@ contains
     call rng_init( rng_s2c, iseed )
     call rng_save_state( rng_s2c, basename )
 
+#endif
     return
   end subroutine ATMOS_PHY_MP_sdm_random_setup
   !-----------------------------------------------------------------------------
   subroutine ATMOS_PHY_MP_sdm_additional_output( &
        KA, KS, KE, IA, IS, IE, JA, JS, JE, &
        DENS, RHOT, QTRC )
+#ifndef DISABLE_SDM
     use scale_file_history, only: &
        FILE_HISTORY_query, &
        FILE_HISTORY_in,    &
@@ -1320,7 +1369,7 @@ contains
     use m_sdm_motion, only: &
        sdm_getvz_liq, sdm_getvz_ice
     use m_sdm_common
-
+#endif
     implicit none
     integer, intent(in) :: KA, KS, KE
     integer, intent(in) :: IA, IS, IE
@@ -1330,6 +1379,7 @@ contains
     real(RP), intent(in) :: RHOT(KA,IA,JA)        !! DENS * POTT [K*kg/m3]
     real(RP), intent(in) :: QTRC(KA,IA,JA,QA_MP_sdm)    !! Ratio of mass of tracer to total mass[kg/kg]
 
+#ifndef DISABLE_SDM
     real(RP), pointer :: sdx_tmp(:),sdy_tmp(:),sdrk_tmp(:),sdz_tmp(:),sdri_tmp(:),sdrj_tmp(:),sdr_tmp(:),sdvz_tmp(:)
     real(RP), pointer :: sdasl_tmp(:,:)
     integer(i2), pointer :: sdliqice_tmp(:)
@@ -1630,6 +1680,7 @@ contains
     call fapp_stop("sdm_out",0,0)
 #endif
 
+#endif
   end subroutine ATMOS_PHY_MP_sdm_additional_output
 end module scale_atmos_phy_mp_sdm
 !-------------------------------------------------------------------------------

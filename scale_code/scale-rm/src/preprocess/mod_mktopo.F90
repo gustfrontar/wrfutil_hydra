@@ -24,7 +24,9 @@ module mod_mktopo
      PRC_abort
   use scale_atmos_grid_cartesC, only: &
      CX => ATMOS_GRID_CARTESC_CX, &
-     CY => ATMOS_GRID_CARTESC_CY
+     CY => ATMOS_GRID_CARTESC_CY, &
+     FX => ATMOS_GRID_CARTESC_FX, &
+     FY => ATMOS_GRID_CARTESC_FY
   use scale_topography, only: &
      TOPOGRAPHY_Zsfc
 
@@ -273,6 +275,9 @@ contains
     real(RP) :: SCHAER_HEIGHT   =  250.0_RP ! height of mountain [m]
     logical  :: SCHAER_SWAPXY   =  .false.
 
+    integer, parameter :: nw = 101
+    real(RP) :: x, work
+
     namelist / PARAM_MKTOPO_SCHAER / &
        SCHAER_CX,     &
        SCHAER_RX,     &
@@ -283,7 +288,7 @@ contains
     real(RP) :: dist
 
     integer :: ierr
-    integer :: i, j
+    integer :: i, j, n
 
     type(FEM_LocalMesh2D), pointer :: lmesh
     integer :: ldomid
@@ -311,9 +316,14 @@ contains
        do j = 1, JA
        do i = 1, IA
 
-          dist = exp( -( (CX(i)-SCHAER_CX)/SCHAER_RX )**2 )
-
-          TOPOGRAPHY_Zsfc(i,j) = SCHAER_HEIGHT * dist * ( cos( PI*(CX(i)-SCHAER_CX)/SCHAER_LAMBDA ) )**2
+          work = 0.0_RP
+          do n = 1, nw
+             x = FX(i-1) + ( FX(i) - FX(i-1) ) * ( n - 0.5_RP ) / nw
+             x = x - SCHAER_CX
+             dist = exp( -( x/SCHAER_RX )**2 )
+             work = work + dist * ( cos( PI*x/SCHAER_LAMBDA ) )**2
+          end do
+          TOPOGRAPHY_Zsfc(i,j) = SCHAER_HEIGHT * work / nw
 
        enddo
        enddo
@@ -323,9 +333,14 @@ contains
        do j = 1, JA
        do i = 1, IA
 
-          dist = exp( -( (CY(j)-SCHAER_CX)/SCHAER_RX )**2 )
-
-          TOPOGRAPHY_Zsfc(i,j) = SCHAER_HEIGHT * dist * ( cos( PI*(CY(j)-SCHAER_CX)/SCHAER_LAMBDA ) )**2
+          work = 0.0_RP
+          do n = 1, nw
+             x = FY(j-1) + ( FY(j) - FY(j-1) ) * ( n - 0.5_RP ) / nw
+             x = x - SCHAER_CX
+             dist = exp( -( x/SCHAER_RX )**2 )
+             work = work + dist * ( cos( PI*x/SCHAER_LAMBDA ) )**2
+          end do
+          TOPOGRAPHY_Zsfc(i,j) = SCHAER_HEIGHT * work / nw
 
        enddo
        enddo

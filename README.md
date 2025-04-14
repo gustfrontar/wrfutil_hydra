@@ -8,8 +8,8 @@
 
 The origins of the codes used in this branch are as follows: 
 
-SCALE: A branch [develop](https://github.com/scale-met/scale-dev/tree/develop) (commit: 16101ec) of a private repository [scale-dev](https://github.com/scale-met/scale-dev) with slight modification (opt out unused functions SDM and AMPS).
-SCALE-LETKF: A private repository [scale-letkf](https://github.com/SCALE-LETKF-SMN/scale-letkf) (commit: 4d79eff) of a version for the PREVENIR project. 
+SCALE: A branch [develop](https://github.com/scale-met/scale-dev/tree/develop) (commit: a8ab69c) of a private repository [scale-dev](https://github.com/scale-met/scale-dev).
+SCALE-LETKF: A private repository [scale-letkf](https://github.com/SCALE-LETKF-SMN/scale-letkf) (commit: 157564d) of a version for the PREVENIR project. 
 
 [SCALE User's guide](https://scale.riken.jp/archives/scale_users_guide_En.v5.5.4.pdf) is available online.
 
@@ -22,7 +22,12 @@ Basic parameters:
 ```
 export SCALE_SYS=FUGAKU
 export SCALE_ENABLE_PNETCDF=F
+export SCALE_DISABLE_SDM=T
+export SCALE_DISABLE_AMPS=T
+export SCALE_ENABLE_JMAPPLIB=F
+export SCALE_ENABLE_DA=F     ## SCALE built-in DA libraries are disabled   
 export SCALE_USE_SINGLEFP=F  ## T if you use single precision
+
 ```
 Parameters regarding library paths (use spack_scale.sh):  
 ```

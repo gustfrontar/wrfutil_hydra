@@ -50,14 +50,11 @@ include depend.mk
 
 clean:
 	rm -f $(OBJECTS)
-	rm -f $(MODULES)
+	rm -f *.lst
 
 distclean: clean
 	rm -f $(LIBNAME)
 
-allclean:
-	rm -f $(OBJECTS)
-	rm -f $(MODULES)
-	rm -f $(LIBNAME)
+allclean: distclean
 	rm -f $(LIBDIR)/$(LIBNAME)
-	cd $(MODDIR); rm -f $(MODULES); rm -f *.lst
+	rm -f $(MODULES)

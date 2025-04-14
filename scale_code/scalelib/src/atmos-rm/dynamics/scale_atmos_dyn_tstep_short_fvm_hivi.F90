@@ -51,6 +51,12 @@ module scale_atmos_dyn_tstep_short_fvm_hivi
   !
   !++ Private procedure
   !
+#if 1
+#define F2H(k,p,idx,i,j) (CDZ(k+p-1)*GSQRT(k+p-1,i,j,idx)/(CDZ(k)*GSQRT(k,i,j,idx)+CDZ(k+1)*GSQRT(k+1,i,j,idx)))
+#else
+# define F2H(k,p,idx,i,j) 0.5_RP
+#endif
+
   !-----------------------------------------------------------------------------
   !
   !++ Private parameters & variables
@@ -436,9 +442,10 @@ contains
              call CHECK( __LINE__, num_diff(k,IS,j,I_DENS,ZDIR) )
              call CHECK( __LINE__, GSQRT(k,IS,j,I_XYW) )
 #endif
-             mflx_hi2(k,IS,j,ZDIR) = J23G(k,IS,j,I_XYW) * 0.25_RP * ( MOMY(k+1,IS,j)+MOMY(k+1,IS,j-1) &
-                                                                    + MOMY(k  ,IS,j)+MOMY(k  ,IS,j-1) ) &
-                                  + GSQRT(k,IS,j,I_XYW) * num_diff(k,IS,j,I_DENS,ZDIR)
+             mflx_hi2(k,IS,j,ZDIR) = ( J23G(k,IS,j,  I_XVW) * ( F2H(k,1,I_XVZ,IS,j  ) * MOMY(k+1,IS,j  ) + F2H(k,2,I_XVZ,IS,j  ) * MOMY(k,IS,j  ) ) &
+                                     + J23G(k,IS,j-1,I_XVW) * ( F2H(k,1,I_XVZ,IS,j-1) * MOMY(k+1,IS,j-1) + F2H(k,2,I_XVZ,IS,j-1) * MOMY(k,IS,j-1) ) ) * 0.5_RP &
+                                     / MAPF(IS,j,1,I_XY) & ! [{x,v,z->x,y,w}]
+                                   + GSQRT(k,IS,j,I_XYW) / MAPF(IS,j,2,I_XY) * num_diff(k,IS,j,I_DENS,ZDIR)
           enddo
           enddo
        else
@@ -458,11 +465,13 @@ contains
              call CHECK( __LINE__, num_diff(k,i,j,I_DENS,ZDIR) )
              call CHECK( __LINE__, GSQRT(k,i,j,I_XYW) )
 #endif
-             mflx_hi2(k,i,j,ZDIR) = J13G(k,i,j,I_XYW) * 0.25_RP * ( MOMX(k+1,i,j)+MOMX(k+1,i-1,j) &
-                                                               + MOMX(k  ,i,j)+MOMX(k  ,i-1,j) ) &
-                                  + J23G(k,i,j,I_XYW) * 0.25_RP * ( MOMY(k+1,i,j)+MOMY(k+1,i,j-1) &
-                                                               + MOMY(k  ,i,j)+MOMY(k  ,i,j-1) ) &
-                                  + GSQRT(k,i,j,I_XYW) * num_diff(k,i,j,I_DENS,ZDIR)
+             mflx_hi2(k,i,j,ZDIR) = ( J13G(k,i,  j,I_UYW) * ( F2H(k,1,I_UYZ,i,  j) * MOMX(k+1,i,  j) + F2H(k,2,I_UYZ,i,  j) * MOMX(k,i,  j) ) &
+                                    + J13G(k,i-1,j,I_UYW) * ( F2H(k,1,I_UYZ,i-1,j) * MOMX(k+1,i-1,j) + F2H(k,2,I_UYZ,i-1,j) * MOMX(k,i-1,j) ) ) * 0.5_RP &
+                                    / MAPF(i,j,2,I_XY) & ! [{u,y,z->x,y,w}]
+                                    + ( J23G(k,i,j,  I_XVW) * ( F2H(k,1,I_XVZ,i,j  ) * MOMY(k+1,i,j  ) + F2H(k,2,I_XVZ,i,j  ) * MOMY(k,i,j  ) ) &
+                                      + J23G(k,i,j-1,I_XVW) * ( F2H(k,1,I_XVZ,i,j-1) * MOMY(k+1,i,j-1) + F2H(k,2,I_XVZ,i,j-1) * MOMY(k,i,j-1) ) ) * 0.5_RP &
+                                    / MAPF(i,j,1,I_XY) & ! [{x,v,z->x,y,w}]
+                                  + GSQRT(k,i,j,I_XYW) * num_diff(k,i,j,I_DENS,ZDIR) / ( MAPF(i,j,1,I_XY)*MAPF(i,j,2,I_XY) )
           enddo
           enddo
           enddo
