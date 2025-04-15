@@ -191,22 +191,22 @@ else
    fi
 
    #If there are no errors so far proceed with the DA_UPDATE_BC
-   if [ $EXPTYPE == "DACYCLE" ] || [ $EXPTYPE == "DAFCST" ] ; then
-      if [ $STEP -gt 0 ] ; then
-        if [ $ERROR -eq 0 ] ; then
-           echo "Running update_bc"
-           cp $NAMELISTDIR/parame* .
-           mv $WRFDIR/$MEM/wrfinput_d01 $WRFDIR/$MEM/wrfinput_d01.org
-           cp $HISTDIR/ANAL/$(date -u -d "$INI_DATE_FCST" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MEM))) $WRFDIR/$MEM/wrfinput_d01
-           ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MEM/da_update_bc.exe
-           echo "Running DA_UPDATE_BC for member $MEM"
-           time $MPIEXESERIAL $WRFDIR/$MEM/da_update_bc.exe > ./da_update_bc_${STEP}_${MEM}.log
-           ERROR=$(( $ERROR + $? ))
-        fi
-        if [ $ERROR -gt 0 ] ; then
-           echo "Error: DA_UPDATE_BC step finished with errors"   
-        fi  
-      fi
+   if [[ ( $EXPTYPE == "DACYCLE" && $STEP -gt 0 ) || $EXPTYPE == "DAFCST" ]] ; then
+   #if [ $EXPTYPE == "DACYCLE" ] || [ $EXPTYPE == "DAFCST" ] ; then
+   #   if [ $STEP -gt 0 ] ; then
+     if [ $ERROR -eq 0 ] ; then
+        echo "Running update_bc"
+        cp $NAMELISTDIR/parame* .
+        mv $WRFDIR/$MEM/wrfinput_d01 $WRFDIR/$MEM/wrfinput_d01.org
+        cp $HISTDIR/ANAL/$(date -u -d "$INI_DATE_FCST" +"%Y%m%d%H%M%S")/anal$(printf %05d $((10#$MEM))) $WRFDIR/$MEM/wrfinput_d01
+        ln -sf $WRFDIR/code/da_update_bc.exe $WRFDIR/$MEM/da_update_bc.exe
+        echo "Running DA_UPDATE_BC for member $MEM"
+        time $MPIEXESERIAL $WRFDIR/$MEM/da_update_bc.exe > ./da_update_bc_${STEP}_${MEM}.log
+        ERROR=$(( $ERROR + $? ))
+     fi
+     if [ $ERROR -gt 0 ] ; then
+        echo "Error: DA_UPDATE_BC step finished with errors"   
+     fi  
    fi
 
    #If there are no errors so far proceed with WRF
