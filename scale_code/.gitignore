@@ -1,5 +1,5 @@
 bin/
-.libs/
+scale-rm/src/.libs*
 *.o
 *.mod
 *~

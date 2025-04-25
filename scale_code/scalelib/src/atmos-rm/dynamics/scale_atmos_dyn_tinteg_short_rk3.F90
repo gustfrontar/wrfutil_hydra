@@ -7,8 +7,8 @@
 !!
 !! @author Team SCALE
 !!
-!! This module provides two types of 3rd order and 3 stage Runge=Kutta method: Heun's method and one in Wichere and Skamarock (2002). 
-!! Note that, Wicker and Skamarock's one ensures 3rd order accuracy only for the case of linear eqautions, and is generally 2nd order accuracy.  
+!! This module provides two types of 3rd order and 3 stage Runge=Kutta method: Heun's method and one in Wicker and Skamarock (2002). 
+!! Note that, Wicker and Skamarock's one ensures 3rd order accuracy only for the case of linear equations, and is generally 2nd order accuracy.  
 !<
 !-------------------------------------------------------------------------------
 #include "scalelib.h"
@@ -99,7 +99,7 @@ contains
        COMM_vars8_init
     implicit none
 
-    character(len=*) :: tinteg_type
+    character(len=*), intent(in) :: tinteg_type
 
     integer :: iv
     !---------------------------------------------------------------------------
@@ -201,6 +201,7 @@ contains
   !-----------------------------------------------------------------------------
   !> finalize
   subroutine ATMOS_DYN_Tinteg_short_rk3_finalize
+    implicit none
 
     deallocate( DENS_RK1 )
     deallocate( MOMZ_RK1 )
@@ -227,7 +228,7 @@ contains
        DENS, MOMZ, MOMX, MOMY, RHOT, PROG,      &
        mflx_hi,  tflx_hi,                       &
        DENS_t, MOMZ_t, MOMX_t, MOMY_t, RHOT_t,  &
-       DPRES0, CVtot, CORIOLI,                  &
+       DPRES0, RT2P, CORIOLI,                   &
        num_diff, wdamp_coef, divdmp_coef, DDIV, &
        FLAG_FCT_MOMENTUM, FLAG_FCT_T,           &
        FLAG_FCT_ALONG_STREAM,                   &
@@ -263,7 +264,7 @@ contains
     real(RP), intent(in)    :: RHOT_t(KA,IA,JA)
 
     real(RP), intent(in)    :: DPRES0(KA,IA,JA)
-    real(RP), intent(in)    :: CVtot(KA,IA,JA)
+    real(RP), intent(in)    :: RT2P(KA,IA,JA)
     real(RP), intent(in)    :: CORIOLI(IA,JA)
     real(RP), intent(in)    :: num_diff(KA,IA,JA,5,3)
     real(RP), intent(in)    :: wdamp_coef(KA)
@@ -405,7 +406,7 @@ contains
                           DENS,     MOMZ,     MOMX,     MOMY,     RHOT,     & ! [IN]
                           DENS_t,   MOMZ_t,   MOMX_t,   MOMY_t,   RHOT_t,   & ! [IN]
                           PROG0, PROG,                                      & ! [IN]
-                          DPRES0, CVtot, CORIOLI,                           & ! [IN]
+                          DPRES0, RT2P, CORIOLI,                            & ! [IN]
                           num_diff, wdamp_coef, divdmp_coef, DDIV,          & ! [IN]
                           FLAG_FCT_MOMENTUM, FLAG_FCT_T,                    & ! [IN]
                           FLAG_FCT_ALONG_STREAM,                            & ! [IN]
@@ -458,7 +459,7 @@ contains
                           DENS_RK1, MOMZ_RK1, MOMX_RK1, MOMY_RK1, RHOT_RK1, & ! [IN]
                           DENS_t,   MOMZ_t,   MOMX_t,   MOMY_t,   RHOT_t,   & ! [IN]
                           PROG0, PROG_RK1,                                  & ! [IN]
-                          DPRES0, CVtot, CORIOLI,                           & ! [IN]
+                          DPRES0, RT2P, CORIOLI,                            & ! [IN]
                           num_diff, wdamp_coef, divdmp_coef, DDIV,          & ! [IN]
                           FLAG_FCT_MOMENTUM, FLAG_FCT_T,                    & ! [IN]
                           FLAG_FCT_ALONG_STREAM,                            & ! [IN]
@@ -511,7 +512,7 @@ contains
                           DENS_RK2, MOMZ_RK2, MOMX_RK2, MOMY_RK2, RHOT_RK2, & ! [IN]
                           DENS_t,   MOMZ_t,   MOMX_t,   MOMY_t,   RHOT_t,   & ! [IN]
                           PROG0, PROG_RK2,                                  & ! [IN]
-                          DPRES0, CVtot, CORIOLI,                           & ! [IN]
+                          DPRES0, RT2P, CORIOLI,                            & ! [IN]
                           num_diff, wdamp_coef, divdmp_coef, DDIV,          & ! [IN]
                           FLAG_FCT_MOMENTUM, FLAG_FCT_T,                    & ! [IN]
                           FLAG_FCT_ALONG_STREAM,                            & ! [IN]

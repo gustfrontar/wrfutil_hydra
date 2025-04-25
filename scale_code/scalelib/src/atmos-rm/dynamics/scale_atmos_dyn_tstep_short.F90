@@ -2,7 +2,7 @@
 !> module Atmosphere / Dynamical scheme
 !!
 !! @par Description
-!!          Dynamical scheme selecter for dynamical short time step
+!!          Dynamical scheme selector for dynamical short time step
 !!
 !! @author Team SCALE
 !!
@@ -135,6 +135,159 @@ module scale_atmos_dyn_tstep_short
        logical,  intent(in)  :: last
      end subroutine short
 
+     !> calculation values at next temporal step (split explicit)
+     subroutine short_split_explicit( DDENS_new, DMOMZ_new, DMOMX_new, DMOMY_new, DRHOT_new, & ! (inout)
+                       mflx_hi,  tflx_hi,                                & ! (out)
+                       DENS0, RHOT0, & ! (in)
+                       DENS_t,   MOMZ_t,   MOMX_t,   MOMY_t,   RHOT_t,   & ! (in)
+                       DENS_t_se, MOMZ_t_se, MOMX_t_se, MOMY_t_se, RHOT_t_se, &  ! (in)
+                       RT2P,                                             & ! (in)
+                       num_diff, wdamp_coef, divdmp_coef, DDIV,          & ! (in)
+                       CDZ, FDZ, FDX, FDY,                               & ! (in)
+                       RCDZ, RCDX, RCDY, RFDZ, RFDX, RFDY,               & ! (in)
+                       GSQRT, J13G, J23G, J33G, MAPF,                    & ! (in)
+                       BND_W, BND_E, BND_S, BND_N, TwoD,                 & ! (in)
+                       dtrk, last                                        ) ! (in)
+       use scale_precision
+       use scale_atmos_grid_cartesC_index
+       use scale_index
+       real(RP), intent(inout) :: DDENS_new(KA,IA,JA)   ! prognostic variables
+       real(RP), intent(inout) :: DMOMZ_new(KA,IA,JA)   !
+       real(RP), intent(inout) :: DMOMX_new(KA,IA,JA)   !
+       real(RP), intent(inout) :: DMOMY_new(KA,IA,JA)   !
+       real(RP), intent(inout) :: DRHOT_new(KA,IA,JA)   !
+
+       real(RP), intent(inout) :: mflx_hi(KA,IA,JA,3) ! mass flux
+       real(RP), intent(out)   :: tflx_hi(KA,IA,JA,3) ! internal energy flux
+
+       real(RP), intent(in)  :: DENS0(KA,IA,JA)
+       real(RP), intent(in)  :: RHOT0(KA,IA,JA)
+   
+       real(RP), intent(in)  :: DENS_t(KA,IA,JA)    ! tendency
+       real(RP), intent(in)  :: MOMZ_t(KA,IA,JA)    !
+       real(RP), intent(in)  :: MOMX_t(KA,IA,JA)    !
+       real(RP), intent(in)  :: MOMY_t(KA,IA,JA)    !
+       real(RP), intent(in)  :: RHOT_t(KA,IA,JA)    !
+
+       real(RP), intent(in) :: DENS_t_se(KA,IA,JA)
+       real(RP), intent(in) :: MOMZ_t_se(KA,IA,JA)
+       real(RP), intent(in) :: MOMX_t_se(KA,IA,JA)
+       real(RP), intent(in) :: MOMY_t_se(KA,IA,JA)
+       real(RP), intent(in) :: RHOT_t_se(KA,IA,JA)       
+
+       real(RP), intent(in)  :: RT2P    (KA,IA,JA)
+       real(RP), intent(in) :: num_diff(KA,IA,JA,5,3)
+       real(RP), intent(in)  :: wdamp_coef(KA)
+       real(RP), intent(in) :: divdmp_coef
+       real(RP), intent(in) :: DDIV(KA,IA,JA)
+
+       real(RP), intent(in)  :: CDZ (KA)
+       real(RP), intent(in)  :: FDZ (KA-1)
+       real(RP), intent(in)  :: FDX (IA-1)
+       real(RP), intent(in)  :: FDY (JA-1)
+       real(RP), intent(in)  :: RCDZ(KA)
+       real(RP), intent(in)  :: RCDX(IA)
+       real(RP), intent(in)  :: RCDY(JA)
+       real(RP), intent(in)  :: RFDZ(KA-1)
+       real(RP), intent(in)  :: RFDX(IA-1)
+       real(RP), intent(in)  :: RFDY(JA-1)
+
+       real(RP), intent(in)  :: GSQRT   (KA,IA,JA,7) !< vertical metrics {G}^1/2
+       real(RP), intent(in)  :: J13G    (KA,IA,JA,7) !< (1,3) element of Jacobian matrix
+       real(RP), intent(in)  :: J23G    (KA,IA,JA,7) !< (2,3) element of Jacobian matrix
+       real(RP), intent(in)  :: J33G                 !< (3,3) element of Jacobian matrix
+       real(RP), intent(in)  :: MAPF    (IA,JA,2,4)  !< map factor
+
+       logical,  intent(in)  :: BND_W
+       logical,  intent(in)  :: BND_E
+       logical,  intent(in)  :: BND_S
+       logical,  intent(in)  :: BND_N
+       logical,  intent(in)  :: TwoD
+
+       real(RP), intent(in)  :: dtrk
+       logical,  intent(in)  :: last
+     end subroutine short_split_explicit
+
+     subroutine short_split_explicit_calc_slow_terms( &
+       DENS_t_se, MOMZ_t_se, MOMX_t_se, MOMY_t_se, RHOT_t_se, &  ! (out)
+       mflx_hi, tflx_hi,                            & ! (inout, out)
+       DENS,    MOMZ,    MOMX,    MOMY,    RHOT,    &
+       DENS0,   MOMZ0,   MOMX0,   MOMY0,   RHOT0,   &
+       PROG,                                        &
+       DPRES0, RT2P, CORIOLI,                       &
+       num_diff, wdamp_coef, divdmp_coef, DDIV,     &
+       CDZ, FDZ, FDX, FDY,                          &
+       RCDZ, RCDX, RCDY, RFDZ, RFDX, RFDY,          &
+       PHI, GSQRT, J13G, J23G, J33G, MAPF,          &
+       REF_dens, REF_rhot,                          &
+       BND_W, BND_E, BND_S, BND_N, TwoD,            &
+       dtrk, first, last                            )
+
+       use scale_precision
+       use scale_atmos_grid_cartesC_index
+       use scale_index
+       real(RP), intent(out) :: DENS_t_se(KA,IA,JA)
+       real(RP), intent(out) :: MOMZ_t_se(KA,IA,JA)
+       real(RP), intent(out) :: MOMX_t_se(KA,IA,JA)
+       real(RP), intent(out) :: MOMY_t_se(KA,IA,JA)
+       real(RP), intent(out) :: RHOT_t_se(KA,IA,JA)
+
+       real(RP), intent(inout) :: mflx_hi(KA,IA,JA,3) ! rho * vel(x,y,z)
+       real(RP), intent(out)   :: tflx_hi(KA,IA,JA,3) ! rho * theta * vel(x,y,z)
+   
+       real(RP), intent(in) :: DENS(KA,IA,JA)   
+       real(RP), intent(in) :: MOMZ(KA,IA,JA)   
+       real(RP), intent(in) :: MOMX(KA,IA,JA)   
+       real(RP), intent(in) :: MOMY(KA,IA,JA)   
+       real(RP), intent(in) :: RHOT(KA,IA,JA)   
+   
+       real(RP), intent(in) :: DENS0(KA,IA,JA)   
+       real(RP), intent(in) :: MOMZ0(KA,IA,JA)   
+       real(RP), intent(in) :: MOMX0(KA,IA,JA)   
+       real(RP), intent(in) :: MOMY0(KA,IA,JA)   
+       real(RP), intent(in) :: RHOT0(KA,IA,JA)   
+   
+       real(RP), intent(in)  :: PROG (KA,IA,JA,VA)
+   
+       real(RP), intent(in) :: DPRES0(KA,IA,JA)
+       real(RP), intent(in) :: RT2P(KA,IA,JA)
+       real(RP), intent(in) :: CORIOLI(IA,JA)
+       real(RP), intent(in) :: num_diff(KA,IA,JA,5,3)
+       real(RP), intent(in) :: wdamp_coef(KA)
+       real(RP), intent(in) :: divdmp_coef
+       real(RP), intent(in) :: DDIV(KA,IA,JA)
+   
+       real(RP), intent(in) :: CDZ(KA)
+       real(RP), intent(in) :: FDZ(KA-1)
+       real(RP), intent(in) :: FDX(IA-1)
+       real(RP), intent(in) :: FDY(JA-1)
+       real(RP), intent(in) :: RCDZ(KA)
+       real(RP), intent(in) :: RCDX(IA)
+       real(RP), intent(in) :: RCDY(JA)
+       real(RP), intent(in) :: RFDZ(KA-1)
+       real(RP), intent(in) :: RFDX(IA-1)
+       real(RP), intent(in) :: RFDY(JA-1)
+   
+       real(RP), intent(in)  :: PHI     (KA,IA,JA)   !< geopotential
+       real(RP), intent(in)  :: GSQRT   (KA,IA,JA,7) !< vertical metrics {G}^1/2
+       real(RP), intent(in)  :: J13G    (KA,IA,JA,7) !< (1,3) element of Jacobian matrix
+       real(RP), intent(in)  :: J23G    (KA,IA,JA,7) !< (2,3) element of Jacobian matrix
+       real(RP), intent(in)  :: J33G                 !< (3,3) element of Jacobian matrix
+       real(RP), intent(in)  :: MAPF    (IA,JA,2,4)  !< map factor
+       real(RP), intent(in)  :: REF_dens(KA,IA,JA)   !< reference density
+       real(RP), intent(in)  :: REF_rhot(KA,IA,JA)
+   
+       logical,  intent(in)  :: BND_W
+       logical,  intent(in)  :: BND_E
+       logical,  intent(in)  :: BND_S
+       logical,  intent(in)  :: BND_N
+       logical,  intent(in)  :: TwoD
+   
+       real(RP), intent(in)  :: dtrk
+       logical,  intent(in)  :: first
+       logical,  intent(in)  :: last
+     end subroutine short_split_explicit_calc_slow_terms
+
      subroutine dg_short_ex( &
       DENS_dt, MOMX_dt, MOMY_dt, MOMZ_dt, RHOT_dt,               & ! (out)
       DDENS_, MOMX_, MOMY_, MOMZ_, THERM_, DPRES_,               & ! (in) 
@@ -229,6 +382,10 @@ module scale_atmos_dyn_tstep_short
   public :: ATMOS_DYN_Tstep_short_setup
   procedure(short), pointer :: ATMOS_DYN_Tstep_short => NULL()
   public :: ATMOS_DYN_Tstep_short
+  procedure(short_split_explicit), pointer :: ATMOS_DYN_Tstep_short_split_explicit => NULL()
+  public :: ATMOS_DYN_Tstep_short_split_explicit
+  procedure(short_split_explicit_calc_slow_terms), pointer :: ATMOS_DYN_Tstep_short_split_explicit_calc_slow_terms => NULL()
+  public :: ATMOS_DYN_Tstep_short_split_explicit_calc_slow_terms
 
   procedure(short_setup), pointer :: ATMOS_DYN_Tstep_dgm_short_setup => NULL()
   public :: ATMOS_DYN_Tstep_dgm_short_setup
@@ -241,6 +398,8 @@ module scale_atmos_dyn_tstep_short
   !
   !++ Public parameters & variables
   !
+  logical, public :: SplitExplicit_flag
+
   !-----------------------------------------------------------------------------
   !
   !++ Private procedure
@@ -281,6 +440,11 @@ contains
        ATMOS_DYN_Tstep_short_fvm_hevi_regist, &
        ATMOS_DYN_Tstep_short_fvm_hevi_setup, &
        ATMOS_DYN_Tstep_short_fvm_hevi
+    use scale_atmos_dyn_tstep_short_fvm_hevi_split_explicit, only: &
+       ATMOS_DYN_Tstep_short_fvm_hevi_split_explicit_regist, &
+       ATMOS_DYN_Tstep_short_fvm_hevi_split_explicit_setup, &
+       ATMOS_DYN_Tstep_short_fvm_hevi_split_explicit,       &
+       ATMOS_DYN_Tstep_short_fvm_hevi_split_explicit_calc_slow_terms
     use scale_atmos_dyn_tstep_short_fvm_hivi, only: &
        ATMOS_DYN_Tstep_short_fvm_hivi_regist, &
        ATMOS_DYN_Tstep_short_fvm_hivi_setup, &
@@ -293,6 +457,8 @@ contains
     character(len=H_MID),   intent(out) :: VAR_DESC(:)    !< desc. of the variables
     character(len=H_SHORT), intent(out) :: VAR_UNIT(:)    !< unit  of the variables
     !---------------------------------------------------------------------------
+
+    SplitExplicit_flag = .false.
 
     select case( ATMOS_DYN_TYPE )
     case( 'FVM-HEVE', 'HEVE' )
@@ -312,7 +478,16 @@ contains
 
        ATMOS_DYN_Tstep_short_setup => ATMOS_DYN_Tstep_short_fvm_hevi_setup
        ATMOS_DYN_Tstep_short       => ATMOS_DYN_Tstep_short_fvm_hevi
+    case( 'FVM-HEVI-SplitExplicit', 'HEVI-SplitExplicit' )
 
+       call ATMOS_DYN_Tstep_short_fvm_hevi_split_explicit_regist( ATMOS_DYN_TYPE,              & ! [IN]
+                                                                  VA_out,                      & ! [OUT]
+                                                                  VAR_NAME, VAR_DESC, VAR_UNIT ) ! [OUT]
+
+       ATMOS_DYN_Tstep_short_setup => ATMOS_DYN_Tstep_short_fvm_hevi_split_explicit_setup
+       ATMOS_DYN_Tstep_short_split_explicit => ATMOS_DYN_Tstep_short_fvm_hevi_split_explicit
+       ATMOS_DYN_Tstep_short_split_explicit_calc_slow_terms => ATMOS_DYN_Tstep_short_fvm_hevi_split_explicit_calc_slow_terms
+       SplitExplicit_flag = .true.
     case( 'DGM-HEVE' )
 
        call ATMOS_DYN_Tstep_short_dgm_heve_regist( ATMOS_DYN_TYPE,              & ! [IN]

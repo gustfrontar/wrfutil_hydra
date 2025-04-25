@@ -35,7 +35,7 @@ module scale_atmos_dyn_tstep_large
           DENS, MOMZ, MOMX, MOMY, RHOT, QTRC, PROG,             &
           DENS_av, MOMZ_av, MOMX_av, MOMY_av, RHOT_av, QTRC_av, &
           num_diff, num_diff_q,                                 &
-          QTRC0,                                                &
+          DENS0, MOMZ0, MOMX0, MOMY0, RHOT0, QTRC0,             &
           DENS_tp, MOMZ_tp, MOMX_tp, MOMY_tp, RHOT_tp, RHOQ_tp, &
           CORIOLI,                                              &
           CDZ, CDX, CDY, FDZ, FDX, FDY,                         &
@@ -59,7 +59,7 @@ module scale_atmos_dyn_tstep_large
           FLAG_FCT_ALONG_STREAM,                                &
           USE_AVERAGE,                                          &
           I_QV,                                                 &
-          DTL, DTS, Llast                                       )
+          DTL, DTS, Lfirst, Llast                               )
        use scale_precision
        use scale_atmos_grid_cartesC_index
        use scale_index
@@ -79,9 +79,14 @@ module scale_atmos_dyn_tstep_large
        real(RP), intent(inout) :: RHOT_av(KA,IA,JA)
        real(RP), intent(inout) :: QTRC_av(KA,IA,JA,QA)
 
-       real(RP), intent(out)   :: num_diff(KA,IA,JA,5,3)
-       real(RP), intent(out)   :: num_diff_q(KA,IA,JA,3)
+       real(RP), intent(inout)   :: num_diff(KA,IA,JA,5,3)
+       real(RP), intent(inout)   :: num_diff_q(KA,IA,JA,3)
 
+       real(RP), intent(in)    :: DENS0(KA,IA,JA)
+       real(RP), intent(in)    :: MOMZ0(KA,IA,JA)
+       real(RP), intent(in)    :: MOMX0(KA,IA,JA)
+       real(RP), intent(in)    :: MOMY0(KA,IA,JA)
+       real(RP), intent(in)    :: RHOT0(KA,IA,JA)
        real(RP), intent(in)    :: QTRC0(KA,IA,JA,QA)
 
        real(RP), intent(in)    :: DENS_tp(KA,IA,JA)
@@ -171,6 +176,7 @@ module scale_atmos_dyn_tstep_large
        real(DP), intent(in)    :: DTL
        real(DP), intent(in)    :: DTS
 
+       logical , intent(in)    :: Lfirst
        logical , intent(in)    :: Llast
      end subroutine large
 

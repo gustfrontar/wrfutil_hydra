@@ -128,8 +128,8 @@ contains
     real(RP), intent(inout) :: RHOT_av(KA,IA,JA)
     real(RP), intent(inout) :: QTRC_av(KA,IA,JA,QA)
 
-    real(RP), intent(out)   :: num_diff  (KA,IA,JA,5,3)
-    real(RP), intent(out)   :: num_diff_q(KA,IA,JA,3)
+    real(RP), intent(inout) :: num_diff  (KA,IA,JA,5,3)
+    real(RP), intent(inout) :: num_diff_q(KA,IA,JA,3)
 
     real(RP), intent(in)    :: DENS_tp(KA,IA,JA)
     real(RP), intent(in)    :: MOMZ_tp(KA,IA,JA)
@@ -218,12 +218,29 @@ contains
     real(DP), intent(in)    :: DTL
     real(DP), intent(in)    :: DTS
 
+    real(RP) :: DENS0   (KA,IA,JA)
+    real(RP) :: MOMZ0   (KA,IA,JA)
+    real(RP) :: MOMX0   (KA,IA,JA)
+    real(RP) :: MOMY0   (KA,IA,JA)
+    real(RP) :: RHOT0   (KA,IA,JA)
     real(RP) :: QTRC0(KA,IA,JA,QA)
 
-    !$acc data copy(QTRC) create(QTRC0)
+    !$acc data copy(DENS,MOMZ,MOMX,MOMY,RHOT,QTRC) create(DENS0,MOMZ0,MOMX0,MOMY0,RHOT0,QTRC0)
 
+    !##### SAVE #####
     !$omp workshare
     !$acc kernels
+!OCL XFILL
+    DENS0(:,:,:) = DENS(:,:,:)
+!OCL XFILL
+    MOMZ0(:,:,:) = MOMZ(:,:,:)
+!OCL XFILL
+    MOMX0(:,:,:) = MOMX(:,:,:)
+!OCL XFILL
+    MOMY0(:,:,:) = MOMY(:,:,:)
+!OCL XFILL
+    RHOT0(:,:,:) = RHOT(:,:,:)    
+!OCL XFILL
     QTRC0(:,:,:,:) = QTRC(:,:,:,:)
     !$acc end kernels
     !$omp end workshare
@@ -233,7 +250,7 @@ contains
          DENS, MOMZ, MOMX, MOMY, RHOT, QTRC, PROG,             & ! (inout)
          DENS_av, MOMZ_av, MOMX_av, MOMY_av, RHOT_av, QTRC_av, & ! (inout)
          num_diff, num_diff_q,                                 & ! (out, work)
-         QTRC0,                                                & ! (in)
+         DENS0, MOMZ0, MOMX0, MOMY0, RHOT0, QTRC0,             & ! (in)
          DENS_tp, MOMZ_tp, MOMX_tp, MOMY_tp, RHOT_tp, RHOQ_tp, & ! (in)
          CORIOLI,                                              & ! (in)
          CDZ, CDX, CDY, FDZ, FDX, FDY,                         & ! (in)
@@ -257,7 +274,7 @@ contains
          FLAG_FCT_ALONG_STREAM,                                & ! (in)
          USE_AVERAGE,                                          & ! (in)
          I_QV,                                                 & ! (in)
-         DTL, DTS, .true.                                      ) ! (in)
+         DTL, DTS, .true., .true.                              ) ! (in)
 
     !$acc end data
 

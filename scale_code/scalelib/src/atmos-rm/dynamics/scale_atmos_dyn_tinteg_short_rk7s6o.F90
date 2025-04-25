@@ -189,7 +189,7 @@ contains
        DENS, MOMZ, MOMX, MOMY, RHOT, PROG,      &
        mflx_hi,  tflx_hi,                       &
        DENS_t, MOMZ_t, MOMX_t, MOMY_t, RHOT_t,  &
-       DPRES0, CVtot, CORIOLI,                  &
+       DPRES0, RT2P, CORIOLI,                   &
        num_diff, wdamp_coef, divdmp_coef, DDIV, &
        FLAG_FCT_MOMENTUM, FLAG_FCT_T,           &
        FLAG_FCT_ALONG_STREAM,                   &
@@ -225,7 +225,7 @@ contains
     real(RP), intent(in)    :: RHOT_t(KA,IA,JA)
 
     real(RP), intent(in)    :: DPRES0(KA,IA,JA)
-    real(RP), intent(in)    :: CVtot(KA,IA,JA)
+    real(RP), intent(in)    :: RT2P(KA,IA,JA)
     real(RP), intent(in)    :: CORIOLI(IA,JA)
     real(RP), intent(in)    :: num_diff(KA,IA,JA,5,3)
     real(RP), intent(in)    :: wdamp_coef(KA)
@@ -399,7 +399,7 @@ contains
          rk_dynvar%buf(:,:,:,I_RK_RHOT),                       & ! [IN]
          DENS_t,   MOMZ_t,   MOMX_t,   MOMY_t,   RHOT_t,       & ! [IN]
          rk_prgvar%work0, rk_prgvar%buf(:,:,:,:),              & ! [IN]
-         DPRES0, CVtot, CORIOLI,                               & ! [IN]
+         DPRES0, RT2P, CORIOLI,                                & ! [IN]
          num_diff, wdamp_coef, divdmp_coef, DDIV,              & ! [IN]
          FLAG_FCT_MOMENTUM, FLAG_FCT_T,                        & ! [IN]
          FLAG_FCT_ALONG_STREAM,                                & ! [IN]

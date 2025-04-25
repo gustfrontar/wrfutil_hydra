@@ -131,8 +131,8 @@ contains
     real(RP), intent(inout) :: RHOT_av(KA,IA,JA)
     real(RP), intent(inout) :: QTRC_av(KA,IA,JA,QA)
 
-    real(RP), intent(out)   :: num_diff(KA,IA,JA,5,3)
-    real(RP), intent(out)   :: num_diff_q(KA,IA,JA,3)
+    real(RP), intent(inout) :: num_diff(KA,IA,JA,5,3)
+    real(RP), intent(inout) :: num_diff_q(KA,IA,JA,3)
 
     real(RP), intent(in)    :: DENS_tp(KA,IA,JA)
     real(RP), intent(in)    :: MOMZ_tp(KA,IA,JA)
@@ -232,6 +232,7 @@ contains
 
     real(DP) :: dtrk
 
+    logical :: first
     logical :: last
 
     integer :: n, iq
@@ -270,6 +271,7 @@ contains
        do n = 1, 3
 
           dtrk = DTL / real( 4-n, kind=DP )
+          first = n == 1
           last = n == 3
 
           if ( n > 1 ) then
@@ -284,8 +286,8 @@ contains
           call ATMOS_DYN_tstep_large( &
                DENS,    MOMZ,    MOMX,    MOMY,    RHOT,    QTRC,    PROG,   & ! (inout)
                DENS_av, MOMZ_av, MOMX_av, MOMY_av, RHOT_av, QTRC_av,         & ! (inout)
-               num_diff, num_diff_q,                                         & ! (out)
-               QTRC0,                                                        & ! (in)
+               num_diff, num_diff_q,                                         & ! (out, work)
+               DENS0, MOMZ0, MOMX0, MOMY0, RHOT0, QTRC0,                     & ! (in)
                DENS_tp, MOMZ_tp, MOMX_tp, MOMY_tp, RHOT_tp, RHOQ_tp,         & ! (in)
                CORIOLI,                                                      & ! (in)
                CDZ, CDX, CDY, FDZ, FDX, FDY,                                 & ! (in)
@@ -308,7 +310,7 @@ contains
                FLAG_FCT_ALONG_STREAM,                                        & ! (in)
                USE_AVERAGE .AND. last,                                       & ! (in)
                I_QV,                                                         & ! (in)
-               dtrk, dts, last                                               ) ! (in)
+               dtrk, dts, first, last                                        ) ! (in)
 
        end do
 

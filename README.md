@@ -8,7 +8,7 @@
 
 The origins of the codes used in this branch are as follows: 
 
-SCALE: A branch [develop](https://github.com/scale-met/scale-dev/tree/develop) (commit: a8ab69c) of a private repository [scale-dev](https://github.com/scale-met/scale-dev).
+SCALE: A branch [feature/dyn_split_explicit](https://github.com/scale-met/scale-dev/tree/feature/dyn_split_explicit) (commit: 249248b) of a private repository [scale-dev](https://github.com/scale-met/scale-dev).
 SCALE-LETKF: A private repository [scale-letkf](https://github.com/SCALE-LETKF-SMN/scale-letkf) (commit: 157564d) of a version for the PREVENIR project. 
 
 [SCALE User's guide](https://scale.riken.jp/archives/scale_users_guide_En.v5.5.4.pdf) is available online.

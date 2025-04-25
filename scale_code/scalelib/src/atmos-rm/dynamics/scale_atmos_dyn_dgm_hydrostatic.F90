@@ -1060,7 +1060,7 @@ contains
 
       do p=1, elem%Np
         dz_p(:) = lmesh%Escale(p,ke,3,3) * elem%Dx3(p,:) 
-        PmatD(p,:) = dz_p(:) * CPtot_ov_CVtot(:,ke_z) * PRES0(:,ke_z) / ( DENS0(:,ke_z) * GsqrtV(:,ke_z) ) &
+        PmatD(p,:) = dz_p(:) * CPtot_ov_CVtot(:,ke_z) * PRES0(:,ke_z) / ( DENS0(:,ke_z) * GsqrtV(p,ke_z) ) &
                    + Grav * IntrpMat_VPOrdM1(p,:)
       end do
 

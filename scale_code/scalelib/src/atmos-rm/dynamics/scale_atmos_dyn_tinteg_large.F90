@@ -77,8 +77,8 @@ module scale_atmos_dyn_tinteg_large
        real(RP), intent(inout) :: RHOT_av(KA,IA,JA)
        real(RP), intent(inout) :: QTRC_av(KA,IA,JA,QA)
 
-       real(RP), intent(out)   :: num_diff(KA,IA,JA,5,3)
-       real(RP), intent(out)   :: num_diff_q(KA,IA,JA,3)
+       real(RP), intent(inout) :: num_diff(KA,IA,JA,5,3)
+       real(RP), intent(inout) :: num_diff_q(KA,IA,JA,3)
 
        real(RP), intent(in)    :: DENS_tp(KA,IA,JA)
        real(RP), intent(in)    :: MOMZ_tp(KA,IA,JA)
@@ -195,6 +195,9 @@ contains
     use scale_atmos_dyn_tinteg_large_euler, only: &
        ATMOS_DYN_Tinteg_large_euler_setup, &
        ATMOS_DYN_Tinteg_large_euler
+    use scale_atmos_dyn_tinteg_large_rk2, only: &
+       ATMOS_DYN_Tinteg_large_rk2_setup, &
+       ATMOS_DYN_Tinteg_large_rk2
     use scale_atmos_dyn_tinteg_large_rk3, only: &
        ATMOS_DYN_Tinteg_large_rk3_setup, &
        ATMOS_DYN_Tinteg_large_rk3
@@ -208,6 +211,10 @@ contains
        call ATMOS_DYN_Tinteg_large_euler_setup( &
             ATMOS_DYN_Tinteg_large_TYPE )
        ATMOS_DYN_Tinteg_large => ATMOS_DYN_Tinteg_large_euler
+    case( 'RK2' )
+       call ATMOS_DYN_Tinteg_large_rk2_setup( &
+            ATMOS_DYN_Tinteg_large_TYPE )
+       ATMOS_DYN_Tinteg_large => ATMOS_DYN_Tinteg_large_rk2
     case( 'RK3' )
        call ATMOS_DYN_Tinteg_large_rk3_setup( &
             ATMOS_DYN_Tinteg_large_TYPE )
