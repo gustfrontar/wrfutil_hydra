@@ -90,7 +90,7 @@ while [ $REMAINING_STEPS -gt 0 ] ; do
       echo "Succesfully run WPS"
    fi
 
-   if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
+   if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 && $STEP -eq 0 ]] ; then
       echo "Running Pert met em"                           > $LOGDIR/pert_met_em_${STEP}.log
       time $BASEDIR/bin/run_Pert.sh                       >> $LOGDIR/pert_met_em_${STEP}.log   2>&1
       if [ $? -ne 0 ] ; then
