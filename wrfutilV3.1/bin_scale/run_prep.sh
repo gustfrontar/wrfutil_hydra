@@ -25,6 +25,11 @@ cp $NAMELISTDIR/namelist.sno_prep   $SCALEPPDIR/
 cp $NAMELISTDIR/namelist.scale_init $SCALEPPDIR/
 cp $NAMELISTDIR/namelist.ncinput    $SCALEPPDIR/
 cp $NAMELISTDIR/namelist.gradsinput $SCALEPPDIR/
+FZTEXT=$(cat $NAMELISTDIR/fz_$((E_VERT-1))lev.txt)
+if [ $? -ne 0 ]; then
+  echo "no vertical level file fz_$((E_VERT-1))lev.txt" ]
+  return 1
+fi 
 
 #We found the closests dates in the boundary data to the initial and final times of the forecast. 
 
@@ -47,6 +52,7 @@ GLCCv2=$TOPO_LAND_ORG_SCALE/landuse/GLCCv2/Products
 sed -i -e "s|__FECHA_INI__|$DATE_INI_SCALE|g" $SCALEPPDIR/namelist.scale_pp
 sed -i -e "s|__E_WE_LOC__|$E_WE_LOC|g"        $SCALEPPDIR/namelist.scale_pp
 sed -i -e "s|__E_SN_LOC__|$E_SN_LOC|g"        $SCALEPPDIR/namelist.scale_pp
+sed -i -e "s|__E_VERT__|$((E_VERT-1))|g"      $SCALEPPDIR/namelist.scale_pp
 sed -i -e "s|__NPROC_X__|$NPROC_X|g"          $SCALEPPDIR/namelist.scale_pp
 sed -i -e "s|__NPROC_Y__|$NPROC_Y|g"          $SCALEPPDIR/namelist.scale_pp
 sed -i -e "s|__DX__|$DX|g"                    $SCALEPPDIR/namelist.scale_pp
@@ -58,6 +64,8 @@ sed -i -e "s|__TRUELAT1__|$TRUELAT1|g"        $SCALEPPDIR/namelist.scale_pp
 sed -i -e "s|__TRUELAT2__|$TRUELAT2|g"        $SCALEPPDIR/namelist.scale_pp
 sed -i -e "s|__GTOPO30__|\"$GTOPO30\"|g"          $SCALEPPDIR/namelist.scale_pp
 sed -i -e "s|__GLCCv2__|\"$GLCCv2\"|g"            $SCALEPPDIR/namelist.scale_pp
+sed -i -e "/!---FZ---/a $(echo $FZTEXT | sed -e 's/\./\\./g')" $SCALEPPDIR/namelist.scale_pp
+
 
 E_WE_LOC=$((E_WE / NPROC_X))
 E_SN_LOC=$((E_SN / NPROC_Y))
@@ -78,8 +86,10 @@ else
   BNAME_ORG="namelist.gradsinput"
 fi
 
-sed -i -e "s|__FECHA_INI__|$DATE_INI_SCALE|g" $SCALEPPDIR/namelist.scale_init
+sed -i -e "s|__INI_SCALE__|$DATE_INI_SCALE|g" $SCALEPPDIR/namelist.scale_init
+sed -i -e "s|__LEN__|$LEN_BDY|g"              $SCALEPPDIR/namelist.scale_init
 sed -i -e "s|__INTERVALO__|$BDY_FREQ|g"       $SCALEPPDIR/namelist.scale_init
+sed -i -e "s|__E_VERT__|$((E_VERT-1))|g"      $SCALEPPDIR/namelist.scale_init
 sed -i -e "s|__E_WE_LOC__|$E_WE_LOC|g"        $SCALEPPDIR/namelist.scale_init
 sed -i -e "s|__E_SN_LOC__|$E_SN_LOC|g"        $SCALEPPDIR/namelist.scale_init
 sed -i -e "s|__NPROC_X__|$NPROC_X|g"          $SCALEPPDIR/namelist.scale_init
@@ -97,6 +107,7 @@ sed -i -e "s|__FILETYPE_ORG__|$FTYPE_ORG|g"   $SCALEPPDIR/namelist.scale_init
 sed -i -e "s|__SCALEDATA__|$SCALEDATA|g"      $SCALEPPDIR/namelist.scale_init
 sed -i -e "s|__NFILES_BDY__|$NFILES_BDY|g"    $SCALEPPDIR/namelist.scale_init
 
+sed -i -e "/!---FZ---/a $(echo $FZTEXT | sed -e 's/\./\\./g')" $SCALEPPDIR/namelist.scale_init
 
 ####
 ## Corremos scale pp (si es que no fue corrido)
@@ -236,6 +247,10 @@ export LD_LIBRARY_PATH=/lib64:/usr/lib64:/opt/FJSVxtclanga/tcsds-latest/lib64:/o
 echo "Running scale init for member $MEM"
 $MPIEXE ./scale-rm_init namelist.scale_init
 ERROR=$(( $ERROR + $? ))
+
+if [ $ERROR -gt 0 ] ; then
+   echo "Error: SCALE init step finished with errors"   
+fi
 
 EOF
 

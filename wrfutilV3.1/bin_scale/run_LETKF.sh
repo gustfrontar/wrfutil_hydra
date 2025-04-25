@@ -51,7 +51,6 @@ cp $HISTDIR/const/landuse/*.nc $LETKFDIRRUN/landuse/
 #      rm -f $LETKFDIR/code/letkf.namelist
 #   fi
 #fi
-
 #ln -sf $LETKFDIR/code/* $LETKFDIRRUN
 
 echo "Editing namelist"
@@ -112,26 +111,50 @@ cp ${HISTDIR}/GUES/$ANALYSIS_DATE_PFMT/$MEM_END/init_$ANALYSIS_DATE_SFMT* ${LETK
 
 #CTIME_OFMT=$(date -u -d "$CTIME UTC" +"%Y%m%d%H%M%S")
 CTIME_OFMT=$ANALYSIS_DATE_PFMT
+OBS_IN_NUM_TOT=0
 for j in $(seq $OBS_IN_NUM) ;do
   i=$((j-1))
   OBS_TYPE=${OBS_LIST[$i]}
   if [  $OBS_TYPE == "RADARC" ] ;then
-    OBS_IN_FORMAT=${OBS_IN_FORMAT}"'RADAR', "
-    OBSPATHT="'$OBSPATH/${OBS_TYPE}/WRF_${OBS_TYPE}_${RADARC_LIST[$i]}_${CTIME_OFMT}.dat', "
+    for RADARC in ${RADARC_LIST[@]} ;do
+      OBS_IN_FORMAT=${OBS_IN_FORMAT}"'RADAR', "
+      OBS_IN_NAME=${OBS_IN_NAME}${OBSPATHT}
+      OBSDA_RUN=${OBSDA_RUN}".true., "
+      OBS_IN_NUM_TOT=$((OBS_IN_NUM_TOT+1))
+      OBSPATHT="'$OBSPATH/${OBS_TYPE}/WRF_${OBS_TYPE}_${RADARC}_${CTIME_OFMT}.dat', "
+    done
   elif [ $OBS_TYPE == "ADPAUT" ] || [ $OBS_TYPE == "ADPSFC" ] ;then
     OBS_IN_FORMAT=${OBS_IN_FORMAT}"'AWS', "
+    OBS_IN_NAME=${OBS_IN_NAME}${OBSPATHT}
+    OBSDA_RUN=${OBSDA_RUN}".true., "
+    OBS_IN_NUM_TOT=$((OBS_IN_NUM_TOT+1))
     OBSPATHT="'${OBSPATH}/${OBS_TYPE}/WRF_${OBS_TYPE}_${CTIME_OFMT}.dat', "
   else
     OBS_IN_FORMAT=${OBS_IN_FORMAT}"'PREPBUFR', "
+    OBS_IN_NAME=${OBS_IN_NAME}${OBSPATHT}
+    OBSDA_RUN=${OBSDA_RUN}".true., "
+    OBS_IN_NUM_TOT=$((OBS_IN_NUM_TOT+1))
     OBSPATHT="'${OBSPATH}/${OBS_TYPE}/WRF_${OBS_TYPE}_${CTIME_OFMT}.dat', "
   fi
-  OBS_IN_NAME=${OBS_IN_NAME}${OBSPATHT}
-  OBSDA_RUN=${OBSDA_RUN}".true., "
 done
+
 
 FNAME_RST="init_$ANALYSIS_DATE_SFMT"
 NPROC=$((SCALEPROC/SCALESKIP))
 PPN=$((ICORE/SCALESKIP))
+
+if ((OBS_4D == 1)) ;then
+OBS_4D_TF=".true."
+else 
+OBS_4D_TF=".false."
+fi
+
+if ((RADAR_OBS_4D == 1)) ;then
+RADAR_OBS_4D_TF=".true."
+else 
+RADAR_OBS_4D_TF=".false."
+fi
+
 
 sed -i -e "s|__COV_INFL_MUL__|$COV_INFL_MUL|g"             $NAMELISTFILE
 #sed -i -e "s|__SP_INFL_ADD__|$SP_INFL_ADD|g"               $NAMELISTFILE
@@ -155,11 +178,13 @@ sed -i -e "s|__PPN__|$PPN|g"                               $NAMELISTFILE
 sed -i -e "s|__MEM_NODES__|$SCALENODE|g"                   $NAMELISTFILE
 sed -i -e "s|__NPROC__|$NPROC|g"                           $NAMELISTFILE
 sed -i -e "s|__WIN_STEP__|$ANALYSIS_WIN_STEP|g"            $NAMELISTFILE
-sed -i -e "s|__OBS_IN_NUM__|$OBS_IN_NUM|g"                 $NAMELISTFILE
+sed -i -e "s|__OBS_IN_NUM__|$OBS_IN_NUM_TOT|g"             $NAMELISTFILE
 sed -i -e "s|__OBS_IN_NAME__|$OBS_IN_NAME|g"               $NAMELISTFILE
 sed -i -e "s|__OBS_IN_FORMAT__|$OBS_IN_FORMAT|g"           $NAMELISTFILE
 sed -i -e "s|__OBSDA_RUN__|$OBSDA_RUN|g"                   $NAMELISTFILE
 sed -i -e "s|__FNAME_RST__|$FNAME_RST|g"                   $NAMELISTFILE
+sed -i -e "s|__OBS_4D__|$OBS_4D_TF|g"                      $NAMELISTFILE
+sed -i -e "s|__RADAR_OBS_4D__|$RADAR_OBS_4D_TF|g"          $NAMELISTFILE
 
 cat $SCALEDIR/namelist.scale >> $NAMELISTFILE 
 

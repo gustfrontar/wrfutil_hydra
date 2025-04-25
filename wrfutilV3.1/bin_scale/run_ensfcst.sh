@@ -50,6 +50,12 @@ fi
 # Edit the namelist.
 cp $NAMELISTDIR/namelist.scale $SCALEDIR/
 cp $NAMELISTDIR/namelist.sno_fcst $SCALEDIR/
+cp $NAMELISTDIR/fz_$((E_VERT-1))lev.txt  $SCALEDIR/fz.txt
+FZTEXT=$(cat $NAMELISTDIR/fz_$((E_VERT-1))lev.txt)
+if [ $? -ne 0 ]; then
+  echo "no vertical level file fz_$((E_VERT-1))lev.txt" ]
+  return 1
+fi
 
 #Edit the namelist from the template
 
@@ -71,8 +77,9 @@ fi
 
 sed -i -e "s|__INI_SCALE__|$INI_SCALE|g"      $SCALEDIR/namelist.scale
 sed -i -e "s|__LEN__|$FCSTLEN|g"              $SCALEDIR/namelist.scale
-sed -i -e "s|__INT_R_SCALE__|$INT_R_SCALE|g"   $SCALEDIR/namelist.scale
-sed -i -e "s|__INT_F_SCALE__|$INT_F_SCALE|g"   $SCALEDIR/namelist.scale
+sed -i -e "s|__INT_R_SCALE__|$INT_R_SCALE|g"  $SCALEDIR/namelist.scale
+sed -i -e "s|__INT_F_SCALE__|$INT_F_SCALE|g"  $SCALEDIR/namelist.scale
+sed -i -e "s|__E_VERT__|$((E_VERT-1))|g"      $SCALEDIR/namelist.scale
 sed -i -e "s|__E_WE_LOC__|$E_WE_LOC|g"        $SCALEDIR/namelist.scale
 sed -i -e "s|__E_SN_LOC__|$E_SN_LOC|g"        $SCALEDIR/namelist.scale
 sed -i -e "s|__NPROC_X__|$NPROC_X|g"          $SCALEDIR/namelist.scale
@@ -92,6 +99,8 @@ sed -i -e "s|__DYNDT__|$DYNDT|g"              $SCALEDIR/namelist.scale
 sed -i -e "s|__LNDDT__|$DT2|g"                $SCALEDIR/namelist.scale
 sed -i -e "s|__OCNDT__|$DT2|g"                $SCALEDIR/namelist.scale
 sed -i -e "s|__URBDT__|$DT2|g"                $SCALEDIR/namelist.scale
+
+sed -i -e "/!---FZ---/a $(echo $FZTEXT | sed -e 's/\./\\./g')" $SCALEDIR/namelist.scale
 
 ###
 # Create the script that will run scale for each ensemble member.
@@ -140,48 +149,45 @@ ERROR=$(( $ERROR + $? ))
 
 if [ $ERROR -gt 0 ] ; then
    echo "Error: SCALE step finished with errors"   
+else
+  echo "Running SNO for member $MEM"
+  $MPIEXESERIAL ./sno namelist.sno_fcst
+  if [ $? -gt 0 ] ; then
+     echo "Warning: SNO finished with errors"
+  fi
 fi
 
-
-echo "Running SNO for member $MEM"
-$MPIEXESERIAL ./sno namelist.sno_fcst
-if [ $? -gt 0 ] ; then
-   echo "Warning: SNO finished with errors"
-fi
-
-
-   #If there are no errors so far copy the files to their final destination
-   if [ $ERROR -eq 0 ] ; then
-      ANALYSIS_DATE_PFMT=$(date -u -d "$ANALYSIS_DATE UTC" +"%Y%m%d%H%M%S")    
-      ANALYSIS_DATE_SFMT=$(date -u -d "$ANALYSIS_DATE UTC" +"%Y%m%d-%H%M%S.000")     
-      if [ $EXPTYPE == "DACYCLE" ] ; then
-         #Copy the guess files corresponding to the analysis time.
-         if [[ ! -z "$SAVEGUESS" ]] && [[ $SAVEGUESS -eq 1 ]] ; then
-            OUTPUTPATH="$HISTDIR/GUES/$ANALYSIS_DATE_PFMT/$MEM"
-            mkdir -p $OUTPUTPATH
-            echo "Copying first guess files"
-            cp $SCALEDIR/$MEM/init/init_${ANALYSIS_DATE_SFMT}*.nc $OUTPUTPATH/
-            mv $SCALEDIR/$MEM/log/scale/* $OUTPUTPATH/
-            mv $SCALEDIR/$MEM/namelist*   $OUTPUTPATH/
-
-         fi
-         if [ $STEP -eq 0  ] ; then  #Copy the spin up output as the analysis for the next cycle.
-            OUTPUTPATH="$HISTDIR/ANAL/$ANALYSIS_DATE_PFMT/$MEM"
-            mkdir -p $OUTPUTPATH
-            echo "Copying spinup files"
-            mv $SCALEDIR/$MEM/init/init_${ANALYSIS_DATE_SFMT}*.nc   $OUTPUTPATH/
-            mv $SCALEDIR/$MEM/log/scale/* $OUTPUTPATH/
-            mv $SCALEDIR/$MEM/namelist*   $OUTPUTPATH/
-         fi
-      elif [ $EXPTYPE == "DAFCST" ] || [ $EXPTYPE == "FCST" ] ; then
-         #Copy history files to its final destionation.
-         OUTPUTPATH="$HISTDIR/$EXPTYPE/${DIR_DATE_INI}/${MEM}/"
+#If there are no errors so far copy the files to their final destination
+if [ $ERROR -eq 0 ] ; then
+   ANALYSIS_DATE_PFMT=$(date -u -d "$ANALYSIS_DATE UTC" +"%Y%m%d%H%M%S")    
+   ANALYSIS_DATE_SFMT=$(date -u -d "$ANALYSIS_DATE UTC" +"%Y%m%d-%H%M%S.000")     
+   if [ $EXPTYPE == "DACYCLE" ] ; then
+      #Copy the guess files corresponding to the analysis time.
+      if [[ ! -z "$SAVEGUESS" ]] && [[ $SAVEGUESS -eq 1 ]] ; then
+         OUTPUTPATH="$HISTDIR/GUES/$ANALYSIS_DATE_PFMT/$MEM"
          mkdir -p $OUTPUTPATH
-         mv $SCALEDIR/$MEM/fcst/*.nc   $OUTPUTPATH/
+         echo "Copying first guess files"
+         cp $SCALEDIR/$MEM/init/init_${ANALYSIS_DATE_SFMT}*.nc $OUTPUTPATH/
          mv $SCALEDIR/$MEM/log/scale/* $OUTPUTPATH/
          mv $SCALEDIR/$MEM/namelist*   $OUTPUTPATH/
       fi
+      if [ $STEP -eq 0  ] ; then  #Copy the spin up output as the analysis for the next cycle.
+         OUTPUTPATH="$HISTDIR/ANAL/$ANALYSIS_DATE_PFMT/$MEM"
+         mkdir -p $OUTPUTPATH
+         echo "Copying spinup files"
+         mv $SCALEDIR/$MEM/init/init_${ANALYSIS_DATE_SFMT}*.nc   $OUTPUTPATH/
+         mv $SCALEDIR/$MEM/log/scale/* $OUTPUTPATH/
+         mv $SCALEDIR/$MEM/namelist*   $OUTPUTPATH/
+      fi
+   elif [ $EXPTYPE == "DAFCST" ] || [ $EXPTYPE == "FCST" ] ; then
+      #Copy history files to its final destionation.
+      OUTPUTPATH="$HISTDIR/$EXPTYPE/${DIR_DATE_INI}/${MEM}/"
+      mkdir -p $OUTPUTPATH
+      mv $SCALEDIR/$MEM/fcst/*.nc   $OUTPUTPATH/
+      mv $SCALEDIR/$MEM/log/scale/* $OUTPUTPATH/
+      mv $SCALEDIR/$MEM/namelist*   $OUTPUTPATH/
    fi
+fi
 
 
 EOF

@@ -77,5 +77,5 @@ if opt_scale == True :
                tstart=datef
                fhour=LeadTimes[-1]
                gribfile=LocalDataDir + '/gefs.' + ymd + '/' + hh + '/pgrb2b/' + ename + '.t' + hh + 'z'
-               outdir= LocalDataDir + '/gefs.' + ymd + '/' + hh + '/grads_scale/' + mem
+               outdir= LocalDataDir + '/gefs.' + ymd + '/' + hh + '/grads_scale/' + mem.zfill(4)
                os.system('./convert_scale/convert.sh ' +  '"' + tstart + '" ' +  fhour + ' ' + gribfile + ' ' + outdir)

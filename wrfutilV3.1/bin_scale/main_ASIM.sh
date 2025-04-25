@@ -94,20 +94,20 @@ while [ $REMAINING_STEPS -gt 0 ] ; do
 
 
 
-#   if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
-#      echo "Running Pert init bdy"                           > $LOGDIR/pert_init_bdy_${STEP}.log
-#      time $BASEDIR/bin/run_Pert_scale.sh                       >> $LOGDIR/pert_init_bdy_${STEP}.log   2>&1
-#      if [ $? -ne 0 ] ; then
-#         echo "Error: run_Pert finished with errors!"
-#         echo "Aborting this step"
-#         exit 1 
-#      fi
-#      echo "Succesfully run Pert met em"
+   if [[ $BDY_PERT -eq 1 && $RUN_BDY_PERT -eq 1 ]] ; then
+      echo "Running Pert init bdy"                           > $LOGDIR/pert_init_bdy_${STEP}.log
+      time $BASEDIR/bin/run_Pert.sh                          >> $LOGDIR/pert_init_bdy_${STEP}.log   2>&1
+      if [ $? -ne 0 ] ; then
+         echo "Error: run_Pert finished with errors!"
+         echo "Aborting this step"
+         exit 1 
+      fi
+      echo "Succesfully run Pert met em"
 #
 #   elif [ $BDY_PERT == 0 ] && [ $STEP == 0 ] ; then
 #      echo "Linking met_em directory"                     >> $LOGDIR/pert_init_bdy_${STEP}.log
 #      ln -sf $HISTDIR/WPS/met_em_ori $HISTDIR/WPS/met_em  >> $LOGDIR/pert_init_bdy_${STEP}.log  2>&1
-#   fi
+   fi
    
 
    if [ $RUN_FCST -eq 1 ] ; then

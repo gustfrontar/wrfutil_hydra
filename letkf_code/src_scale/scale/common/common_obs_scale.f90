@@ -1702,25 +1702,17 @@ subroutine monit_obs(v3dg,v2dg,topo,nobs,bias,rmse,monit_type,use_key,step)
 
   monit_type = .false.
 
-  if (trim(OBS_IN_FORMAT(1))=="AWS") then
-    monit_type(uid_obs(id_usfc_obs)) = .true.
-    monit_type(uid_obs(id_vsfc_obs)) = .true.
-    monit_type(uid_obs(id_tsfc_obs)) = .true.
-    monit_type(uid_obs(id_rsfc_obs)) = .true.
-    monit_type(uid_obs(id_ps_obs)) = .true.
-  else 
-    monit_type(uid_obs(id_u_obs)) = .true.
-    monit_type(uid_obs(id_v_obs)) = .true.
-    monit_type(uid_obs(id_t_obs)) = .true.
-    monit_type(uid_obs(id_tv_obs)) = .true.
+  monit_type(uid_obs(id_u_obs)) = .true.
+  monit_type(uid_obs(id_v_obs)) = .true.
+  monit_type(uid_obs(id_t_obs)) = .true.
+  monit_type(uid_obs(id_tv_obs)) = .true.
+  monit_type(uid_obs(id_q_obs)) = .true.
+  if (nobs(uid_obs(id_rh_obs)) > nobs(uid_obs(id_q_obs)))then
+    monit_type(uid_obs(id_rh_obs)) = .true.
+  else
     monit_type(uid_obs(id_q_obs)) = .true.
-    if (nobs(uid_obs(id_rh_obs)) > nobs(uid_obs(id_q_obs)))then
-      monit_type(uid_obs(id_rh_obs)) = .true.
-    else
-      monit_type(uid_obs(id_q_obs)) = .true.
-    end if
-    monit_type(uid_obs(id_ps_obs)) = .true.
   end if
+  monit_type(uid_obs(id_ps_obs)) = .true.
 
   if (DEPARTURE_STAT_RADAR) then
     monit_type(uid_obs(id_radar_ref_obs)) = .true.
@@ -1728,6 +1720,12 @@ subroutine monit_obs(v3dg,v2dg,topo,nobs,bias,rmse,monit_type,use_key,step)
     monit_type(uid_obs(id_radar_vr_obs)) = .true.
 !    monit_type(uid_obs(id_radar_prh_obs)) = .true.
   end if
+
+!!! Surface AWS 
+  monit_type(uid_obs(id_usfc_obs)) = .true.
+  monit_type(uid_obs(id_vsfc_obs)) = .true.
+  monit_type(uid_obs(id_tsfc_obs)) = .true.
+  monit_type(uid_obs(id_rsfc_obs)) = .true.
 
   deallocate (oelm)
   deallocate (ohx)
@@ -1989,6 +1987,7 @@ SUBROUTINE get_nobs(cfile,nrec,nn)
     c_endian="big_endian"
   end if
 
+
   ALLOCATE(wk(nrec))
   nn = 0
 !  iu = 0
@@ -2080,17 +2079,25 @@ SUBROUTINE read_obs(cfile,obs)
 
   character(len=13) :: c_endian
 
+  INTEGER :: nrec
+
   if(USE_OBS_LITTLE_ENDIAN)then
     c_endian="little_endian"
   else
     c_endian="big_endian"
   end if
 
+  IF(RADAR_OBS_4D) THEN
+    nrec = 8
+  ELSE
+    nrec = 7
+  END IF
+
   iunit=91
   OPEN(iunit,FILE=cfile,FORM='unformatted',ACCESS='sequential',CONVERT=trim(c_endian))
   DO n=1,obs%nobs
     !READ(iunit) wk
-    READ(iunit) wk(1:7)
+    READ(iunit) wk(1:nrec)
     SELECT CASE(NINT(wk(1)))
     CASE(id_u_obs)
       wk(4) = wk(4) * 100.0 ! hPa -> Pa
@@ -2120,8 +2127,14 @@ SUBROUTINE read_obs(cfile,obs)
     obs%dat(n) = REAL(wk(5),r_size)
     obs%err(n) = REAL(wk(6),r_size)
     obs%typ(n) = NINT(wk(7))
-    !obs%dif(n) = REAL(wk(8),r_size)
-    obs%dif(n) = REAL(0.0,r_size)
+    if (obs%typ(n) == 23) then 
+       obs%typ(n)= 22 !!! TENTATIVE !!!
+    end if
+    if (OBS_4D) then
+      obs%dif(n) = REAL(wk(8),r_size)
+    else
+      obs%dif(n) = REAL(0.0,r_size)
+    end if
   END DO
   CLOSE(iunit)
 
@@ -2573,8 +2586,11 @@ subroutine read_obs_all(obs)
 
     select case (OBS_IN_FORMAT(iof))
     case (obsfmt_prepbufr, obsfmt_aws)
-!!!      call get_nobs(trim(OBS_IN_NAME(iof)),8,obs(iof)%nobs)
+    if (OBS_4D) then
+      call get_nobs(trim(OBS_IN_NAME(iof)),8,obs(iof)%nobs)
+    else
       call get_nobs(trim(OBS_IN_NAME(iof)),7,obs(iof)%nobs)
+    end if
     case (obsfmt_radar)
       call get_nobs_radar(trim(OBS_IN_NAME(iof)), obs(iof)%nobs, obs(iof)%meta(1), obs(iof)%meta(2), obs(iof)%meta(3))
     case default

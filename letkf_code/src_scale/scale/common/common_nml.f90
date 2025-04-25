@@ -22,7 +22,7 @@ MODULE common_nml
   integer, parameter :: nid_obs = 20 ! number of variable types
   integer, parameter :: nobtype = 24 ! number of observation report types
 
-  integer, parameter :: nobsfilemax = 10
+  integer, parameter :: nobsfilemax = 30
   integer, parameter :: obsformatlenmax = 10
   integer, parameter :: filelenmax = 256
 
@@ -222,6 +222,7 @@ MODULE common_nml
  !!! tentative for SMN application
   logical :: USE_OBS_LITTLE_ENDIAN = .false.
 
+  logical :: OBS_4D = .false.
 
   !--- PARAM_LETKF_VAR_LOCAL
   real(r_size) :: VAR_LOCAL_UV(nv3d+nv2d)        = 1.0d0
@@ -751,7 +752,8 @@ subroutine read_nml_letkf_obs
     MAX_NOBS_PER_GRID_CRITERION, &
     OBS_MIN_SPACING, &
     OBS_SORT_GRID_SPACING, & 
-    USE_OBS_LITTLE_ENDIAN
+    USE_OBS_LITTLE_ENDIAN, &
+    OBS_4D
 
   rewind(IO_FID_CONF)
   read(IO_FID_CONF,nml=PARAM_LETKF_OBS,iostat=ierr)

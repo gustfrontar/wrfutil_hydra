@@ -1,5 +1,19 @@
+&PARAM_ENSEMBLE
+  MEMBER = __NBV__,
+  MEMBER_RUN = __NBV__,
+/
 
-&general
+&PARAM_PROCESS
+PPN = __PPN__, 
+MEM_NODES = __MEM_NODES__,
+NUM_DOMAIN = 1, 
+PRC_DOMAINS = __NPROC__,
+/
+&PARAM_LOG
+ LOG_LEVEL = 3, 
+/
+
+&PARAM_PERT_INIT_BDY
   PERT_RESTART_IN_BASENAME = __FILES_IN_RESTART__,
   PERT_RESTART_OUT_BASENAME = __FILES_OUT_RESTART__,
   PERT_BOUNDARY_IN_BASENAME = __FILES_IN_BOUNDARY__,
@@ -9,3 +23,47 @@
   PERT_SIGMA  = __SIGMA__,
 /
 
+&PARAM_TIME
+ TIME_STARTDATE = __INI_SCALE__,
+ TIME_STARTMS               = 0.D0,
+ TIME_DURATION = __LEN__.D0,
+ TIME_DURATION_UNIT         = "SEC",
+ TIME_DT                    = __DT__.D0,
+ TIME_DT_UNIT               = "SEC",
+/
+
+#################################################
+#
+# model configuration: process
+#
+#################################################
+
+&PARAM_PRC_CARTESC
+ PRC_NUM_X      = __NPROC_X__,
+ PRC_NUM_Y      = __NPROC_Y__,
+ PRC_PERIODIC_X = .false.,
+ PRC_PERIODIC_Y = .false.,
+/
+
+#################################################
+#
+# model configuration: region
+#
+#################################################
+
+&PARAM_ATMOS_GRID_CARTESC_INDEX
+ KMAX = __E_VERT__,
+ IMAX = __E_WE_LOC__,
+ JMAX = __E_SN_LOC__,
+/
+
+&PARAM_ATMOS_GRID_CARTESC
+ DX = __DX__,
+ DY = __DY__,
+
+!---FZ---
+
+ BUFFER_DZ = 5000.D0,
+ BUFFER_DX = 20000.D0,
+ BUFFER_DY = 20000.D0,
+/
