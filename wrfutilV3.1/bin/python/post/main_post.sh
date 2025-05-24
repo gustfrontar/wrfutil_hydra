@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH -p mem1      
 #SBATCH -n 10      
-#SBATCH --mem 800G 
+#SBATCH --mem 300G 
 #SBATCH --time 120 
 
-POSTTYPE="DAFCST"   #Postprocesing type, can be one of: ANAL/GUES/DAFCST
+POSTTYPE="GUES"   #Postprocesing type, can be one of: ANAL/GUES/DAFCST
 
 EXPPATH=$HOME/data/data_assimilation_exps/PREVENIR_LOWRESOLUTION_DA_FUGAKU_2024031900_VR/
 
@@ -13,7 +13,7 @@ OUTDIR="$EXPPATH/POST/${POSTTYPE}/"       #Root path for postprocessing output.
 SRCDIR="$EXPPATH/bin/python/post/src/"    #Postprocessing code dir.
 
 NMEM=60          #Ensemble size
-MAXJOBS=10       #Maximum simultaneous jobs
+MAXJOBS=30       #Maximum simultaneous jobs
 memfmt="%03g"    #Output format for ens members.
 anafreq=3600     #Analysis frequency (ANAL or GUES only)
 forinifreq=10800 #Forecast initialization frequency (DAFCST only)
@@ -48,7 +48,7 @@ if [ $POSTTYPE == "ANAL" ] || [ $POSTTYPE == "GUES"  ] ; then
       out=$OUTDIR/$timed/
       outdate=$(date -ud "$ctime" +"%Y%m%d%_H%M%S")
       mkdir -p $out
-      python $SRCDIR/post_ens_wrfout_to_netcdf.py "$file" "$out" "$mem" "$outdate" &> log_$imem &
+      python $SRCDIR/post_ens_wrfout_to_netcdf.py "$file" "$out" "$mem" "$outdate" &>> $out/log_$mem &
       exec_post "$file" "$mem" "$out" "$outdate" &
       if [ $icount == $MAXJOBS ] ;then
         wait
@@ -77,9 +77,9 @@ if [ $POSTTYPE == "DAFCST" ] ; then
           echo "Runing posprocessing for file $file"
           icount=$((icount+1))
           out=$OUTDIR/$timeini/
-          outdate=$(date -ud "$ctime" +"%Y%m%d%_H%M%S")
+          outdate=$(date -ud "$ctime UTC" +"%Y%m%d_%H%M%S")
           mkdir -p $out
-          python $SRCDIR/post_ens_wrfout_to_netcdf.py "$file" "$out" "$mem" "$outdate" &> log_$imem &
+          python $SRCDIR/post_ens_wrfout_to_netcdf.py "$file" "$out" "$mem" "$outdate" &>> $out/log_$mem &
           if [ $icount == $MAXJOBS ] ; then
             wait
             icount=0
