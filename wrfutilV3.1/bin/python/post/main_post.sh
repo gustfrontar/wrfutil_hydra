@@ -1,19 +1,19 @@
 #!/bin/bash
 #SBATCH -p mem1      
 #SBATCH -n 10      
-#SBATCH --mem 300G 
+#SBATCH --mem 400G 
 #SBATCH --time 120 
 
-POSTTYPE="ANAL"   #Postprocesing type, can be one of: ANAL/GUES/DAFCST
+POSTTYPE="GUES"   #Postprocesing type, can be one of: ANAL/GUES/DAFCST
 
-EXPPATH=$HOME/data/data_assimilation_exps/PREVENIR_LOWRESOLUTION_DA_FUGAKU_2024031900_VR/
+EXPPATH=$HOME/data/data_assimilation_exps/PREVENIR_LOWRESOLUTION_DA_FUGAKU_2024031900_LDBZTHRESH/
 
 DATADIR="$EXPPATH/HIST/${POSTTYPE}/"      #Root path of WRFOUT files.
 OUTDIR="$EXPPATH/POST/${POSTTYPE}/"       #Root path for postprocessing output.
 SRCDIR="$EXPPATH/bin/python/post/src/"    #Postprocessing code dir.
 
 NMEM=60          #Ensemble size
-MAXJOBS=30       #Maximum simultaneous jobs
+MAXJOBS=10       #Maximum simultaneous jobs
 memfmt="%03g"    #Output format for ens members.
 anafreq=3600     #Analysis frequency (ANAL or GUES only)
 forinifreq=10800 #Forecast initialization frequency (DAFCST only)
@@ -26,6 +26,7 @@ timeend="2024-03-20 06:00:00"
 #Create the output directory
 
 mkdir -p $OUTDIR
+export OMP_NUM_THREADS=1
 
 
 icount=0
@@ -44,11 +45,15 @@ if [ $POSTTYPE == "ANAL" ] || [ $POSTTYPE == "GUES"  ] ; then
         file=$DATADIR/$timed/gues$(printf %05g $((10#$mem)))
       fi 
       echo "Runing posprocessing for file $file"
-      icount=$((icount+1))
       out=$OUTDIR/$timed/
       outdate=$(date -ud "$ctime UTC" +"%Y%m%d%H%M%S")
-      mkdir -p $out
-      python $SRCDIR/post_ens_wrfout_to_netcdf.py "$file" "$out" "$mem" "$outdate" &>> $out/log_$mem &
+      if [ -f $out/WRF.D${outdate}.T2D.M${mem}.nc ] && [ -f $out/WRF.D${outdate}.T3D.M${mem}.nc ] ; then         echo "This file has been already postprocessed"
+         echo "Continue to the next one"
+      else 
+         icount=$((icount+1))
+         mkdir -p $out
+         python $SRCDIR/post_ens_wrfout_to_netcdf.py "$file" "$out" "$mem" "$outdate" &>> $out/log_$mem &
+      fi
       if [ $icount == $MAXJOBS ] ;then
         wait
         icount=0
@@ -74,11 +79,16 @@ if [ $POSTTYPE == "DAFCST" ] ; then
           timefor=$(date -ud "$ctime" +"%F_%T")
           file=$DATADIR/$timeini/$mem/wrfout_d01_$timefor
           echo "Runing posprocessing for file $file"
-          icount=$((icount+1))
           out=$OUTDIR/$timeini/
           outdate=$(date -ud "$ctime UTC" +"%Y%m%d%H%M%S")
-          mkdir -p $out
-          python $SRCDIR/post_ens_wrfout_to_netcdf.py "$file" "$out" "$mem" "$outdate" &>> $out/log_$mem &
+          if [ -f $out/WRF.D${outdate}.T2D.M${mem}.nc ] && [ -f $out/WRF.D${outdate}.T3D.M${mem}.nc ] ; then         
+            echo "This file has been already postprocessed"
+            echo "Continue to the next one"
+          else
+            icount=$((icount+1))
+            mkdir -p $out
+            python $SRCDIR/post_ens_wrfout_to_netcdf.py "$file" "$out" "$mem" "$outdate" &>> $out/log_$mem &
+          fi
           if [ $icount == $MAXJOBS ] ; then
             wait
             icount=0
